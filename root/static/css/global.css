@@ -118,6 +118,10 @@ footer .disclaimer {
     color: red;
 }
 
+.bg-dark-red {
+    background-color: #BD081C;
+}
+
 .text-yellow {
     color: #FF9900
 }
@@ -156,6 +160,14 @@ footer .disclaimer {
 
 .mt-4 {
     margin-top: 16px
+}
+
+.mt-6 {
+    margin-top: 24px;
+}
+
+.ml-auto {
+    margin-left: auto;
 }
 
 .ml-3 {

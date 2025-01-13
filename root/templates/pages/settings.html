@@ -1,0 +1,152 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' with icon2="account-cog-outline" icon1="cog" url2="" url1="settings" %}
+        <main>
+            <div class="block">
+                <div class="d-flex align-center">
+                    <h1>{% translate 'Einstellung' %}</h1>
+                    <a class="ml-auto" href="{% url 'settings_update' request.user.pk %}">
+                        <img class="icon" src="{% static 'svgs/pencil.svg' %}" height="100%"/>
+                    </a>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/card-account-details.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{{ request.user.first_name }}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/card-account-details.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{{ request.user.last_name }}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/tag-text.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{{ request.user.username }}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/email.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{{ request.user.email }}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/wrench-cog.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input disabled type="text" value="{% if request.user.is_authenticated %}{{ request.user.config.role.name }}{% endif %}">
+                    </div>
+                </div>
+            </div>
+            <div class="block">
+                <h1>{% translate 'Verträge' %}</h1>
+                <p>{% translate 'Datenschutzerklärung' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/file-sign.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input
+                        disabled
+                        type="text"
+                        value="{% if request.user.is_authenticated %}{% if request.user.legaluser.privacy %}{% translate 'Zugestimmt' %}{% else %}{% translate 'Nicht zugestimmt' %}{% endif %}{% endif %}" />
+                    </div>
+                </div>
+                <p>{% translate 'Nutzungsrichtlinien' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/file-sign.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input
+                        disabled
+                        type="text"
+                        value="{% if request.user.is_authenticated %}{% if request.user.legaluser.terms %}{% translate 'Zugestimmt' %}{% else %}{% translate 'Nicht zugestimmt' %}{% endif %}{% endif %}" />
+                    </div>
+                </div>
+                <p>{% translate 'Haftungsausschluss' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/file-sign.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input
+                        disabled
+                        type="text"
+                        value="{% if request.user.is_authenticated %}{% if request.user.legaluser.disclaimer %}{% translate 'Zugestimmt' %}{% else %}{% translate 'Nicht zugestimmt' %}{% endif %}{% endif %}" />
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'settings_pw_update' request.user.pk %}" class="button mt-6 bg-light-gray">{% translate "Passwort ändern" %}</a>
+            <a href="{% url 'logout' %}" class="button mt-2 bg-light-gray">{% translate "Abmelden" %}</a>
+            <div class="legal mt-6">
+                <a href="{% url 'impressum' %}" class="impressum">
+                    <img class="icon" src="{% static 'svgs/information-outline.svg' %}" height="100%"/>
+                </a>
+                <a href="{% url 'privacy' %}" class="privacy">
+                    <img class="icon" src="{% static 'svgs/shield-lock-outline.svg' %}" height="100%"/>
+                </a>
+                <a href="{% url 'terms' %}" class="terms">
+                    <img class="icon" src="{% static 'svgs/file-document-outline.svg' %}" height="100%"/>
+                </a>
+                <a href="{% url 'disclaimer' %}" class="disclaimer">
+                    <img class="icon" src="{% static 'svgs/clipboard-text-outline.svg' %}" height="100%"/>
+                </a>
+            </div>
+        </main>
+        {% include 'components/footers/footer.html' with page="settings" %}
+    </body>
+</html>

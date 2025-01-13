@@ -71,7 +71,12 @@ def custom_logout(request):
     return redirect("home")
 
 
-class HomeView(LoginRequiredMixin, LegalRequirementMixin, generic.ListView):
+class HomeView(
+    LoginRequiredMixin,
+    LegalRequirementMixin,
+    ProtectionRequirementMixin,
+    generic.ListView,
+):
     model = User
     template_name = "pages/home.html"
 
@@ -138,3 +143,23 @@ class DisclaimerView(generic.UpdateView):
         form.instance.disclaimer = True
         form.instance.save()
         return redirect("home")
+
+
+class PedoGuardView(generic.UpdateView):
+    model = LegalUser
+    fields = []
+    template_name = "pages/pedoguard.html"
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        if self.request.user.is_authenticated:
+            return self.request.user.legaluser
+
+    def post(self, request, *args, **kwargs):
+        legal_user = self.get_object()
+        if "activate_protection" in request.POST:
+            legal_user.protection = True
+        elif "deactivate_protection" in request.POST:
+            legal_user.protection = False
+        legal_user.save()
+        return HttpResponseRedirect(self.success_url)

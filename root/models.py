@@ -33,6 +33,13 @@ class LegalUser(models.Model):
     )
     terms = models.BooleanField(verbose_name=_("Nutzungsrichtlinien"), default=False)
 
+    protection = models.BooleanField(
+        verbose_name=_("Pädophilenschutz"),
+        null=True,
+        blank=True,
+        default=None,
+    )
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, verbose_name=_("Benutzer")
     )

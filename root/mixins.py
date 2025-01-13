@@ -14,3 +14,12 @@ class LegalRequirementMixin:
             return redirect("disclaimer")
 
         return super().dispatch(request, *args, **kwargs)
+
+
+class ProtectionRequirementMixin:
+    def dispatch(self, request, *args, **kwargs):
+
+        if request.user.legaluser.protection is None:
+            return redirect("pedoguard")
+
+        return super().dispatch(request, *args, **kwargs)

@@ -20,4 +20,5 @@ urlpatterns = [
     path("privacy/", PrivacyView.as_view(), name="privacy"),
     path("terms/", TermsView.as_view(), name="terms"),
     path("disclaimer/", DisclaimerView.as_view(), name="disclaimer"),
+    path("pedoguard/", PedoGuardView.as_view(), name="pedoguard"),
 ]
