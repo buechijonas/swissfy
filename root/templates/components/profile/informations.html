@@ -1,0 +1,121 @@
+{% load static %}
+{% load i18n %}
+<div class="block" style="padding: 20px">
+    {% if has_detail_infos %}
+        <div class="d-flex">
+            <div class="gridify-icon-input">
+                <div class="icon-container">
+                    <div class="icon filter-gray">
+                        <img src="{% static 'svgs/information.svg' %}" height="100%"/>
+                    </div>
+                </div>
+            </div>
+            <div class="input-container d-flex align-center">
+                <p>
+                    {% if user.detailuser.sex %}
+                        {{ user.detailuser.get_sex_display }}
+                    {% else %}
+                        {% translate 'Unbekannt' %}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div class="d-flex mt-6">
+            <div class="gridify-icon-input">
+                <div class="icon-container">
+                    <div class="icon filter-gray">
+                        <img src="{% static 'svgs/gender-male-female.svg' %}" height="100%"/>
+                    </div>
+                </div>
+            </div>
+            <div class="input-container d-flex align-center">
+                <p>
+                    {% if user.detailuser.birthday %}
+                        {{ user.detailuser.birthday }}
+                    {% else %}
+                        {% translate 'Unbekannt' %}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div class="d-flex mt-6">
+            <div class="gridify-icon-input">
+                <div class="icon-container">
+                    <div class="icon filter-gray">
+                        <img src="{% static 'svgs/briefcase-variant.svg' %}" height="100%"/>
+                    </div>
+                </div>
+            </div>
+            <div class="input-container d-flex align-center">
+                <p>
+                    {% if user.detailuser.profession %}
+                        {{ user.detailuser.profession }}
+                    {% else %}
+                        {% translate 'Unbekannt' %}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div class="d-flex mt-6">
+            <div class="gridify-icon-input">
+                <div class="icon-container">
+                    <div class="icon filter-gray">
+                        <img src="{% static 'svgs/home-city.svg' %}" height="100%"/>
+                    </div>
+                </div>
+            </div>
+            <div class="input-container d-flex align-center">
+                <p>
+                    {% if user.detailuser.place_of_residence %}
+                        {{ user.detailuser.place_of_residence }}
+                    {% else %}
+                        {% translate 'Unbekannt' %}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div class="d-flex mt-6">
+            <div class="gridify-icon-input">
+                <div class="icon-container">
+                    <div class="icon filter-gray">
+                        <img src="{% static 'svgs/home-silo.svg' %}" height="100%"/>
+                    </div>
+                </div>
+            </div>
+            <div class="input-container d-flex align-center">
+                <p>
+                    {% if user.detailuser.place_of_origin %}
+                        {{ user.detailuser.place_of_origin }}
+                    {% else %}
+                        {% translate 'Unbekannt' %}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div class="d-flex mt-6">
+            <div class="gridify-icon-input">
+                <div class="icon-container">
+                    <div class="icon filter-gray">
+                        <img src="{% static 'svgs/heart.svg' %}" height="100%"/>
+                    </div>
+                </div>
+            </div>
+            <div class="input-container d-flex align-center">
+                <p>
+                    {% if user.detailuser.relationship %}
+                        {{ user.detailuser.get_relationship_display }}
+                    {% else %}
+                        {% translate 'Unbekannt' %}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    {% else %}
+    <div class="undraw">
+        <img src="{% static 'svgs/undraw/personal-info_yzls.svg' %}" width="100%"/>
+    </div>
+    <div class="d-flex justify-center mb-6">
+        <p class="text-gray">{% translate 'Keine Detail' %}</p>
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,26 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' %}
+        <main>
+            <div class="undraw">
+                <img src="{% static 'svgs/undraw/bug-fixing_sgk7.svg' %}" width="100%"/>
+            </div>
+            <div class="d-flex justify-center">
+                <p class="text-bold text-red">{% translate 'Wartungsarbeiten' %}</p>
+            </div>
+            <div class="d-flex justify-center mt-6">
+                <p>{% translate '503' %}</p>
+            </div>
+        </main>
+        {% include 'components/footers/footer.html' with page="home" %}
+    </body>
+</html>

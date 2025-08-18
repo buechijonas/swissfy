@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-10 12:06+0100\n"
+"POT-Creation-Date: 2025-03-18 19:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,16 +18,489 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: root/templates/pages/disclaimer.html:9
+#: root/forms.py:13 root/forms.py:25 root/templates/pages/login.html:28
+#: root/templates/pages/settings_update.html:56
+#: root/templates/pages/signup.html:58
+msgid "Benutzername"
+msgstr ""
+
+#: root/forms.py:14 root/forms.py:30 root/templates/pages/login.html:43
+#: root/templates/pages/signup.html:88
+msgid "Passwort"
+msgstr ""
+
+#: root/forms.py:19 root/templates/pages/settings_update.html:26
+#: root/templates/pages/signup.html:28
+msgid "Vorname"
+msgstr ""
+
+#: root/forms.py:22 root/templates/pages/settings_update.html:41
+#: root/templates/pages/signup.html:43
+msgid "Nachname"
+msgstr ""
+
+#: root/forms.py:28 root/templates/pages/settings_update.html:71
+#: root/templates/pages/signup.html:73
+msgid "E-Mail Adresse"
+msgstr ""
+
+#: root/models.py:24 root/models.py:56
+msgid "Rolle"
+msgstr ""
+
+#: root/models.py:26
+msgid "Stufe"
+msgstr ""
+
+#: root/models.py:33 root/templates/pages/privacy.html:9
+#: root/templates/pages/privacy.html:15 root/templates/pages/settings.html:84
+msgid "Datenschutzerklärung"
+msgstr ""
+
+#: root/models.py:35 root/templates/pages/disclaimer.html:9
 #: root/templates/pages/disclaimer.html:15
+#: root/templates/pages/settings.html:116
 msgid "Haftungsausschluss"
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:17
+#: root/models.py:37 root/templates/pages/settings.html:100
+#: root/templates/pages/terms.html:9 root/templates/pages/terms.html:15
+msgid "Nutzungsrichtlinien"
+msgstr ""
+
+#: root/models.py:40 root/templates/pages/pedoguard.html:15
+#: root/templates/pages/settings.html:135
+msgid "Pädophilenschutz"
+msgstr ""
+
+#: root/models.py:47 root/models.py:61 root/models.py:71 root/models.py:174
+#: root/models.py:238
+msgid "Benutzer"
+msgstr ""
+
+#: root/models.py:51
+#, python-brace-format
+msgid "Legal User: {username}"
+msgstr ""
+
+#: root/models.py:66
+#, python-brace-format
+msgid "Config User: {username}"
+msgstr ""
+
+#: root/models.py:90 root/templates/pages/notification_activities.html:47
+#: root/templates/pages/notification_friend_request.html:46
+#: root/templates/pages/search.html:53
+msgid "Freunde"
+msgstr ""
+
+#: root/models.py:96
+msgid "Gesendete Anfragen"
+msgstr ""
+
+#: root/models.py:102
+msgid "Erhaltene Anfragen"
+msgstr ""
+
+#: root/models.py:108
+msgid "Blockiert"
+msgstr ""
+
+#: root/models.py:112
+#, python-brace-format
+msgid "Social User: {username}"
+msgstr ""
+
+#: root/models.py:130 root/templates/pages/account_update.html:64
+msgid "Männlich"
+msgstr ""
+
+#: root/models.py:131 root/templates/pages/account_update.html:65
+msgid "Weiblich"
+msgstr ""
+
+#: root/models.py:132 root/templates/pages/account_update.html:66
+msgid "Divers"
+msgstr ""
+
+#: root/models.py:135 root/templates/pages/account_update.html:144
+msgid "Single"
+msgstr ""
+
+#: root/models.py:136 root/templates/pages/account_update.html:145
+msgid "Kennenlernphase"
+msgstr ""
+
+#: root/models.py:137 root/templates/pages/account_update.html:146
+msgid "In einer Beziehung"
+msgstr ""
+
+#: root/models.py:138 root/templates/pages/account_update.html:147
+msgid "Verlobt"
+msgstr ""
+
+#: root/models.py:139 root/templates/pages/account_update.html:148
+msgid "Verheiratet"
+msgstr ""
+
+#: root/models.py:140 root/templates/pages/account_update.html:149
+msgid "Es ist kompliziert"
+msgstr ""
+
+#: root/models.py:141 root/templates/pages/account_update.html:150
+msgid "Getrennt"
+msgstr ""
+
+#: root/models.py:142 root/templates/pages/account_update.html:151
+msgid "Geschieden"
+msgstr ""
+
+#: root/models.py:143 root/templates/pages/account_update.html:152
+msgid "Verwitwet"
+msgstr ""
+
+#: root/models.py:144 root/templates/pages/account_update.html:153
+msgid "Sonstiges"
+msgstr ""
+
+#: root/models.py:150 root/templates/components/footers/footer.html:51
+#: root/templates/components/profile/posts.html:11
+#: root/templates/pages/account.html:21 root/templates/pages/account.html:24
+#: root/templates/pages/account_update.html:23
+#: root/templates/pages/home.html:20
+#: root/templates/pages/notification_activities.html:24
+#: root/templates/pages/notification_friend_request.html:23
+#: root/templates/pages/profile.html:21 root/templates/pages/search.html:30
+msgid "Profilbild"
+msgstr ""
+
+#: root/models.py:151 root/models.py:272
+msgid "Lade ein Bild für dein Profil hoch."
+msgstr ""
+
+#: root/models.py:155 root/templates/pages/account.html:29
+#: root/templates/pages/account_update.html:47
+msgid "Biografie"
+msgstr ""
+
+#: root/models.py:158 root/templates/pages/account.html:42
+msgid "Geschlecht"
+msgstr ""
+
+#: root/models.py:163
+msgid "Geburtstag"
+msgstr ""
+
+#: root/models.py:166
+msgid "Tätigkeit"
+msgstr ""
+
+#: root/models.py:168 root/templates/pages/account.html:81
+#: root/templates/pages/account_update.html:112
+msgid "Wohnort"
+msgstr ""
+
+#: root/models.py:169 root/templates/pages/account.html:94
+#: root/templates/pages/account_update.html:127
+msgid "Heimatort"
+msgstr ""
+
+#: root/models.py:171 root/templates/pages/account.html:107
+msgid "Beziehungsstatus"
+msgstr ""
+
+#: root/models.py:181
+msgid "Das Geburtsdatum darf nicht in der Zukunft liegen."
+msgstr ""
+
+#: root/models.py:188
+#, python-brace-format
+msgid "Detail User: {username}"
+msgstr ""
+
+#: root/models.py:193
+msgid "Discord Benutzername"
+msgstr ""
+
+#: root/models.py:196
+msgid "Epic Games Benutzername"
+msgstr ""
+
+#: root/models.py:199
+msgid "Facebook Benutzername"
+msgstr ""
+
+#: root/models.py:202
+msgid "Instagram Benutzername"
+msgstr ""
+
+#: root/models.py:205
+msgid "LinkedIn Benutzername"
+msgstr ""
+
+#: root/models.py:208
+msgid "Pinterest Benutzername"
+msgstr ""
+
+#: root/models.py:211
+msgid "PlayStation Benutzername"
+msgstr ""
+
+#: root/models.py:214
+msgid "Reddit Benutzername"
+msgstr ""
+
+#: root/models.py:217
+msgid "Snapchat Benutzername"
+msgstr ""
+
+#: root/models.py:220
+msgid "Steam Benutzername"
+msgstr ""
+
+#: root/models.py:223
+msgid "Threads Benutzername"
+msgstr ""
+
+#: root/models.py:226 root/models.py:229
+msgid "Tiktok Benutzername"
+msgstr ""
+
+#: root/models.py:232
+msgid "Xbox Benutzername"
+msgstr ""
+
+#: root/models.py:235
+msgid "YouTube Kanalname"
+msgstr ""
+
+#: root/models.py:242
+#, python-brace-format
+msgid "Linked User: {username}"
+msgstr ""
+
+#: root/models.py:250
+msgid "Benutzer, der Nicknames vergibt"
+msgstr ""
+
+#: root/models.py:257
+msgid "Benutzer, der einen Nickname erhält"
+msgstr ""
+
+#: root/models.py:260
+msgid "Nickname"
+msgstr ""
+
+#: root/models.py:271
+msgid "Post Bild"
+msgstr ""
+
+#: root/models.py:275
+msgid "Erstellt am"
+msgstr ""
+
+#: root/models.py:277
+msgid "Gefällt mir"
+msgstr ""
+
+#: root/models.py:283
+msgid "Autor"
+msgstr ""
+
+#: root/models.py:294
+msgid "Vor 1 Sekunde"
+msgstr ""
+
+#: root/models.py:296
+msgid "Vor {} Sekunden"
+msgstr ""
+
+#: root/models.py:298
+msgid "Vor 1 Minute"
+msgstr ""
+
+#: root/models.py:300
+msgid "Vor {} Minuten"
+msgstr ""
+
+#: root/models.py:302
+msgid "Vor 1 Stunde"
+msgstr ""
+
+#: root/models.py:304
+msgid "Vor {} Stunden"
+msgstr ""
+
+#: root/models.py:306
+msgid "Gestern"
+msgstr ""
+
+#: root/models.py:308
+msgid "Am {:%d.%m}"
+msgstr ""
+
+#: root/models.py:310
+msgid "{:%d.%m.%Y}"
+msgstr ""
+
+#: root/models.py:327
+msgid "Aktivitäten gelesen"
+msgstr ""
+
+#: root/templates/components/profile/informations.html:18
+#: root/templates/components/profile/informations.html:36
+#: root/templates/components/profile/informations.html:54
+#: root/templates/components/profile/informations.html:72
+#: root/templates/components/profile/informations.html:90
+#: root/templates/components/profile/informations.html:108
+#: root/templates/pages/account.html:39 root/templates/pages/account.html:52
+#: root/templates/pages/account.html:65 root/templates/pages/account.html:78
+#: root/templates/pages/account.html:91 root/templates/pages/account.html:104
+#: root/templates/pages/account.html:117 root/templates/pages/account.html:137
+#: root/templates/pages/account.html:149 root/templates/pages/account.html:161
+#: root/templates/pages/account.html:173 root/templates/pages/account.html:185
+#: root/templates/pages/account.html:197 root/templates/pages/account.html:209
+#: root/templates/pages/account.html:221 root/templates/pages/account.html:233
+#: root/templates/pages/account.html:245 root/templates/pages/account.html:257
+#: root/templates/pages/account.html:269 root/templates/pages/account.html:281
+#: root/templates/pages/account.html:293 root/templates/pages/account.html:305
+msgid "Unbekannt"
+msgstr ""
+
+#: root/templates/components/profile/informations.html:118
+msgid "Keine Detail"
+msgstr ""
+
+#: root/templates/components/profile/links.html:220
+msgid "Keine Verlinkungen"
+msgstr ""
+
+#: root/templates/pages/account.html:9
+#: root/templates/pages/account_link_update.html:9
+#: root/templates/pages/account_nickname_update.html:9
+#: root/templates/pages/account_update.html:9 root/templates/pages/home.html:9
+#: root/templates/pages/maintenance.html:9
+#: root/templates/pages/notification.html:9
+#: root/templates/pages/notification_activities.html:9
+#: root/templates/pages/notification_friend_request.html:9
+#: root/templates/pages/post_delete.html:9
+#: root/templates/pages/post_update.html:9 root/templates/pages/profile.html:9
+#: root/templates/pages/search.html:9 root/templates/pages/settings.html:9
+#: root/templates/pages/settings_pw_update.html:9
+#: root/templates/pages/settings_update.html:9
+msgid "SwissFY"
+msgstr ""
+
+#: root/templates/pages/account.html:16
+#: root/templates/pages/account_update.html:15
+msgid "Detail"
+msgstr ""
+
+#: root/templates/pages/account.html:55
+#: root/templates/pages/account_update.html:82
+msgid "Geburtsdatum"
+msgstr ""
+
+#: root/templates/pages/account.html:68
+#: root/templates/pages/account_update.html:97
+msgid "Beruf"
+msgstr ""
+
+#: root/templates/pages/account.html:123
+#: root/templates/pages/account_link_update.html:15
+msgid "Verlinkungen"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:26
+msgid "Discord"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:41
+msgid "Epic Games"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:56
+msgid "Facebook"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:71
+msgid "Instagram"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:86
+msgid "LinkedIn"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:101
+msgid "Pinterest"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:116
+msgid "PlayStation"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:131
+msgid "Reddit"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:146
+msgid "Snapchat"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:161
+msgid "Steam"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:176
+msgid "Threads"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:191
+msgid "TikTok"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:206
+msgid "Xbox"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:221
+msgid "YouTube"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:229
+#: root/templates/pages/account_update.html:162
+#: root/templates/pages/post_update.html:65
+#: root/templates/pages/settings_update.html:79
+msgid "Speichern"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:230
+#: root/templates/pages/account_update.html:163
+#: root/templates/pages/settings_pw_update.html:35
+#: root/templates/pages/settings_update.html:80
+msgid "Zurück"
+msgstr ""
+
+#: root/templates/pages/account_link_update.html:234
+#: root/templates/pages/account_update.html:166
+#: root/templates/pages/settings_pw_update.html:38
+#: root/templates/pages/settings_update.html:83
+msgid "Zugriff verweigert"
+msgstr ""
+
+#: root/templates/pages/account_update.html:63
+msgid "Geschlecht wählen"
+msgstr ""
+
+#: root/templates/pages/account_update.html:143
+msgid "Beziehungsstatus wählen"
+msgstr ""
+
+#: root/templates/pages/disclaimer.html:20
 msgid "1. Inhalt des Onlineangebots"
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:19
+#: root/templates/pages/disclaimer.html:22
 msgid ""
 "\n"
 "                            Die Inhalte dieser Webapplikation wurden mit "
@@ -58,11 +531,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:37
+#: root/templates/pages/disclaimer.html:40
 msgid "2. Haftung für Links"
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:39
+#: root/templates/pages/disclaimer.html:42
 msgid ""
 "\n"
 "                            Unser Angebot enthält Links zu externen "
@@ -83,11 +556,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:52
+#: root/templates/pages/disclaimer.html:55
 msgid "3. Urheberrecht"
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:54
+#: root/templates/pages/disclaimer.html:57
 msgid ""
 "\n"
 "                            Die durch die Seitenbetreiber erstellten Inhalte "
@@ -116,11 +589,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:71
+#: root/templates/pages/disclaimer.html:74
 msgid "4. Haftung für Schäden"
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:73
+#: root/templates/pages/disclaimer.html:76
 msgid ""
 "\n"
 "                            Wir schliessen jegliche Haftung für Schäden aus, "
@@ -133,11 +606,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:82
+#: root/templates/pages/disclaimer.html:85
 msgid "5. Keine Abmahnung ohne vorherigen Kontakt"
 msgstr ""
 
-#: root/templates/pages/disclaimer.html:84
+#: root/templates/pages/disclaimer.html:87
 msgid ""
 "\n"
 "                            Sollten Inhalte dieser Webapplikation die Rechte "
@@ -158,75 +631,292 @@ msgid ""
 "                        "
 msgstr ""
 
+#: root/templates/pages/disclaimer.html:103
+#: root/templates/pages/privacy.html:103 root/templates/pages/terms.html:365
+msgid "Zustimmen"
+msgstr ""
+
+#: root/templates/pages/home.html:86
+msgid "Herzlich Willkommen"
+msgstr ""
+
+#: root/templates/pages/home.html:89
+msgid "Schön, dass du da bist! ❤️"
+msgstr ""
+
+#: root/templates/pages/home.html:92
+msgid "Wir freuen uns darauf, dich kennenzulernen."
+msgstr ""
+
+#: root/templates/pages/home.html:95
+msgid "Lass uns gemeinsam eine einzigartige Community gestalten!"
+msgstr ""
+
+#: root/templates/pages/home.html:100
+msgid "Lädt weitere Posts..."
+msgstr ""
+
+#: root/templates/pages/home.html:219
+msgid "Keine weiteren Posts"
+msgstr ""
+
 #: root/templates/pages/impressum.html:9 root/templates/pages/impressum.html:15
 msgid "Impressum"
 msgstr ""
 
-#: root/templates/pages/impressum.html:18
+#: root/templates/pages/impressum.html:21
 msgid ""
 "Verantwortlich für den Inhalt gemäss § 5 TMG (Telemediengesetz) und Art. 4 "
 "Abs. 7 DSGVO"
 msgstr ""
 
-#: root/templates/pages/impressum.html:22 root/templates/pages/privacy.html:18
+#: root/templates/pages/impressum.html:25 root/templates/pages/privacy.html:21
 msgid "Jonas S. Büchi"
 msgstr ""
 
-#: root/templates/pages/impressum.html:23
+#: root/templates/pages/impressum.html:26
 msgid "Eichmatt 1"
 msgstr ""
 
-#: root/templates/pages/impressum.html:24
+#: root/templates/pages/impressum.html:27
 msgid "CH-3324 Hindelbank"
 msgstr ""
 
-#: root/templates/pages/impressum.html:25
+#: root/templates/pages/impressum.html:28
 msgid "Kanton Bern"
 msgstr ""
 
-#: root/templates/pages/impressum.html:28
+#: root/templates/pages/impressum.html:31
 msgid "Haftung für Inhalte"
 msgstr ""
 
-#: root/templates/pages/impressum.html:30
+#: root/templates/pages/impressum.html:33
 msgid ""
 "Die Inhalte unsere Seite wurde mit grösster Sorgfalt erstellt. Für die "
 "Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch "
 "keine Gewähr übernehmen."
 msgstr ""
 
-#: root/templates/pages/impressum.html:34
+#: root/templates/pages/impressum.html:37
 msgid "Obligatorische Hinweis"
 msgstr ""
 
-#: root/templates/pages/impressum.html:36
+#: root/templates/pages/impressum.html:39
 msgid ""
 "Diese Webapplikation steht unter dem Einfluss von der Organisation Kiidle. "
 "Der Hinweis ist hier aufgrund der geltenden Impressumspflicht der "
 "Europäischen Union und der Schweiz enthalten."
 msgstr ""
 
-#: root/templates/pages/privacy.html:9 root/templates/pages/privacy.html:15
-msgid "Datenschutzerklärung"
+#: root/templates/pages/login.html:9 root/templates/pages/login.html:15
+#: root/templates/pages/login.html:51 root/templates/pages/signup.html:100
+msgid "Anmelden"
 msgstr ""
 
-#: root/templates/pages/privacy.html:17
-msgid "1. Verantwortliche Stelle"
+#: root/templates/pages/login.html:54 root/templates/pages/signup.html:99
+msgid "Kein Konto?"
 msgstr ""
 
-#: root/templates/pages/privacy.html:19
-msgid "Bern, Schweiz"
+#: root/templates/pages/login.html:55 root/templates/pages/signup.html:9
+#: root/templates/pages/signup.html:15 root/templates/pages/signup.html:96
+msgid "Registrieren"
+msgstr ""
+
+#: root/templates/pages/maintenance.html:18
+msgid "Wartungsarbeiten"
+msgstr ""
+
+#: root/templates/pages/maintenance.html:21
+msgid "503"
+msgstr ""
+
+#: root/templates/pages/notification.html:15
+msgid "Benachrichtigungen"
+msgstr ""
+
+#: root/templates/pages/notification.html:19
+#: root/templates/pages/notification_friend_request.html:15
+msgid "Freundschaftsanfragen"
+msgstr ""
+
+#: root/templates/pages/notification.html:22
+#, python-format
+msgid ""
+"\n"
+"                                %(requests)s Freundschaftsanfragen\n"
+"                            "
+msgstr ""
+
+#: root/templates/pages/notification.html:27
+msgid "Keine Freundschaftsanfragen"
+msgstr ""
+
+#: root/templates/pages/notification.html:29
+#: root/templates/pages/notification.html:44
+#: root/templates/pages/notification.html:51
+#: root/templates/pages/notification.html:58
+#: root/templates/pages/notification.html:65
+msgid "Öffnen"
+msgstr ""
+
+#: root/templates/pages/notification.html:34
+#: root/templates/pages/notification_activities.html:15
+msgid "Aktivitäten"
+msgstr ""
+
+#: root/templates/pages/notification.html:37
+#, python-format
+msgid ""
+"\n"
+"                                %(notification_posts)s Aktivitäten\n"
+"                            "
+msgstr ""
+
+#: root/templates/pages/notification.html:42
+msgid "Keine Aktivitäten"
+msgstr ""
+
+#: root/templates/pages/notification.html:49
+msgid "Kommentare"
+msgstr ""
+
+#: root/templates/pages/notification.html:50
+msgid "Keine Kommentare erhalten"
+msgstr ""
+
+#: root/templates/pages/notification.html:56
+msgid "Likes"
+msgstr ""
+
+#: root/templates/pages/notification.html:57
+msgid "Keine Likes erhalten"
+msgstr ""
+
+#: root/templates/pages/notification.html:63
+msgid "Systembenachrichtigungen"
+msgstr ""
+
+#: root/templates/pages/notification.html:64
+msgid "Keine Systembenachrichtigungen"
+msgstr ""
+
+#: root/templates/pages/notification_activities.html:19
+msgid "Veröffentlichte einen neuen Post"
+msgstr ""
+
+#: root/templates/pages/notification_activities.html:49
+#: root/templates/pages/notification_friend_request.html:48
+#: root/templates/pages/search.html:55
+msgid "Gefolgt"
+msgstr ""
+
+#: root/templates/pages/notification_activities.html:59
+msgid "Zum Post"
+msgstr ""
+
+#: root/templates/pages/notification_activities.html:65
+msgid "Gelesen"
+msgstr ""
+
+#: root/templates/pages/notification_activities.html:75
+msgid "Du bist am Puls der Zeit"
+msgstr ""
+
+#: root/templates/pages/notification_friend_request.html:58
+msgid "Annehmen"
+msgstr ""
+
+#: root/templates/pages/notification_friend_request.html:64
+#: root/templates/pages/post_update.html:66
+msgid "Löschen"
+msgstr ""
+
+#: root/templates/pages/notification_friend_request.html:74
+msgid "Du hast keine Freundschaftsanfragen"
+msgstr ""
+
+#: root/templates/pages/pedoguard.html:9 root/templates/pages/pedoguard.html:20
+msgid "PedoGuard System"
+msgstr ""
+
+#: root/templates/pages/pedoguard.html:22
+msgid ""
+"Ihr Schutz liegt uns besonders am Herzen. Falls Sie unter 18 Jahre alt sind, "
+"wird die Chatfunktion mit über 18-jährige Personen automatisch deaktiviert."
+msgstr ""
+
+#: root/templates/pages/pedoguard.html:25
+msgid ""
+"Sollte dennoch ein über 18-jähriger Nutzer versuchen, eine Chatanfrage zu "
+"stellen, wird dies automatisch gemeldet. Wir prüfen den Vorfall sorgfältig "
+"und erhalten Zugriff auf die entsprechenden Nachrichten und den Chatverlauf, "
+"um den Schutz Minderjähriger zu gewährleisten."
+msgstr ""
+
+#: root/templates/pages/pedoguard.html:33
+msgid "Pädophilenschutz aktivieren"
+msgstr ""
+
+#: root/templates/pages/pedoguard.html:36
+msgid "Pädophilenschutz nicht aktivieren"
+msgstr ""
+
+#: root/templates/pages/pedoguard.html:44
+msgid ""
+"Das PedoGuard System wurde gemäss den Vorschriften zwangsweise aktiviert, da "
+"Sie nicht volljährig sind."
+msgstr ""
+
+#: root/templates/pages/pedoguard.html:46
+msgid "Verstanden"
+msgstr ""
+
+#: root/templates/pages/post_delete.html:15
+msgid "Bist du sicher?"
+msgstr ""
+
+#: root/templates/pages/post_delete.html:18
+msgid "Bestätigen"
+msgstr ""
+
+#: root/templates/pages/post_delete.html:19
+msgid "Abbrechen"
+msgstr ""
+
+#: root/templates/pages/post_update.html:16
+msgid "Post bearbeiten"
+msgstr ""
+
+#: root/templates/pages/post_update.html:18
+msgid "Post erstellen"
+msgstr ""
+
+#: root/templates/pages/post_update.html:56
+#: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:2441
+msgid "Text"
+msgstr ""
+
+#: root/templates/pages/post_update.html:68
+msgid "Posten"
 msgstr ""
 
 #: root/templates/pages/privacy.html:20
-msgid "contact@kiidle.com"
+msgid "1. Verantwortliche Stelle"
+msgstr ""
+
+#: root/templates/pages/privacy.html:22
+msgid "Bern, Schweiz"
 msgstr ""
 
 #: root/templates/pages/privacy.html:23
+msgid "contact@kiidle.com"
+msgstr ""
+
+#: root/templates/pages/privacy.html:26
 msgid "2. Zweck der Datenverarbeitung"
 msgstr ""
 
-#: root/templates/pages/privacy.html:25
+#: root/templates/pages/privacy.html:28
 msgid ""
 "\n"
 "                            Dieses Projekt ist rein freizeitliches Vorhaben, "
@@ -242,11 +932,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/privacy.html:35
+#: root/templates/pages/privacy.html:38
 msgid "3. Erhobene Daten"
 msgstr ""
 
-#: root/templates/pages/privacy.html:37
+#: root/templates/pages/privacy.html:40
 msgid ""
 "\n"
 "                            Beim unserer Webapplikation werden automatisch "
@@ -262,11 +952,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/privacy.html:47
+#: root/templates/pages/privacy.html:50
 msgid "4. Rechtsgrundlage"
 msgstr ""
 
-#: root/templates/pages/privacy.html:49
+#: root/templates/pages/privacy.html:52
 msgid ""
 "\n"
 "                            Die Verarbeitung der genannten Daten erfolgt "
@@ -278,11 +968,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/privacy.html:57
+#: root/templates/pages/privacy.html:60
 msgid "5. Dauer der Speicherung"
 msgstr ""
 
-#: root/templates/pages/privacy.html:59
+#: root/templates/pages/privacy.html:62
 msgid ""
 "\n"
 "                            Personenbezogene Daten werden nur so lange "
@@ -294,11 +984,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/privacy.html:67
+#: root/templates/pages/privacy.html:70
 msgid "6. Weitergabe an Dritte"
 msgstr ""
 
-#: root/templates/pages/privacy.html:69
+#: root/templates/pages/privacy.html:72
 msgid ""
 "\n"
 "                            Es erfolgt keine Weitergabe personenbezogener "
@@ -306,11 +996,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/privacy.html:75
+#: root/templates/pages/privacy.html:78
 msgid "7. Rechte der betroffenen Personen"
 msgstr ""
 
-#: root/templates/pages/privacy.html:77
+#: root/templates/pages/privacy.html:80
 msgid ""
 "\n"
 "                            Sie haben das Recht, Auskunft über die von uns "
@@ -325,11 +1015,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/privacy.html:87
+#: root/templates/pages/privacy.html:90
 msgid "8. Änderung der Datenschutzerklärung"
 msgstr ""
 
-#: root/templates/pages/privacy.html:89
+#: root/templates/pages/privacy.html:92
 msgid ""
 "\n"
 "                            Wir behalten uns vor, diese Datenschutzerklärung "
@@ -341,15 +1031,99 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/terms.html:9 root/templates/pages/terms.html:15
-msgid "Nutzungsrichtlinien"
+#: root/templates/pages/profile.html:44 root/templates/pages/profile.html:52
+msgid "Befreundet"
 msgstr ""
 
-#: root/templates/pages/terms.html:17
+#: root/templates/pages/profile.html:57
+msgid "Angefragt"
+msgstr ""
+
+#: root/templates/pages/profile.html:63 root/templates/pages/profile.html:67
+msgid "Anfragen"
+msgstr ""
+
+#: root/templates/pages/profile.html:72
+msgid "-"
+msgstr ""
+
+#: root/templates/pages/profile.html:80
+msgid "Followers"
+msgstr ""
+
+#: root/templates/pages/profile.html:86
+msgid "Entfolgen"
+msgstr ""
+
+#: root/templates/pages/profile.html:90
+msgid "Folgen"
+msgstr ""
+
+#: root/templates/pages/profile.html:99
+msgid "folgt"
+msgstr ""
+
+#: root/templates/pages/profile.html:103
+msgid "Blockieren"
+msgstr ""
+
+#: root/templates/pages/search.html:19
+msgid "Benutzer suchen..."
+msgstr ""
+
+#: root/templates/pages/settings.html:16
+#: root/templates/pages/settings_update.html:15
+msgid "Einstellung"
+msgstr ""
+
+#: root/templates/pages/settings.html:83
+msgid "Verträge"
+msgstr ""
+
+#: root/templates/pages/settings.html:97 root/templates/pages/settings.html:113
+#: root/templates/pages/settings.html:129
+msgid "Zugestimmt"
+msgstr ""
+
+#: root/templates/pages/settings.html:97 root/templates/pages/settings.html:113
+#: root/templates/pages/settings.html:129
+msgid "Nicht zugestimmt"
+msgstr ""
+
+#: root/templates/pages/settings.html:134
+msgid "Sicherheit"
+msgstr ""
+
+#: root/templates/pages/settings.html:148
+msgid "Aktiviert"
+msgstr ""
+
+#: root/templates/pages/settings.html:148
+msgid "Deaktiviert"
+msgstr ""
+
+#: root/templates/pages/settings.html:152
+#: root/templates/pages/settings_pw_update.html:15
+msgid "Passwort ändern"
+msgstr ""
+
+#: root/templates/pages/settings.html:153
+msgid "Abmelden"
+msgstr ""
+
+#: root/templates/pages/settings_pw_update.html:26
+msgid "Neues Passwort"
+msgstr ""
+
+#: root/templates/pages/settings_pw_update.html:34
+msgid "Aktualisieren"
+msgstr ""
+
+#: root/templates/pages/terms.html:20
 msgid "1. Allgemeine Grundsätze"
 msgstr ""
 
-#: root/templates/pages/terms.html:19
+#: root/templates/pages/terms.html:22
 msgid ""
 "\n"
 "                            Diese Webapplikation ist ein freizeitliches "
@@ -365,11 +1139,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/terms.html:29
+#: root/templates/pages/terms.html:32
 msgid "2. Strafrechtliche Verfolgung"
 msgstr ""
 
-#: root/templates/pages/terms.html:31
+#: root/templates/pages/terms.html:34
 msgid ""
 "\n"
 "                            Die Nutzung dieser Webapplikation setzt die "
@@ -378,8 +1152,8 @@ msgid ""
 "Verstösse wie\n"
 "                            z. B. Cybermobbing, Datendiebstahl oder andere "
 "rechtswidrige Handlungen\n"
-"                            werden mit voller Härte strafrechtlich verfolgt."
-"In solchen Fällen werden\n"
+"                            werden mit voller Härte strafrechtlich "
+"verfolgt.In solchen Fällen werden\n"
 "                            sämtliche personenbezogene und hochsensible "
 "Daten an die zuständigen\n"
 "                            Behörden weitergeleitet, um die Verfolgung und "
@@ -388,11 +1162,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/terms.html:43
+#: root/templates/pages/terms.html:46
 msgid "3. Verhaltensregeln"
 msgstr ""
 
-#: root/templates/pages/terms.html:45
+#: root/templates/pages/terms.html:48
 msgid ""
 "\n"
 "                            Um eine sichere und respektvolle Umgebung für "
@@ -403,11 +1177,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/terms.html:50
+#: root/templates/pages/terms.html:53
 msgid "- Antisemitismus"
 msgstr ""
 
-#: root/templates/pages/terms.html:52
+#: root/templates/pages/terms.html:55
 msgid ""
 "\n"
 "                                Jegliche Form von antisemitischer Äusserung "
@@ -415,11 +1189,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:56
+#: root/templates/pages/terms.html:59
 msgid "- Ausbeuterische Inhalte"
 msgstr ""
 
-#: root/templates/pages/terms.html:58
+#: root/templates/pages/terms.html:61
 msgid ""
 "\n"
 "                                Inhalte, die auf die Ausbeutung von Menschen "
@@ -428,11 +1202,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:63
+#: root/templates/pages/terms.html:66
 msgid "- Beleidigung"
 msgstr ""
 
-#: root/templates/pages/terms.html:65
+#: root/templates/pages/terms.html:68
 msgid ""
 "\n"
 "                                Gebrauch von abwertender, beleidigender oder "
@@ -441,11 +1215,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:70
+#: root/templates/pages/terms.html:73
 msgid "- Belohnungsjagd"
 msgstr ""
 
-#: root/templates/pages/terms.html:72
+#: root/templates/pages/terms.html:75
 msgid ""
 "\n"
 "                                Unrechtmässiges Ausnutzen von Funktionen der "
@@ -453,11 +1227,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:76
+#: root/templates/pages/terms.html:79
 msgid "- Belästigung"
 msgstr ""
 
-#: root/templates/pages/terms.html:78
+#: root/templates/pages/terms.html:81
 msgid ""
 "\n"
 "                                Unangemessene Annäherung, Kontaktaufnahme "
@@ -465,11 +1239,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:82
+#: root/templates/pages/terms.html:85
 msgid "- Betrug"
 msgstr ""
 
-#: root/templates/pages/terms.html:84
+#: root/templates/pages/terms.html:87
 msgid ""
 "\n"
 "                                Täuschung oder betrügerisches Verhalten zum "
@@ -478,11 +1252,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:89
+#: root/templates/pages/terms.html:92
 msgid "- Christophobie"
 msgstr ""
 
-#: root/templates/pages/terms.html:91
+#: root/templates/pages/terms.html:94
 msgid ""
 "\n"
 "                                Feindseligkeit oder Vorurteile gegenüber "
@@ -491,11 +1265,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:96
+#: root/templates/pages/terms.html:99
 msgid "- Cybergrooming"
 msgstr ""
 
-#: root/templates/pages/terms.html:98
+#: root/templates/pages/terms.html:101
 msgid ""
 "\n"
 "                                Versuche, Kinder online zu manipulieren oder "
@@ -503,11 +1277,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:102
+#: root/templates/pages/terms.html:105
 msgid "- Cybermobbing"
 msgstr ""
 
-#: root/templates/pages/terms.html:104
+#: root/templates/pages/terms.html:107
 msgid ""
 "\n"
 "                                Belästigung oder Mobbing anderer Benutzer "
@@ -516,11 +1290,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:109
+#: root/templates/pages/terms.html:112
 msgid "- Diskriminierung"
 msgstr ""
 
-#: root/templates/pages/terms.html:111
+#: root/templates/pages/terms.html:114
 msgid ""
 "\n"
 "                                Benachteiligung oder Herabwürdigung von "
@@ -531,11 +1305,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:117
+#: root/templates/pages/terms.html:120
 msgid "- Doxxing"
 msgstr ""
 
-#: root/templates/pages/terms.html:119
+#: root/templates/pages/terms.html:122
 msgid ""
 "\n"
 "                                Veröffentlichung oder Weitergabe von "
@@ -544,11 +1318,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:124
+#: root/templates/pages/terms.html:127
 msgid "- Drohung"
 msgstr ""
 
-#: root/templates/pages/terms.html:126
+#: root/templates/pages/terms.html:129
 msgid ""
 "\n"
 "                                Androhung von Gewalt, Mord oder andere "
@@ -557,11 +1331,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:131
+#: root/templates/pages/terms.html:134
 msgid "- Erpressung"
 msgstr ""
 
-#: root/templates/pages/terms.html:133
+#: root/templates/pages/terms.html:136
 msgid ""
 "\n"
 "                                Jede Handlung, bei der eine Person durch "
@@ -570,11 +1344,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:138
+#: root/templates/pages/terms.html:141
 msgid "- Falschinformationen"
 msgstr ""
 
-#: root/templates/pages/terms.html:140
+#: root/templates/pages/terms.html:143
 msgid ""
 "\n"
 "                                Verbreitung von falschen oder irreführenden "
@@ -582,11 +1356,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:144
+#: root/templates/pages/terms.html:147
 msgid "- Faschismus"
 msgstr ""
 
-#: root/templates/pages/terms.html:146
+#: root/templates/pages/terms.html:149
 msgid ""
 "\n"
 "                                Förderung oder Verbreitung faschistischer "
@@ -594,11 +1368,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:150
+#: root/templates/pages/terms.html:153
 msgid "- Fremdenfeindlichkeit"
 msgstr ""
 
-#: root/templates/pages/terms.html:152
+#: root/templates/pages/terms.html:155
 msgid ""
 "\n"
 "                                Feindseligkeit oder Vorurteile gegenüber "
@@ -607,11 +1381,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:157
+#: root/templates/pages/terms.html:160
 msgid "- Gefährliche Verschwörungstheorien"
 msgstr ""
 
-#: root/templates/pages/terms.html:159
+#: root/templates/pages/terms.html:162
 msgid ""
 "\n"
 "                                Verbreitung oder Unterstützung von Theorien, "
@@ -620,11 +1394,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:164
+#: root/templates/pages/terms.html:167
 msgid "- Gewaltbasierter Inhalt"
 msgstr ""
 
-#: root/templates/pages/terms.html:166
+#: root/templates/pages/terms.html:169
 msgid ""
 "\n"
 "                                Vebreitung von Inhalten, die Gewalt fördern "
@@ -632,11 +1406,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:170
+#: root/templates/pages/terms.html:173
 msgid "- Gewaltverherrlichung"
 msgstr ""
 
-#: root/templates/pages/terms.html:172
+#: root/templates/pages/terms.html:175
 msgid ""
 "\n"
 "                                Förderung oder Rechtfertigung von Gewalt "
@@ -645,11 +1419,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:177
+#: root/templates/pages/terms.html:180
 msgid "- Hassrede"
 msgstr ""
 
-#: root/templates/pages/terms.html:179
+#: root/templates/pages/terms.html:182
 msgid ""
 "\n"
 "                                Äusserungen, die zu Hass oder Gewalt gegen "
@@ -658,11 +1432,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:184
+#: root/templates/pages/terms.html:187
 msgid "- Homophobie"
 msgstr ""
 
-#: root/templates/pages/terms.html:186
+#: root/templates/pages/terms.html:189
 msgid ""
 "\n"
 "                                Feindseligkeit oder Vorurteile gegenüber "
@@ -671,11 +1445,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:191
+#: root/templates/pages/terms.html:194
 msgid "- Identitätsdiebstahl"
 msgstr ""
 
-#: root/templates/pages/terms.html:193
+#: root/templates/pages/terms.html:196
 msgid ""
 "\n"
 "                                Falsche Darstellung oder Ausgeben als eine "
@@ -684,11 +1458,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:198
+#: root/templates/pages/terms.html:201
 msgid "- Illegale Inhalte"
 msgstr ""
 
-#: root/templates/pages/terms.html:200
+#: root/templates/pages/terms.html:203
 msgid ""
 "\n"
 "                                Verbreitung oder Bereitstellung von "
@@ -697,11 +1471,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:205
+#: root/templates/pages/terms.html:208
 msgid "- Islamophobie"
 msgstr ""
 
-#: root/templates/pages/terms.html:207
+#: root/templates/pages/terms.html:210
 msgid ""
 "\n"
 "                                Feindseligkeit oder Vorurteile gegenüber "
@@ -710,11 +1484,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:212
+#: root/templates/pages/terms.html:215
 msgid "- Kulturelle Aneignung"
 msgstr ""
 
-#: root/templates/pages/terms.html:214
+#: root/templates/pages/terms.html:217
 msgid ""
 "\n"
 "                                Unangemessene Nutzung oder Darstellung von "
@@ -723,11 +1497,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:219
+#: root/templates/pages/terms.html:222
 msgid "- Minderjährigenschutz"
 msgstr ""
 
-#: root/templates/pages/terms.html:221
+#: root/templates/pages/terms.html:224
 msgid ""
 "\n"
 "                                Handlungen, die gegen den Schutz von "
@@ -736,11 +1510,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:226
+#: root/templates/pages/terms.html:229
 msgid "- Missbrauch von Privilegien"
 msgstr ""
 
-#: root/templates/pages/terms.html:228
+#: root/templates/pages/terms.html:231
 msgid ""
 "\n"
 "                                Jegliche Form von ungerechtfertigten "
@@ -750,11 +1524,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:233
+#: root/templates/pages/terms.html:236
 msgid "- Plagiate"
 msgstr ""
 
-#: root/templates/pages/terms.html:235
+#: root/templates/pages/terms.html:238
 msgid ""
 "\n"
 "                                Hochladen oder Teile von Inhalten, die ohne "
@@ -764,11 +1538,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:240
+#: root/templates/pages/terms.html:243
 msgid "- Pornografische Inhalte"
 msgstr ""
 
-#: root/templates/pages/terms.html:242
+#: root/templates/pages/terms.html:245
 msgid ""
 "\n"
 "                                Verbreitung, Bereitstellung oder "
@@ -777,11 +1551,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:247
+#: root/templates/pages/terms.html:250
 msgid "- Propaganda"
 msgstr ""
 
-#: root/templates/pages/terms.html:249
+#: root/templates/pages/terms.html:252
 msgid ""
 "\n"
 "                                Vebreitung von politisch oder ideologisch "
@@ -790,11 +1564,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:254
+#: root/templates/pages/terms.html:257
 msgid "- Rassismus"
 msgstr ""
 
-#: root/templates/pages/terms.html:256
+#: root/templates/pages/terms.html:259
 msgid ""
 "\n"
 "                                Diskriminierung oder Feindseligkeit "
@@ -803,11 +1577,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:261
+#: root/templates/pages/terms.html:264
 msgid "- Relativierung"
 msgstr ""
 
-#: root/templates/pages/terms.html:263
+#: root/templates/pages/terms.html:266
 msgid ""
 "\n"
 "                                Verharmlosung oder Verleugnung von "
@@ -816,11 +1590,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:268
+#: root/templates/pages/terms.html:271
 msgid "- Selbstgefährdung"
 msgstr ""
 
-#: root/templates/pages/terms.html:270
+#: root/templates/pages/terms.html:273
 msgid ""
 "\n"
 "                                Inhalte oder Verhaltensweisen, die zu "
@@ -834,11 +1608,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:277
+#: root/templates/pages/terms.html:280
 msgid "- Selbstjustiz"
 msgstr ""
 
-#: root/templates/pages/terms.html:279
+#: root/templates/pages/terms.html:282
 msgid ""
 "\n"
 "                                Förderung oder Verherrlichung von "
@@ -848,11 +1622,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:284
+#: root/templates/pages/terms.html:287
 msgid "- Sexismus"
 msgstr ""
 
-#: root/templates/pages/terms.html:286
+#: root/templates/pages/terms.html:289
 msgid ""
 "\n"
 "                                Diskriminierung oder Herabwürdigung aufgrund "
@@ -860,11 +1634,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:290
+#: root/templates/pages/terms.html:293
 msgid "- Sextortion"
 msgstr ""
 
-#: root/templates/pages/terms.html:292
+#: root/templates/pages/terms.html:295
 msgid ""
 "\n"
 "                                Erpressung unter Androhung, private oder "
@@ -873,11 +1647,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:297
+#: root/templates/pages/terms.html:300
 msgid "- Spam"
 msgstr ""
 
-#: root/templates/pages/terms.html:299
+#: root/templates/pages/terms.html:302
 msgid ""
 "\n"
 "                                Unerwünschte und unaufgeforderte "
@@ -886,11 +1660,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:304
+#: root/templates/pages/terms.html:307
 msgid "- Unangemessene Wortwahl"
 msgstr ""
 
-#: root/templates/pages/terms.html:306
+#: root/templates/pages/terms.html:309
 msgid ""
 "\n"
 "                                Verwendung von respektlose, beleidigenden "
@@ -899,11 +1673,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:311
+#: root/templates/pages/terms.html:314
 msgid "- Unethische Werbung"
 msgstr ""
 
-#: root/templates/pages/terms.html:313
+#: root/templates/pages/terms.html:316
 msgid ""
 "\n"
 "                                Bewerbung von Produkten, Dienstleistungen "
@@ -913,11 +1687,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:318
+#: root/templates/pages/terms.html:321
 msgid "- Whataboutismus"
 msgstr ""
 
-#: root/templates/pages/terms.html:320
+#: root/templates/pages/terms.html:323
 msgid ""
 "\n"
 "                                Verbreitung von Inhalten, die Gewalt fördern "
@@ -925,11 +1699,11 @@ msgid ""
 "                            "
 msgstr ""
 
-#: root/templates/pages/terms.html:327
+#: root/templates/pages/terms.html:330
 msgid "4. Änderung der Nutzungsrichtlinien"
 msgstr ""
 
-#: root/templates/pages/terms.html:329
+#: root/templates/pages/terms.html:332
 msgid ""
 "\n"
 "                            Die Nutzungsrichtlinien können jeder ohne "
@@ -941,11 +1715,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/terms.html:337
+#: root/templates/pages/terms.html:340
 msgid "5. Geistiges Eigentum"
 msgstr ""
 
-#: root/templates/pages/terms.html:339
+#: root/templates/pages/terms.html:342
 msgid ""
 "\n"
 "                            Alle Inhalte auf dieser Plattform, "
@@ -958,11 +1732,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/terms.html:348
+#: root/templates/pages/terms.html:351
 msgid "6. Missbrauchsmeldung"
 msgstr ""
 
-#: root/templates/pages/terms.html:350
+#: root/templates/pages/terms.html:353
 msgid ""
 "\n"
 "                            Wenn Sie Verstösse gegen die Nutzungsrichtlinien "
@@ -974,6 +1748,25 @@ msgid ""
 "                            dies nicht geschehen, verstossen Sie die "
 "Nutzungsrichtlinien.\n"
 "                        "
+msgstr ""
+
+#: root/views.py:221
+msgid "Benutzerliste"
+msgstr ""
+
+#: root/views.py:450
+#, python-brace-format
+msgid "Freunde von {first_name} {last_name}"
+msgstr ""
+
+#: root/views.py:477
+#, python-brace-format
+msgid "Follower von {first_name} {last_name}"
+msgstr ""
+
+#: root/views.py:506
+#, python-brace-format
+msgid "{first_name} {last_name} folgt"
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/click/_termui_impl.py:556
@@ -1126,6 +1919,10 @@ msgstr ""
 
 #: venv/lib/python3.13/site-packages/click/exceptions.py:277
 msgid "Could not open file {filename!r}: {message}"
+msgstr ""
+
+#: venv/lib/python3.13/site-packages/click/formatting.py:156
+msgid "Usage:"
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/click/parser.py:233
@@ -1530,8 +2327,8 @@ msgstr ""
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1556
 #, python-format
 msgid ""
-"“%(value)s” value has an invalid format. It must be in YYYY-MM-DD HH:MM[:ss[."
-"uuuuuu]][TZ] format."
+"“%(value)s” value has an invalid format. It must be in YYYY-MM-DD "
+"HH:MM[:ss[.uuuuuu]][TZ] format."
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1564
@@ -1557,8 +2354,8 @@ msgstr ""
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1859
 #, python-format
 msgid ""
-"“%(value)s” value has an invalid format. It must be in [DD] [[HH:]MM:]ss[."
-"uuuuuu] format."
+"“%(value)s” value has an invalid format. It must be in [DD] "
+"[[HH:]MM:]ss[.uuuuuu] format."
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1863
@@ -1632,10 +2429,6 @@ msgstr ""
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:2405
 #, python-format
 msgid "Slug (up to %(max_length)s)"
-msgstr ""
-
-#: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:2441
-msgid "Text"
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:2521
@@ -2389,8 +3182,8 @@ msgstr ""
 #: venv/lib/python3.13/site-packages/django/views/generic/dates.py:652
 #, python-format
 msgid ""
-"Future %(verbose_name_plural)s not available because %(class_name)s."
-"allow_future is False."
+"Future %(verbose_name_plural)s not available because "
+"%(class_name)s.allow_future is False."
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/django/views/generic/dates.py:692

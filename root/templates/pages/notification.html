@@ -1,0 +1,71 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' %}
+        <main>
+            <div class="block" style="padding: 20px">
+                <h1>{% translate 'Benachrichtigungen' %}</h1>
+            </div>
+            <div class="block" style="padding: 20px">
+                <div class="ntfcn-ctgry">
+                    <p class="title text-bold">{% translate 'Freundschaftsanfragen' %}</p>
+                    {% if requests > 0 %}
+                        <p>
+                            {% blocktrans with requests=requests %}
+                                {{ requests }} Freundschaftsanfragen
+                            {% endblocktrans %}
+                        </p>
+                    {% else %}
+                    <p class="count text-gray">{% translate 'Keine Freundschaftsanfragen' %}</p>
+                    {% endif %}
+                    <a href="{% url 'notification_friend_request' %}" class="button bg-green">{% translate 'Öffnen' %}</a>
+                </div>
+            </div>
+            <div class="block" style="padding: 20px">
+                <div class="ntfcn-ctgry">
+                    <p class="title text-bold">{% translate 'Aktivitäten' %}</p>
+                    {% if notification_posts > 0 %}
+                        <p>
+                            {% blocktrans with notification_posts=notification_posts %}
+                                {{ notification_posts }} Aktivitäten
+                            {% endblocktrans %}
+                        </p>
+                    {% else %}
+                    <p class="count text-gray">{% translate 'Keine Aktivitäten' %}</p>
+                    {% endif %}
+                    <a href="{% url 'notification_activities' %}" class="button bg-green">{% translate 'Öffnen' %}</a>
+                </div>
+            </div>
+            <div class="block" style="padding: 20px">
+                <div class="ntfcn-ctgry">
+                    <p class="title text-bold">{% translate 'Kommentare' %}</p>
+                    <p class="count text-gray">{% translate 'Keine Kommentare erhalten' %}</p>
+                    <a href="{% url 'maintenance' %}" class="button bg-light-gray">{% translate 'Öffnen' %}</a>
+                </div>
+            </div>
+            <div class="block" style="padding: 20px">
+                <div class="ntfcn-ctgry">
+                    <p class="title text-bold">{% translate 'Likes' %}</p>
+                    <p class="count text-gray">{% translate 'Keine Likes erhalten' %}</p>
+                    <a href="{% url 'maintenance' %}" class="button bg-light-gray">{% translate 'Öffnen' %}</a>
+                </div>
+            </div>
+            <div class="block" style="padding: 20px">
+                <div class="ntfcn-ctgry">
+                    <p class="title text-bold">{% translate 'Systembenachrichtigungen' %}</p>
+                    <p class="count text-gray">{% translate 'Keine Systembenachrichtigungen' %}</p>
+                    <a href="{% url 'maintenance' %}" class="button bg-light-gray">{% translate 'Öffnen' %}</a>
+                </div>
+            </div>
+        </main>
+        {% include 'components/footers/footer.html' with page="notification" %}
+    </body>
+</html>

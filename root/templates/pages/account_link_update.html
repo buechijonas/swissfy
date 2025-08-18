@@ -1,0 +1,240 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' with icon2="account-cog" icon1="cog-outline" url2="account" url1="settings" %}
+        <main>
+            <div class="card">
+                <h1>{% translate 'Verlinkungen' %}</h1>
+                {% if request.user == user %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-discord">
+                                    <img src="{% static 'svgs/discord.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="discord" value="{% if user.linkeduser.discord %}{{ user.linkeduser.discord }}{% endif %}" placeholder="{% translate 'Discord' %}">
+                                {% if form.errors.discord %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.discord }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-epicgames">
+                                    <img src="{% static 'svgs/epicgames.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="epicgames" value="{% if user.linkeduser.epicgames %}{{ user.linkeduser.epicgames }}{% endif %}" placeholder="{% translate 'Epic Games' %}">
+                                {% if form.errors.epicgames %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.epicgames }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-facebook">
+                                    <img src="{% static 'svgs/facebook.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="facebook" value="{% if user.linkeduser.facebook %}{{ user.linkeduser.facebook }}{% endif %}" placeholder="{% translate 'Facebook' %}">
+                                {% if form.errors.facebook %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.facebook }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-instagram">
+                                    <img src="{% static 'svgs/instagram.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="instagram" value="{% if user.linkeduser.instagram %}{{ user.linkeduser.instagram }}{% endif %}" placeholder="{% translate 'Instagram' %}">
+                                {% if form.errors.birthday %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.instagram }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-linkedin">
+                                    <img src="{% static 'svgs/linkedin.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="linkedin" value="{% if user.linkeduser.linkedin %}{{ user.linkeduser.linkedin }}{% endif %}" placeholder="{% translate 'LinkedIn' %}">
+                                {% if form.errors.linkedin %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.linkedin }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-pinterest">
+                                    <img src="{% static 'svgs/pinterest.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="pinterest" value="{% if user.linkeduser.linkedin %}{{ user.linkeduser.pinterest }}{% endif %}" placeholder="{% translate 'Pinterest' %}">
+                                {% if form.errors.pinterest %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.pinterest }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-playstation">
+                                    <img src="{% static 'svgs/playstation.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="playstation" value="{% if request.user.linkeduser.playstation %}{{ request.user.linkeduser.playstation }}{% endif %}" placeholder="{% translate 'PlayStation' %}">
+                                {% if form.errors.pinterest %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.playstation }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-reddit">
+                                    <img src="{% static 'svgs/reddit.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="reddit" value="{% if request.user.linkeduser.reddit %}{{ request.user.linkeduser.reddit }}{% endif %}" placeholder="{% translate 'Reddit' %}">
+                                {% if form.errors.pinterest %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.reddit }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-snapchat">
+                                    <img src="{% static 'svgs/snapchat.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="snapchat" value="{% if request.user.linkeduser.snapchat %}{{ request.user.linkeduser.snapchat }}{% endif %}" placeholder="{% translate 'Snapchat' %}">
+                                {% if form.errors.snapchat %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.snapchat }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon">
+                                    <img src="{% static 'svgs/steam.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="steam" value="{% if request.user.linkeduser.steam %}{{ request.user.linkeduser.steam }}{% endif %}" placeholder="{% translate 'Steam' %}">
+                                {% if form.errors.steam %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.steam }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon">
+                                    <img src="{% static 'svgs/threads.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="threads" value="{% if request.user.linkeduser.threads %}{{ request.user.linkeduser.threads }}{% endif %}" placeholder="{% translate 'Threads' %}">
+                                {% if form.errors.threads %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.threads }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon">
+                                    <img src="{% static 'svgs/tiktok.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="tiktok" value="{% if request.user.linkeduser.tiktok %}{{ request.user.linkeduser.tiktok }}{% endif %}" placeholder="{% translate 'TikTok' %}">
+                                {% if form.errors.tiktok %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.tiktok }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-xbox">
+                                    <img src="{% static 'svgs/xbox.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="xbox" value="{% if request.user.linkeduser.xbox %}{{ request.user.linkeduser.xbox }}{% endif %}" placeholder="{% translate 'Xbox' %}">
+                                {% if form.errors.xbox %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.xbox }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-youtube">
+                                    <img src="{% static 'svgs/youtube.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="youtube" value="{% if request.user.linkeduser.youtube %}{{ request.user.linkeduser.youtube }}{% endif %}" placeholder="{% translate 'YouTube' %}">
+                                {% if form.errors.youtube %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.youtube }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button class="bg-light-gray" type="submit">{% translate "Speichern" %}</button>
+                        <a class="button bg-light-gray mt-2" href="{% url 'account' %}">{% translate 'Zurück' %}</a>
+
+                    </form>
+                {% else %}
+                    <p class="text-red d-flex justify-center mt-6">{% translate 'Zugriff verweigert' %}</p>
+                {% endif %}
+            </div>
+        </main>
+        {% include 'components/footers/footer.html' with page="account" %}
+    </body>
+</html>

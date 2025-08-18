@@ -1,0 +1,312 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' with icon2="account-cog" icon1="cog-outline" url2="account" url1="settings" %}
+        <main>
+            <div class="block">
+                <div class="d-flex align-center">
+                    <h1>{% translate 'Detail' %}</h1>
+                    <a class="ml-auto" href="{% url 'account_update' request.user.detailuser.pk %}">
+                        <img class="icon" src="{% static 'svgs/pencil.svg' %}" height="100%"/>
+                    </a>
+                </div>
+                <p>{% translate 'Profilbild' %}</p>
+                <div class="d-flex justify-center">
+                    {% if user.detailuser.image %}
+                        <img src="{{ user.detailuser.image.url }}" alt="{% translate 'Profilbild' %}" style="height: 108px; padding: 10px; border-radius: 50px">
+                    {% else %}
+                        <img class="filter-gray" src="{% static 'svgs/account-circle.svg' %}" height="128px"/>
+                    {% endif %}
+                </div>
+                <p>{% translate 'Biografie' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/information.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.detailuser.biography %}{{ request.user.detailuser.biography }}{% else  %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <p>{% translate 'Geschlecht' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/gender-male-female.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="list" value="{% if request.user.is_authenticated %}{% if request.user.detailuser.sex %}{{ request.user.detailuser.get_sex_display }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <p>{% translate 'Geburtsdatum' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/cake.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="list" value="{% if request.user.is_authenticated %}{% if request.user.detailuser.birthday %}{{ request.user.detailuser.birthday }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <p>{% translate 'Beruf' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/briefcase-variant.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="list" value="{% if request.user.is_authenticated %}{% if request.user.detailuser.profession %}{{ request.user.detailuser.profession }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <p>{% translate 'Wohnort' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/home-city.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="list" value="{% if request.user.is_authenticated %}{% if request.user.detailuser.place_of_residence %}{{ request.user.detailuser.place_of_residence }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <p>{% translate 'Heimatort' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/home-silo.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="list" value="{% if request.user.is_authenticated %}{% if request.user.detailuser.place_of_origin %}{{ request.user.detailuser.place_of_origin }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <p>{% translate 'Beziehungsstatus' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/heart.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="list" value="{% if request.user.is_authenticated %}{% if request.user.detailuser.relationship %}{{ request.user.detailuser.get_relationship_display }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+            </div>
+            <div class="block">
+                <div class="d-flex align-center">
+                    <h1>{% translate 'Verlinkungen' %}</h1>
+                    <a class="ml-auto" href="{% url 'account_link_update' request.user.linkeduser.pk %}">
+                        <img class="icon" src="{% static 'svgs/pencil.svg' %}" height="100%"/>
+                    </a>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-discord">
+                                <img src="{% static 'svgs/discord.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.discord %}{{ request.user.linkeduser.discord }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-epicgames">
+                                <img src="{% static 'svgs/epicgames.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.epicgames %}{{ request.user.linkeduser.epicgames }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-facebook">
+                                <img src="{% static 'svgs/facebook.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.facebook %}{{ request.user.linkeduser.facebook }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-instagram">
+                                <img src="{% static 'svgs/instagram.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.instagram %}{{ request.user.linkeduser.instagram }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-linkedin">
+                                <img src="{% static 'svgs/linkedin.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.linkedin %}{{ request.user.linkeduser.linkedin }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-pinterest">
+                                <img src="{% static 'svgs/pinterest.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.pinterest %}{{ request.user.linkeduser.pinterest }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-playstation">
+                                <img src="{% static 'svgs/playstation.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.playstation %}{{ request.user.linkeduser.playstation }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-reddit">
+                                <img src="{% static 'svgs/reddit.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.reddit %}{{ request.user.linkeduser.reddit }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-snapchat">
+                                <img src="{% static 'svgs/snapchat.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.snapchat %}{{ request.user.linkeduser.snapchat }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon">
+                                <img src="{% static 'svgs/steam.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.steam %}{{ request.user.linkeduser.steam }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon">
+                                <img src="{% static 'svgs/threads.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.threads %}{{ request.user.linkeduser.threads }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon">
+                                <img src="{% static 'svgs/tiktok.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.tiktok %}{{ request.user.linkeduser.tiktok }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon">
+                                <img src="{% static 'svgs/x.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.twitter %}{{ request.user.linkeduser.twitter }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-xbox">
+                                <img src="{% static 'svgs/xbox.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.xbox %}{{ request.user.linkeduser.xbox }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-youtube">
+                                <img src="{% static 'svgs/youtube.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input readonly type="text" value="{% if request.user.is_authenticated %}{% if request.user.linkeduser.youtube %}{{ request.user.linkeduser.youtube }}{% else %}{% translate 'Unbekannt' %}{% endif %}{% endif %}">
+                    </div>
+                </div>
+            </div>
+        </main>
+        {% include 'components/footers/footer.html' with page="account" %}
+    </body>
+</html>

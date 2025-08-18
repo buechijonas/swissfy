@@ -1,0 +1,61 @@
+{% load static %}
+{% load i18n %}
+<footer>
+    <a href="{% url 'home' %}" class="column1 d-flex justify-center align-center">
+        <div class="icon">
+            {% if page == 'home' %}
+            <img src="{% static 'svgs/home.svg' %}" height="100%"/>
+            {% else %}
+            <img src="{% static 'svgs/home-outline.svg' %}" height="100%"/>
+            {% endif %}
+        </div>
+    </a>
+    <a href="{% url 'search' %}" class="column2 d-flex justify-center align-center">
+        <div class="icon">
+            {% if page == 'search' %}
+            <img src="{% static 'svgs/search-web.svg' %}" height="100%"/>
+            {% else %}
+            <img src="{% static 'svgs/magnify.svg' %}" height="100%"/>
+            {% endif %}
+        </div>
+    </a>
+    <a href="{% url 'post_create' %}" class="column3 d-flex justify-center align-center">
+        <div class="icon">
+            {% if page == 'upload' %}
+            <img src="{% static 'svgs/plus-box.svg' %}" height="100%"/>
+            {% else %}
+            <img src="{% static 'svgs/plus-box-outline.svg' %}" height="100%"/>
+            {% endif %}
+        </div>
+    </a>
+    <a href="{% url 'notification' %}" class="column4 d-flex justify-center align-center">
+        <div class="icon">
+            {% if page == 'notification' %}
+                {% if requests > 0 or notification_posts > 0 %}
+                    <img src="{% static 'svgs/bell-badge.svg' %}" height="100%"/>
+                {% else %}
+                    <img src="{% static 'svgs/bell.svg' %}" height="100%"/>
+                {% endif %}
+            {% else %}
+                {% if requests > 0 or notification_posts > 0 %}
+                    <img src="{% static 'svgs/bell-badge-outline.svg' %}" height="100%"/>
+                {% else %}
+                    <img src="{% static 'svgs/bell-outline.svg' %}" height="100%"/>
+                {% endif %}
+            {% endif %}
+        </div>
+    </a>
+    <a href="{% url 'profile' request.user.pk %}" class="column5 d-flex justify-center align-center">
+        <div class="icon">
+            {% if request.user.detailuser.image %}
+            <img src="{{ request.user.detailuser.image.url }}" alt="{% translate 'Profilbild' %}" height="25px" style="border-radius: 50px">
+            {% else %}
+                {% if page == 'profile' %}
+                    <img src="{% static 'svgs/account-circle.svg' %}" height="100%"/>
+                {% else %}
+                    <img src="{% static 'svgs/account-circle-outline.svg' %}" height="100%"/>
+                {% endif %}
+            {% endif %}
+        </div>
+    </a>
+</footer>

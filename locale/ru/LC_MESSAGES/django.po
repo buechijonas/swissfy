@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-10 12:06+0100\n"
+"POT-Creation-Date: 2025-03-18 19:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,16 +20,489 @@ msgstr ""
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#: root/templates/pages/disclaimer.html:9
+#: root/forms.py:13 root/forms.py:25 root/templates/pages/login.html:28
+#: root/templates/pages/settings_update.html:56
+#: root/templates/pages/signup.html:58
+msgid "Benutzername"
+msgstr "Имя пользователя"
+
+#: root/forms.py:14 root/forms.py:30 root/templates/pages/login.html:43
+#: root/templates/pages/signup.html:88
+msgid "Passwort"
+msgstr "Пароль"
+
+#: root/forms.py:19 root/templates/pages/settings_update.html:26
+#: root/templates/pages/signup.html:28
+msgid "Vorname"
+msgstr "Имя"
+
+#: root/forms.py:22 root/templates/pages/settings_update.html:41
+#: root/templates/pages/signup.html:43
+msgid "Nachname"
+msgstr "Фамилия"
+
+#: root/forms.py:28 root/templates/pages/settings_update.html:71
+#: root/templates/pages/signup.html:73
+msgid "E-Mail Adresse"
+msgstr "Адрес электронной почты"
+
+#: root/models.py:24 root/models.py:56
+msgid "Rolle"
+msgstr "Роль"
+
+#: root/models.py:26
+msgid "Stufe"
+msgstr "Уровень"
+
+#: root/models.py:33 root/templates/pages/privacy.html:9
+#: root/templates/pages/privacy.html:15 root/templates/pages/settings.html:84
+msgid "Datenschutzerklärung"
+msgstr "Политика конфиденциальности"
+
+#: root/models.py:35 root/templates/pages/disclaimer.html:9
 #: root/templates/pages/disclaimer.html:15
+#: root/templates/pages/settings.html:116
 msgid "Haftungsausschluss"
-msgstr ""
+msgstr "Отказ от ответственности"
 
-#: root/templates/pages/disclaimer.html:17
+#: root/models.py:37 root/templates/pages/settings.html:100
+#: root/templates/pages/terms.html:9 root/templates/pages/terms.html:15
+msgid "Nutzungsrichtlinien"
+msgstr "Правила использования"
+
+#: root/models.py:40 root/templates/pages/pedoguard.html:15
+#: root/templates/pages/settings.html:135
+msgid "Pädophilenschutz"
+msgstr "Защита от педофилов"
+
+#: root/models.py:47 root/models.py:61 root/models.py:71 root/models.py:174
+#: root/models.py:238
+msgid "Benutzer"
+msgstr "Пользователь"
+
+#: root/models.py:51
+#, python-brace-format
+msgid "Legal User: {username}"
+msgstr "Юридический пользователь: {username}"
+
+#: root/models.py:66
+#, python-brace-format
+msgid "Config User: {username}"
+msgstr "Пользователь конфигурации: {username}"
+
+#: root/models.py:90 root/templates/pages/notification_activities.html:47
+#: root/templates/pages/notification_friend_request.html:46
+#: root/templates/pages/search.html:53
+msgid "Freunde"
+msgstr "Друзья"
+
+#: root/models.py:96
+msgid "Gesendete Anfragen"
+msgstr "Отправленные запросы"
+
+#: root/models.py:102
+msgid "Erhaltene Anfragen"
+msgstr "Полученные запросы"
+
+#: root/models.py:108
+msgid "Blockiert"
+msgstr "Заблокировано"
+
+#: root/models.py:112
+#, python-brace-format
+msgid "Social User: {username}"
+msgstr "Социальный пользователь: {username}"
+
+#: root/models.py:130 root/templates/pages/account_update.html:64
+msgid "Männlich"
+msgstr "Мужской"
+
+#: root/models.py:131 root/templates/pages/account_update.html:65
+msgid "Weiblich"
+msgstr "Женский"
+
+#: root/models.py:132 root/templates/pages/account_update.html:66
+msgid "Divers"
+msgstr "Другой"
+
+#: root/models.py:135 root/templates/pages/account_update.html:144
+msgid "Single"
+msgstr "Одинокий"
+
+#: root/models.py:136 root/templates/pages/account_update.html:145
+msgid "Kennenlernphase"
+msgstr "Фаза знакомства"
+
+#: root/models.py:137 root/templates/pages/account_update.html:146
+msgid "In einer Beziehung"
+msgstr "В отношениях"
+
+#: root/models.py:138 root/templates/pages/account_update.html:147
+msgid "Verlobt"
+msgstr "Помолвлен(а)"
+
+#: root/models.py:139 root/templates/pages/account_update.html:148
+msgid "Verheiratet"
+msgstr "Женат/Замужем"
+
+#: root/models.py:140 root/templates/pages/account_update.html:149
+msgid "Es ist kompliziert"
+msgstr "Все сложно"
+
+#: root/models.py:141 root/templates/pages/account_update.html:150
+msgid "Getrennt"
+msgstr "Разошлись"
+
+#: root/models.py:142 root/templates/pages/account_update.html:151
+msgid "Geschieden"
+msgstr "Разведен(а)"
+
+#: root/models.py:143 root/templates/pages/account_update.html:152
+msgid "Verwitwet"
+msgstr "Вдовец/Вдова"
+
+#: root/models.py:144 root/templates/pages/account_update.html:153
+msgid "Sonstiges"
+msgstr "Другое"
+
+#: root/models.py:150 root/templates/components/footers/footer.html:51
+#: root/templates/components/profile/posts.html:11
+#: root/templates/pages/account.html:21 root/templates/pages/account.html:24
+#: root/templates/pages/account_update.html:23
+#: root/templates/pages/home.html:20
+#: root/templates/pages/notification_activities.html:24
+#: root/templates/pages/notification_friend_request.html:23
+#: root/templates/pages/profile.html:21 root/templates/pages/search.html:30
+msgid "Profilbild"
+msgstr "Фото профиля"
+
+#: root/models.py:151 root/models.py:272
+msgid "Lade ein Bild für dein Profil hoch."
+msgstr "Загрузите изображение для своего профиля."
+
+#: root/models.py:155 root/templates/pages/account.html:29
+#: root/templates/pages/account_update.html:47
+msgid "Biografie"
+msgstr "Биография"
+
+#: root/models.py:158 root/templates/pages/account.html:42
+msgid "Geschlecht"
+msgstr "Пол"
+
+#: root/models.py:163
+msgid "Geburtstag"
+msgstr "День рождения"
+
+#: root/models.py:166
+msgid "Tätigkeit"
+msgstr "Род деятельности"
+
+#: root/models.py:168 root/templates/pages/account.html:81
+#: root/templates/pages/account_update.html:112
+msgid "Wohnort"
+msgstr "Место жительства"
+
+#: root/models.py:169 root/templates/pages/account.html:94
+#: root/templates/pages/account_update.html:127
+msgid "Heimatort"
+msgstr "одной город"
+
+#: root/models.py:171 root/templates/pages/account.html:107
+msgid "Beziehungsstatus"
+msgstr "Семейное положение"
+
+#: root/models.py:181
+msgid "Das Geburtsdatum darf nicht in der Zukunft liegen."
+msgstr "Дата рождения не может быть в будущем."
+
+#: root/models.py:188
+#, python-brace-format
+msgid "Detail User: {username}"
+msgstr "Детализированный пользователь: {username}"
+
+#: root/models.py:193
+msgid "Discord Benutzername"
+msgstr "Имя пользователя в Discord"
+
+#: root/models.py:196
+msgid "Epic Games Benutzername"
+msgstr "Имя пользователя в Epic Games"
+
+#: root/models.py:199
+msgid "Facebook Benutzername"
+msgstr "Имя пользователя в Facebook"
+
+#: root/models.py:202
+msgid "Instagram Benutzername"
+msgstr "Имя пользователя в Instagram"
+
+#: root/models.py:205
+msgid "LinkedIn Benutzername"
+msgstr "Имя пользователя в LinkedIn"
+
+#: root/models.py:208
+msgid "Pinterest Benutzername"
+msgstr "Имя пользователя в Pinterest"
+
+#: root/models.py:211
+msgid "PlayStation Benutzername"
+msgstr "Имя пользователя в PlayStation"
+
+#: root/models.py:214
+msgid "Reddit Benutzername"
+msgstr "Имя пользователя в Reddit"
+
+#: root/models.py:217
+msgid "Snapchat Benutzername"
+msgstr "Имя пользователя в Snapchat"
+
+#: root/models.py:220
+msgid "Steam Benutzername"
+msgstr "Имя пользователя в Steam"
+
+#: root/models.py:223
+msgid "Threads Benutzername"
+msgstr "Имя пользователя в Threads"
+
+#: root/models.py:226 root/models.py:229
+msgid "Tiktok Benutzername"
+msgstr "Имя пользователя в TikTok"
+
+#: root/models.py:232
+msgid "Xbox Benutzername"
+msgstr "Имя пользователя в Xbox"
+
+#: root/models.py:235
+msgid "YouTube Kanalname"
+msgstr "Название канала на YouTube"
+
+#: root/models.py:242
+#, python-brace-format
+msgid "Linked User: {username}"
+msgstr "Связанный пользователь: {username}"
+
+#: root/models.py:250
+msgid "Benutzer, der Nicknames vergibt"
+msgstr "Пользователь, присваивающий никнеймы"
+
+#: root/models.py:257
+msgid "Benutzer, der einen Nickname erhält"
+msgstr "Пользователь, получающий никнейм"
+
+#: root/models.py:260
+msgid "Nickname"
+msgstr "Никнейм"
+
+#: root/models.py:271
+msgid "Post Bild"
+msgstr "Изображение поста"
+
+#: root/models.py:275
+msgid "Erstellt am"
+msgstr "Создано"
+
+#: root/models.py:277
+msgid "Gefällt mir"
+msgstr "Нравится"
+
+#: root/models.py:283
+msgid "Autor"
+msgstr "Автор"
+
+#: root/models.py:294
+msgid "Vor 1 Sekunde"
+msgstr "1 секунду назад"
+
+#: root/models.py:296
+msgid "Vor {} Sekunden"
+msgstr "{} секунд назад"
+
+#: root/models.py:298
+msgid "Vor 1 Minute"
+msgstr "1 минуту назад"
+
+#: root/models.py:300
+msgid "Vor {} Minuten"
+msgstr "{} минут назад"
+
+#: root/models.py:302
+msgid "Vor 1 Stunde"
+msgstr "1 час назад"
+
+#: root/models.py:304
+msgid "Vor {} Stunden"
+msgstr "{} часов назад"
+
+#: root/models.py:306
+msgid "Gestern"
+msgstr "Вчера"
+
+#: root/models.py:308
+msgid "Am {:%d.%m}"
+msgstr "День: {:%d.%m}"
+
+#: root/models.py:310
+msgid "{:%d.%m.%Y}"
+msgstr "{:%d.%m.%Y}"
+
+#: root/models.py:327
+msgid "Aktivitäten gelesen"
+msgstr "Деятельность прочитана"
+
+#: root/templates/components/profile/informations.html:18
+#: root/templates/components/profile/informations.html:36
+#: root/templates/components/profile/informations.html:54
+#: root/templates/components/profile/informations.html:72
+#: root/templates/components/profile/informations.html:90
+#: root/templates/components/profile/informations.html:108
+#: root/templates/pages/account.html:39 root/templates/pages/account.html:52
+#: root/templates/pages/account.html:65 root/templates/pages/account.html:78
+#: root/templates/pages/account.html:91 root/templates/pages/account.html:104
+#: root/templates/pages/account.html:117 root/templates/pages/account.html:137
+#: root/templates/pages/account.html:149 root/templates/pages/account.html:161
+#: root/templates/pages/account.html:173 root/templates/pages/account.html:185
+#: root/templates/pages/account.html:197 root/templates/pages/account.html:209
+#: root/templates/pages/account.html:221 root/templates/pages/account.html:233
+#: root/templates/pages/account.html:245 root/templates/pages/account.html:257
+#: root/templates/pages/account.html:269 root/templates/pages/account.html:281
+#: root/templates/pages/account.html:293 root/templates/pages/account.html:305
+msgid "Unbekannt"
+msgstr "Неизвестно"
+
+#: root/templates/components/profile/informations.html:118
+msgid "Keine Detail"
+msgstr "Нет подробностей"
+
+#: root/templates/components/profile/links.html:220
+msgid "Keine Verlinkungen"
+msgstr "Нет ссылок"
+
+#: root/templates/pages/account.html:9
+#: root/templates/pages/account_link_update.html:9
+#: root/templates/pages/account_nickname_update.html:9
+#: root/templates/pages/account_update.html:9 root/templates/pages/home.html:9
+#: root/templates/pages/maintenance.html:9
+#: root/templates/pages/notification.html:9
+#: root/templates/pages/notification_activities.html:9
+#: root/templates/pages/notification_friend_request.html:9
+#: root/templates/pages/post_delete.html:9
+#: root/templates/pages/post_update.html:9 root/templates/pages/profile.html:9
+#: root/templates/pages/search.html:9 root/templates/pages/settings.html:9
+#: root/templates/pages/settings_pw_update.html:9
+#: root/templates/pages/settings_update.html:9
+msgid "SwissFY"
+msgstr "SwissFY"
+
+#: root/templates/pages/account.html:16
+#: root/templates/pages/account_update.html:15
+msgid "Detail"
+msgstr "Подробности"
+
+#: root/templates/pages/account.html:55
+#: root/templates/pages/account_update.html:82
+msgid "Geburtsdatum"
+msgstr "Дата рождения"
+
+#: root/templates/pages/account.html:68
+#: root/templates/pages/account_update.html:97
+msgid "Beruf"
+msgstr "Профессия"
+
+#: root/templates/pages/account.html:123
+#: root/templates/pages/account_link_update.html:15
+msgid "Verlinkungen"
+msgstr "Ссылки"
+
+#: root/templates/pages/account_link_update.html:26
+msgid "Discord"
+msgstr "Discord"
+
+#: root/templates/pages/account_link_update.html:41
+msgid "Epic Games"
+msgstr "Epic Games"
+
+#: root/templates/pages/account_link_update.html:56
+msgid "Facebook"
+msgstr "Facebook"
+
+#: root/templates/pages/account_link_update.html:71
+msgid "Instagram"
+msgstr "Instagram"
+
+#: root/templates/pages/account_link_update.html:86
+msgid "LinkedIn"
+msgstr "LinkedIn"
+
+#: root/templates/pages/account_link_update.html:101
+msgid "Pinterest"
+msgstr "Pinterest"
+
+#: root/templates/pages/account_link_update.html:116
+msgid "PlayStation"
+msgstr "PlayStation"
+
+#: root/templates/pages/account_link_update.html:131
+msgid "Reddit"
+msgstr "Reddit"
+
+#: root/templates/pages/account_link_update.html:146
+msgid "Snapchat"
+msgstr "Snapchat"
+
+#: root/templates/pages/account_link_update.html:161
+msgid "Steam"
+msgstr "Steam"
+
+#: root/templates/pages/account_link_update.html:176
+msgid "Threads"
+msgstr "Threads"
+
+#: root/templates/pages/account_link_update.html:191
+msgid "TikTok"
+msgstr "TikTok"
+
+#: root/templates/pages/account_link_update.html:206
+msgid "Xbox"
+msgstr "Xbox"
+
+#: root/templates/pages/account_link_update.html:221
+msgid "YouTube"
+msgstr "YouTube"
+
+#: root/templates/pages/account_link_update.html:229
+#: root/templates/pages/account_update.html:162
+#: root/templates/pages/post_update.html:65
+#: root/templates/pages/settings_update.html:79
+msgid "Speichern"
+msgstr "Сохранить"
+
+#: root/templates/pages/account_link_update.html:230
+#: root/templates/pages/account_update.html:163
+#: root/templates/pages/settings_pw_update.html:35
+#: root/templates/pages/settings_update.html:80
+msgid "Zurück"
+msgstr "Назад"
+
+#: root/templates/pages/account_link_update.html:234
+#: root/templates/pages/account_update.html:166
+#: root/templates/pages/settings_pw_update.html:38
+#: root/templates/pages/settings_update.html:83
+msgid "Zugriff verweigert"
+msgstr "Доступ запрещен"
+
+#: root/templates/pages/account_update.html:63
+msgid "Geschlecht wählen"
+msgstr "Выберите пол"
+
+#: root/templates/pages/account_update.html:143
+msgid "Beziehungsstatus wählen"
+msgstr "Выберите семейное положение"
+
+#: root/templates/pages/disclaimer.html:20
 msgid "1. Inhalt des Onlineangebots"
-msgstr ""
+msgstr "1. Содержание онлайн-предложения"
 
-#: root/templates/pages/disclaimer.html:19
+#: root/templates/pages/disclaimer.html:22
 msgid ""
 "\n"
 "                            Die Inhalte dieser Webapplikation wurden mit "
@@ -59,12 +532,32 @@ msgid ""
 "                            entfernen.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Содержимое данного веб-приложения было разработано "
+"с максимально возможной тщательностью. "
+"                            Однако мы не можем гарантировать точность, "
+"полноту и актуальность информации. В качестве "
+"                            поставщика услуг мы несем ответственность за "
+"собственное содержимое этих страниц в соответствии "
+"                            с § 7 Abs.1 TMG в рамках общих законов. Однако, "
+"в соответствии с §§ 8-10 TMG, мы не обязаны "
+"                            проверять передаваемую или сохраненную информацию "
+"третьих лиц, а также исследовать обстоятельства, "
+"                            которые могут указывать на противоправную "
+"деятельность. Обязательства по удалению или блокировке "
+"                            использования информации в соответствии с общими "
+"законами остаются в силе. Однако ответственность "
+"                            в этом отношении возможна только с момента "
+"получения информации о конкретном нарушении закона. "
+"                            При обнаружении соответствующих нарушений мы "
+"немедленно удалим такие материалы.\n"
+"                        "
 
-#: root/templates/pages/disclaimer.html:37
+#: root/templates/pages/disclaimer.html:40
 msgid "2. Haftung für Links"
-msgstr ""
+msgstr "2. Ответственность за ссылки"
 
-#: root/templates/pages/disclaimer.html:39
+#: root/templates/pages/disclaimer.html:42
 msgid ""
 "\n"
 "                            Unser Angebot enthält Links zu externen "
@@ -84,12 +577,26 @@ msgid ""
 "                            Links umgehend entfernen.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Наше предложение содержит ссылки на внешние "
+"веб-сайты третьих лиц, на содержание которых "
+"                            мы не имеем никакого влияния. Поэтому мы не "
+"можем гарантировать точность или безопасность "
+"                            этих внешних ресурсов. За содержание "
+"связанных страниц всегда несет ответственность "
+"                            соответствующий поставщик или оператор этих "
+"страниц. Постоянный контроль за содержанием "
+"                            связанных страниц невозможен без конкретных "
+"указаний на нарушение закона. При обнаружении "
+"                            таких нарушений мы незамедлительно удалим "
+"соответствующие ссылки.\n"
+"                        "
 
-#: root/templates/pages/disclaimer.html:52
+#: root/templates/pages/disclaimer.html:55
 msgid "3. Urheberrecht"
-msgstr ""
+msgstr "3. Авторское право"
 
-#: root/templates/pages/disclaimer.html:54
+#: root/templates/pages/disclaimer.html:57
 msgid ""
 "\n"
 "                            Die durch die Seitenbetreiber erstellten Inhalte "
@@ -117,12 +624,32 @@ msgid ""
 "                            wir derartige Inhalte umgehend entfernen.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Контент и произведения, созданные "
+"администрацией данного веб-сайта, защищены немецким "
+"                            законодательством об авторском праве. "
+"Воспроизведение, редактирование, распространение "
+"                            и любое использование за пределами авторского "
+"права требует письменного разрешения "
+"                            соответствующего автора или создателя. "
+"Загрузка и копирование материалов с данного сайта "
+"                            разрешены только для частного, некоммерческого "
+"использования.\n"
+"                            Если контент на данном сайте не был создан "
+"администрацией, авторские права третьих лиц "
+"                            соблюдаются. В частности, контент третьих лиц "
+"отмечен соответствующим образом. Если вы "
+"                            обнаружили нарушение авторских прав, пожалуйста, "
+"сообщите нам об этом. В случае выявления "
+"                            нарушений мы немедленно удалим соответствующий "
+"контент.\n"
+"                        "
 
-#: root/templates/pages/disclaimer.html:71
+#: root/templates/pages/disclaimer.html:74
 msgid "4. Haftung für Schäden"
-msgstr ""
+msgstr "4. Ответственность за ущерб"
 
-#: root/templates/pages/disclaimer.html:73
+#: root/templates/pages/disclaimer.html:76
 msgid ""
 "\n"
 "                            Wir schliessen jegliche Haftung für Schäden aus, "
@@ -134,12 +661,20 @@ msgid ""
 "                            Fahrlässigkeit beruhen.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Мы исключаем любую ответственность за ущерб, "
+"который может возникнуть прямо или косвенно "
+"                            в результате использования данного веб-приложения "
+"и содержащейся в нем информации, "
+"                            если только он не был причинен умышленно или "
+"вследствие грубой небрежности.\n"
+"                        "
 
-#: root/templates/pages/disclaimer.html:82
+#: root/templates/pages/disclaimer.html:85
 msgid "5. Keine Abmahnung ohne vorherigen Kontakt"
-msgstr ""
+msgstr "5. Нет предупреждений без предварительного контакта"
 
-#: root/templates/pages/disclaimer.html:84
+#: root/templates/pages/disclaimer.html:87
 msgid ""
 "\n"
 "                            Sollten Inhalte dieser Webapplikation die Rechte "
@@ -159,76 +694,328 @@ msgid ""
 "                            Verletzung vorgenannter Bestimmungen.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Если содержание данного веб-приложения нарушает "
+"права третьих лиц или законодательные "
+"                            нормы, просим вас уведомить нас об этом без "
+"выставления счета на оплату. Мы гарантируем, что "
+"                            обоснованные претензии будут рассмотрены и "
+"проанализированы без необходимости привлечения "
+"                            юридического представителя. Однако расходы, "
+"понесенные вами без предварительного обращения к нам, "
+"                            будут полностью отклонены, и в случае необходимости "
+"мы оставляем за собой право подать встречный иск "
+"                            за нарушение вышеуказанных положений.\n"
+"                        "
+
+#: root/templates/pages/disclaimer.html:103
+#: root/templates/pages/privacy.html:103 root/templates/pages/terms.html:365
+msgid "Zustimmen"
+msgstr "Согласиться"
+
+#: root/templates/pages/home.html:86
+msgid "Herzlich Willkommen"
+msgstr "Добро пожаловать"
+
+#: root/templates/pages/home.html:89
+msgid "Schön, dass du da bist! ❤️"
+msgstr "Рады видеть тебя! ❤️"
+
+#: root/templates/pages/home.html:92
+msgid "Wir freuen uns darauf, dich kennenzulernen."
+msgstr "Мы рады познакомиться с тобой."
+
+#: root/templates/pages/home.html:95
+msgid "Lass uns gemeinsam eine einzigartige Community gestalten!"
+msgstr "Давайте вместе создадим уникальное сообщество!"
+
+#: root/templates/pages/home.html:100
+msgid "Lädt weitere Posts..."
+msgstr "Загрузка дополнительных постов..."
+
+#: root/templates/pages/home.html:219
+msgid "Keine weiteren Posts"
+msgstr "Больше постов нет"
 
 #: root/templates/pages/impressum.html:9 root/templates/pages/impressum.html:15
 msgid "Impressum"
-msgstr ""
+msgstr "Выходные данные"
 
-#: root/templates/pages/impressum.html:18
+#: root/templates/pages/impressum.html:21
 msgid ""
 "Verantwortlich für den Inhalt gemäss § 5 TMG (Telemediengesetz) und Art. 4 "
 "Abs. 7 DSGVO"
 msgstr ""
+"Ответственный за содержание в соответствии с § 5 TMG (Закон о телемедиа) и "
+"ст. 4, п. 7 GDPR"
 
-#: root/templates/pages/impressum.html:22 root/templates/pages/privacy.html:18
+#: root/templates/pages/impressum.html:25 root/templates/pages/privacy.html:21
 msgid "Jonas S. Büchi"
-msgstr ""
+msgstr "Йонас С. Бюхи"
 
-#: root/templates/pages/impressum.html:23
+#: root/templates/pages/impressum.html:26
 msgid "Eichmatt 1"
-msgstr ""
+msgstr "Айхматт 1"
 
-#: root/templates/pages/impressum.html:24
+#: root/templates/pages/impressum.html:27
 msgid "CH-3324 Hindelbank"
-msgstr ""
-
-#: root/templates/pages/impressum.html:25
-msgid "Kanton Bern"
-msgstr ""
+msgstr "CH-3324 Хиндельбанк"
 
 #: root/templates/pages/impressum.html:28
-msgid "Haftung für Inhalte"
-msgstr ""
+msgid "Kanton Bern"
+msgstr "Кантон Берн"
 
-#: root/templates/pages/impressum.html:30
+#: root/templates/pages/impressum.html:31
+msgid "Haftung für Inhalte"
+msgstr "Ответственность за содержание"
+
+#: root/templates/pages/impressum.html:33
 msgid ""
 "Die Inhalte unsere Seite wurde mit grösster Sorgfalt erstellt. Für die "
 "Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch "
 "keine Gewähr übernehmen."
 msgstr ""
+"Содержание нашего сайта было подготовлено с наибольшей тщательностью. "
+"Однако мы не можем гарантировать его точность, полноту и актуальность."
 
-#: root/templates/pages/impressum.html:34
+
+#: root/templates/pages/impressum.html:37
 msgid "Obligatorische Hinweis"
-msgstr ""
+msgstr "Обязательное уведомление"
 
-#: root/templates/pages/impressum.html:36
+#: root/templates/pages/impressum.html:39
 msgid ""
 "Diese Webapplikation steht unter dem Einfluss von der Organisation Kiidle. "
 "Der Hinweis ist hier aufgrund der geltenden Impressumspflicht der "
 "Europäischen Union und der Schweiz enthalten."
 msgstr ""
+"Это веб-приложение находится под влиянием организации Kiidle. "
+"Это уведомление включено в соответствии с требованиями закона об "
+"импрессиуме Европейского Союза и Швейцарии."
 
-#: root/templates/pages/privacy.html:9 root/templates/pages/privacy.html:15
-msgid "Datenschutzerklärung"
-msgstr ""
+#: root/templates/pages/login.html:9 root/templates/pages/login.html:15
+#: root/templates/pages/login.html:51 root/templates/pages/signup.html:100
+msgid "Anmelden"
+msgstr "Войти"
 
-#: root/templates/pages/privacy.html:17
-msgid "1. Verantwortliche Stelle"
-msgstr ""
+#: root/templates/pages/login.html:54 root/templates/pages/signup.html:99
+msgid "Kein Konto?"
+msgstr "Нет аккаунта?"
 
-#: root/templates/pages/privacy.html:19
-msgid "Bern, Schweiz"
+#: root/templates/pages/login.html:55 root/templates/pages/signup.html:9
+#: root/templates/pages/signup.html:15 root/templates/pages/signup.html:96
+msgid "Registrieren"
+msgstr "Зарегистрироваться"
+
+#: root/templates/pages/maintenance.html:18
+msgid "Wartungsarbeiten"
+msgstr "Технические работы"
+
+#: root/templates/pages/maintenance.html:21
+msgid "503"
+msgstr "503"
+
+#: root/templates/pages/notification.html:15
+msgid "Benachrichtigungen"
+msgstr "Уведомления"
+
+#: root/templates/pages/notification.html:19
+#: root/templates/pages/notification_friend_request.html:15
+msgid "Freundschaftsanfragen"
+msgstr "Запросы в друзья"
+
+#: root/templates/pages/notification.html:22
+#, python-format
+msgid ""
+"\n"
+"                                %(requests)s Freundschaftsanfragen\n"
+"                            "
 msgstr ""
+"\n"
+"                                %(requests)s запросов в друзья\n"
+"                            "
+
+#: root/templates/pages/notification.html:27
+msgid "Keine Freundschaftsanfragen"
+msgstr "Нет запросов в друзья"
+
+#: root/templates/pages/notification.html:29
+#: root/templates/pages/notification.html:44
+#: root/templates/pages/notification.html:51
+#: root/templates/pages/notification.html:58
+#: root/templates/pages/notification.html:65
+msgid "Öffnen"
+msgstr "Открыть"
+
+#: root/templates/pages/notification.html:34
+#: root/templates/pages/notification_activities.html:15
+msgid "Aktivitäten"
+msgstr "Активность"
+
+#: root/templates/pages/notification.html:37
+#, python-format
+msgid ""
+"\n"
+"                                %(notification_posts)s Aktivitäten\n"
+"                            "
+msgstr ""
+"\n"
+"                                %(notification_posts_count) активности\n"
+"                            "
+
+#: root/templates/pages/notification.html:42
+msgid "Keine Aktivitäten"
+msgstr "Нет активности"
+
+#: root/templates/pages/notification.html:49
+msgid "Kommentare"
+msgstr "Комментарии"
+
+#: root/templates/pages/notification.html:50
+msgid "Keine Kommentare erhalten"
+msgstr "Комментариев нет"
+
+#: root/templates/pages/notification.html:56
+msgid "Likes"
+msgstr "Лайки"
+
+#: root/templates/pages/notification.html:57
+msgid "Keine Likes erhalten"
+msgstr "Нет лайков"
+
+#: root/templates/pages/notification.html:63
+msgid "Systembenachrichtigungen"
+msgstr "Системные уведомления"
+
+#: root/templates/pages/notification.html:64
+msgid "Keine Systembenachrichtigungen"
+msgstr "Нет системных уведомлений"
+
+#: root/templates/pages/notification_activities.html:19
+msgid "Veröffentlichte einen neuen Post"
+msgstr "Опубликовал(а) новый пост"
+
+#: root/templates/pages/notification_activities.html:49
+#: root/templates/pages/notification_friend_request.html:48
+#: root/templates/pages/search.html:55
+msgid "Gefolgt"
+msgstr "Подписан(а)"
+
+#: root/templates/pages/notification_activities.html:59
+msgid "Zum Post"
+msgstr "К посту"
+
+#: root/templates/pages/notification_activities.html:65
+msgid "Gelesen"
+msgstr "Прочитано"
+
+#: root/templates/pages/notification_activities.html:75
+msgid "Du bist am Puls der Zeit"
+msgstr "Ты в курсе событий"
+
+#: root/templates/pages/notification_friend_request.html:58
+msgid "Annehmen"
+msgstr "Принять"
+
+#: root/templates/pages/notification_friend_request.html:64
+#: root/templates/pages/post_update.html:66
+msgid "Löschen"
+msgstr "Удалить"
+
+#: root/templates/pages/notification_friend_request.html:74
+msgid "Du hast keine Freundschaftsanfragen"
+msgstr "У тебя нет запросов в друзья"
+
+#: root/templates/pages/pedoguard.html:9 root/templates/pages/pedoguard.html:20
+msgid "PedoGuard System"
+msgstr "Система PedoGuard"
+
+#: root/templates/pages/pedoguard.html:22
+msgid ""
+"Ihr Schutz liegt uns besonders am Herzen. Falls Sie unter 18 Jahre alt sind, "
+"wird die Chatfunktion mit über 18-jährige Personen automatisch deaktiviert."
+msgstr ""
+"Ваша безопасность для нас особенно важна. Если вам меньше 18 лет, функция "
+"чата с пользователями старше 18 лет будет автоматически отключена."
+
+#: root/templates/pages/pedoguard.html:25
+msgid ""
+"Sollte dennoch ein über 18-jähriger Nutzer versuchen, eine Chatanfrage zu "
+"stellen, wird dies automatisch gemeldet. Wir prüfen den Vorfall sorgfältig "
+"und erhalten Zugriff auf die entsprechenden Nachrichten und den Chatverlauf, "
+"um den Schutz Minderjähriger zu gewährleisten."
+msgstr ""
+"Если пользователь старше 18 лет попытается отправить запрос на чат, это "
+"будет автоматически зафиксировано. Мы внимательно проверим ситуацию и "
+"получим доступ к соответствующим сообщениям и истории чата, чтобы обеспечить "
+"защиту несовершеннолетних."
+
+#: root/templates/pages/pedoguard.html:33
+msgid "Pädophilenschutz aktivieren"
+msgstr "Активировать защиту от педофилов"
+
+#: root/templates/pages/pedoguard.html:36
+msgid "Pädophilenschutz nicht aktivieren"
+msgstr "Не активировать защиту от педофилов"
+
+#: root/templates/pages/pedoguard.html:44
+msgid ""
+"Das PedoGuard System wurde gemäss den Vorschriften zwangsweise aktiviert, da "
+"Sie nicht volljährig sind."
+msgstr ""
+"Система PedoGuard была принудительно активирована в соответствии с "
+"правилами, так как вы несовершеннолетний."
+
+#: root/templates/pages/pedoguard.html:46
+msgid "Verstanden"
+msgstr "Понял(а)"
+
+#: root/templates/pages/post_delete.html:15
+msgid "Bist du sicher?"
+msgstr "Ты уверен(а)?"
+
+#: root/templates/pages/post_delete.html:18
+msgid "Bestätigen"
+msgstr "Подтвердить"
+
+#: root/templates/pages/post_delete.html:19
+msgid "Abbrechen"
+msgstr "Отмена"
+
+#: root/templates/pages/post_update.html:16
+msgid "Post bearbeiten"
+msgstr "Редактировать пост"
+
+#: root/templates/pages/post_update.html:18
+msgid "Post erstellen"
+msgstr "Создать пост"
+
+#: root/templates/pages/post_update.html:56
+#: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:2441
+msgid "Text"
+msgstr "Текст"
+
+#: root/templates/pages/post_update.html:68
+msgid "Posten"
+msgstr "Опубликовать"
 
 #: root/templates/pages/privacy.html:20
-msgid "contact@kiidle.com"
-msgstr ""
+msgid "1. Verantwortliche Stelle"
+msgstr "1. Ответственное лицо"
+
+#: root/templates/pages/privacy.html:22
+msgid "Bern, Schweiz"
+msgstr "Берн, Швейцария"
 
 #: root/templates/pages/privacy.html:23
-msgid "2. Zweck der Datenverarbeitung"
-msgstr ""
+msgid "contact@kiidle.com"
+msgstr "contact@kiidle.com"
 
-#: root/templates/pages/privacy.html:25
+#: root/templates/pages/privacy.html:26
+msgid "2. Zweck der Datenverarbeitung"
+msgstr "2. Цель обработки данных"
+
+#: root/templates/pages/privacy.html:28
 msgid ""
 "\n"
 "                            Dieses Projekt ist rein freizeitliches Vorhaben, "
@@ -243,12 +1030,24 @@ msgid ""
 "Plattform nicht weiter zu verwenden.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Этот проект является исключительно "
+"непрофессиональной инициативой, направленной "
+"                            на обучение и передачу знаний. Использование "
+"веб-приложения\n"
+"                            предполагает согласие на обработку "
+"персональных данных в рамках его\n"
+"                            администрирования. Пользователи, которые "
+"не согласны с этим положением,\n"
+"                            приглашаются воздержаться от дальнейшего "
+"использования платформы.\n"
+"                        "
 
-#: root/templates/pages/privacy.html:35
+#: root/templates/pages/privacy.html:38
 msgid "3. Erhobene Daten"
-msgstr ""
+msgstr "3. Собираемые данные"
 
-#: root/templates/pages/privacy.html:37
+#: root/templates/pages/privacy.html:40
 msgid ""
 "\n"
 "                            Beim unserer Webapplikation werden automatisch "
@@ -263,12 +1062,21 @@ msgid ""
 "weigergegeben.\n"
 "                        "
 msgstr ""
+"\n"
+"                            В нашем веб-приложении информация автоматически "
+"сохраняется веб-сервером в так называемых "
+"                            лог-файлах. Эти файлы содержат IP-адрес, тип "
+"браузера, операционную систему, "
+"                            реферер-URL, потенциально части истории "
+"просмотров, а также дату и время "
+"                            доступа. Эти данные не передаются третьим лицам.\n"
+"                        "
 
-#: root/templates/pages/privacy.html:47
+#: root/templates/pages/privacy.html:50
 msgid "4. Rechtsgrundlage"
-msgstr ""
+msgstr "4. Правовая основа"
 
-#: root/templates/pages/privacy.html:49
+#: root/templates/pages/privacy.html:52
 msgid ""
 "\n"
 "                            Die Verarbeitung der genannten Daten erfolgt "
@@ -279,12 +1087,20 @@ msgid ""
 "betreiben.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Обработка указанных данных осуществляется "
+"в соответствии со ст. 6 абз. 1 лит. f "
+"                            Общего регламента по защите данных (GDPR), "
+"поскольку нашим законным интересом является "
+"                            обеспечение работоспособности и удобства "
+"использования веб-приложения.\n"
+"                        "
 
-#: root/templates/pages/privacy.html:57
+#: root/templates/pages/privacy.html:60
 msgid "5. Dauer der Speicherung"
-msgstr ""
+msgstr "5. Срок хранения данных"
 
-#: root/templates/pages/privacy.html:59
+#: root/templates/pages/privacy.html:62
 msgid ""
 "\n"
 "                            Personenbezogene Daten werden nur so lange "
@@ -295,12 +1111,19 @@ msgid ""
 "von 10 Jahre.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Персональные данные хранятся только в течение "
+"времени, необходимого для "
+"                            достижения указанных здесь целей, но не более "
+"10 лет после "
+"                            деактивации учетной записи.\n"
+"                        "
 
-#: root/templates/pages/privacy.html:67
+#: root/templates/pages/privacy.html:70
 msgid "6. Weitergabe an Dritte"
-msgstr ""
+msgstr "6. Передача третьим лицам"
 
-#: root/templates/pages/privacy.html:69
+#: root/templates/pages/privacy.html:72
 msgid ""
 "\n"
 "                            Es erfolgt keine Weitergabe personenbezogener "
@@ -308,11 +1131,11 @@ msgid ""
 "                        "
 msgstr ""
 
-#: root/templates/pages/privacy.html:75
+#: root/templates/pages/privacy.html:78
 msgid "7. Rechte der betroffenen Personen"
-msgstr ""
+msgstr "7. Права субъектов данных"
 
-#: root/templates/pages/privacy.html:77
+#: root/templates/pages/privacy.html:80
 msgid ""
 "\n"
 "                            Sie haben das Recht, Auskunft über die von uns "
@@ -326,12 +1149,21 @@ msgid ""
 "                            angegebene Kontaktadresse.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Вы имеете право получить информацию о "
+"                            ваших персональных данных, которые мы обрабатываем, "
+"                            а также потребовать их исправления, удаления "
+"                            или ограничения обработки. Кроме того, вы можете "
+"                            возразить против обработки ваших персональных "
+"                            данных. Для этого, пожалуйста, свяжитесь с нами "
+"                            по указанному выше контактному адресу.\n"
+"                        "
 
-#: root/templates/pages/privacy.html:87
+#: root/templates/pages/privacy.html:90
 msgid "8. Änderung der Datenschutzerklärung"
-msgstr ""
+msgstr "8. Изменение политики конфиденциальности"
 
-#: root/templates/pages/privacy.html:89
+#: root/templates/pages/privacy.html:92
 msgid ""
 "\n"
 "                            Wir behalten uns vor, diese Datenschutzerklärung "
@@ -342,16 +1174,108 @@ msgid ""
 "dieser Webapplikation abrufbar.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Мы оставляем за собой право изменять данную "
+"политику конфиденциальности, чтобы привести её "
+"                            в соответствие с актуальными "
+"                            юридическими требованиями или изменениями в наших "
+"                            услугах. Актуальная версия политики всегда доступна "
+"                            в этом веб-приложении.\n"
+"                        "
 
-#: root/templates/pages/terms.html:9 root/templates/pages/terms.html:15
-msgid "Nutzungsrichtlinien"
-msgstr ""
+#: root/templates/pages/profile.html:44 root/templates/pages/profile.html:52
+msgid "Befreundet"
+msgstr "В друзьях"
 
-#: root/templates/pages/terms.html:17
+#: root/templates/pages/profile.html:57
+msgid "Angefragt"
+msgstr "Запрос отправлен"
+
+#: root/templates/pages/profile.html:63 root/templates/pages/profile.html:67
+msgid "Anfragen"
+msgstr "Запросы"
+
+#: root/templates/pages/profile.html:72
+msgid "-"
+msgstr "-"
+
+#: root/templates/pages/profile.html:80
+msgid "Followers"
+msgstr "Подписчики"
+
+#: root/templates/pages/profile.html:86
+msgid "Entfolgen"
+msgstr "Отписаться"
+
+#: root/templates/pages/profile.html:90
+msgid "Folgen"
+msgstr "Подписаться"
+
+#: root/templates/pages/profile.html:99
+msgid "folgt"
+msgstr "подписан(а)"
+
+#: root/templates/pages/profile.html:103
+msgid "Blockieren"
+msgstr "Заблокировать"
+
+#: root/templates/pages/search.html:19
+msgid "Benutzer suchen..."
+msgstr "Искать пользователя..."
+
+#: root/templates/pages/settings.html:16
+#: root/templates/pages/settings_update.html:15
+msgid "Einstellung"
+msgstr "Настройки"
+
+#: root/templates/pages/settings.html:83
+msgid "Verträge"
+msgstr "Договоры"
+
+#: root/templates/pages/settings.html:97 root/templates/pages/settings.html:113
+#: root/templates/pages/settings.html:129
+msgid "Zugestimmt"
+msgstr "Согласен(на)"
+
+#: root/templates/pages/settings.html:97 root/templates/pages/settings.html:113
+#: root/templates/pages/settings.html:129
+msgid "Nicht zugestimmt"
+msgstr "Не согласен(на)"
+
+#: root/templates/pages/settings.html:134
+msgid "Sicherheit"
+msgstr "Безопасность"
+
+#: root/templates/pages/settings.html:148
+msgid "Aktiviert"
+msgstr "Активировано"
+
+#: root/templates/pages/settings.html:148
+msgid "Deaktiviert"
+msgstr "Отключено"
+
+#: root/templates/pages/settings.html:152
+#: root/templates/pages/settings_pw_update.html:15
+msgid "Passwort ändern"
+msgstr "Изменить пароль"
+
+#: root/templates/pages/settings.html:153
+msgid "Abmelden"
+msgstr "Выйти"
+
+#: root/templates/pages/settings_pw_update.html:26
+msgid "Neues Passwort"
+msgstr "Новый пароль"
+
+#: root/templates/pages/settings_pw_update.html:34
+msgid "Aktualisieren"
+msgstr "Обновить"
+
+#: root/templates/pages/terms.html:20
 msgid "1. Allgemeine Grundsätze"
-msgstr ""
+msgstr "1. Общие принципы"
 
-#: root/templates/pages/terms.html:19
+#: root/templates/pages/terms.html:22
 msgid ""
 "\n"
 "                            Diese Webapplikation ist ein freizeitliches "
@@ -366,12 +1290,22 @@ msgid ""
 "Nutzungrichtlinien zu.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Это веб-приложение является некоммерческим проектом, "
+"                            предназначенным исключительно для обучения и передачи "
+"                            знаний. Использование данного веб-приложения "
+"                            регулируется настоящими правилами использования, "
+"                            которые могут быть изменены ответственными лицами "
+"                            в любое время. Продолжая пользоваться данным "
+"                            веб-приложением, вы соглашаетесь с данными "
+"                            правилами использования.\n"
+"                        "
 
-#: root/templates/pages/terms.html:29
+#: root/templates/pages/terms.html:32
 msgid "2. Strafrechtliche Verfolgung"
-msgstr ""
+msgstr "2. Уголовное преследование"
 
-#: root/templates/pages/terms.html:31
+#: root/templates/pages/terms.html:34
 msgid ""
 "\n"
 "                            Die Nutzung dieser Webapplikation setzt die "
@@ -380,8 +1314,8 @@ msgid ""
 "Verstösse wie\n"
 "                            z. B. Cybermobbing, Datendiebstahl oder andere "
 "rechtswidrige Handlungen\n"
-"                            werden mit voller Härte strafrechtlich verfolgt."
-"In solchen Fällen werden\n"
+"                            werden mit voller Härte strafrechtlich "
+"verfolgt.In solchen Fällen werden\n"
 "                            sämtliche personenbezogene und hochsensible "
 "Daten an die zuständigen\n"
 "                            Behörden weitergeleitet, um die Verfolgung und "
@@ -389,12 +1323,24 @@ msgid ""
 "                            sicherzustellen.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Использование данного веб-приложения требует "
+"соблюдения действующего европейского и "
+"                            швейцарского законодательства. Нарушения, такие как "
+"                            кибербуллинг, кража данных или другие "
+"                            противоправные действия, "
+"                            будут преследоваться по всей строгости закона. "
+"                            В таких случаях все персональные и "
+"                            конфиденциальные данные будут переданы "
+"                            соответствующим правоохранительным органам "
+"                            для расследования и наказания виновных.\n"
+"                        "
 
-#: root/templates/pages/terms.html:43
+#: root/templates/pages/terms.html:46
 msgid "3. Verhaltensregeln"
-msgstr ""
+msgstr "3. Правила поведения"
 
-#: root/templates/pages/terms.html:45
+#: root/templates/pages/terms.html:48
 msgid ""
 "\n"
 "                            Um eine sichere und respektvolle Umgebung für "
@@ -404,24 +1350,34 @@ msgid ""
 "                            Webapplikation strengstens untersagt:\n"
 "                        "
 msgstr ""
+"\n"
+"                            Для обеспечения безопасной и уважительной среды "
+"                            для всех пользователей "
+"                            строго запрещены следующие формы поведения "
+"                            в данном веб-приложении:\n"
+"                        "
 
-#: root/templates/pages/terms.html:50
+#: root/templates/pages/terms.html:53
 msgid "- Antisemitismus"
-msgstr ""
+msgstr "- Антисемитизм"
 
-#: root/templates/pages/terms.html:52
+#: root/templates/pages/terms.html:55
 msgid ""
 "\n"
 "                                Jegliche Form von antisemitischer Äusserung "
 "oder Handlung.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Любая форма антисемитских высказываний или "
+"действий.\n"
+"                            "
 
-#: root/templates/pages/terms.html:56
+#: root/templates/pages/terms.html:59
 msgid "- Ausbeuterische Inhalte"
-msgstr ""
+msgstr "- Эксплуатирующий контент"
 
-#: root/templates/pages/terms.html:58
+#: root/templates/pages/terms.html:61
 msgid ""
 "\n"
 "                                Inhalte, die auf die Ausbeutung von Menschen "
@@ -429,12 +1385,16 @@ msgid ""
 "                                abzielen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Контент, направленный на эксплуатацию людей "
+"или животных.\n"
+"                            "
 
-#: root/templates/pages/terms.html:63
+#: root/templates/pages/terms.html:66
 msgid "- Beleidigung"
-msgstr ""
+msgstr "- Оскорбления"
 
-#: root/templates/pages/terms.html:65
+#: root/templates/pages/terms.html:68
 msgid ""
 "\n"
 "                                Gebrauch von abwertender, beleidigender oder "
@@ -442,36 +1402,48 @@ msgid ""
 "                                Sprache.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Использование уничижительного, "
+"оскорбительного или вульгарного языка.\n"
+"                            "
 
-#: root/templates/pages/terms.html:70
+#: root/templates/pages/terms.html:73
 msgid "- Belohnungsjagd"
 msgstr ""
 
-#: root/templates/pages/terms.html:72
+#: root/templates/pages/terms.html:75
 msgid ""
 "\n"
 "                                Unrechtmässiges Ausnutzen von Funktionen der "
 "Plattform.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Неправомерное использование функций "
+"платформы.\n"
+"                            "
 
-#: root/templates/pages/terms.html:76
+#: root/templates/pages/terms.html:79
 msgid "- Belästigung"
-msgstr ""
+msgstr "- Домогательства"
 
-#: root/templates/pages/terms.html:78
+#: root/templates/pages/terms.html:81
 msgid ""
 "\n"
 "                                Unangemessene Annäherung, Kontaktaufnahme "
 "oder Nachstellung.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Нежелательное сближение, контакт или "
+"преследование.\n"
+"                            "
 
-#: root/templates/pages/terms.html:82
+#: root/templates/pages/terms.html:85
 msgid "- Betrug"
-msgstr ""
+msgstr "- Мошенничество"
 
-#: root/templates/pages/terms.html:84
+#: root/templates/pages/terms.html:87
 msgid ""
 "\n"
 "                                Täuschung oder betrügerisches Verhalten zum "
@@ -479,12 +1451,16 @@ msgid ""
 "                                Bereicherung.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Обман или мошенническое поведение с целью "
+"личной выгоды.\n"
+"                            "
 
-#: root/templates/pages/terms.html:89
+#: root/templates/pages/terms.html:92
 msgid "- Christophobie"
-msgstr ""
+msgstr "- Христофобия"
 
-#: root/templates/pages/terms.html:91
+#: root/templates/pages/terms.html:94
 msgid ""
 "\n"
 "                                Feindseligkeit oder Vorurteile gegenüber "
@@ -492,24 +1468,32 @@ msgid ""
 "                                Christentum.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Враждебность или предвзятость по отношению к "
+"христианам или христианству.\n"
+"                            "
 
-#: root/templates/pages/terms.html:96
+#: root/templates/pages/terms.html:99
 msgid "- Cybergrooming"
-msgstr ""
+msgstr "- Кибергруминг"
 
-#: root/templates/pages/terms.html:98
+#: root/templates/pages/terms.html:101
 msgid ""
 "\n"
 "                                Versuche, Kinder online zu manipulieren oder "
 "zu missbrauchen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Попытки манипулировать или эксплуатировать "
+"детей в интернете.\n"
+"                            "
 
-#: root/templates/pages/terms.html:102
+#: root/templates/pages/terms.html:105
 msgid "- Cybermobbing"
-msgstr ""
+msgstr "- Кибербуллинг"
 
-#: root/templates/pages/terms.html:104
+#: root/templates/pages/terms.html:107
 msgid ""
 "\n"
 "                                Belästigung oder Mobbing anderer Benutzer "
@@ -517,12 +1501,16 @@ msgid ""
 "                                oder beleidigende Inhalte.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Домогательства или травля других "
+"пользователей путем публикации оскорбительного контента.\n"
+"                            "
 
-#: root/templates/pages/terms.html:109
+#: root/templates/pages/terms.html:112
 msgid "- Diskriminierung"
-msgstr ""
+msgstr "- Дискриминация"
 
-#: root/templates/pages/terms.html:111
+#: root/templates/pages/terms.html:114
 msgid ""
 "\n"
 "                                Benachteiligung oder Herabwürdigung von "
@@ -532,12 +1520,17 @@ msgid ""
 "                                anderen persönlichen Merkmalen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Ущемление прав или унижение людей по "
+"признаку пола, расы, религии, сексуальной ориентации или других личных "
+"характеристик.\n"
+"                            "
 
-#: root/templates/pages/terms.html:117
+#: root/templates/pages/terms.html:120
 msgid "- Doxxing"
-msgstr ""
+msgstr "- Докcинг"
 
-#: root/templates/pages/terms.html:119
+#: root/templates/pages/terms.html:122
 msgid ""
 "\n"
 "                                Veröffentlichung oder Weitergabe von "
@@ -545,12 +1538,16 @@ msgid ""
 "                                ohne Zustimmung der betroffenen Person.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Публикация или распространение личной "
+"информации без согласия владельца.\n"
+"                            "
 
-#: root/templates/pages/terms.html:124
+#: root/templates/pages/terms.html:127
 msgid "- Drohung"
-msgstr ""
+msgstr "- Угроза"
 
-#: root/templates/pages/terms.html:126
+#: root/templates/pages/terms.html:129
 msgid ""
 "\n"
 "                                Androhung von Gewalt, Mord oder andere "
@@ -558,12 +1555,16 @@ msgid ""
 "                                Konsequenzen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Угроза насилием, убийством или другими "
+"негативными последствиями.\n"
+"                            "
 
-#: root/templates/pages/terms.html:131
+#: root/templates/pages/terms.html:134
 msgid "- Erpressung"
-msgstr ""
+msgstr "- Вымогательство"
 
-#: root/templates/pages/terms.html:133
+#: root/templates/pages/terms.html:136
 msgid ""
 "\n"
 "                                Jede Handlung, bei der eine Person durch "
@@ -571,36 +1572,48 @@ msgid ""
 "                                Nachteilen zu etwas gezwungen wird.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Любое действие, при котором человека "
+"вынуждают совершить что-либо под угрозой негативных последствий.\n"
+"                            "
 
-#: root/templates/pages/terms.html:138
+#: root/templates/pages/terms.html:141
 msgid "- Falschinformationen"
-msgstr ""
+msgstr "- Дезинформация"
 
-#: root/templates/pages/terms.html:140
+#: root/templates/pages/terms.html:143
 msgid ""
 "\n"
 "                                Verbreitung von falschen oder irreführenden "
 "Informationen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Распространение ложной или вводящей в "
+"заблуждение информации.\n"
+"                            "
 
-#: root/templates/pages/terms.html:144
+#: root/templates/pages/terms.html:147
 msgid "- Faschismus"
-msgstr ""
+msgstr "- Фашизм"
 
-#: root/templates/pages/terms.html:146
+#: root/templates/pages/terms.html:149
 msgid ""
 "\n"
 "                                Förderung oder Verbreitung faschistischer "
 "Ideologien.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Продвижение или распространение фашистских "
+"идей.\n"
+"                            "
 
-#: root/templates/pages/terms.html:150
+#: root/templates/pages/terms.html:153
 msgid "- Fremdenfeindlichkeit"
-msgstr ""
+msgstr "- Ксенофобия"
 
-#: root/templates/pages/terms.html:152
+#: root/templates/pages/terms.html:155
 msgid ""
 "\n"
 "                                Feindseligkeit oder Vorurteile gegenüber "
@@ -608,12 +1621,16 @@ msgid ""
 "                                ethnischen Minderheiten.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Враждебность или предвзятое отношение к "
+"иностранцам или этническим меньшинствам.\n"
+"                            "
 
-#: root/templates/pages/terms.html:157
+#: root/templates/pages/terms.html:160
 msgid "- Gefährliche Verschwörungstheorien"
-msgstr ""
+msgstr "- Опасные теории заговора"
 
-#: root/templates/pages/terms.html:159
+#: root/templates/pages/terms.html:162
 msgid ""
 "\n"
 "                                Verbreitung oder Unterstützung von Theorien, "
@@ -621,24 +1638,32 @@ msgid ""
 "                                oder Gewalt fördern können.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Распространение или поддержка теорий, "
+"способствующих панике, страху или насилию.\n"
+"                            "
 
-#: root/templates/pages/terms.html:164
+#: root/templates/pages/terms.html:167
 msgid "- Gewaltbasierter Inhalt"
-msgstr ""
+msgstr "- Контент, связанный с насилием"
 
-#: root/templates/pages/terms.html:166
+#: root/templates/pages/terms.html:169
 msgid ""
 "\n"
 "                                Vebreitung von Inhalten, die Gewalt fördern "
 "oder darstellen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Распространение контента, который поощряет "
+"или демонстрирует насилие.\n"
+"                            "
 
-#: root/templates/pages/terms.html:170
+#: root/templates/pages/terms.html:173
 msgid "- Gewaltverherrlichung"
-msgstr ""
+msgstr "- Прославление насилия"
 
-#: root/templates/pages/terms.html:172
+#: root/templates/pages/terms.html:175
 msgid ""
 "\n"
 "                                Förderung oder Rechtfertigung von Gewalt "
@@ -646,12 +1671,16 @@ msgid ""
 "                                Gruppen oder Institutionen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Продвижение или оправдание насилия в "
+"отношении людей, групп или организаций.\n"
+"                            "
 
-#: root/templates/pages/terms.html:177
+#: root/templates/pages/terms.html:180
 msgid "- Hassrede"
-msgstr ""
+msgstr "- Речь ненависти"
 
-#: root/templates/pages/terms.html:179
+#: root/templates/pages/terms.html:182
 msgid ""
 "\n"
 "                                Äusserungen, die zu Hass oder Gewalt gegen "
@@ -659,12 +1688,16 @@ msgid ""
 "                                aufrufen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Высказывания, призывающие к ненависти или "
+"насилию против определенных групп.\n"
+"                            "
 
-#: root/templates/pages/terms.html:184
+#: root/templates/pages/terms.html:187
 msgid "- Homophobie"
-msgstr ""
+msgstr "- Гомофобия"
 
-#: root/templates/pages/terms.html:186
+#: root/templates/pages/terms.html:189
 msgid ""
 "\n"
 "                                Feindseligkeit oder Vorurteile gegenüber "
@@ -672,12 +1705,16 @@ msgid ""
 "                                Personen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Враждебность или предвзятое отношение к "
+"гомосексуалам.\n"
+"                            "
 
-#: root/templates/pages/terms.html:191
+#: root/templates/pages/terms.html:194
 msgid "- Identitätsdiebstahl"
-msgstr ""
+msgstr "- Кража личности"
 
-#: root/templates/pages/terms.html:193
+#: root/templates/pages/terms.html:196
 msgid ""
 "\n"
 "                                Falsche Darstellung oder Ausgeben als eine "
@@ -685,12 +1722,16 @@ msgid ""
 "                                Person, Institution oder Entität.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Ложное представление себя другим человеком, "
+"организацией или учреждением.\n"
+"                            "
 
-#: root/templates/pages/terms.html:198
+#: root/templates/pages/terms.html:201
 msgid "- Illegale Inhalte"
-msgstr ""
+msgstr "- Незаконный контент"
 
-#: root/templates/pages/terms.html:200
+#: root/templates/pages/terms.html:203
 msgid ""
 "\n"
 "                                Verbreitung oder Bereitstellung von "
@@ -698,12 +1739,16 @@ msgid ""
 "                                geltenden Recht verstossen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Распространение или предоставление контента, "
+"который нарушает действующее законодательство.\n"
+"                            "
 
-#: root/templates/pages/terms.html:205
+#: root/templates/pages/terms.html:208
 msgid "- Islamophobie"
-msgstr ""
+msgstr "- Исламофобия"
 
-#: root/templates/pages/terms.html:207
+#: root/templates/pages/terms.html:210
 msgid ""
 "\n"
 "                                Feindseligkeit oder Vorurteile gegenüber "
@@ -711,12 +1756,16 @@ msgid ""
 "                                dem Islam.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Враждебность или предвзятость по отношению к "
+"мусульманам или исламу.\n"
+"                            "
 
-#: root/templates/pages/terms.html:212
+#: root/templates/pages/terms.html:215
 msgid "- Kulturelle Aneignung"
-msgstr ""
+msgstr "- Культурная апроприация"
 
-#: root/templates/pages/terms.html:214
+#: root/templates/pages/terms.html:217
 msgid ""
 "\n"
 "                                Unangemessene Nutzung oder Darstellung von "
@@ -724,12 +1773,16 @@ msgid ""
 "                                Symbolen, Traditionen oder Werten.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Некорректное использование или изображение "
+"культурных символов, традиций или ценностей.\n"
+"                            "
 
-#: root/templates/pages/terms.html:219
+#: root/templates/pages/terms.html:222
 msgid "- Minderjährigenschutz"
-msgstr ""
+msgstr "- Защита несовершеннолетних"
 
-#: root/templates/pages/terms.html:221
+#: root/templates/pages/terms.html:224
 msgid ""
 "\n"
 "                                Handlungen, die gegen den Schutz von "
@@ -737,12 +1790,16 @@ msgid ""
 "                                wie z. B. unzulässiger Kontakt.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Действия, нарушающие защиту "
+"несовершеннолетних, например, недопустимый контакт.\n"
+"                            "
 
-#: root/templates/pages/terms.html:226
+#: root/templates/pages/terms.html:229
 msgid "- Missbrauch von Privilegien"
-msgstr ""
+msgstr "- Злоупотребление привилегиями"
 
-#: root/templates/pages/terms.html:228
+#: root/templates/pages/terms.html:231
 msgid ""
 "\n"
 "                                Jegliche Form von ungerechtfertigten "
@@ -751,12 +1808,16 @@ msgid ""
 "Webapplikation.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Любая форма неправомерного использования "
+"прав или доступа в этом веб-приложении.\n"
+"                            "
 
-#: root/templates/pages/terms.html:233
+#: root/templates/pages/terms.html:236
 msgid "- Plagiate"
-msgstr ""
+msgstr "- Плагиат"
 
-#: root/templates/pages/terms.html:235
+#: root/templates/pages/terms.html:238
 msgid ""
 "\n"
 "                                Hochladen oder Teile von Inhalten, die ohne "
@@ -765,12 +1826,16 @@ msgid ""
 "wurden.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Загрузка или использование контента, "
+"скопированного или размноженного без согласия третьих лиц.\n"
+"                            "
 
-#: root/templates/pages/terms.html:240
+#: root/templates/pages/terms.html:243
 msgid "- Pornografische Inhalte"
-msgstr ""
+msgstr "- Порнографический контент"
 
-#: root/templates/pages/terms.html:242
+#: root/templates/pages/terms.html:245
 msgid ""
 "\n"
 "                                Verbreitung, Bereitstellung oder "
@@ -778,12 +1843,16 @@ msgid ""
 "                                pornografischen oder sexuellen Inhalten.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Распространение, предоставление или "
+"доступность порнографического или сексуального контента.\n"
+"                            "
 
-#: root/templates/pages/terms.html:247
+#: root/templates/pages/terms.html:250
 msgid "- Propaganda"
-msgstr ""
+msgstr "- Пропаганда"
 
-#: root/templates/pages/terms.html:249
+#: root/templates/pages/terms.html:252
 msgid ""
 "\n"
 "                                Vebreitung von politisch oder ideologisch "
@@ -791,12 +1860,16 @@ msgid ""
 "                                Informationen zu Manipulationszwecken.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Распространение политически или "
+"идеологически односторонней информации с целью манипуляции.\n"
+"                            "
 
-#: root/templates/pages/terms.html:254
+#: root/templates/pages/terms.html:257
 msgid "- Rassismus"
-msgstr ""
+msgstr "- Расизм"
 
-#: root/templates/pages/terms.html:256
+#: root/templates/pages/terms.html:259
 msgid ""
 "\n"
 "                                Diskriminierung oder Feindseligkeit "
@@ -804,12 +1877,16 @@ msgid ""
 "                                aufgrund ihrer ethnischen Herkunft.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Дискриминация или враждебность по отношению "
+"к людям из-за их этнического происхождения.\n"
+"                            "
 
-#: root/templates/pages/terms.html:261
+#: root/templates/pages/terms.html:264
 msgid "- Relativierung"
-msgstr ""
+msgstr "- Релятивизация"
 
-#: root/templates/pages/terms.html:263
+#: root/templates/pages/terms.html:266
 msgid ""
 "\n"
 "                                Verharmlosung oder Verleugnung von "
@@ -817,12 +1894,16 @@ msgid ""
 "                                Menschenrechtsverletzung.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Умаление или отрицание преступлений или "
+"нарушений прав человека.\n"
+"                            "
 
-#: root/templates/pages/terms.html:268
+#: root/templates/pages/terms.html:271
 msgid "- Selbstgefährdung"
-msgstr ""
+msgstr "- Самоповреждение"
 
-#: root/templates/pages/terms.html:270
+#: root/templates/pages/terms.html:273
 msgid ""
 "\n"
 "                                Inhalte oder Verhaltensweisen, die zu "
@@ -835,12 +1916,20 @@ msgid ""
 "darüber zu sprechen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Контент или поведение, которые поощряют "
+"                                самоповреждение или "
+"                                суицидальные действия.\n"
+"                                Вместо этого мы призываем "
+"                                искать помощь и поговорить "
+"                                с кем-то об этом.\n"
+"                            "
 
-#: root/templates/pages/terms.html:277
+#: root/templates/pages/terms.html:280
 msgid "- Selbstjustiz"
-msgstr ""
+msgstr "- Самосуд"
 
-#: root/templates/pages/terms.html:279
+#: root/templates/pages/terms.html:282
 msgid ""
 "\n"
 "                                Förderung oder Verherrlichung von "
@@ -849,24 +1938,31 @@ msgid ""
 "nehmen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Продвижение или прославление действий, "
+"направленных на самоуправство.\n"
+"                            "
 
-#: root/templates/pages/terms.html:284
+#: root/templates/pages/terms.html:287
 msgid "- Sexismus"
-msgstr ""
+msgstr "- Сексизм"
 
-#: root/templates/pages/terms.html:286
+#: root/templates/pages/terms.html:289
 msgid ""
 "\n"
 "                                Diskriminierung oder Herabwürdigung aufgrund "
 "des Geschlechts.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Дискриминация или унижение на основе пола.\n"
+"                            "
 
-#: root/templates/pages/terms.html:290
+#: root/templates/pages/terms.html:293
 msgid "- Sextortion"
-msgstr ""
+msgstr "- Сексуальное вымогательство"
 
-#: root/templates/pages/terms.html:292
+#: root/templates/pages/terms.html:295
 msgid ""
 "\n"
 "                                Erpressung unter Androhung, private oder "
@@ -874,12 +1970,15 @@ msgid ""
 "                                zu veröffentlichen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Вымогательство под угрозой публикации личной "
+"или интимной информации.\n"
 
-#: root/templates/pages/terms.html:297
+#: root/templates/pages/terms.html:300
 msgid "- Spam"
-msgstr ""
+msgstr "- Спам"
 
-#: root/templates/pages/terms.html:299
+#: root/templates/pages/terms.html:302
 msgid ""
 "\n"
 "                                Unerwünschte und unaufgeforderte "
@@ -887,12 +1986,16 @@ msgid ""
 "                                Werbenachrichten.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Нежелательные и незапрошенные сообщения, "
+"особенно рекламные.\n"
+"                            "
 
-#: root/templates/pages/terms.html:304
+#: root/templates/pages/terms.html:307
 msgid "- Unangemessene Wortwahl"
-msgstr ""
+msgstr "- Неприемлемая лексика"
 
-#: root/templates/pages/terms.html:306
+#: root/templates/pages/terms.html:309
 msgid ""
 "\n"
 "                                Verwendung von respektlose, beleidigenden "
@@ -900,12 +2003,16 @@ msgid ""
 "                                unangemessenen Ausdrücken.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Использование неуважительных, оскорбительных "
+"или неподобающих выражений.\n"
+"                            "
 
-#: root/templates/pages/terms.html:311
+#: root/templates/pages/terms.html:314
 msgid "- Unethische Werbung"
-msgstr ""
+msgstr "- Неэтичная реклама"
 
-#: root/templates/pages/terms.html:313
+#: root/templates/pages/terms.html:316
 msgid ""
 "\n"
 "                                Bewerbung von Produkten, Dienstleistungen "
@@ -914,24 +2021,32 @@ msgid ""
 "sind.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Продвижение товаров, услуг или контента, "
+"которые являются мошенническими, неэтичными или вредными.\n"
+"                            "
 
-#: root/templates/pages/terms.html:318
+#: root/templates/pages/terms.html:321
 msgid "- Whataboutismus"
-msgstr ""
+msgstr "- Вотэбаутизм"
 
-#: root/templates/pages/terms.html:320
+#: root/templates/pages/terms.html:323
 msgid ""
 "\n"
 "                                Verbreitung von Inhalten, die Gewalt fördern "
 "oder darstellen.\n"
 "                            "
 msgstr ""
+"\n"
+"                                Распространение контента, который поощряет "
+"или демонстрирует насилие.\n"
+"                            "
 
-#: root/templates/pages/terms.html:327
+#: root/templates/pages/terms.html:330
 msgid "4. Änderung der Nutzungsrichtlinien"
-msgstr ""
+msgstr "4. Изменение правил использования"
 
-#: root/templates/pages/terms.html:329
+#: root/templates/pages/terms.html:332
 msgid ""
 "\n"
 "                            Die Nutzungsrichtlinien können jeder ohne "
@@ -942,12 +2057,18 @@ msgid ""
 "bleiben.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Правила использования могут быть изменены в любое "
+"                            время без предварительного уведомления. "
+"                            Пользователям рекомендуется регулярно проверять "
+"                            правила, чтобы оставаться в курсе актуальных изменений.\n"
+"                        "
 
-#: root/templates/pages/terms.html:337
+#: root/templates/pages/terms.html:340
 msgid "5. Geistiges Eigentum"
-msgstr ""
+msgstr "5. Интеллектуальная собственность"
 
-#: root/templates/pages/terms.html:339
+#: root/templates/pages/terms.html:342
 msgid ""
 "\n"
 "                            Alle Inhalte auf dieser Plattform, "
@@ -959,12 +2080,21 @@ msgid ""
 "                            ohne ausdrückliche Genehmigung ist untersagt.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Весь контент на данной платформе, включая тексты, "
+"изображения,\n"
+"                            графику, логотипы и программное обеспечение, "
+"защищен авторским правом.\n"
+"                            Воспроизведение, распространение или использование "
+"контента\n"
+"                            без явного разрешения запрещены.\n"
+"                        "
 
-#: root/templates/pages/terms.html:348
+#: root/templates/pages/terms.html:351
 msgid "6. Missbrauchsmeldung"
-msgstr ""
+msgstr "6. Сообщение о нарушениях"
 
-#: root/templates/pages/terms.html:350
+#: root/templates/pages/terms.html:353
 msgid ""
 "\n"
 "                            Wenn Sie Verstösse gegen die Nutzungsrichtlinien "
@@ -977,6 +2107,34 @@ msgid ""
 "Nutzungsrichtlinien.\n"
 "                        "
 msgstr ""
+"\n"
+"                            Если вы обнаружили нарушения правил "
+"использования или\n"
+"                            неправомерное поведение, вы обязаны\n"
+"                            незамедлительно сообщить об этом через "
+"предусмотренные каналы.\n"
+"                            В противном случае вы сами нарушаете "
+"правила использования.\n"
+"                        "
+
+#: root/views.py:221
+msgid "Benutzerliste"
+msgstr "Список пользователей"
+
+#: root/views.py:450
+#, python-brace-format
+msgid "Freunde von {first_name} {last_name}"
+msgstr "Друзья {first_name} {last_name}"
+
+#: root/views.py:477
+#, python-brace-format
+msgid "Follower von {first_name} {last_name}"
+msgstr "Подписчики {first_name} {last_name}"
+
+#: root/views.py:506
+#, python-brace-format
+msgid "{first_name} {last_name} folgt"
+msgstr "{first_name} {last_name} подписан(а)"
 
 #: venv/lib/python3.13/site-packages/click/_termui_impl.py:556
 #, python-brace-format
@@ -1128,6 +2286,10 @@ msgstr ""
 
 #: venv/lib/python3.13/site-packages/click/exceptions.py:277
 msgid "Could not open file {filename!r}: {message}"
+msgstr ""
+
+#: venv/lib/python3.13/site-packages/click/formatting.py:156
+msgid "Usage:"
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/click/parser.py:233
@@ -1532,8 +2694,8 @@ msgstr ""
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1556
 #, python-format
 msgid ""
-"“%(value)s” value has an invalid format. It must be in YYYY-MM-DD HH:MM[:ss[."
-"uuuuuu]][TZ] format."
+"“%(value)s” value has an invalid format. It must be in YYYY-MM-DD "
+"HH:MM[:ss[.uuuuuu]][TZ] format."
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1564
@@ -1559,8 +2721,8 @@ msgstr ""
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1859
 #, python-format
 msgid ""
-"“%(value)s” value has an invalid format. It must be in [DD] [[HH:]MM:]ss[."
-"uuuuuu] format."
+"“%(value)s” value has an invalid format. It must be in [DD] "
+"[[HH:]MM:]ss[.uuuuuu] format."
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1863
@@ -1634,10 +2796,6 @@ msgstr ""
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:2405
 #, python-format
 msgid "Slug (up to %(max_length)s)"
-msgstr ""
-
-#: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:2441
-msgid "Text"
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/django/db/models/fields/__init__.py:2521
@@ -1955,299 +3113,299 @@ msgstr ""
 
 #: venv/lib/python3.13/site-packages/django/utils/dateformat.py:74
 msgid "p.m."
-msgstr ""
+msgstr "вечера"
 
 #: venv/lib/python3.13/site-packages/django/utils/dateformat.py:75
 msgid "a.m."
-msgstr ""
+msgstr "утра"
 
 #: venv/lib/python3.13/site-packages/django/utils/dateformat.py:80
 msgid "PM"
-msgstr ""
+msgstr "вечера"
 
 #: venv/lib/python3.13/site-packages/django/utils/dateformat.py:81
 msgid "AM"
-msgstr ""
+msgstr "утра"
 
 #: venv/lib/python3.13/site-packages/django/utils/dateformat.py:153
 msgid "midnight"
-msgstr ""
+msgstr "полночь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dateformat.py:155
 msgid "noon"
-msgstr ""
+msgstr "полдень"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:7
 msgid "Monday"
-msgstr ""
+msgstr "Понедельник"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:8
 msgid "Tuesday"
-msgstr ""
+msgstr "Вторник"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:9
 msgid "Wednesday"
-msgstr ""
+msgstr "Среда"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:10
 msgid "Thursday"
-msgstr ""
+msgstr "Четверг"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:11
 msgid "Friday"
-msgstr ""
+msgstr "Пятница"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:12
 msgid "Saturday"
-msgstr ""
+msgstr "Суббота"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:13
 msgid "Sunday"
-msgstr ""
+msgstr "Воскресенье"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:16
 msgid "Mon"
-msgstr ""
+msgstr "Пн"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:17
 msgid "Tue"
-msgstr ""
+msgstr "Вт"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:18
 msgid "Wed"
-msgstr ""
+msgstr "Ср"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:19
 msgid "Thu"
-msgstr ""
+msgstr "Чт"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:20
 msgid "Fri"
-msgstr ""
+msgstr "Пт"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:21
 msgid "Sat"
-msgstr ""
+msgstr "Сб"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:22
 msgid "Sun"
-msgstr ""
+msgstr "Вс"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:25
 msgid "January"
-msgstr ""
+msgstr "Январь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:26
 msgid "February"
-msgstr ""
+msgstr "Февраль"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:27
 msgid "March"
-msgstr ""
+msgstr "Март"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:28
 msgid "April"
-msgstr ""
+msgstr "Апрель"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:29
 msgid "May"
-msgstr ""
+msgstr "Май"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:30
 msgid "June"
-msgstr ""
+msgstr "Июнь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:31
 msgid "July"
-msgstr ""
+msgstr "Июль"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:32
 msgid "August"
-msgstr ""
+msgstr "Август"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:33
 msgid "September"
-msgstr ""
+msgstr "Сентябрь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:34
 msgid "October"
-msgstr ""
+msgstr "Октябрь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:35
 msgid "November"
-msgstr ""
+msgstr "Ноябрь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:36
 msgid "December"
-msgstr ""
+msgstr "Декабрь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:39
 msgid "jan"
-msgstr ""
+msgstr "янв"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:40
 msgid "feb"
-msgstr ""
+msgstr "фев"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:41
 msgid "mar"
-msgstr ""
+msgstr "мар"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:42
 msgid "apr"
-msgstr ""
+msgstr "апр"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:43
 msgid "may"
-msgstr ""
+msgstr "май"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:44
 msgid "jun"
-msgstr ""
+msgstr "июн"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:45
 msgid "jul"
-msgstr ""
+msgstr "июл"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:46
 msgid "aug"
-msgstr ""
+msgstr "авг"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:47
 msgid "sep"
-msgstr ""
+msgstr "сен"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:48
 msgid "oct"
-msgstr ""
+msgstr "окт"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:49
 msgid "nov"
-msgstr ""
+msgstr "ноя"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:50
 msgid "dec"
-msgstr ""
+msgstr "дек"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:53
 msgctxt "abbrev. month"
 msgid "Jan."
-msgstr ""
+msgstr "Янв."
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:54
 msgctxt "abbrev. month"
 msgid "Feb."
-msgstr ""
+msgstr "Фев."
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:55
 msgctxt "abbrev. month"
 msgid "March"
-msgstr ""
+msgstr "Март"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:56
 msgctxt "abbrev. month"
 msgid "April"
-msgstr ""
+msgstr "Апрель"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:57
 msgctxt "abbrev. month"
 msgid "May"
-msgstr ""
+msgstr "Май"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:58
 msgctxt "abbrev. month"
 msgid "June"
-msgstr ""
+msgstr "Июнь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:59
 msgctxt "abbrev. month"
 msgid "July"
-msgstr ""
+msgstr "Июль"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:60
 msgctxt "abbrev. month"
 msgid "Aug."
-msgstr ""
+msgstr "Авг."
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:61
 msgctxt "abbrev. month"
 msgid "Sept."
-msgstr ""
+msgstr "Сент."
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:62
 msgctxt "abbrev. month"
 msgid "Oct."
-msgstr ""
+msgstr "Окт."
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:63
 msgctxt "abbrev. month"
 msgid "Nov."
-msgstr ""
+msgstr "Ноя."
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:64
 msgctxt "abbrev. month"
 msgid "Dec."
-msgstr ""
+msgstr "Дек."
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:67
 msgctxt "alt. month"
 msgid "January"
-msgstr ""
+msgstr "Январь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:68
 msgctxt "alt. month"
 msgid "February"
-msgstr ""
+msgstr "Февраль"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:69
 msgctxt "alt. month"
 msgid "March"
-msgstr ""
+msgstr "Март"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:70
 msgctxt "alt. month"
 msgid "April"
-msgstr ""
+msgstr "Апрель"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:71
 msgctxt "alt. month"
 msgid "May"
-msgstr ""
+msgstr "Май"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:72
 msgctxt "alt. month"
 msgid "June"
-msgstr ""
+msgstr "Июнь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:73
 msgctxt "alt. month"
 msgid "July"
-msgstr ""
+msgstr "Июль"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:74
 msgctxt "alt. month"
 msgid "August"
-msgstr ""
+msgstr "Август"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:75
 msgctxt "alt. month"
 msgid "September"
-msgstr ""
+msgstr "Сентябрь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:76
 msgctxt "alt. month"
 msgid "October"
-msgstr ""
+msgstr "Октябрь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:77
 msgctxt "alt. month"
 msgid "November"
-msgstr ""
+msgstr "Ноябрь"
 
 #: venv/lib/python3.13/site-packages/django/utils/dates.py:78
 msgctxt "alt. month"
 msgid "December"
-msgstr ""
+msgstr "Декабрь"
 
 #: venv/lib/python3.13/site-packages/django/utils/ipv6.py:8
 msgid "This is not a valid IPv6 address."
@@ -2391,8 +3549,8 @@ msgstr ""
 #: venv/lib/python3.13/site-packages/django/views/generic/dates.py:652
 #, python-format
 msgid ""
-"Future %(verbose_name_plural)s not available because %(class_name)s."
-"allow_future is False."
+"Future %(verbose_name_plural)s not available because "
+"%(class_name)s.allow_future is False."
 msgstr ""
 
 #: venv/lib/python3.13/site-packages/django/views/generic/dates.py:692

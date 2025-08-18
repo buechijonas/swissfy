@@ -1,0 +1,223 @@
+{% load static %}
+{% load i18n %}
+<div class="block" style="padding: 20px 20px 0 20px">
+    {% if has_linked_accounts %}
+        {% if user.linkeduser.discord %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon filter-discord">
+                            <img src="{% static 'svgs/discord.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.discord }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.epicgames %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon filter-epicgames">
+                            <img src="{% static 'svgs/epicgames.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.epicgames }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.facebook %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon filter-facebook">
+                            <img src="{% static 'svgs/facebook.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.facebook }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.instagram %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon filter-instagram">
+                            <img src="{% static 'svgs/instagram.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.instagram }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.linkedin %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon filter-linkedin">
+                            <img src="{% static 'svgs/linkedin.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.linkedin }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.pinterest %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon filter-pinterest">
+                            <img src="{% static 'svgs/pinterest.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.pinterest }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.playstation %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon filter-playstation">
+                            <img src="{% static 'svgs/playstation.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.playstation }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.reddit %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon filter-reddit">
+                            <img src="{% static 'svgs/reddit.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.reddit }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.snapchat %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon filter-snapchat">
+                            <img src="{% static 'svgs/snapchat.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.snapchat }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.steam %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon">
+                            <img src="{% static 'svgs/steam.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.steam }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.threads %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon">
+                            <img src="{% static 'svgs/threads.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.threads }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.tiktok %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon">
+                            <img src="{% static 'svgs/tiktok.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.tiktok }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.twitter %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container">
+                        <div class="icon">
+                            <img src="{% static 'svgs/x.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.twitter }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.xbox %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container filter-xbox">
+                        <div class="icon">
+                            <img src="{% static 'svgs/xbox.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.xbox }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if user.linkeduser.youtube %}
+            <div class="d-flex mb-6">
+                <div class="gridify-icon-input">
+                    <div class="icon-container filter-youtube">
+                        <div class="icon">
+                            <img src="{% static 'svgs/youtube.svg' %}" height="100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container d-flex align-center">
+                    <p>{{ user.linkeduser.youtube }}</p>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+    <div class="undraw">
+        <img src="{% static 'svgs/undraw/social-media_vxq0.svg' %}" width="100%"/>
+    </div>
+    <div class="d-flex justify-center mb-6">
+        <p class="text-gray">{% translate 'Keine Verlinkungen' %}</p>
+    </div>
+    {% endif %}
+</div>

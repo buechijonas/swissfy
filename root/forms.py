@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxLengthValidator
 from django.utils.translation import gettext_lazy as _
 
+
 User = get_user_model()
 
 
@@ -24,7 +25,7 @@ class SignUpForm(forms.ModelForm):
         validators=[MaxLengthValidator(50)], label=_("Benutzername")
     )
     email = forms.EmailField(
-        validators=[MaxLengthValidator(50)], label=_("E-Mail Adresse")
+        validators=[MaxLengthValidator(100)], label=_("E-Mail Adresse")
     )
     password = forms.CharField(widget=forms.PasswordInput(), label=_("Passwort"))
 

@@ -1,0 +1,81 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' %}
+        <main>
+            <div class="block" style="padding: 20px">
+                <h1>{% translate 'Aktivitäten' %}</h1>
+            </div>
+            {% for notification in filtered_notifications %}
+                <div class="block d-flex direction-column">
+                    <p>{% translate 'Veröffentlichte einen neuen Post' %}</p>
+                    <a href="{% url 'profile' notification.post.author.pk %}" class="user-card mt-4">
+                        <div class="user-grid">
+                            <div class="pb">
+                                {% if notification.post.author.detailuser.image %}
+                                    <img src="{{ notification.post.author.detailuser.image.url }}" alt="{% translate 'Profilbild' %}" height="48px" style="border-radius: 50px">
+                                {% else %}
+                                    <img class="filter-gray" src="{% static 'svgs/account-circle.svg' %}" height="100%"/>
+                                {% endif %}
+                            </div>
+                            <div class="fullname d-flex align-center">
+                                <p class="text-bold text-black">{{ notification.post.author.first_name }} {{ notification.post.author.last_name }}</p>
+                                {% if notification.post.author.config.role.name == "Verifiziert" %}
+                                    <img src="{% static 'svgs/badges/verified.svg' %}" height="100%"/>
+                                {% endif %}
+                                {% if notification.post.author.config.role.name == "Moderator" %}
+                                    <img src="{% static 'svgs/badges/moderator.svg' %}" height="100%"/>
+                                {% endif %}
+                                {% if notification.post.author.config.role.name == "Admin" %}
+                                    <img src="{% static 'svgs/badges/admin.svg' %}" height="100%"/>
+                                {% endif %}
+                            </div>
+                            <div class="username">
+                                <p class="text-gray">@{{ notification.post.author.username }}</p>
+                            </div>
+                            <div class="follow d-flex align-center justify-center">
+                                {% if notification.post.author in request.user.socialuser.follow.all %}
+                                    {% if notification.post.author in request.user.socialuser.friends.all %}
+                                    <p class="button bg-green w-100">{% translate 'Freunde' %}</p>
+                                    {% else %}
+                                    <p class="button bg-light-blue w-100">{% translate 'Gefolgt' %}</p>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                    <div class="d-flex justify-center mt-2">
+                        <form action="" method="post" class="w-100 mr-1">
+                            {% csrf_token %}
+                            <a href="{% url 'post' notification.post.pk %}" type="submit" class="bg-light-gray button">
+                                <p class="color-white">{% translate 'Zum Post' %}</p>
+                            </a>
+                        </form>
+                        <form action="" method="post" class="w-100 ml-1">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-light-blue button">
+                                <p class="color-white">{% translate 'Gelesen' %}</p>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="undraw">
+                    <img src="{% static 'svgs/undraw/publish-post_q66a.svg' %}" width="100%"/>
+                </div>
+                <div class="d-flex justify-center">
+                    <p class="text-gray">{% translate 'Du bist am Puls der Zeit' %}</p>
+                </div>
+            {% endfor %}
+        </main>
+        {% include 'components/footers/footer.html' with page="notification" %}
+    </body>
+</html>

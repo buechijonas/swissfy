@@ -1,0 +1,244 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' %}
+        <main>
+            <div class="post-container">
+                {% for post in posts %}
+                <div class="post" style="margin: 0 -25px" data-post-id="{{ post.id }}">
+                    <div class="user-grid" style="margin-bottom: 24px">
+                        <a href="{% url 'profile' post.author.pk %}" class="pb">
+                            {% if post.author.detailuser.image %}
+                                <img src="{{ post.author.detailuser.image.url }}" alt="{% translate 'Profilbild' %}" height="48px" style="border-radius: 50px">
+                            {% else %}
+                                <img class="filter-gray" src="{% static 'svgs/account-circle.svg' %}" height="100%"/>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'profile' post.author.pk %}" class="fullname d-flex align-center">
+                            <p class="text-bold text-black">{{ post.author.first_name }} {{ post.author.last_name }}</p>
+                            {% if post.author.config.role.name == "Verifiziert" %}
+                                <img src="{% static 'svgs/badges/verified.svg' %}" height="100%"/>
+                            {% endif %}
+                            {% if post.author.config.role.name == "Moderator" %}
+                                <img src="{% static 'svgs/badges/moderator.svg' %}" height="100%"/>
+                            {% endif %}
+                            {% if post.author.config.role.name == "Admin" %}
+                                <img src="{% static 'svgs/badges/admin.svg' %}" height="100%"/>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'profile' post.author.pk %}" class="username">
+                            <p class="text-gray">@{{ post.author.username }}</p>
+                        </a>
+                        <div class="follow d-flex align-center justify-end">
+                            {% if post.author.username == request.user.username %}
+                            <a href="{% url 'post_update' post.pk %}" class="filter-gray" style="width: 24px; height: 24px;">
+                                <img class="filter-gray" src="{% static 'svgs/pencil.svg' %}" height="100%"/>
+                            </a>
+                            {% else %}
+                            <a href="" class="filter-gray" style="width: 24px; height: 24px;">
+                                <img class="filter-gray" src="{% static 'svgs/alert-octagon.svg' %}" height="100%"/>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" alt="Post Image" width="100%"/>
+                    {% endif %}
+                    <div class="text">
+                        <p>{{ post.text }}</p>
+                    </div>
+                    <div class="actions">
+                        <div class="like d-flex">
+                            <img class="like-button"
+                                 data-post-id="{{ post.id }}"
+                                 {% if request.user in post.likes.all %}
+                                     data-liked="true"
+                                     src="{% static 'svgs/heart-liked.svg' %}" height="100%"
+                                 {% else %}
+                                     data-liked="false"
+                                     src="{% static 'svgs/heart-outline.svg' %}" height="100%"
+                                 {% endif %} />
+                        </div>
+                        <div class="d-flex justify-center">
+                            <span class="likes-count">{{ post.likes.count }}</span>
+                        </div>
+                        <a href="{% url 'post' post.id %}" class="commentary d-flex">
+                            <img src="{% static 'svgs/comment-outline.svg' %}" height="100%"/>
+                        </a>
+                        <div class="d-flex justify-center">
+                            <span>{{ post.commentaries.count }}</span>
+                        </div>
+                        <div class="time d-flex justify-end align-end">
+                            <p class="text-gray text-bold">{{ post.get_time_display }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                    <div class="undraw">
+                        <img src="{% static 'svgs/undraw/playful-cat.svg' %}" width="100%"/>
+                    </div>
+                    <div class="d-flex justify-center">
+                        <p class="text-bold text-purple text-center">{% translate 'Herzlich Willkommen' %}</p>
+                    </div>
+                    <div class="d-flex justify-center mt-6">
+                        <p class="text-center">{% translate 'Schön, dass du da bist! ❤️' %}</p>
+                    </div>
+                    <div class="d-flex justify-center">
+                        <p class="text-center">{% translate 'Wir freuen uns darauf, dich kennenzulernen.' %}</p>
+                    </div>
+                    <div class="d-flex justify-center mt-6">
+                        <p class="text-gray text-center" style="font-size: 0.8rem">{% translate 'Lass uns gemeinsam eine einzigartige Community gestalten!' %}</p>
+                    </div>
+                {% endfor %}
+            </div>
+            <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+                <p>{% translate 'Lädt weitere Posts...' %}</p>
+            </div>
+        </main>
+        {% include 'components/footers/footer.html' with page="home" %}
+    </body>
+</html>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let offset = 10;
+        let loading = false;
+        const postContainer = document.querySelector(".post-container");
+
+        function setupLikeButtons() {
+            document.querySelectorAll(".like-button").forEach(button => {
+                button.addEventListener("click", function() {
+                    let postId = this.getAttribute("data-post-id");
+                    let liked = this.getAttribute("data-liked") === "true";
+
+                    fetch(`/post/${postId}/like/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": "{{ csrf_token }}",
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin"
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.liked) {
+                            this.setAttribute("data-liked", "true");
+                            this.src = "{% static 'svgs/heart-liked.svg' %}";
+                        } else {
+                            this.setAttribute("data-liked", "false");
+                            this.src = "{% static 'svgs/heart-outline.svg' %}";
+                        }
+                        let postDiv = this.closest(".post");
+                        let likesCountElement = postDiv.querySelector(".likes-count");
+                        if (likesCountElement) {
+                            likesCountElement.textContent = data.likes_count;
+                        }
+                    })
+                    .catch(error => console.error("Fehler beim Liken:", error));
+                });
+            });
+        }
+
+        function loadMorePosts() {
+            if (loading) return;
+            loading = true;
+            document.getElementById("loading").style.display = "block";
+
+            fetch(`/load-more-posts/?offset=${offset}`, {
+                method: "GET",
+                credentials: "same-origin",
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("loading").style.display = "none";
+
+                if (data.posts.length > 0) {
+                    data.posts.forEach(post => {
+                        const postHTML = document.createElement("div");
+                        postHTML.classList.add("post");
+                        postHTML.setAttribute("data-post-id", post.id);
+                        postHTML.innerHTML = `
+                            <div class="user-grid" style="margin-bottom: 24px">
+                                <a href="/profile/${post.author.pk}/" class="pb">
+                                    <img src="${post.author.profile_image ? post.author.profile_image : "{% static 'svgs/account-circle.svg' %}"}" alt="Profilbild" height="48px" style="border-radius: 50px" class="${post.author.profile_image ? "" : "filter-gray"}">
+                                </a>
+                                <a href="/profile/${post.author.pk}/" class="fullname d-flex align-center">
+                                    <p class="text-bold text-black">${post.author.first_name} ${post.author.last_name}</p>
+                                    ${post.author.role === "Verifiziert" ? `<img src="{% static 'svgs/badges/verified.svg' %}" height="100%"/>` : ""}
+                                    ${post.author.role === "Moderator" ? `<img src="{% static 'svgs/badges/moderator.svg' %}" height="100%"/>` : ""}
+                                    ${post.author.role === "Admin" ? `<img src="{% static 'svgs/badges/admin.svg' %}" height="100%"/>` : ""}
+                                </a>
+                                <a href="/profile/${post.author.pk}/" class="username">
+                                    <p class="text-gray">@${post.author.username}</p>
+                                </a>
+                                <div class="follow d-flex align-center justify-end">
+                                    ${post.author.username === "{{ request.user.username }}" ?
+                                        `<a href="/post/${post.id}/update/" class="filter-gray" style="width: 24px; height: 24px;">
+                                            <img class="filter-gray" src="{% static 'svgs/pencil.svg' %}" height="100%"/>
+                                        </a>` :
+                                        `<a href="" class="filter-gray" style="width: 24px; height: 24px;">
+                                            <img class="filter-gray" src="{% static 'svgs/alert-octagon.svg' %}" height="100%"/>
+                                        </a>`
+                                    }
+                                </div>
+                            </div>
+                            ${post.image ? `<img src="${post.image}" alt="Post Image" width="100%"/>` : ""}
+                            <div class="text">
+                                <p>${post.text}</p>
+                            </div>
+                            <div class="actions">
+                                <div class="like d-flex">
+                                    <img class="like-button"
+                                         data-post-id="${post.id}"
+                                         data-liked="${post.liked}"
+                                         src="${post.liked ? "{% static 'svgs/heart-liked.svg' %}" : "{% static 'svgs/heart-outline.svg' %}"}"
+                                         height="100%"/>
+                                </div>
+                                <div class="d-flex justify-center">
+                                    <span class="likes-count">${post.likes_count}</span>
+                                </div>
+                                <div class="commentary d-flex">
+                                    <img src="{% static 'svgs/comment-outline.svg' %}" height="100%"/>
+                                </div>
+                                <div class="d-flex justify-center">
+                                    <span>${ post.commentaries.count }</span>
+                                </div>
+                                <div class="time d-flex justify-end align-end">
+                                    <p class="text-gray text-bold">${post.created_at}</p>
+                                </div>
+                            </div>
+                        `;
+                        postContainer.appendChild(postHTML);
+                    });
+
+                    offset += 10;
+                    setupLikeButtons();
+                    loading = false;
+                } else {
+                    document.getElementById("loading").innerHTML = "<p>{% translate 'Keine weiteren Posts' %}</p>";
+                }
+            })
+            .catch(error => {
+                console.error("Fehler beim Laden:", error);
+                document.getElementById("loading").style.display = "none";
+            });
+        }
+
+    function handleScroll() {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+            loadMorePosts();
+        }
+    }
+
+    window.addEventListener("scroll", handleScroll);
+    setupLikeButtons();
+});
+    </script>
+

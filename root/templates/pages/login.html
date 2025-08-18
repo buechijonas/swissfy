@@ -13,6 +13,9 @@
         <main>
             <div class="card">
                 <h1 class="title">{% translate 'Anmelden' %}</h1>
+                <div class="undraw">
+                    <img src="{% static 'svgs/undraw/welcoming_42an.svg' %}" width="100%"/>
+                </div>
                 <form method="post">
                     {% csrf_token %}
                     <div class="gridify-icon-input">

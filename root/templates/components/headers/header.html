@@ -1,9 +1,9 @@
 {% load static %}
 {% load i18n %}
 <header>
-    <div class="logo">
+    <a href="{% url 'home' %}" class="logo">
         <div class="swissfy text-bold">
-            <p>SwissFY</p>
+            <p class="text-black">SwissFY</p>
         </div>
         <div class="kiidle">
             <p>
@@ -15,5 +15,19 @@
                 <span class="text-red text-bold">e</span>
             </p>
         </div>
-    </div>
+    </a>
+    {% if icon2 %}
+        <a href="{% if url2 %}{% url url2 %}{% endif %}" class="column2 d-flex justify-center align-center">
+            <div class="icon">
+                <img src="{% static 'svgs/'|add:icon2|add:'.svg' %}" height="100%"/>
+            </div>
+        </a>
+    {% endif %}
+    {% if icon1 %}
+        <a href="{% if url1 %}{% url url1 %}{% endif %}" class="column1 d-flex justify-center align-center">
+            <div class="icon">
+                <img src="{% static 'svgs/'|add:icon1|add:'.svg' %}" height="100%"/>
+            </div>
+        </a>
+    {% endif %}
 </header>

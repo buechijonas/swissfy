@@ -1,0 +1,25 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' %}
+        <main>
+            <div class="card">
+                <h1>{% translate 'Bist du sicher?' %}</h1>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <button class="bg-dark-red" type="submit">{% translate "Bestätigen" %}</button>
+                    <a href="{% url 'post_update' post.pk %}" class="button bg-light-gray mt-2">{% translate "Abbrechen" %}</a>
+                </form>
+            </div>
+        </main>
+        {% include 'components/footers/footer.html' with page="post_delete" %}
+    </body>
+</html>

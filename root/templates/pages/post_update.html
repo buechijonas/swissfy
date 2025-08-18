@@ -1,0 +1,75 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' %}
+        <main>
+            <div class="card">
+                {% if post.pk %}
+                    <h1>{% translate 'Post bearbeiten' %}</h1>
+                {% else %}
+                    <h1>{% translate 'Post erstellen' %}</h1>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% if not post.pk %}
+                        <div class="gridify-icon-input">
+                            <div class="icon-container align-start-forced" style="padding-top: 16px">
+                                <div class="icon filter-gray">
+                                    <img src="{% static 'svgs/image.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="file" name="image" accept="image/*">
+                                {% if form.errors.image %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.image }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if post.image %}
+                        <div class="gridify-icon-input">
+                            <div class="icon-container align-start-forced" style="padding-top: 16px">
+                                <div class="icon filter-gray">
+                                    <img src="{% static 'svgs/image.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                                <img style="border-radius: 5px;" src="{{ post.image.url }}" alt="Post Image" width="100%"/>
+                        </div>
+                    {% endif %}
+                    <div class="gridify-icon-input">
+                        <div class="icon-container align-start-forced" style="padding-top: 16px">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/text.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                        <div class="input-container">
+                            <textarea style="height: 190px" name="text" placeholder="{% translate 'Text' %}" rows="3" maxlength="500" required>{% if post.pk %}{{ post.text }}{% endif %}</textarea>
+                            {% if form.errors.text %}
+                                <div class="error">
+                                    <p class="error">{{ form.errors.text }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if post.pk %}
+                        <button class="bg-light-gray" type="submit">{% translate "Speichern" %}</button>
+                        <a href="{% url 'post_delete' post.pk %}" class="button bg-dark-red mt-2">{% translate "Löschen" %}</a>
+                    {% else %}
+                        <button class="bg-green" type="submit">{% translate "Posten" %}</button>
+                    {% endif %}
+                </form>
+            </div>
+        </main>
+    </body>
+    {% include 'components/footers/footer.html' with page="post_update" %}
+</html>

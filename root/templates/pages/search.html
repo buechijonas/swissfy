@@ -1,0 +1,65 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' %}
+        <main>
+            <div class="block" style="padding: 20px">
+                <h1>{{ title }}</h1>
+            </div>
+            {% if title == "Benutzerliste" %}
+                <form class="d-flex align-center justify-center mt-6" method="get" action="{% url 'search' %}" class="search">
+                    <input class="mr-1" type="text", name="query" placeholder="{% translate 'Benutzer suchen...' %}" value="{{ request.GET.query }}"  />
+                    <button type="submit" style="width: 40px; height: 40px" class="button bg-light-gray">
+                        <img class="filter-white" src="{% static 'svgs/magnify.svg' %}" height="100%" />
+                    </button>
+                </form>
+            {% endif %}
+            {% for user in users %}
+                <a href="{% url 'profile' user.pk %}" class="user-card mt-4">
+                    <div class="user-grid">
+                        <div class="pb">
+                            {% if user.detailuser.image %}
+                                <img src="{{ user.detailuser.image.url }}" alt="{% translate 'Profilbild' %}" height="48px" style="border-radius: 50px">
+                            {% else %}
+                                <img class="filter-gray" src="{% static 'svgs/account-circle.svg' %}" height="100%"/>
+                            {% endif %}
+                        </div>
+                        <div class="fullname d-flex align-center">
+                            <p class="text-bold text-black">{{ user.first_name }} {{ user.last_name }}</p>
+                            {% if user.config.role.name == "Verifiziert" %}
+                                <img src="{% static 'svgs/badges/verified.svg' %}" height="100%"/>
+                            {% endif %}
+                            {% if user.config.role.name == "Moderator" %}
+                                <img src="{% static 'svgs/badges/moderator.svg' %}" height="100%"/>
+                            {% endif %}
+                            {% if user.config.role.name == "Admin" %}
+                                <img src="{% static 'svgs/badges/admin.svg' %}" height="100%"/>
+                            {% endif %}
+                        </div>
+                        <div class="username">
+                            <p class="text-gray">@{{ user.username }}</p>
+                        </div>
+                        <div class="follow d-flex align-center justify-center">
+                            {% if user in request.user.socialuser.follow.all %}
+                                {% if user in request.user.socialuser.friends.all %}
+                                <p class="button bg-green w-100">{% translate 'Freunde' %}</p>
+                                {% else %}
+                                <p class="button bg-light-blue w-100">{% translate 'Gefolgt' %}</p>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </main>
+            {% include 'components/footers/footer.html' with page="search" %}
+    </body>
+</html>

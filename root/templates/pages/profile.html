@@ -1,0 +1,146 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% if request.user.pk == user.pk %}
+            {% include 'components/headers/header.html' with icon2="account-cog-outline" icon1="cog-outline" url2="account" url1="settings" %}
+        {% else %}
+            {% include 'components/headers/header.html' with icon1="tag-edit" %}
+        {% endif %}
+        <main>
+            <div class="profile-detail">
+                <div class="pb">
+                    {% if user.detailuser.image %}
+                    <img src="{{ user.detailuser.image.url }}" alt="{% translate 'Profilbild' %}" height="108px" style="padding: 10px; border-radius: 50px">
+                    {% else %}
+                        <img class="filter-gray" src="{% static 'svgs/account-circle.svg' %}" height="100%"/>
+                    {% endif %}
+                </div>
+                <div class="fullname d-flex justify-center">
+                    <p class="text-bold">{{ user.first_name }} {{ user.last_name }}</p>
+                    {% if user.config.role.name == "Verifiziert" %}
+                        <img src="{% static 'svgs/badges/verified.svg' %}" height="100%"/>
+                    {% endif %}
+                    {% if user.config.role.name == "Moderator" %}
+                        <img src="{% static 'svgs/badges/moderator.svg' %}" height="100%"/>
+                    {% endif %}
+                    {% if user.config.role.name == "Admin" %}
+                        <img src="{% static 'svgs/badges/admin.svg' %}" height="100%"/>
+                    {% endif %}
+                </div>
+                <p class="text-gray d-flex justify-center">@{{ user.username }}</p>
+            </div>
+            <div class="profile-stats">
+                <div>
+                    <a href="{% url 'profile_friends' user.pk %}" class="friends">
+                        <p class="text-black text-bold mt-4">{{ user.socialuser.friends.count }}</p>
+                        <p class="text-black">{% translate 'Befreundet' %}</p>
+                    </a>
+                    <div class="d-flex w-100">
+                        {% if not user.pk == request.user.pk %}
+                            {% if is_following%}
+                                {% if is_friend %}
+                                    <form class="w-100" action="{% url 'remove_friend' user.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button style="height: 32px;" class="button bg-green" type="submit" {% if is_blocked %}disabled{% endif %}>{% translate 'Befreundet' %}</button>
+                                    </form>
+                                {% elif is_friend_request_sent and not is_blocked %}
+                                    <form class="w-100" action="{% url 'cancel_friend_request' user.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button style="height: 32px;" class="button bg-light-gray" type="submit" {% if is_blocked %}disabled{% endif %}>{% translate 'Angefragt' %}</button>
+                                    </form>
+                                {% else %}
+                                {% if not is_blocked %}
+                                    <form class="w-100" action="{% url 'send_friend_request' user.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button style="height: 32px;" class="button bg-light-blue" type="submit" {% if is_blocked %}disabled{% endif %}>{% translate 'Anfragen' %}</button>
+                                    </form>
+                                {% else %}
+                                    <div>
+                                        <button class="button" type="submit" disabled>{% translate 'Anfragen' %}</button>
+                                    </div>
+                            {% endif %}
+                        {% endif %}
+                            {% else %}
+                            <div class="button bg-light-gray">{% translate '-' %}</div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <a href="{% url 'profile_followers' user.pk %}" class="followers">
+                        <p class="text-bold text-black mt-4">{{ following }}</p>
+                        <p class="text-black">{% translate 'Followers' %}</p>
+                    </a>
+                    {% if not user.pk == request.user.pk %}
+                        <div class="w-100 d-flex">
+                            {% if is_following %}
+                                <a href="{% url 'follow_user' user.id %}" class="bg-light-gray button">
+                                    {% translate 'Entfolgen' %}
+                                </a>
+                            {% else %}
+                                <a href="{% url 'follow_user' user.id %}" class="bg-light-gray button">
+                                    {% translate 'Folgen' %}
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="{% url 'profile_following' user.pk %}" class="following">
+                        <p class="text-bold text-black mt-4">{{ followers }}</p>
+                        <p class="text-black">{% translate 'folgt' %}</p>
+                    </a>
+                    <div class="d-flex w-100">
+                        {% if not user.pk == request.user.pk %}
+                            <button style="height: 32px" class="bg-dark-red">{% translate 'Blockieren' %}</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="biography mt-6 block">
+                <p>{% if user.detailuser.biography %}{{ user.detailuser.biography }}{% endif %}</p>
+            </div>
+            <div class="block profile-tab">
+                <a href="?tab=1" class="status d-flex justify-center">
+                    <img class="icon {% if tab != 1 %}filter-gray{% endif %}" src="{% static 'svgs/circle-slice-1.svg' %}" height="100%"/>
+                </a>
+                <a href="?tab=2" class="feeds d-flex justify-center">
+                    <img class="icon {% if tab != 2 %}filter-gray{% endif %}" src="{% static 'svgs/grid.svg' %}" height="100%"/>
+                </a>
+                <a href="?tab=3" class="info d-flex justify-center">
+                    <img class="icon {% if tab != 3 %}filter-gray{% endif %}" src="{% static 'svgs/information.svg' %}" height="100%"/>
+                </a>
+                <a href="?tab=4" class="links d-flex justify-center">
+                    <img class="icon {% if tab != 4 %}filter-gray{% endif %}" src="{% static 'svgs/link-variant.svg' %}" height="100%"/>
+                </a>
+            </div>
+            <div class="profile-content">
+                {% if tab == 1 %}
+                    {% include 'components/profile/status.html' %}
+                {% endif %}
+                {% if tab == 2 %}
+                    {% include 'components/profile/posts.html' %}
+                {% endif %}
+                {% if tab == 3 %}
+                    {% include 'components/profile/informations.html' %}
+                {% endif %}
+                {% if tab == 4%}
+                    {% include 'components/profile/links.html' %}
+                {% endif %}
+            </div>
+        </main>
+        {% if request.user.pk == user.pk %}
+            {% include 'components/footers/footer.html' with page="profile" %}
+        {% else %}
+        {% include 'components/footers/footer.html' with page="other_profile" %}
+        {% endif %}
+    </body>
+</html>

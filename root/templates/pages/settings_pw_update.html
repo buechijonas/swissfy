@@ -1,0 +1,44 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' with icon2="account-cog-outline" icon1="cog" url2="account" url1="settings" %}
+        <main>
+            <div class="card">
+                <h1>{% translate 'Passwort ändern' %}</h1>
+                {% if request.user == user %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/card-account-details.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                        <div class="input-container">
+                            <input type="text" name="password" placeholder="{% translate 'Neues Passwort' %}" required>
+                            {% if form.errors.password %}
+                                <div class="error">
+                                    <p class="error">{{ form.errors.password }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button class="bg-light-gray" type="submit">{% translate "Aktualisieren" %}</button>
+                    <a class="button bg-light-gray mt-2" href="{% url 'settings' %}">{% translate 'Zurück' %}</a>
+                </form>
+                {% else %}
+                <p class="text-red d-flex justify-center mt-6">{% translate 'Zugriff verweigert' %}</p>
+                {% endif %}
+            </div>
+        </main>
+        {% include 'components/footers/footer.html' with page="settings" %}
+    </body>
+</html>

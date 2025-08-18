@@ -1,0 +1,172 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+        <title>{% translate 'SwissFY' %}</title>
+    </head>
+    <body>
+        {% include 'components/headers/header.html' with icon2="account-cog" icon1="cog-outline" url2="account" url1="settings" %}
+        <main>
+            <div class="card">
+                <h1>{% translate 'Detail' %}</h1>
+                {% if request.user == user %}
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="gridify-icon-input">
+                            <div class="icon-container align-start-forced" style="padding-top: 16px">
+                                    {% if user.detailuser.image %}
+                                    <div class="icon">
+                                        <img src="{{ user.detailuser.image.url }}" alt="{% translate 'Profilbild' %}" style="max-height: 24px; border-radius: 50px">
+                                    </div>
+                                    {% else %}
+                                    <div class="icon filter-gray">
+                                        <img src="{% static 'svgs/image.svg' %}" height="100%"/>
+                                    </div>
+                                    {% endif %}
+                            </div>
+                            <div class="input-container">
+                                <input type="file" name="image" accept="image/*">
+                                {% if form.errors.image %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.image }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container align-start-forced" style="padding-top: 16px">
+                                <div class="icon filter-gray">
+                                    <img src="{% static 'svgs/card-account-details.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <textarea style="height: 190px" name="biography" placeholder="{% translate 'Biografie' %}" rows="3" maxlength="500" required>{% if user.detailuser.biography %}{{ user.detailuser.biography }}{% endif %}</textarea>
+                                {% if form.errors.biography %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.biography }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-gray">
+                                    <img src="{% static 'svgs/gender-male-female.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <select name="sex" required style="height: 40px">
+                                    <option value="">{% translate 'Geschlecht wählen' %}</option>
+                                    <option value="male" {% if user.detailuser.sex == "male" %}selected{% endif %}>{% translate 'Männlich' %}</option>
+                                    <option value="female" {% if user.detailuser.sex == "female" %}selected{% endif %}>{% translate 'Weiblich' %}</option>
+                                    <option value="divers" {% if user.detailuser.sex == "divers" %}selected{% endif %}>{% translate 'Divers' %}</option>
+                                </select>
+                                {% if form.errors.sex %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.sex }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-gray">
+                                    <img src="{% static 'svgs/cake.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="date" name="birthday" value="{% if user.detailuser.birthday %}{{ user.detailuser.birthday|date:'Y-m-d' }}{% endif %}" placeholder="{% translate 'Geburtsdatum' %}" required>
+                                {% if form.errors.birthday %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.birthday }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-gray">
+                                    <img src="{% static 'svgs/briefcase-variant.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="profession" value="{% if user.detailuser.profession %}{{ user.detailuser.profession }}{% endif %}" placeholder="{% translate 'Beruf' %}" required>
+                                {% if form.errors.birthday %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.birthday }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-gray">
+                                    <img src="{% static 'svgs/home-city.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="place_of_residence" value="{% if user.detailuser.place_of_residence %}{{ user.detailuser.place_of_residence }}{% endif %}" placeholder="{% translate 'Wohnort' %}" required>
+                                {% if form.errors.birthday %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.place_of_residence }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-gray">
+                                    <img src="{% static 'svgs/home-silo.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" name="place_of_origin" value="{% if user.detailuser.place_of_origin %}{{ user.detailuser.place_of_origin }}{% endif %}" placeholder="{% translate 'Heimatort' %}" required>
+                                {% if form.errors.birthday %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.place_of_origin }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="gridify-icon-input">
+                            <div class="icon-container">
+                                <div class="icon filter-gray">
+                                    <img src="{% static 'svgs/heart.svg' %}" height="100%"/>
+                                </div>
+                            </div>
+                            <div class="input-container">
+                                <select name="relationship" required style="height: 40px">
+                                    <option value="">{% translate 'Beziehungsstatus wählen' %}</option>
+                                    <option value="single" {% if user.detailuser.relationship == "single" %}selected{% endif %}>{% translate 'Single' %}</option>
+                                    <option value="getting_to_know" {% if user.detailuser.relationship == "getting_to_know" %}selected{% endif %}>{% translate 'Kennenlernphase' %}</option>
+                                    <option value="in_relationship" {% if user.detailuser.relationship == "in_relationship" %}selected{% endif %}>{% translate 'In einer Beziehung' %}</option>
+                                    <option value="engaged" {% if user.detailuser.relationship == "engaged" %}selected{% endif %}>{% translate 'Verlobt' %}</option>
+                                    <option value="married" {% if user.detailuser.relationship == "married" %}selected{% endif %}>{% translate 'Verheiratet' %}</option>
+                                    <option value="complicated" {% if user.detailuser.relationship == "complicated" %}selected{% endif %}>{% translate 'Es ist kompliziert' %}</option>
+                                    <option value="separated" {% if user.detailuser.relationship == "separated" %}selected{% endif %}>{% translate 'Getrennt' %}</option>
+                                    <option value="divorced" {% if user.detailuser.relationship == "divorced" %}selected{% endif %}>{% translate 'Geschieden' %}</option>
+                                    <option value="widowed" {% if user.detailuser.relationship == "widowed" %}selected{% endif %}>{% translate 'Verwitwet' %}</option>
+                                    <option value="other" {% if user.detailuser.relationship == "other" %}selected{% endif %}>{% translate 'Sonstiges' %}</option>
+                                </select>
+                                {% if form.errors.sex %}
+                                    <div class="error">
+                                        <p class="error">{{ form.errors.sex }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button class="bg-light-gray" type="submit">{% translate "Speichern" %}</button>
+                        <a class="button bg-light-gray mt-2" href="{% url 'account' %}">{% translate 'Zurück' %}</a>
+                    </form>
+                {% else %}
+                    <p class="text-red d-flex justify-center mt-6">{% translate 'Zugriff verweigert' %}</p>
+                {% endif %}
+            </div>
+        </main>
+        {% include 'components/footers/footer.html' with page="account" %}
+    </body>
+</html>

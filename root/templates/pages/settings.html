@@ -9,7 +9,7 @@
         <title>{% translate 'SwissFY' %}</title>
     </head>
     <body>
-        {% include 'components/headers/header.html' with icon2="account-cog-outline" icon1="cog" url2="" url1="settings" %}
+        {% include 'components/headers/header.html' with icon2="account-cog-outline" icon1="cog" url2="account" url1="settings" %}
         <main>
             <div class="block">
                 <div class="d-flex align-center">
@@ -127,6 +127,25 @@
                         disabled
                         type="text"
                         value="{% if request.user.is_authenticated %}{% if request.user.legaluser.disclaimer %}{% translate 'Zugestimmt' %}{% else %}{% translate 'Nicht zugestimmt' %}{% endif %}{% endif %}" />
+                    </div>
+                </div>
+            </div>
+            <div class="block">
+                <h1>{% translate 'Sicherheit' %}</h1>
+                <p>{% translate 'Pädophilenschutz' %}</p>
+                <div class="d-flex">
+                    <div class="gridify-icon-input">
+                        <div class="icon-container">
+                            <div class="icon filter-gray">
+                                <img src="{% static 'svgs/shield-account-variant.svg' %}" height="100%"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input
+                        disabled
+                        type="text"
+                        value="{% if request.user.is_authenticated %}{% if request.user.legaluser.protection %}{% translate 'Aktiviert' %}{% else %}{% translate 'Deaktiviert' %}{% endif %}{% endif %}" />
                     </div>
                 </div>
             </div>

@@ -11,15 +11,16 @@ body {
 
 header {
     display: grid;
-    grid-template-columns: 100px 1fr;
+    grid-template-columns: 100px 1fr 50px 50px;
     grid-template-rows: 1fr;
     grid-template-areas:
-        "logo .";
+        "logo . column2 column1";
     height: 50px;
     box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
     background-color: white;
     position: sticky;
     top: 0;
+    z-index: 1;
 }
 
 footer {
@@ -32,7 +33,7 @@ footer {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     grid-template-areas:
-        "home impressum privacy terms disclaimer";
+        "column1 column2 column3 column4 column5";
 }
 
 main {
@@ -41,6 +42,14 @@ main {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+}
+
+h1 {
+    font-size: 1.2rem;
+}
+
+h2 {
+    font-size: 1rem;
 }
 
 p {
@@ -52,6 +61,16 @@ a {
     color: #5BADFF;
     text-decoration: none;
 }
+
+
+header .column1 {
+    grid-area: column1;
+}
+
+header .column2 {
+    grid-area: column2;
+}
+
 
 .logo {
     grid-area: logo;
@@ -74,24 +93,44 @@ a {
     font-size: 0.5rem;
 }
 
-footer .home {
-    grid-area: home;
+.undraw {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 64px;
 }
 
-footer .impressum {
-    grid-area: impressum;
+.card .undraw {
+    padding: 32px 64px;
 }
 
-footer .privacy {
-    grid-area: privacy;
+footer .column1 {
+    grid-area: column1;
 }
 
-footer .terms {
-    grid-area: terms;
+footer .column2 {
+    grid-area: column2;
 }
 
-footer .disclaimer {
-    grid-area: disclaimer;
+footer .column3 {
+    grid-area: column3;
+}
+
+footer .column4 {
+    grid-area: column4;
+}
+
+footer .column5 {
+    grid-area: column5;
+}
+
+.block {
+    border-color: #d6d6d6;
+    border-bottom-width: 0.5px;
+    border-bottom-style: solid;
+    padding: 10px 25px 25px 25px;
+    margin: 0 -25px;
 }
 
 .d-block {
@@ -106,12 +145,48 @@ footer .disclaimer {
     justify-content: center;
 }
 
+.justify-end {
+    justify-content: end;
+}
+
+.align-start {
+    align-items: start;
+}
+
+.align-start-forced {
+    align-items: start !important;
+}
+
 .align-center {
     align-items: center;
 }
 
+.align-end {
+    align-items: end;
+}
+
+.direction-column {
+    flex-direction: column;
+}
+
+.text-center {
+    text-align: center
+}
+
 .w-100 {
     width: 100%;
+}
+
+.filter-white {
+    filter: invert()
+}
+
+.text-black {
+    color: black;
+}
+
+.text-purple {
+    color: #9a00d2
 }
 
 .text-red {
@@ -126,12 +201,24 @@ footer .disclaimer {
     color: #FF9900
 }
 
+.bg-green {
+    background-color: #00B749;
+}
+
 .text-green {
     color: #00B749
 }
 
+.text-light-blue {
+    color: #5BADFF;
+}
+
 .text-blue {
     color: #004CBC;
+}
+
+.bg-light-blue {
+    background-color: #5BADFF
 }
 
 .filter-gray {
@@ -144,6 +231,50 @@ footer .disclaimer {
 
 .bg-light-gray {
     background-color: #BABABA;
+}
+
+.filter-discord {
+    filter: invert(43%) sepia(49%) saturate(5728%) hue-rotate(223deg) brightness(97%) contrast(96%);
+}
+
+.filter-epicgames {
+    filter: invert(18%) sepia(2%) saturate(334%) hue-rotate(37deg) brightness(92%) contrast(93%);
+}
+
+.filter-facebook {
+    filter: invert(24%) sepia(79%) saturate(2888%) hue-rotate(214deg) brightness(101%) contrast(106%);
+}
+
+.filter-instagram {
+    filter: invert(16%) sepia(97%) saturate(6745%) hue-rotate(329deg) brightness(99%) contrast(106%);
+}
+
+.filter-linkedin {
+    filter: invert(25%) sepia(91%) saturate(1462%) hue-rotate(191deg) brightness(103%) contrast(94%);
+}
+
+.filter-pinterest {
+    filter: invert(14%) sepia(52%) saturate(4641%) hue-rotate(340deg) brightness(107%) contrast(114%);
+}
+
+.filter-playstation {
+    filter: invert(26%) sepia(82%) saturate(2843%) hue-rotate(193deg) brightness(92%) contrast(101%);
+}
+
+.filter-reddit {
+    filter: invert(32%) sepia(68%) saturate(2854%) hue-rotate(360deg) brightness(100%) contrast(108%);
+}
+
+.filter-snapchat {
+    filter: invert(96%) sepia(37%) saturate(1874%) hue-rotate(355deg) brightness(106%) contrast(105%);
+}
+
+.filter-xbox {
+    filter: invert(27%) sepia(76%) saturate(1126%) hue-rotate(85deg) brightness(103%) contrast(92%);
+}
+
+.filter-youtube {
+    filter: invert(13%) sepia(97%) saturate(6079%) hue-rotate(9deg) brightness(100%) contrast(123%);
 }
 
 .text-bold {
@@ -166,25 +297,146 @@ footer .disclaimer {
     margin-top: 24px;
 }
 
+.mr-1 {
+    margin-right: 4px;
+}
+
 .ml-auto {
     margin-left: auto;
+}
+
+.ml-1 {
+    margin-left: 4px;
 }
 
 .ml-3 {
     margin-left: 12px;
 }
 
+.mb-6 {
+    margin-bottom: 24px;
+}
+
+
 .icon {
     height: 25px;
     width: 25px;
 }
 
-.card {
-    margin: 50px 0;
+.ntfcn-ctgry {
+    display: grid;
+    grid-template-columns: 1fr 100px;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+        "title button"
+        "count button";
+}
+
+.ntfcn-ctgry .title {
+    grid-area: title;
+}
+
+.ntfcn-ctgry .count {
+    grid-area: count;
+}
+
+.ntfcn-ctgry .button {
+    grid-area: button;
+}
+
+.post {
+    margin: 0 -20px;
+    border-color: #d6d6d6;
+    border-bottom-width: 0.5px;
+    border-bottom-style: solid;
+}
+
+.post .text {
+    padding: 10px 20px;
+}
+
+.post .actions {
+    padding: 20px;
+    display: grid;
+    grid-column-gap: 16px;
+    grid-template-columns: 25px 25px 1fr;
+    grid-template-areas:
+        "like commentary time";
+}
+
+.post .actions .like {
+    grid-area: like;
+}
+
+.post .actions .commentary {
+    grid-area: commentary;
+}
+
+.post .actions .time {
+    font-size: 0.75rem;
+    grid-area: time;
+}
+
+.card,
+.user-card {
     background-color: white;
     box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-    padding: 25px;
+    padding: 16px;
     border-radius: 5px;
+}
+
+.user-card .user-grid,
+.post .user-grid {
+    display: grid;
+    grid-column-gap: 12px;
+    grid-template-columns: 48px 1fr 75px;
+    grid-template-rows: 24px 24px;
+    grid-template-areas:
+        "pb fullname follow"
+        "pb username follow";
+}
+
+.post .user-grid {
+    padding: 15px;
+    margin-bottom: 0 !important;
+}
+
+.user-card .pb,
+.post .pb {
+    grid-area: pb;
+}
+
+.user-card .fullname,
+.post .fullname {
+    grid-area: fullname;
+}
+
+.user-card .fullname p {
+    max-width: 135px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-card .username,
+.post .username {
+    grid-area: username;
+}
+
+.user-card .follow {
+    grid-area: follow;
+}
+
+.user-card .follow button {
+    height: 32px;
+}
+
+.user-card .follow .button {
+    font-size: 0.6rem;
+}
+
+.card {
+    margin: 50px 0;
 }
 
 .card .section {
@@ -196,10 +448,6 @@ footer .disclaimer {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.card h2 {
-    font-size: 1rem;
 }
 
 .gridify-icon-input {
@@ -233,7 +481,146 @@ button {
     font-size: 1rem;
 }
 
-input {
+.button {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.legal {
+    height: 50px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas:
+        "impressum privacy terms disclaimer";
+}
+
+.legal .impressum {
+    grid-area: impressum;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.legal .privacy {
+    grid-area: privacy;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.legal .terms {
+    grid-area: terms;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.legal .disclaimer {
+    grid-area: disclaimer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-stats {
+    display: grid;
+    grid-column-gap: 8px;
+    grid-template-columns:1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas:
+        "friends followers following";
+}
+
+.profile-stats .friends,
+.profile-stats .followers,
+.profile-stats .following {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-stats .friends {
+    grid-area: friends;
+}
+
+.profile-stats .followers {
+    grid-area: followers;
+}
+
+.profile-stats .following {
+    grid-area: following;
+}
+
+.profile-stats button,
+.profile-stats .button {
+    margin: 16px 0;
+    font-size: 0.75rem;
+    padding: 4px;
+    height: 24px;
+    width: 100%;
+}
+
+.profile-detail {
+    margin-top: 32px;
+}
+
+.profile-detail .pb {
+    margin: auto;
+    width: 128px;
+}
+
+.user-card .user-grid .fullname img,
+.profile-detail .fullname img,
+.post .fullname img,
+.post-commentary .username img {
+    height: 18px;
+    width: 18px;
+    margin: 0 4px;
+}
+
+.biography {
+    margin-top: 12px;
+}
+
+.profile-tab {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas:
+        "status feeds info links";
+}
+
+.profile-tab .status {
+    grid-area: status;
+}
+
+.profile-tab .feeds {
+    grid-area: feeds;
+}
+
+.profile-tab .info {
+    grid-area: info;
+}
+
+.profile-tab .links {
+    grid-area: links;
+}
+
+input[disabled] {
+    color: #898989;
+}
+
+input, textarea, select {
     background-color: #F5F5F5;
     border: none;
     height: 24px;
@@ -241,6 +628,65 @@ input {
     border-radius: 5px;
     margin: 10px 0;
     width: 100%;
+}
+
+.commentary-action {
+    display: grid;
+    grid-template-columns: auto 40px;
+    grid-template-rows: auto;
+    grid-template-areas:
+        "commentary-input commentary-btn-send";
+    grid-column-gap: 8px;
+}
+
+.commentary-action .commentary-input {
+    grid-area: commentary-input;
+    display: flex;
+}
+
+.commentary-action .commentary-btn-send {
+    grid-area: commentary-btn-send;
+    display: flex;
+    align-items: center;
+}
+
+.commentary-action .commentary-btn-send button {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-commentary {
+    margin: 0 -24px;
+    border-color: #d6d6d6;
+    border-bottom-width: 0.5px;
+    border-bottom-style: solid;
+}
+
+.post-commentary .user-grid {
+    padding: 8px 15px;
+    margin-bottom: 0 !important;
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    grid-template-areas:
+        "pb username auto";
+    grid-column-gap: 8px;
+}
+
+.post-commentary .user-grid .pb {
+    grid-area: pb;
+}
+
+.post-commentary .user-grid .username {
+    grid-area: username;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+.post-commentary .text {
+    margin: 0 32px 15px 56px;
 }
 
 @media screen and (min-width: 430px) {
