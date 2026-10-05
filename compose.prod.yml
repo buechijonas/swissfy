@@ -1,0 +1,105 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: buechijonas/swissfy-backend:latest
+
+    restart: unless-stopped
+
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: "false"
+      DJANGO_ALLOWED_HOSTS: ${DOMAIN},backend,localhost
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: 5432
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      GOVEX_PUBLIC_URL: ${GOVEX_PUBLIC_URL}
+      GOVEX_ACCOUNT_URL: ${GOVEX_ACCOUNT_URL}
+      GOVEX_CLIENT_ID: ${GOVEX_CLIENT_ID}
+      GOVEX_CLIENT_SECRET: ${GOVEX_CLIENT_SECRET}
+      GOVEX_REDIRECT_URI: https://${DOMAIN}/api/auth/oidc/callback/
+      FRONTEND_URL: https://${DOMAIN}
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  origin:
+    image: buechijonas/swissfy-proxy:latest
+
+    restart: unless-stopped
+
+    depends_on:
+      - backend
+
+  anubis:
+    image: ghcr.io/techarohq/anubis:latest
+    pull_policy: always
+
+    restart: unless-stopped
+
+    environment:
+      BIND: ":3000"
+      TARGET: "http://origin:80"
+      METRICS_BIND: ":9090"
+      SERVE_ROBOTS_TXT: "true"
+      COOKIE_DOMAIN: ${DOMAIN}
+
+    depends_on:
+      - origin
+
+  edge:
+    image: buechijonas/swissfy-proxy:latest
+
+    restart: unless-stopped
+
+    command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.edge", "--adapter", "caddyfile"]
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+    depends_on:
+      - anubis
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# Interactively cuts a release: asks for the bump type (patch/minor/
+# major), bumps frontend/package.json accordingly, builds and pushes
+# the production Docker images to Docker Hub, and creates a GitHub
+# release whose title carries the bump type and whose body lists the
+# commit messages since the previous release.
+#
+# Usage: bin/release
+#
+# Requirements: docker (with buildx), gh (authenticated), a clean
+# working tree on an up-to-date master branch.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+DOCKER_USER="buechijonas"
+BACKEND_IMAGE="$DOCKER_USER/swissfy-backend"
+PROXY_IMAGE="$DOCKER_USER/swissfy-proxy"
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "error: working tree is not clean. Commit or stash your changes first." >&2
+  exit 1
+fi
+
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+if [[ "$current_branch" != "master" ]]; then
+  echo "error: release must be run from 'master' (currently on '$current_branch')." >&2
+  exit 1
+fi
+
+git fetch origin master --tags --quiet
+if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/master)" ]]; then
+  echo "error: local master is not in sync with origin/master. Push or pull first." >&2
+  exit 1
+fi
+
+echo "What kind of release is this?"
+select bump in "patch" "minor" "major"; do
+  case "$bump" in
+    patch | minor | major) break ;;
+    *) echo "Please choose 1, 2, or 3." ;;
+  esac
+done
+
+current_version="$(grep -m1 '"version"' frontend/package.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')"
+IFS='.' read -r major minor patch <<<"$current_version"
+
+case "$bump" in
+  major)
+    major=$((major + 1)); minor=0; patch=0
+    ;;
+  minor)
+    minor=$((minor + 1)); patch=0
+    ;;
+  patch)
+    patch=$((patch + 1))
+    ;;
+esac
+
+new_version="$major.$minor.$patch"
+tag="v$new_version"
+
+if git rev-parse "$tag" >/dev/null 2>&1; then
+  echo "error: tag $tag already exists." >&2
+  exit 1
+fi
+
+previous_tag="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+if [[ -n "$previous_tag" ]]; then
+  range="$previous_tag..HEAD"
+else
+  range="HEAD"
+fi
+repo="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+changelog="$(git log "$range" --no-merges --pretty=format:"- %s ([\`%h\`](https://github.com/$repo/commit/%H))")"
+if [[ -z "$changelog" ]]; then
+  changelog="No changes."
+fi
+
+echo
+echo "==> $current_version -> $new_version ($bump), tag $tag"
+echo "==> Changelog since ${previous_tag:-the beginning}:"
+echo "$changelog"
+echo
+read -r -p "Proceed with this release? [y/N] " confirm
+if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+  echo "Aborted."
+  exit 1
+fi
+
+sed -i '' -E "s/(\"version\": *\")[^\"]+(\")/\1$new_version\2/" frontend/package.json
+git add frontend/package.json
+git commit -m "chore: bump version to $tag"
+git push origin master
+
+echo "==> Building and pushing backend image"
+docker buildx build --platform linux/amd64 \
+  -f backend/Dockerfile.prod \
+  -t "$BACKEND_IMAGE:latest" -t "$BACKEND_IMAGE:$tag" \
+  --push ./backend
+
+echo "==> Building and pushing proxy image"
+docker buildx build --platform linux/amd64 \
+  -f frontend/Dockerfile.prod \
+  -t "$PROXY_IMAGE:latest" -t "$PROXY_IMAGE:$tag" \
+  --push ./frontend
+
+bump_upper="$(echo "$bump" | tr '[:lower:]' '[:upper:]')"
+
+echo "==> Creating GitHub release $tag"
+gh release create "$tag" \
+  --target master \
+  --title "$bump_upper — $tag" \
+  --notes "$changelog"
+
+echo "==> Done. Released $tag and pushed:"
+echo "    $BACKEND_IMAGE:$tag (and :latest)"
+echo "    $PROXY_IMAGE:$tag (and :latest)"
