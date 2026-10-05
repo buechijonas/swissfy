@@ -1,0 +1,157 @@
+@import 'tailwindcss';
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: 'swissfy';
+  default: true;
+
+  --color-primary: #ca0000;
+  --color-primary-content: #ffffff;
+}
+
+@plugin "daisyui/theme" {
+  name: 'dark';
+  prefersdark: true;
+
+  --color-primary: #ef4136;
+  --color-primary-content: #ffffff;
+}
+
+@theme {
+  --color-swissfy-muted: #a8b3bf;
+  --color-swissfy-slate: #6c829c;
+  --color-swissfy-border: #e3e5e8;
+  --color-swissfy-highlight: #ffe0e0;
+  --text-title: 2.5rem;
+}
+
+[data-theme='dark'] {
+  --color-swissfy-muted: #8b96a3;
+  --color-swissfy-slate: #a7b6c8;
+  --color-swissfy-border: #3a3f4a;
+  --color-swissfy-highlight: #451a1a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-swissfy-muted: #8b96a3;
+    --color-swissfy-slate: #a7b6c8;
+    --color-swissfy-border: #3a3f4a;
+    --color-swissfy-highlight: #451a1a;
+  }
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('./fonts/OpenDyslexic-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('./fonts/OpenDyslexic-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('./fonts/OpenDyslexic-Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('./fonts/OpenDyslexic-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+[data-dyslexia='on'] {
+  font-family: 'OpenDyslexic', sans-serif;
+}
+
+[data-contrast='on'] {
+  --color-swissfy-border: #8a97a5;
+}
+
+[data-theme='dark'][data-contrast='on'] {
+  --color-swissfy-border: #6b7482;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme])[data-contrast='on'] {
+    --color-swissfy-border: #6b7482;
+  }
+}
+
+[data-contrast='on'] {
+  --swissfy-contrast-border: var(--color-swissfy-border);
+}
+
+[data-contrast='on'] .btn {
+  border-color: var(--swissfy-contrast-border);
+}
+
+[data-contrast='on'] .app-header {
+  border-color: var(--swissfy-contrast-border);
+}
+
+[data-contrast='on'] .table :where(thead tr :is(td, th), tbody tr:not(:last-child) :is(td, th)) {
+  border-color: var(--swissfy-contrast-border);
+}
+
+[data-contrast='on'] :where(.input, .select, .textarea, .checkbox) {
+  --input-color: var(--swissfy-contrast-border);
+}
+
+[data-contrast='on'] {
+  --swissfy-contrast-primary-border: color-mix(in srgb, var(--color-primary) 80%, black);
+}
+
+[data-theme='dark'][data-contrast='on'] {
+  --swissfy-contrast-primary-border: color-mix(in srgb, var(--color-primary) 80%, white);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme])[data-contrast='on'] {
+    --swissfy-contrast-primary-border: color-mix(in srgb, var(--color-primary) 80%, white);
+  }
+}
+
+[data-contrast='on'] .btn-primary {
+  border-color: var(--swissfy-contrast-primary-border);
+}
+
+[data-contrast='on'] .app-topbar {
+  border-bottom: 1px solid var(--swissfy-contrast-primary-border);
+}
+
+[data-contrast='on'] .app-topbar .btn {
+  border-color: var(--swissfy-contrast-primary-border);
+}
+
+[data-contrast='on'] .app-nav-accent {
+  border-right: 1px solid var(--swissfy-contrast-primary-border);
+}
+
+[data-contrast='on'] .app-nav {
+  border-right: 1px solid var(--swissfy-contrast-border);
+}
+
+[data-contrast='on'] .btn-error {
+  border-color: color-mix(in srgb, var(--color-error) 80%, black);
+}
+
+[data-theme='dark'][data-contrast='on'] .btn-error {
+  border-color: color-mix(in srgb, var(--color-error) 80%, white);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme])[data-contrast='on'] .btn-error {
+    border-color: color-mix(in srgb, var(--color-error) 80%, white);
+  }
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:,">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swissfy</title>
+    <script>
+      try {
+        const mode = localStorage.getItem('theme')
+        if (mode === 'light') document.documentElement.setAttribute('data-theme', 'swissfy')
+        if (mode === 'dark') document.documentElement.setAttribute('data-theme', 'dark')
+      } catch {}
+    </script>
+    <style>
+      html {
+        background-color: oklch(100% 0 0);
+      }
+      [data-theme='dark'] {
+        background-color: oklch(25.33% 0.016 252.42);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme]) {
+          background-color: oklch(25.33% 0.016 252.42);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Deploys the latest images with near-zero downtime for the backend
+# service: starts a second backend container on the new image, waits
+# for it to report healthy via its Docker healthcheck, then removes
+# the old one. origin/anubis/edge are recreated normally afterwards -
+# they're small, fast-starting Caddy/Go binaries, so their restart is
+# effectively instant.
+#
+# Usage: ./deploy (run from the same directory as compose.prod.yml,
+# e.g. /opt/swissfy on the server)
+#
+# Requirements: docker compose, the backend service in
+# compose.prod.yml must have a healthcheck configured.
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+COMPOSE_FILE="compose.prod.yml"
+COMPOSE=(docker compose -f "$COMPOSE_FILE")
+
+if [[ ! -f "$COMPOSE_FILE" ]]; then
+  echo "error: $COMPOSE_FILE not found in $(pwd)." >&2
+  exit 1
+fi
+
+echo "==> Pulling latest images"
+"${COMPOSE[@]}" pull
+
+old_id="$("${COMPOSE[@]}" ps -q backend | head -n1)"
+
+if [[ -z "$old_id" ]]; then
+  echo "==> No backend currently running, starting fresh"
+  "${COMPOSE[@]}" up -d --remove-orphans
+  exit 0
+fi
+
+echo "==> Starting a second backend on the new image (old: ${old_id:0:12})"
+"${COMPOSE[@]}" up -d --no-deps --scale backend=2 --no-recreate backend
+
+new_id="$("${COMPOSE[@]}" ps -q backend | grep -v "^${old_id}$")"
+echo "==> New backend: ${new_id:0:12}, waiting for it to become healthy"
+
+status=""
+for _ in $(seq 1 30); do
+  status="$(docker inspect -f '{{.State.Health.Status}}' "$new_id" 2>/dev/null || echo "starting")"
+  [[ "$status" == "healthy" ]] && break
+  sleep 2
+done
+
+if [[ "$status" != "healthy" ]]; then
+  echo "error: new backend did not become healthy in time (status: $status). Rolling back." >&2
+  docker rm -f "$new_id" >/dev/null
+  exit 1
+fi
+
+echo "==> New backend is healthy, giving the proxy a moment to pick it up"
+sleep 5
+
+echo "==> Removing the old backend (${old_id:0:12})"
+docker stop "$old_id" >/dev/null
+docker rm "$old_id" >/dev/null
+
+echo "==> Recreating origin, anubis and edge with any new images"
+"${COMPOSE[@]}" up -d --remove-orphans origin anubis edge
+
+echo "==> Done."
+"${COMPOSE[@]}" ps

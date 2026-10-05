@@ -1,0 +1,86 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: swissfy
+      POSTGRES_USER: swissfy
+      POSTGRES_PASSWORD: swissfy
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swissfy -d swissfy"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+
+    restart: unless-stopped
+
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      python manage.py bootstrap_admin &&
+      python manage.py runserver 0.0.0.0:8000
+      "
+
+    volumes:
+      - ./backend:/app
+
+    # 8001/5175 so swissfy runs next to wintersehn (8000/5173) and govex (5174).
+    ports:
+      - "8001:8000"
+
+    environment:
+      DB_NAME: swissfy
+      DB_USER: swissfy
+      DB_PASSWORD: swissfy
+      DB_HOST: db
+      DB_PORT: 5432
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: admin@swissfy.ch
+      ADMIN_PASSWORD: admin
+      # govex runs as its own compose stack (../govex). The browser reaches it
+      # via its Vite dev server, this container authentik directly.
+      GOVEX_PUBLIC_URL: http://localhost:5174
+      GOVEX_ACCOUNT_URL: http://localhost:5174/account
+      # authentik's port, published on the host by govex's compose.yml.
+      GOVEX_INTERNAL_URL: http://host.docker.internal:9000
+      GOVEX_CLIENT_ID: swissfy-dev
+      GOVEX_CLIENT_SECRET: swissfy-dev-secret
+      GOVEX_REDIRECT_URI: http://localhost:8001/api/auth/oidc/callback/
+      FRONTEND_URL: http://localhost:5175
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,host.docker.internal
+      DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost:5175,http://127.0.0.1:5175
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+
+    restart: unless-stopped
+
+    command: npm run dev -- --host 0.0.0.0
+
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+
+    ports:
+      - "5175:5173"
+
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  frontend_node_modules:
