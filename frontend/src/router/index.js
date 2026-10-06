@@ -49,6 +49,12 @@ const router = createRouter({
       meta: { activeNavigation: 'profile', requiresAuth: true },
     },
     {
+      path: '/profile/:username',
+      name: 'user-profile',
+      component: ProfileView,
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/impressum',
       name: 'impressum',
       component: ImpressumView,
@@ -92,6 +98,7 @@ const PAGE_TITLES = {
   chats: 'Chats',
   saved: 'Gespeichert',
   profile: 'Profil',
+  'user-profile': 'Profil',
   impressum: 'Impressum',
   privacy: 'Datenschutzerklärung',
   terms: 'Nutzungsrichtlinien',

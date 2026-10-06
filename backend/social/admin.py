@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import Block, FriendRequest, Friendship, Nickname
+from .models import Block, Follow, FriendRequest, Friendship, Nickname
+
+
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin):
+    list_display = ["follower", "following", "created_at"]
 
 
 @admin.register(FriendRequest)
