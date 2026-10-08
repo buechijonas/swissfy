@@ -1,5 +1,5 @@
 <template>
-  <div class="app-header border-b border-swissfy-border py-2 px-6">
+  <div class="app-header max-lg:hidden border-b border-swissfy-border py-2 px-6">
     <div class="breadcrumbs text-sm">
       <ul>
         <li class="text-swissfy-muted" v-for="(item, index) in items" :key="index">

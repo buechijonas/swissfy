@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col lg:gap-8 overflow-y-auto max-lg:h-[calc(100dvh-101px)] lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex flex-col lg:gap-8 overflow-y-auto max-lg:h-[calc(100dvh-48px)] lg:max-h-none lg:overflow-y-visible lg:flex-1"
   >
     <div class="mx-auto w-full max-w-150 px-6 lg:flex-1">
       <h2 class="text-xl font-light my-4">{{ title }}</h2>

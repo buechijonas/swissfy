@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex h-[calc(100dvh-192px)] px-6">
+  <div class="flex h-[calc(100dvh-139px)] lg:h-[calc(100dvh-192px)] px-6">
     <div class="flex flex-col mx-auto my-32">
       <h1 class="text-title my-8 text-center font-light">Herzlich Willkommen</h1>
       <div v-if="!authStore.ready" class="flex items-center gap-4 mx-auto mb-8">
