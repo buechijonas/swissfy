@@ -78,6 +78,11 @@ class UserProfile(models.Model):
         WIDOWED = "widowed", "Verwitwet"
         OTHER = "other", "Sonstiges"
 
+    class Visibility(models.TextChoices):
+        PUBLIC = "public", "Öffentlich"
+        FOLLOWERS = "followers", "Nur Follower"
+        FRIENDS = "friends", "Nur Freunde"
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )
@@ -98,6 +103,10 @@ class UserProfile(models.Model):
     place_of_origin = models.CharField("Heimatort", max_length=100, blank=True)
     relationship = models.CharField(
         "Beziehungsstatus", max_length=20, choices=Relationship.choices, blank=True
+    )
+
+    profile_visibility = models.CharField(
+        "Profil sichtbar für", max_length=20, choices=Visibility.choices, default=Visibility.PUBLIC
     )
 
     def __str__(self):

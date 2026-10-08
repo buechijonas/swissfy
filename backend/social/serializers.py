@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from accounts.models import get_or_create_profile
+from accounts.models import UserProfile, get_or_create_profile
 
 from .models import Follow, FriendRequest, Friendship
 
@@ -14,6 +14,39 @@ def follows(follower, following):
 
 def are_friends(user, other):
     return Friendship.objects.filter(user=user, friend=other).exists()
+
+
+def is_visible(visibility, is_following, is_friend):
+    Visibility = UserProfile.Visibility
+    return (
+        visibility == Visibility.PUBLIC
+        or (visibility == Visibility.FOLLOWERS and is_following)
+        or is_friend
+    )
+
+
+class ProfileListSerializer(serializers.ModelSerializer):
+    """The short form of a profile, for user lists. Expects `profile` to be
+    select_related, since not every user has one (e.g. local admins)."""
+
+    avatar = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["username", "first_name", "last_name", "avatar"]
+
+    def get_avatar(self, obj):
+        profile = getattr(obj, "profile", None)
+        return profile.avatar if profile else ""
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        profile = getattr(obj, "profile", None)
+        if profile and not is_visible(
+            profile.profile_visibility, obj.viewer_follows, obj.viewer_is_friend
+        ):
+            data["first_name"] = data["last_name"] = ""
+        return data
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -76,3 +109,22 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_friend_request_sent(self, obj):
         return FriendRequest.objects.filter(sender=self.viewer, receiver=obj).exists()
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        profile = get_or_create_profile(obj)
+
+        data["can_view"] = data["is_self"] or is_visible(
+            profile.profile_visibility, data["is_following"], data["is_friend"]
+        )
+        if not data["can_view"]:
+            data["first_name"] = data["last_name"] = ""
+            for field in ["follower_count", "following_count", "friend_count"]:
+                data[field] = None
+        return data
+
+
+class PrivacySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ["profile_visibility"]

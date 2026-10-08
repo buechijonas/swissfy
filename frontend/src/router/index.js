@@ -28,7 +28,7 @@ const router = createRouter({
       path: '/search',
       name: 'search',
       component: SearchView,
-      meta: { activeNavigation: 'search' },
+      meta: { activeNavigation: 'search', requiresAuth: true },
     },
     {
       path: '/chats',

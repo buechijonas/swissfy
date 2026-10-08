@@ -32,7 +32,7 @@
 
         <div class="grid grid-cols-3 gap-4 mt-6 text-center">
           <div class="flex flex-col items-center gap-2">
-            <span class="text-xl font-bold">{{ profile.follower_count }}</span>
+            <span class="text-xl font-bold">{{ profile.follower_count ?? '–' }}</span>
             <span class="text-swissfy-muted text-sm">Follower</span>
             <BaseButton
               v-if="!profile.is_self"
@@ -45,11 +45,11 @@
             </BaseButton>
           </div>
           <div class="flex flex-col items-center gap-2">
-            <span class="text-xl font-bold">{{ profile.following_count }}</span>
+            <span class="text-xl font-bold">{{ profile.following_count ?? '–' }}</span>
             <span class="text-swissfy-muted text-sm">Gefolgt</span>
           </div>
           <div class="flex flex-col items-center gap-2">
-            <span class="text-xl font-bold">{{ profile.friend_count }}</span>
+            <span class="text-xl font-bold">{{ profile.friend_count ?? '–' }}</span>
             <span class="text-swissfy-muted text-sm">Freunde</span>
             <BaseButton
               v-if="canRequestFriendship"
@@ -62,6 +62,10 @@
             </BaseButton>
           </div>
         </div>
+
+        <p v-if="!profile.can_view" class="text-swissfy-muted text-sm mt-6 text-center">
+          Dieses Profil ist privat.
+        </p>
 
         <p v-if="actionError" class="text-error text-sm mt-4 text-center">{{ actionError }}</p>
       </BaseCard>

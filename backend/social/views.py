@@ -1,13 +1,64 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Exists, OuterRef
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import generics, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Follow, FriendRequest
-from .serializers import ProfileSerializer, are_friends, follows
+from accounts.models import get_or_create_profile
+
+from .models import Follow, FriendRequest, Friendship
+from .serializers import (
+    PrivacySerializer,
+    ProfileListSerializer,
+    ProfileSerializer,
+    are_friends,
+    follows,
+)
 
 User = get_user_model()
+
+
+class ProfilePagination(PageNumberPagination):
+    page_size = 20
+
+
+class ProfileListView(generics.ListAPIView):
+    """All other active users, a page at a time."""
+
+    serializer_class = ProfileListSerializer
+    pagination_class = ProfilePagination
+
+    def get_queryset(self):
+        viewer = self.request.user
+        return (
+            User.objects.filter(is_active=True)
+            .exclude(pk=viewer.pk)
+            .select_related("profile")
+            .annotate(
+                viewer_follows=Exists(
+                    Follow.objects.filter(follower=viewer, following=OuterRef("pk"))
+                ),
+                viewer_is_friend=Exists(
+                    Friendship.objects.filter(user=viewer, friend=OuterRef("pk"))
+                ),
+            )
+            .order_by("username")
+        )
+
+
+class PrivacyView(APIView):
+    def get(self, request):
+        return Response(PrivacySerializer(get_or_create_profile(request.user)).data)
+
+    def patch(self, request):
+        serializer = PrivacySerializer(
+            get_or_create_profile(request.user), data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class ProfileView(APIView):
