@@ -6,6 +6,16 @@ urlpatterns = [
     path("profiles/", views.ProfileListView.as_view(), name="profile-list"),
     path("profiles/me/", views.ProfileView.as_view(), name="profile-me"),
     path("profiles/me/privacy/", views.PrivacyView.as_view(), name="profile-privacy"),
+    path(
+        "profiles/me/follow-requests/",
+        views.FollowRequestListView.as_view(),
+        name="profile-follow-requests",
+    ),
+    path(
+        "profiles/me/follow-requests/<str:username>/",
+        views.FollowRequestView.as_view(),
+        name="profile-follow-request",
+    ),
     path("profiles/<str:username>/", views.ProfileView.as_view(), name="profile"),
     path("profiles/<str:username>/follow/", views.FollowView.as_view(), name="profile-follow"),
     path(

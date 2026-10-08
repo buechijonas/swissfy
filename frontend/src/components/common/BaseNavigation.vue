@@ -26,6 +26,9 @@
             <img v-if="item.avatar && avatarSrc" class="size-5" :src="avatarSrc" alt="" />
             <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-5!" />
             <span>{{ item.label }}</span>
+            <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
+              {{ item.badge() }}
+            </span>
           </RouterLink>
         </li>
       </ul>

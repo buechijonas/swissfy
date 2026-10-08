@@ -5,6 +5,7 @@ import HomeView from '@/views/HomeView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import SearchView from '@/views/SearchView.vue'
 import ChatsView from '@/views/ChatsView.vue'
+import ChatView from '@/views/ChatView.vue'
 import SavedView from '@/views/SavedView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ImpressumView from '@/views/legal/ImpressumView.vue'
@@ -22,92 +23,88 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { activeNavigation: 'dashboard' },
+      meta: { title: 'Startseite', activeNavigation: 'dashboard' },
     },
     {
       path: '/search',
       name: 'search',
       component: SearchView,
-      meta: { activeNavigation: 'search', requiresAuth: true },
+      meta: { title: 'Suchen', activeNavigation: 'search', requiresAuth: true },
     },
     {
       path: '/chats',
       name: 'chats',
       component: ChatsView,
-      meta: { activeNavigation: 'chats', requiresAuth: true },
+      meta: { title: 'Chats', activeNavigation: 'chats', requiresAuth: true },
+    },
+    {
+      path: '/chats/:username',
+      name: 'chat',
+      component: ChatView,
+      meta: { title: 'Chat', activeNavigation: 'chats', requiresAuth: true },
     },
     {
       path: '/saved',
       name: 'saved',
       component: SavedView,
-      meta: { activeNavigation: 'saved', requiresAuth: true },
+      meta: { title: 'Gespeichert', activeNavigation: 'saved', requiresAuth: true },
     },
     {
       path: '/profile',
       name: 'profile',
       component: ProfileView,
-      meta: { activeNavigation: 'profile', requiresAuth: true },
+      meta: { title: 'Profil', activeNavigation: 'profile', requiresAuth: true },
     },
     {
       path: '/profile/:username',
       name: 'user-profile',
       component: ProfileView,
-      meta: { requiresAuth: true },
+      meta: { title: 'Profil', requiresAuth: true },
     },
     {
       path: '/impressum',
       name: 'impressum',
       component: ImpressumView,
+      meta: { title: 'Impressum' },
     },
     {
       path: '/privacy',
       name: 'privacy',
       component: PrivacyView,
+      meta: { title: 'Datenschutzerklärung' },
     },
     {
       path: '/terms',
       name: 'terms',
       component: TermsView,
+      meta: { title: 'Nutzungsrichtlinien' },
     },
     {
       path: '/disclaimer',
       name: 'disclaimer',
       component: DisclaimerView,
+      meta: { title: 'Haftungsausschluss' },
     },
     {
       path: '/login',
       name: 'login',
       component: LoginView,
+      meta: { title: 'Anmelden' },
     },
     {
       path: '/logout',
       name: 'logout',
       component: LogoutView,
+      meta: { title: 'Abmelden' },
     },
     {
       path: '/settings',
       name: 'settings',
       component: SettingsView,
-      meta: { activeNavigation: 'settings' },
+      meta: { title: 'Einstellungen', activeNavigation: 'settings' },
     },
   ],
 })
-
-const PAGE_TITLES = {
-  home: 'Startseite',
-  search: 'Suchen',
-  chats: 'Chats',
-  saved: 'Gespeichert',
-  profile: 'Profil',
-  'user-profile': 'Profil',
-  impressum: 'Impressum',
-  privacy: 'Datenschutzerklärung',
-  terms: 'Nutzungsrichtlinien',
-  disclaimer: 'Haftungsausschluss',
-  login: 'Anmelden',
-  logout: 'Abmelden',
-  settings: 'Einstellungen',
-}
 
 const CONSENT_GATES = [
   { field: 'privacy', path: '/privacy' },
@@ -140,7 +137,7 @@ router.beforeEach((to) => {
 })
 
 router.afterEach((to) => {
-  const title = PAGE_TITLES[to.name]
+  const title = to.meta.title
   document.title = title ? `${title} – Swissfy` : 'Swissfy'
 })
 

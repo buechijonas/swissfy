@@ -1,3 +1,5 @@
+import { useChatsStore } from '@/stores/chats.js'
+
 export const navigationItems = [
   { key: 'dashboard', label: 'Startseite', icon: 'house-blank', to: '/', footer: true },
   {
@@ -8,7 +10,14 @@ export const navigationItems = [
     requiresAuth: true,
     footer: true,
   },
-  { key: 'chats', label: 'Chats', icon: 'comments', to: '/chats', requiresAuth: true },
+  {
+    key: 'chats',
+    label: 'Chats',
+    icon: 'comments',
+    to: '/chats',
+    requiresAuth: true,
+    badge: () => useChatsStore().unread.length,
+  },
   { key: 'saved', label: 'Gespeichert', icon: 'bookmark', to: '/saved', requiresAuth: true },
   {
     key: 'profile',

@@ -83,6 +83,11 @@ class UserProfile(models.Model):
         FOLLOWERS = "followers", "Nur Follower"
         FRIENDS = "friends", "Nur Freunde"
 
+    class ChatProtection(models.TextChoices):
+        STANDARD = "standard", "Standard"
+        DEVICE = "device", "Nur auf diesem Gerät"
+        PIN = "pin", "Chat-PIN"
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )
@@ -108,6 +113,14 @@ class UserProfile(models.Model):
     profile_visibility = models.CharField(
         "Profil sichtbar für", max_length=20, choices=Visibility.choices, default=Visibility.PUBLIC
     )
+    chat_protection = models.CharField(
+        "Chat-Verschlüsselung",
+        max_length=20,
+        choices=ChatProtection.choices,
+        default=ChatProtection.STANDARD,
+    )
+    read_receipts = models.BooleanField("Lesebestätigungen", default=True)
+    chat_requests = models.BooleanField("Chat-Anfragen erlauben", default=True)
 
     def __str__(self):
         return f"Profile({self.user})"

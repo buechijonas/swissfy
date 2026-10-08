@@ -5,6 +5,9 @@
     >
       {{ brandInitial }}
     </div>
+    <span v-if="$route.meta.title" class="lg:hidden ml-4 truncate text-white">
+      {{ $route.meta.title }}
+    </span>
     <div class="flex items-center gap-3 ml-auto px-6">
       <span v-if="!authStore.ready" class="skeleton h-4 w-24 max-lg:hidden"></span>
       <span v-else-if="authStore.isAuthenticated" class="text-white text-sm max-lg:hidden">

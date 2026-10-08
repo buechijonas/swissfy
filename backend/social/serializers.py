@@ -2,8 +2,9 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from accounts.models import UserProfile, get_or_create_profile
+from chats.models import ChatRequest
 
-from .models import Follow, FriendRequest, Friendship
+from .models import Follow, FollowRequest, FriendRequest, Friendship
 
 User = get_user_model()
 
@@ -16,6 +17,10 @@ def are_friends(user, other):
     return Friendship.objects.filter(user=user, friend=other).exists()
 
 
+def requires_follow_request(user):
+    return get_or_create_profile(user).profile_visibility != UserProfile.Visibility.PUBLIC
+
+
 def is_visible(visibility, is_following, is_friend):
     Visibility = UserProfile.Visibility
     return (
@@ -23,6 +28,10 @@ def is_visible(visibility, is_following, is_friend):
         or (visibility == Visibility.FOLLOWERS and is_following)
         or is_friend
     )
+
+
+HIDDEN_LIST_FIELDS = ["first_name", "last_name"]
+HIDDEN_PROFILE_FIELDS = [*HIDDEN_LIST_FIELDS, "follower_count", "following_count", "friend_count"]
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
@@ -42,10 +51,12 @@ class ProfileListSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         data = super().to_representation(obj)
         profile = getattr(obj, "profile", None)
-        if profile and not is_visible(
+        data["can_view"] = not profile or is_visible(
             profile.profile_visibility, obj.viewer_follows, obj.viewer_is_friend
-        ):
-            data["first_name"] = data["last_name"] = ""
+        )
+        if not data["can_view"]:
+            for field in HIDDEN_LIST_FIELDS:
+                del data[field]
         return data
 
 
@@ -61,6 +72,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     follows_you = serializers.SerializerMethodField()
     is_friend = serializers.SerializerMethodField()
     friend_request_sent = serializers.SerializerMethodField()
+    follow_requested = serializers.SerializerMethodField()
+    requires_follow_request = serializers.SerializerMethodField()
+    can_chat = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -77,6 +91,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             "follows_you",
             "is_friend",
             "friend_request_sent",
+            "follow_requested",
+            "requires_follow_request",
+            "can_chat",
         ]
 
     @property
@@ -110,6 +127,19 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_friend_request_sent(self, obj):
         return FriendRequest.objects.filter(sender=self.viewer, receiver=obj).exists()
 
+    def get_follow_requested(self, obj):
+        return FollowRequest.objects.filter(follower=self.viewer, following=obj).exists()
+
+    def get_requires_follow_request(self, obj):
+        return requires_follow_request(obj)
+
+    def get_can_chat(self, obj):
+        if obj == self.viewer:
+            return False
+        if ChatRequest.between(self.viewer, obj):
+            return True
+        return get_or_create_profile(obj).chat_requests
+
     def to_representation(self, obj):
         data = super().to_representation(obj)
         profile = get_or_create_profile(obj)
@@ -118,13 +148,12 @@ class ProfileSerializer(serializers.ModelSerializer):
             profile.profile_visibility, data["is_following"], data["is_friend"]
         )
         if not data["can_view"]:
-            data["first_name"] = data["last_name"] = ""
-            for field in ["follower_count", "following_count", "friend_count"]:
-                data[field] = None
+            for field in HIDDEN_PROFILE_FIELDS:
+                del data[field]
         return data
 
 
 class PrivacySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ["profile_visibility"]
+        fields = ["profile_visibility", "read_receipts", "chat_requests"]
