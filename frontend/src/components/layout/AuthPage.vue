@@ -5,7 +5,7 @@
   >
     <div class="mx-auto w-full max-w-100">
       <div
-        class="list bg-base-100 rounded-box shadow-none border-swissfy-border border-solid border-1 mt-16 p-8"
+        class="list bg-base-100 rounded-box max-sm:-mx-6 max-sm:rounded-none max-sm:border-x-0 shadow-none border-swissfy-border border-solid border-1 mt-16 p-8"
       >
         <h2 class="text-xl font-light mb-6">{{ title }}</h2>
         <div class="text-swissfy-slate">

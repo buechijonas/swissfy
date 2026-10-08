@@ -3,8 +3,7 @@
   <div
     class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-48px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
   >
-    <div class="mx-auto w-full max-w-150">
-      <h2 class="text-xl font-light my-4">Gespeichert</h2>
+    <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseCard class="p-6">
         <p class="text-swissfy-muted">Gespeicherte Inhalte sind noch in Arbeit.</p>
       </BaseCard>

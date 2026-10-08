@@ -155,3 +155,15 @@
     border-color: color-mix(in srgb, var(--color-error) 80%, white);
   }
 }
+
+[data-contrast='on'] .chat-bubble {
+  border: 1px solid var(--swissfy-contrast-border);
+}
+
+[data-contrast='on'] .chat-bubble::before {
+  display: none;
+}
+
+[data-contrast='on'] .chat-bubble-primary {
+  border-color: var(--swissfy-contrast-primary-border);
+}

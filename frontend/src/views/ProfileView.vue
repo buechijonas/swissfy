@@ -3,9 +3,7 @@
   <div
     class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-48px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
   >
-    <div class="mx-auto w-full max-w-150">
-      <h2 class="text-xl font-light my-4">Profil</h2>
-
+    <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseCard v-if="loading" class="p-6">
         <div class="flex items-center justify-center gap-4">
           <div class="skeleton size-20 rounded-full"></div>
@@ -25,35 +23,53 @@
         <div class="flex items-center justify-center gap-4">
           <img class="size-20 shrink-0" :src="avatarSrc" alt="" />
           <div class="flex flex-col min-w-0">
-            <span class="text-lg font-bold truncate">{{ fullName || profile.username }}</span>
+            <CipherText v-if="!profile.can_view" :length="10" class="text-lg font-bold" />
+            <span v-else class="text-lg font-bold truncate">{{
+              fullName || profile.username
+            }}</span>
             <span class="text-swissfy-muted truncate">@{{ profile.username }}</span>
           </div>
         </div>
 
         <div class="grid grid-cols-3 gap-4 mt-6 text-center">
           <div class="flex flex-col items-center gap-2">
-            <span class="text-xl font-bold">{{ profile.follower_count ?? '–' }}</span>
+            <CipherText v-if="!profile.can_view" class="text-xl font-bold" />
+            <span v-else class="text-xl font-bold">{{ profile.follower_count }}</span>
             <span class="text-swissfy-muted text-sm">Follower</span>
             <BaseButton
               v-if="!profile.is_self"
               size="sm"
-              :variant="profile.is_following ? 'neutral' : 'primary'"
+              block
+              :variant="profile.is_following || profile.follow_requested ? 'neutral' : 'primary'"
               :disabled="busy"
               @click="toggleFollow"
             >
-              {{ profile.is_following ? 'Entfolgen' : 'Folgen' }}
+              {{ followLabel }}
             </BaseButton>
           </div>
           <div class="flex flex-col items-center gap-2">
-            <span class="text-xl font-bold">{{ profile.following_count ?? '–' }}</span>
+            <CipherText v-if="!profile.can_view" class="text-xl font-bold" />
+            <span v-else class="text-xl font-bold">{{ profile.following_count }}</span>
             <span class="text-swissfy-muted text-sm">Gefolgt</span>
+            <BaseButton
+              v-if="!profile.is_self"
+              size="sm"
+              block
+              variant="primary"
+              :to="profile.can_chat ? `/chats/${encodeURIComponent(profile.username)}` : null"
+              :disabled="!profile.can_chat"
+            >
+              Chat
+            </BaseButton>
           </div>
           <div class="flex flex-col items-center gap-2">
-            <span class="text-xl font-bold">{{ profile.friend_count ?? '–' }}</span>
+            <CipherText v-if="!profile.can_view" class="text-xl font-bold" />
+            <span v-else class="text-xl font-bold">{{ profile.friend_count }}</span>
             <span class="text-swissfy-muted text-sm">Freunde</span>
             <BaseButton
               v-if="canRequestFriendship"
               size="sm"
+              block
               variant="primary"
               :disabled="busy || profile.friend_request_sent"
               @click="sendFriendRequest"
@@ -63,7 +79,11 @@
           </div>
         </div>
 
-        <p v-if="!profile.can_view" class="text-swissfy-muted text-sm mt-6 text-center">
+        <p
+          v-if="!profile.can_view"
+          class="flex items-center justify-center gap-2 text-swissfy-muted text-sm mt-6"
+        >
+          <AppIcon name="lock" size="sm" />
           Dieses Profil ist privat.
         </p>
 
@@ -75,17 +95,19 @@
 </template>
 
 <script>
+import AppIcon from '@/components/common/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import CipherText from '@/components/common/CipherText.vue'
 import { icons } from '@/assets/icons.js'
 import { avatars } from '@/assets/images.js'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 
 export default {
   name: 'ProfileView',
-  components: { BaseBreadcrumbs, BaseButton, BaseCard, BaseFooter },
+  components: { AppIcon, BaseBreadcrumbs, BaseButton, BaseCard, BaseFooter, CipherText },
   data() {
     return {
       profile: null,
@@ -109,6 +131,12 @@ export default {
     },
     avatarSrc() {
       return avatars[this.profile.avatar] ?? icons.user
+    },
+    followLabel() {
+      const p = this.profile
+      if (p.is_following) return 'Entfolgen'
+      if (p.follow_requested) return 'Angefragt'
+      return p.requires_follow_request ? 'Anfragen' : 'Folgen'
     },
     fullName() {
       return [this.profile.first_name, this.profile.last_name].filter(Boolean).join(' ')
@@ -156,7 +184,7 @@ export default {
       }
     },
     toggleFollow() {
-      const method = this.profile.is_following ? 'DELETE' : 'POST'
+      const method = this.profile.is_following || this.profile.follow_requested ? 'DELETE' : 'POST'
       return this.runAction('follow/', method, 'Aktion fehlgeschlagen.')
     },
     sendFriendRequest() {

@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import { useChatsStore } from '@/stores/chats.js'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -32,6 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error(extractErrorMessage(data, 'Abmelden fehlgeschlagen.'))
     }
     user.value = null
+    useChatsStore().reset()
   }
 
   async function acceptConsent(field) {

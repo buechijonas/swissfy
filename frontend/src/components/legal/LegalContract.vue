@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="[{ label: contract.title, to: `/${page}` }]" />
-  <LegalPage :title="contract.title">
+  <LegalPage>
     <LegalSection
       v-for="(section, index) in contract.sections"
       :key="index"

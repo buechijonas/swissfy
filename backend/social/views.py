@@ -8,13 +8,14 @@ from rest_framework.views import APIView
 
 from accounts.models import get_or_create_profile
 
-from .models import Follow, FriendRequest, Friendship
+from .models import Follow, FollowRequest, FriendRequest, Friendship
 from .serializers import (
     PrivacySerializer,
     ProfileListSerializer,
     ProfileSerializer,
     are_friends,
     follows,
+    requires_follow_request,
 )
 
 User = get_user_model()
@@ -32,20 +33,42 @@ class ProfileListView(generics.ListAPIView):
 
     def get_queryset(self):
         viewer = self.request.user
-        return (
-            User.objects.filter(is_active=True)
-            .exclude(pk=viewer.pk)
-            .select_related("profile")
-            .annotate(
-                viewer_follows=Exists(
-                    Follow.objects.filter(follower=viewer, following=OuterRef("pk"))
-                ),
-                viewer_is_friend=Exists(
-                    Friendship.objects.filter(user=viewer, friend=OuterRef("pk"))
-                ),
-            )
-            .order_by("username")
+        users = User.objects.filter(is_active=True).exclude(pk=viewer.pk)
+        return with_viewer_relations(users, viewer).order_by("username")
+
+
+def with_viewer_relations(users, viewer):
+    return users.select_related("profile").annotate(
+        viewer_follows=Exists(Follow.objects.filter(follower=viewer, following=OuterRef("pk"))),
+        viewer_is_friend=Exists(Friendship.objects.filter(user=viewer, friend=OuterRef("pk"))),
+    )
+
+
+class FollowRequestListView(generics.ListAPIView):
+    serializer_class = ProfileListSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        viewer = self.request.user
+        users = User.objects.filter(
+            is_active=True, sent_follow_requests__following=viewer
+        ).order_by("sent_follow_requests__created_at")
+        return with_viewer_relations(users, viewer)
+
+
+class FollowRequestView(APIView):
+    def get_request(self, request, username):
+        return get_object_or_404(
+            FollowRequest, follower__username=username, following=request.user
         )
+
+    def post(self, request, username):
+        self.get_request(request, username).accept()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self, request, username):
+        self.get_request(request, username).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PrivacyView(APIView):
@@ -58,6 +81,9 @@ class PrivacyView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        if not requires_follow_request(request.user):
+            for follow_request in request.user.received_follow_requests.all():
+                follow_request.accept()
         return Response(serializer.data)
 
 
@@ -84,12 +110,16 @@ class FollowView(ProfileView):
                 {"detail": "Du kannst dir nicht selbst folgen."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        Follow.objects.get_or_create(follower=request.user, following=target)
+        if requires_follow_request(target) and not follows(request.user, target):
+            FollowRequest.objects.get_or_create(follower=request.user, following=target)
+        else:
+            Follow.objects.get_or_create(follower=request.user, following=target)
         return self.profile_response(request, target)
 
     def delete(self, request, username):
         target = self.get_target(request, username)
         Follow.objects.filter(follower=request.user, following=target).delete()
+        FollowRequest.objects.filter(follower=request.user, following=target).delete()
         return self.profile_response(request, target)
 
 

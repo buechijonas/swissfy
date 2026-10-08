@@ -22,8 +22,9 @@ services:
 
     restart: unless-stopped
 
-    environment:
+    environment: &backend-environment
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      CHAT_ENCRYPTION_KEY: ${CHAT_ENCRYPTION_KEY}
       DJANGO_DEBUG: "false"
       DJANGO_ALLOWED_HOSTS: ${DOMAIN},backend,localhost
       DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN}
@@ -51,6 +52,19 @@ services:
 
     depends_on:
       db:
+        condition: service_healthy
+
+  chat-cleanup:
+    image: buechijonas/swissfy-backend:latest
+
+    restart: unless-stopped
+
+    command: sh -c "while true; do python manage.py delete_old_messages; sleep 3600; done"
+
+    environment: *backend-environment
+
+    depends_on:
+      backend:
         condition: service_healthy
 
   origin:
