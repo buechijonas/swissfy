@@ -10,7 +10,11 @@
     >
       <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
       <ul class="menu w-full lg:w-80 p-4 gap-2">
-        <li v-for="item in visibleNavigationItems" :key="item.key">
+        <li
+          v-for="item in visibleNavigationItems"
+          :key="item.key"
+          :class="{ 'max-lg:hidden': item.footer, 'lg:hidden': item.mobileOnly }"
+        >
           <RouterLink
             :to="item.to"
             class="nav-item flex items-center gap-3 p-4"

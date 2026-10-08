@@ -54,7 +54,7 @@
             </BaseCard>
           </div>
 
-          <div class="mb-10 max-lg:hidden">
+          <div class="mb-10">
             <h3 class="text-xl my-4">Rechtliches</h3>
             <div class="flex flex-col gap-4">
               <RouterLink v-for="link in footerLinks" :key="link.to" :to="link.to">

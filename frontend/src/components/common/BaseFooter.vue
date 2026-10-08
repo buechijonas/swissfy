@@ -1,19 +1,18 @@
 <template>
   <footer
-    class="flex lg:hidden h-12 w-full shrink-0 items-center justify-evenly bg-base-100 border-t border-swissfy-border border-solid max-lg:sticky max-lg:bottom-0 max-lg:mt-auto lg:h-auto lg:w-auto lg:justify-center lg:bg-transparent lg:border-0 lg:mt-6 lg:mb-6"
+    class="sticky bottom-0 mt-auto flex h-12 w-full shrink-0 items-center justify-evenly bg-base-100 border-t border-swissfy-border border-solid lg:hidden"
   >
     <RouterLink
-      v-for="link in footerLinks"
-      :key="link.label"
-      :to="link.to"
-      class="max-lg:btn max-lg:btn-square max-lg:btn-ghost max-lg:btn-sm lg:card mx-0 lg:mx-2 lg:bg-base-100 lg:shadow-none lg:border-swissfy-border lg:border-solid lg:border-1"
+      v-for="item in footerItems"
+      :key="item.key"
+      :to="item.to"
+      class="flex h-full items-center px-3 border-y-2 border-t-transparent"
+      :class="
+        $route.meta.activeNavigation === item.key ? 'border-b-current' : 'border-b-transparent'
+      "
     >
-      <div
-        class="lg:card-body flex flex-row items-center justify-center text-xs text-swissfy-slate p-0 lg:p-4"
-      >
-        <AppIcon :name="link.icon" :alt="link.label" class="size-5! lg:size-4! lg:m-auto" />
-        <p class="hidden lg:inline font-medium">{{ link.label }}</p>
-      </div>
+      <img v-if="item.avatar && avatarSrc" class="size-5" :src="avatarSrc" :alt="item.label" />
+      <AppIcon v-else :name="item.avatar ? 'user' : item.icon" :alt="item.label" class="size-5!" />
     </RouterLink>
   </footer>
 </template>
@@ -21,13 +20,25 @@
 <script>
 import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
-import { footerLinks } from '@/data/footer.js'
+import { avatars } from '@/assets/images.js'
+import { navigationItems } from '@/data/navigation.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'BaseFooter',
   components: { RouterLink, AppIcon },
-  data() {
-    return { footerLinks }
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    footerItems() {
+      return navigationItems.filter(
+        (item) => item.footer && (!item.requiresAuth || this.authStore.isAuthenticated),
+      )
+    },
+    avatarSrc() {
+      return avatars[this.authStore.user?.avatar]
+    },
   },
 }
 </script>
