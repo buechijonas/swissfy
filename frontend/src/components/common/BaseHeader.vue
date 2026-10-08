@@ -10,7 +10,13 @@
       <span v-else-if="authStore.isAuthenticated" class="text-white text-sm">
         {{ authStore.user.display_name }}
       </span>
-      <BaseButton variant="ghost" shape="square" size="sm" to="/settings">
+      <BaseButton
+        variant="ghost"
+        shape="square"
+        size="sm"
+        to="/settings"
+        aria-current-value="false"
+      >
         <img :src="icons.settings" alt="Einstellungen" class="size-5 invert" />
       </BaseButton>
       <label
