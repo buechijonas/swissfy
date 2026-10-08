@@ -6,11 +6,12 @@
       {{ brandInitial }}
     </div>
     <div class="flex items-center gap-3 ml-auto px-6">
-      <span v-if="!authStore.ready" class="skeleton h-4 w-24"></span>
-      <span v-else-if="authStore.isAuthenticated" class="text-white text-sm">
+      <span v-if="!authStore.ready" class="skeleton h-4 w-24 max-lg:hidden"></span>
+      <span v-else-if="authStore.isAuthenticated" class="text-white text-sm max-lg:hidden">
         {{ authStore.user.display_name }}
       </span>
       <BaseButton
+        class="max-lg:hidden"
         variant="ghost"
         shape="square"
         size="sm"
