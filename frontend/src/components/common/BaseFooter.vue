@@ -6,13 +6,13 @@
       v-for="item in footerItems"
       :key="item.key"
       :to="item.to"
-      class="flex h-full items-center px-3 border-y-2 border-t-transparent"
+      class="flex h-full items-center px-4 border-y-2 border-t-transparent"
       :class="
         $route.meta.activeNavigation === item.key ? 'border-b-current' : 'border-b-transparent'
       "
     >
-      <img v-if="item.avatar && avatarSrc" class="size-5" :src="avatarSrc" :alt="item.label" />
-      <AppIcon v-else :name="item.avatar ? 'user' : item.icon" :alt="item.label" class="size-5!" />
+      <img v-if="item.avatar && avatarSrc" class="size-6" :src="avatarSrc" :alt="item.label" />
+      <AppIcon v-else :name="item.avatar ? 'user' : item.icon" :alt="item.label" class="size-6!" />
     </RouterLink>
   </footer>
 </template>

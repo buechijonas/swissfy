@@ -121,6 +121,7 @@ class UserProfile(models.Model):
     )
     read_receipts = models.BooleanField("Lesebestätigungen", default=True)
     chat_requests = models.BooleanField("Chat-Anfragen erlauben", default=True)
+    show_birthdate = models.BooleanField("Geburtsdatum anzeigen", default=False)
 
     def __str__(self):
         return f"Profile({self.user})"

@@ -19,3 +19,12 @@ export function formatRelativeTime(value, nowValue = Date.now()) {
   })
   return `${day}, ${time} Uhr`
 }
+
+export function formatDate(value) {
+  return new Date(value).toLocaleDateString('de-CH', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+}

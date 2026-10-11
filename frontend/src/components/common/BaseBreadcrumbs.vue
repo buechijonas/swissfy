@@ -1,5 +1,7 @@
 <template>
-  <div class="app-header max-lg:hidden border-b border-swissfy-border py-2 px-6">
+  <div
+    class="app-header max-lg:hidden flex items-center justify-between gap-4 border-b border-swissfy-border py-2 px-6"
+  >
     <div class="breadcrumbs text-sm">
       <ul>
         <li class="text-swissfy-muted" v-for="(item, index) in items" :key="index">
@@ -13,6 +15,7 @@
         </li>
       </ul>
     </div>
+    <slot name="actions" />
   </div>
 </template>
 

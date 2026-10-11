@@ -6,6 +6,8 @@ import SettingsView from '@/views/SettingsView.vue'
 import SearchView from '@/views/SearchView.vue'
 import ChatsView from '@/views/ChatsView.vue'
 import ChatView from '@/views/ChatView.vue'
+import PostView from '@/views/PostView.vue'
+import CommentView from '@/views/CommentView.vue'
 import SavedView from '@/views/SavedView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ImpressumView from '@/views/legal/ImpressumView.vue'
@@ -42,6 +44,18 @@ const router = createRouter({
       name: 'chat',
       component: ChatView,
       meta: { title: 'Chat', activeNavigation: 'chats', requiresAuth: true },
+    },
+    {
+      path: '/posts/:id([0-9a-f-]{36})',
+      name: 'post',
+      component: PostView,
+      meta: { title: 'Post', requiresAuth: true },
+    },
+    {
+      path: '/comments/:id([0-9a-f-]{36})',
+      name: 'comment',
+      component: CommentView,
+      meta: { title: 'Kommentar', requiresAuth: true },
     },
     {
       path: '/saved',

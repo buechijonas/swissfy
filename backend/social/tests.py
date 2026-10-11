@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
@@ -30,7 +32,7 @@ class ProfileTests(TestCase):
         self.assertEqual(data["first_name"], "Jonas")
         self.assertTrue(data["is_self"])
         self.assertEqual(
-            (data["follower_count"], data["following_count"], data["friend_count"]), (1, 0, 1)
+            (data["follower_count"], data["following_count"], data["friend_count"]), ("1", "0", "1")
         )
 
     def test_profile_list_excludes_self_and_pages(self):
@@ -54,7 +56,13 @@ class ProfileTests(TestCase):
     def test_privacy_settings(self):
         data = self.client.get("/api/social/profiles/me/privacy/").json()
         self.assertEqual(
-            data, {"profile_visibility": "public", "read_receipts": True, "chat_requests": True}
+            data,
+            {
+                "profile_visibility": "public",
+                "read_receipts": True,
+                "chat_requests": True,
+                "show_birthdate": False,
+            },
         )
 
         response = self.client.patch(
@@ -72,6 +80,24 @@ class ProfileTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def test_birthdate_only_when_shown(self):
+        profile = get_or_create_profile(self.anna)
+        profile.birthdate = date(2000, 1, 31)
+        profile.save()
+        self.assertNotIn("birthdate", self.client.get("/api/social/profiles/anna/").json())
+        self.client.force_login(self.anna)
+        self.assertEqual(
+            self.client.get("/api/social/profiles/me/").json()["birthdate"], "2000-01-31"
+        )
+        self.client.force_login(self.jonas)
+
+        self.set_visibility(self.anna, show_birthdate=True)
+        data = self.client.get("/api/social/profiles/anna/").json()
+        self.assertEqual(data["birthdate"], "2000-01-31")
+
+        self.set_visibility(self.anna, profile_visibility="friends")
+        self.assertNotIn("birthdate", self.client.get("/api/social/profiles/anna/").json())
+
     def test_profile_for_followers(self):
         self.anna.first_name = "Anna"
         self.anna.save()
@@ -85,7 +111,7 @@ class ProfileTests(TestCase):
         self.follow(self.jonas, self.anna)
         data = self.client.get("/api/social/profiles/anna/").json()
         self.assertTrue(data["can_view"])
-        self.assertEqual(data["follower_count"], 1)
+        self.assertEqual(data["follower_count"], "1")
         self.assertEqual(data["first_name"], "Anna")
 
     def test_profile_for_friends(self):
@@ -120,7 +146,7 @@ class ProfileTests(TestCase):
     def test_follow_and_unfollow(self):
         data = self.client.post("/api/social/profiles/anna/follow/").json()
         self.assertTrue(data["is_following"])
-        self.assertEqual(data["follower_count"], 1)
+        self.assertEqual(data["follower_count"], "1")
 
         data = self.client.delete("/api/social/profiles/anna/follow/").json()
         self.assertFalse(data["is_following"])

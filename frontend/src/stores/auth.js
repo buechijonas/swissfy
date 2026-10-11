@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { useChatsStore } from '@/stores/chats.js'
+import { useFoldersStore, useGroupsStore } from '@/stores/posts.js'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -34,6 +35,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
     user.value = null
     useChatsStore().reset()
+    useFoldersStore().reset()
+    useGroupsStore().reset()
   }
 
   async function acceptConsent(field) {

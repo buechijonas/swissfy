@@ -1,7 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-48px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-96px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <div v-if="!authStore.ready" class="mb-10">
@@ -11,20 +11,7 @@
       </div>
 
       <template v-else>
-        <BaseCard role="tablist" class="tabs px-2">
-          <RouterLink
-            v-for="tab in tabs"
-            :key="tab.key"
-            role="tab"
-            class="tab h-12 border-y-2 border-t-transparent"
-            :class="activeTab === tab.key ? 'tab-active border-b-primary' : 'border-b-transparent'"
-            :aria-selected="activeTab === tab.key"
-            :to="{ query: { tab: tab.key } }"
-            replace
-          >
-            {{ tab.label }}
-          </RouterLink>
-        </BaseCard>
+        <BaseTabs :tabs="tabs" :active="activeTab" />
 
         <template v-if="activeTab === 'general'">
           <div class="mb-10">
@@ -90,14 +77,13 @@
             <div v-else-if="!privacyError" class="skeleton h-8 w-56"></div>
           </BaseCard>
           <BaseCard
+            v-for="toggle in privacyToggles"
+            :key="toggle.field"
             class="p-6 mt-4 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
           >
             <div class="min-w-0">
-              <p>Lesebestätigungen</p>
-              <p class="text-swissfy-muted text-sm">
-                Wenn aus, sehen andere nicht, ob du ihre Nachrichten gelesen hast, und du siehst es
-                bei ihnen auch nicht.
-              </p>
+              <p>{{ toggle.label }}</p>
+              <p class="text-swissfy-muted text-sm">{{ toggle.hint }}</p>
             </div>
             <div v-if="privacy" class="flex flex-wrap justify-center gap-2 shrink-0">
               <BaseButton
@@ -105,33 +91,9 @@
                 :key="option.label"
                 type="button"
                 size="sm"
-                :variant="privacy.read_receipts === option.value ? 'primary' : 'neutral'"
+                :variant="privacy[toggle.field] === option.value ? 'primary' : 'neutral'"
                 :disabled="savingPrivacy"
-                @click="savePrivacy('read_receipts', option.value)"
-              >
-                {{ option.label }}
-              </BaseButton>
-            </div>
-            <div v-else-if="!privacyError" class="skeleton h-8 w-28"></div>
-          </BaseCard>
-          <BaseCard
-            class="p-6 mt-4 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-          >
-            <div class="min-w-0">
-              <p>Chat-Anfragen</p>
-              <p class="text-swissfy-muted text-sm">
-                Wenn aus, kann dir niemand eine neue Chat-Anfrage senden. Bestehende Chats bleiben.
-              </p>
-            </div>
-            <div v-if="privacy" class="flex flex-wrap justify-center gap-2 shrink-0">
-              <BaseButton
-                v-for="option in onOffOptions"
-                :key="option.label"
-                type="button"
-                size="sm"
-                :variant="privacy.chat_requests === option.value ? 'primary' : 'neutral'"
-                :disabled="savingPrivacy"
-                @click="savePrivacy('chat_requests', option.value)"
+                @click="savePrivacy(toggle.field, option.value)"
               >
                 {{ option.label }}
               </BaseButton>
@@ -199,6 +161,11 @@
             </form>
             <p v-if="chatError" class="text-error text-sm text-center">{{ chatError }}</p>
           </BaseCard>
+        </div>
+
+        <div v-else-if="activeTab === 'groups'" class="mb-10">
+          <h3 class="text-xl my-4">Gruppen</h3>
+          <GroupManager />
         </div>
 
         <template v-else>
@@ -277,7 +244,9 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import BaseTabs from '@/components/common/BaseTabs.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
+import GroupManager from '@/components/posts/GroupManager.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { themeMode } from '@/lib/theme.js'
 import { dyslexiaFont } from '@/lib/dyslexia.js'
@@ -290,7 +259,16 @@ const PRIVACY_URL = '/api/social/profiles/me/privacy/'
 
 export default {
   name: 'SettingsView',
-  components: { RouterLink, BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, AppIcon },
+  components: {
+    RouterLink,
+    BaseBreadcrumbs,
+    BaseCard,
+    BaseFooter,
+    BaseButton,
+    BaseTabs,
+    AppIcon,
+    GroupManager,
+  },
   data() {
     return {
       breadcrumbs: [{ label: 'Einstellungen', to: '/' }],
@@ -331,6 +309,23 @@ export default {
         { value: 'friends', label: 'Freunde' },
       ],
       privacy: null,
+      privacyToggles: [
+        {
+          field: 'read_receipts',
+          label: 'Lesebestätigungen',
+          hint: 'Wenn aus, sehen andere nicht, ob du ihre Nachrichten gelesen hast, und du siehst es bei ihnen auch nicht.',
+        },
+        {
+          field: 'chat_requests',
+          label: 'Chat-Anfragen',
+          hint: 'Wenn aus, kann dir niemand eine neue Chat-Anfrage senden. Bestehende Chats bleiben.',
+        },
+        {
+          field: 'show_birthdate',
+          label: 'Geburtsdatum',
+          hint: 'Wenn an, sehen alle, die dein Profil sehen dürfen, dein Geburtsdatum unter «Über mich».',
+        },
+      ],
       onOffOptions: [
         { value: true, label: 'An' },
         { value: false, label: 'Aus' },
@@ -346,7 +341,12 @@ export default {
     tabs() {
       return [
         { key: 'general', label: 'Allgemein' },
-        ...(this.authStore.isAuthenticated ? [{ key: 'profile', label: 'Profil' }] : []),
+        ...(this.authStore.isAuthenticated
+          ? [
+              { key: 'profile', label: 'Profil' },
+              { key: 'groups', label: 'Gruppen' },
+            ]
+          : []),
         { key: 'display', label: 'Darstellung' },
       ]
     },

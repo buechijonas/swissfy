@@ -43,6 +43,9 @@ services:
       GOVEX_REDIRECT_URI: https://${DOMAIN}/api/auth/oidc/callback/
       FRONTEND_URL: https://${DOMAIN}
 
+    volumes:
+      - backend_media:/app/media
+
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/', timeout=3)"]
       interval: 5s
@@ -115,5 +118,6 @@ services:
 
 volumes:
   postgres_data:
+  backend_media:
   caddy_data:
   caddy_config:
