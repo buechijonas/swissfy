@@ -38,7 +38,7 @@ class ProfileTests(TestCase):
     def test_profile_list_excludes_self_and_pages(self):
         User.objects.bulk_create(User(username=f"user{i:02}") for i in range(25))
         data = self.client.get("/api/social/profiles/").json()
-        self.assertEqual(data["count"], 26)
+        self.assertNotIn("count", data)
         self.assertEqual(len(data["results"]), 20)
         self.assertEqual(
             data["results"][0],
@@ -139,6 +139,30 @@ class ProfileTests(TestCase):
         self.follow(self.jonas, self.anna)
         data = self.client.get("/api/social/profiles/").json()
         self.assertEqual(data["results"][0]["first_name"], "Anna")
+
+    def search(self, query):
+        data = self.client.get("/api/social/profiles/", {"q": query}).json()
+        return [user["username"] for user in data["results"]]
+
+    def test_search(self):
+        mia = User.objects.create(username="mia_s", first_name="Mia", last_name="Müller")
+        User.objects.create(username="lukas", first_name="Lukas", last_name="Meier")
+        self.assertEqual(self.search("mia"), ["mia_s"])
+        self.assertEqual(self.search("müll"), ["mia_s"])
+        self.assertEqual(self.search("  Mia   Müller "), ["mia_s"])
+        self.assertEqual(self.search("m"), [])
+        self.assertEqual(self.search("me"), ["lukas"])
+        self.assertEqual(self.search("mi la"), [])
+        self.assertEqual(self.search("mia mü"), ["mia_s"])
+        self.assertEqual(self.search("xyz"), [])
+
+        self.set_visibility(mia, profile_visibility="friends")
+        self.assertEqual(self.search("müll"), [])
+        self.assertEqual(self.search("mia müller"), ["mia_s"])
+        self.assertEqual(self.search("Müller Mia"), ["mia_s"])
+        self.assertEqual(self.search("mia_"), ["mia_s"])
+        Friendship.objects.create(user=self.jonas, friend=mia)
+        self.assertEqual(self.search("müll"), ["mia_s"])
 
     def test_unknown_profile(self):
         self.assertEqual(self.client.get("/api/social/profiles/nobody/").status_code, 404)

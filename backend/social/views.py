@@ -1,12 +1,14 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
+from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.utils.urls import replace_query_param
 from rest_framework.views import APIView
 
-from accounts.models import get_or_create_profile
+from accounts.models import UserProfile, get_or_create_profile
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 from .serializers import (
@@ -24,6 +26,25 @@ User = get_user_model()
 class ProfilePagination(PageNumberPagination):
     page_size = 20
 
+    def paginate_queryset(self, queryset, request, view=None):
+        self.request = request
+        try:
+            self.number = max(1, int(request.query_params.get(self.page_query_param, 1)))
+        except ValueError:
+            raise NotFound("Ungültige Seite.")
+        start = (self.number - 1) * self.page_size
+        items = list(queryset[start : start + self.page_size + 1])
+        self.has_next = len(items) > self.page_size
+        return items[: self.page_size]
+
+    def get_paginated_response(self, data):
+        next_url = None
+        if self.has_next:
+            next_url = replace_query_param(
+                self.request.build_absolute_uri(), self.page_query_param, self.number + 1
+            )
+        return Response({"next": next_url, "results": data})
+
 
 class ProfileListView(generics.ListAPIView):
     """All other active users, a page at a time."""
@@ -34,7 +55,42 @@ class ProfileListView(generics.ListAPIView):
     def get_queryset(self):
         viewer = self.request.user
         users = User.objects.filter(is_active=True).exclude(pk=viewer.pk)
+        query = " ".join(self.request.query_params.get("q", "").split())
+        if query:
+            users = search(users, query, viewer) if len(query) >= MIN_QUERY_LENGTH else users.none()
         return with_viewer_relations(users, viewer).order_by("username")
+
+
+MIN_QUERY_LENGTH = 2
+
+
+def search(users, query, viewer):
+    Visibility = UserProfile.Visibility
+    names_visible = (
+        Q(profile__isnull=True)
+        | Q(profile__profile_visibility=Visibility.PUBLIC)
+        | Q(
+            profile__profile_visibility=Visibility.FOLLOWERS,
+            pk__in=Follow.objects.filter(follower=viewer).values("following"),
+        )
+        | Q(pk__in=Friendship.objects.filter(user=viewer).values("friend"))
+    )
+    terms = query.split()
+    partial = User.objects.all()
+    for term in terms:
+        by_username = User.objects.filter(username__icontains=term).values("pk")
+        by_name = User.objects.filter(
+            names_visible, Q(first_name__icontains=term) | Q(last_name__icontains=term)
+        ).values("pk")
+        partial = partial.filter(pk__in=by_username.union(by_name))
+
+    full_name = Q(pk__in=[])
+    for split in range(1, len(terms)):
+        first, last = " ".join(terms[:split]), " ".join(terms[split:])
+        full_name |= Q(first_name__iexact=first, last_name__iexact=last)
+        full_name |= Q(first_name__iexact=last, last_name__iexact=first)
+    exact = User.objects.filter(full_name).values("pk")
+    return users.filter(pk__in=partial.values("pk").union(exact))
 
 
 def with_viewer_relations(users, viewer):
@@ -58,9 +114,7 @@ class FollowRequestListView(generics.ListAPIView):
 
 class FollowRequestView(APIView):
     def get_request(self, request, username):
-        return get_object_or_404(
-            FollowRequest, follower__username=username, following=request.user
-        )
+        return get_object_or_404(FollowRequest, follower__username=username, following=request.user)
 
     def post(self, request, username):
         self.get_request(request, username).accept()

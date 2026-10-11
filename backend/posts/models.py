@@ -99,6 +99,9 @@ class Comment(models.Model):
     text = models.TextField(max_length=TEXT_LENGTH)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [models.Index(fields=["post", "parent", "created_at"], name="comment_thread")]
+
     def __str__(self):
         return f"Comment({self.author}, {self.post_id})"
 
