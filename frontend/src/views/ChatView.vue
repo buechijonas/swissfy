@@ -6,8 +6,11 @@
         <RouterLink :to="profileLink" class="flex items-center gap-4 min-w-0">
           <img class="size-12 shrink-0" :src="avatarSrc" alt="" />
           <div class="flex flex-col min-w-0">
-            <CipherText v-if="!partner.can_view" :length="10" class="font-bold" />
-            <span v-else class="font-bold truncate">{{ fullName || partner.username }}</span>
+            <span class="flex min-w-0 items-center gap-2">
+              <CipherText v-if="!partner.can_view" :length="10" class="font-bold" />
+              <span v-else class="font-bold truncate">{{ fullName || partner.username }}</span>
+              <RoleBadge :role="partner.role" />
+            </span>
             <span class="text-swissfy-muted text-sm truncate">@{{ partner.username }}</span>
           </div>
         </RouterLink>
@@ -156,6 +159,7 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import MessageStatus from '@/components/common/MessageStatus.vue'
+import RoleBadge from '@/components/common/RoleBadge.vue'
 import { icons } from '@/assets/icons.js'
 import { avatars } from '@/assets/images.js'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
@@ -178,6 +182,7 @@ export default {
     BaseFooter,
     CipherText,
     MessageStatus,
+    RoleBadge,
   },
   data() {
     return {

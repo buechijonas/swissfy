@@ -10,4 +10,7 @@ urlpatterns = [
     path("api/social/", include("social.urls")),
     path("api/chats/", include("chats.urls")),
     path("api/", include("posts.urls")),
+    path("api/", include("moderation.urls")),
+    path("api/administration/", include("accounts.administration_urls")),
+    path("api/notifications/", include("notifications.urls")),
 ]

@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import OuterRef, Subquery
+from django.db.models import OuterRef, Q, Subquery
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -15,19 +15,34 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.roles import is_moderator
+from main.numbers import compact_number
+from moderation.sanctions import ensure_not_suspended
+from notifications.models import Notification
+from notifications.notify import notify, withdraw
+from social.serializers import can_view_profile
+
 from .models import (
     Comment,
     CommentVote,
     ContactGroup,
     Like,
+    Post,
     PostCreation,
     PostImage,
     SavedFolder,
     SavedPost,
 )
-from main.numbers import compact_number
-
-from .queries import attach_latest_replies, comment_details, feed, visible_posts, with_details
+from .queries import (
+    attach_latest_replies,
+    comment_details,
+    comment_visibility,
+    feed,
+    reported_comments,
+    unavailable,
+    visible_posts,
+    with_details,
+)
 from .serializers import (
     CommentSerializer,
     ContactGroupSerializer,
@@ -36,6 +51,8 @@ from .serializers import (
     PostSummarySerializer,
     SavedFolderSerializer,
 )
+
+User = get_user_model()
 
 POSTS_PER_DAY = 10
 
@@ -73,6 +90,16 @@ def check_quota(user):
         raise Throttled(detail=f"Du kannst höchstens {POSTS_PER_DAY} Posts pro Tag erstellen.")
 
 
+def notify_comment(comment):
+    notify(
+        comment.post.author,
+        Notification.Kind.COMMENT,
+        actor=comment.author,
+        post=comment.post,
+        comment=comment,
+    )
+
+
 def serve_image(file):
     response = FileResponse(file.open("rb"), content_type="image/webp")
     response["Cache-Control"] = "private, max-age=31536000, immutable"
@@ -88,11 +115,12 @@ class FeedView(generics.ListCreateAPIView):
         return with_details(feed(self.request.user), self.request.user)
 
     def create(self, request, *args, **kwargs):
+        ensure_not_suspended(request.user)
         check_quota(request.user)
         serializer = PostCreateSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         with transaction.atomic():
-            get_user_model().objects.select_for_update().get(pk=request.user.pk)
+            User.objects.select_for_update().get(pk=request.user.pk)
             check_quota(request.user)
             PostCreation.objects.filter(
                 author=request.user, created_at__lt=timezone.now() - timedelta(days=1)
@@ -121,9 +149,17 @@ class ActivityView(APIView):
     def get(self, request, username):
         viewer = request.user
         posts = visible_posts(viewer).filter(author__username=username)
+        on_visible_post = Q(post__in=visible_posts(viewer).values("pk")) | Q(author=viewer)
+        if is_moderator(viewer):
+            on_visible_post |= reported_comments()
         comments = Comment.objects.filter(
-            author__username=username, post__in=visible_posts(viewer).values("pk")
+            comment_visibility(viewer), on_visible_post, author__username=username
         )
+        author = User.objects.filter(username=username).select_related("profile").first()
+        if author and not can_view_profile(viewer, author):
+            comments = (
+                comments.filter(reported_comments()) if is_moderator(viewer) else comments.none()
+            )
         comments = comment_details(comments, viewer)
         before = parse_datetime(request.query_params.get("before", ""))
         if before:
@@ -133,9 +169,10 @@ class ActivityView(APIView):
         page_size = NewestFirst.page_size
         posts = list(with_details(posts, viewer).order_by("-created_at")[:page_size])
         comments = list(comments.order_by("-created_at")[:page_size])
-        commented = with_details(visible_posts(viewer), viewer).in_bulk(
-            {comment.post_id for comment in comments}
-        )
+        context_posts = Post.objects.all() if is_moderator(viewer) else visible_posts(viewer)
+        post_ids = {comment.post_id for comment in comments}
+        visible = with_details(context_posts, viewer).in_bulk(post_ids)
+        commented = Post.objects.select_related("author").in_bulk(post_ids)
         items = sorted(posts + comments, key=lambda item: item.created_at, reverse=True)
         items = items[:page_size]
 
@@ -145,7 +182,7 @@ class ActivityView(APIView):
                 {
                     "type": "comment",
                     **CommentSerializer(item, context=context).data,
-                    "post": PostSummarySerializer(commented[item.post_id], context=context).data,
+                    "post": post_summary(commented[item.post_id], visible, context),
                 }
                 if isinstance(item, Comment)
                 else {"type": "post", **PostSerializer(item, context=context).data}
@@ -193,12 +230,15 @@ class PostThumbnailView(APIView):
 class LikeView(APIView):
     def post(self, request, uuid):
         post = visible_post(request, uuid)
-        Like.objects.get_or_create(user=request.user, post=post)
+        _, created = Like.objects.get_or_create(user=request.user, post=post)
+        if created:
+            notify(post.author, Notification.Kind.LIKE, actor=request.user, post=post)
         return self.state(post, True)
 
     def delete(self, request, uuid):
         post = visible_post(request, uuid)
         Like.objects.filter(user=request.user, post=post).delete()
+        withdraw(post.author, Notification.Kind.LIKE, request.user, post=post)
         return self.state(post, False)
 
     def state(self, post, liked):
@@ -221,25 +261,48 @@ class SaveView(APIView):
 
 
 def visible_comments(viewer):
-    return comment_details(Comment.objects.filter(post__in=visible_posts(viewer)), viewer)
+    on_visible_post = Q(post__in=visible_posts(viewer)) | Q(author=viewer)
+    comments = Comment.objects.filter(comment_visibility(viewer), on_visible_post)
+    return comment_details(comments, viewer)
+
+
+def post_summary(post, visible, context):
+    if post.pk in visible:
+        return PostSummarySerializer(visible[post.pk], context=context).data
+    return unavailable(post, "Post")
 
 
 class CommentListView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     pagination_class = OldestFirst
 
+    def get_post(self):
+        return visible_post(self.request, self.kwargs["uuid"])
+
+    def comment_visibility(self):
+        return comment_visibility(self.request.user)
+
     def get_queryset(self):
-        post = visible_post(self.request, self.kwargs["uuid"])
-        return comment_details(post.comments.filter(parent=None), self.request.user)
+        comments = self.get_post().comments.filter(self.comment_visibility(), parent=None)
+        return comment_details(comments, self.request.user)
 
     def list(self, request, *args, **kwargs):
-        page = attach_latest_replies(self.paginate_queryset(self.get_queryset()), request.user)
+        page = attach_latest_replies(
+            self.paginate_queryset(self.get_queryset()),
+            request.user,
+            self.comment_visibility(),
+        )
         return self.get_paginated_response(self.get_serializer(page, many=True).data)
 
+    def create(self, request, *args, **kwargs):
+        ensure_not_suspended(request.user)
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
-        serializer.save(
+        comment = serializer.save(
             post=visible_post(self.request, self.kwargs["uuid"]), author=self.request.user
         )
+        notify_comment(comment)
 
 
 class CommentReplyListView(CommentListView):
@@ -247,11 +310,15 @@ class CommentReplyListView(CommentListView):
         return get_object_or_404(visible_comments(self.request.user), uuid=self.kwargs["uuid"])
 
     def get_queryset(self):
-        return comment_details(self.parent().replies.all(), self.request.user)
+        replies = self.parent().replies.filter(self.comment_visibility())
+        return comment_details(replies, self.request.user)
 
     def perform_create(self, serializer):
         parent = self.parent()
-        serializer.save(post=parent.post, parent=parent, author=self.request.user)
+        if not visible_posts(self.request.user).filter(pk=parent.post_id).exists():
+            raise PermissionDenied("Dieser Post ist nicht mehr verfügbar.")
+        comment = serializer.save(post=parent.post, parent=parent, author=self.request.user)
+        notify_comment(comment)
 
 
 class CommentDetailView(generics.RetrieveDestroyAPIView):
@@ -261,6 +328,9 @@ class CommentDetailView(generics.RetrieveDestroyAPIView):
     def get_queryset(self):
         return visible_comments(self.request.user)
 
+    def get_posts(self):
+        return with_details(visible_posts(self.request.user), self.request.user)
+
     def retrieve(self, request, *args, **kwargs):
         comment = self.get_object()
         chain = []
@@ -269,15 +339,21 @@ class CommentDetailView(generics.RetrieveDestroyAPIView):
             chain.append(parent_id)
             parent_id = Comment.objects.values_list("parent_id", flat=True).get(pk=parent_id)
         ancestors = self.get_queryset().in_bulk(chain)
-        post = with_details(visible_posts(request.user), request.user).get(pk=comment.post_id)
+        hidden_ancestors = Comment.objects.select_related("author").in_bulk(chain)
         context = self.get_serializer_context()
+        visible = self.get_posts().in_bulk([comment.post_id])
         return Response(
             {
                 **self.get_serializer(comment).data,
-                "ancestors": self.get_serializer(
-                    [ancestors[pk] for pk in reversed(chain)], many=True
-                ).data,
-                "post": PostSummarySerializer(post, context=context).data,
+                "ancestors": [
+                    (
+                        self.get_serializer(ancestors[pk]).data
+                        if pk in ancestors
+                        else unavailable(hidden_ancestors[pk], "Kommentar")
+                    )
+                    for pk in reversed(chain)
+                ],
+                "post": post_summary(comment.post, visible, context),
             }
         )
 
@@ -287,12 +363,15 @@ class CommentDetailView(generics.RetrieveDestroyAPIView):
             raise PermissionDenied("Du kannst nur eigene Kommentare löschen.")
         comment.delete()
 
-        parent = None
-        if comment.parent_id:
-            parent = self.get_queryset().get(pk=comment.parent_id)
-            parent = attach_latest_replies([parent], request.user)[0]
+        parent = self.get_queryset().filter(pk=comment.parent_id).first()
+        if parent:
+            parent = attach_latest_replies(
+                [parent], request.user, comment_visibility(request.user)
+            )[0]
             parent = self.get_serializer(parent).data
-        comment_count = Comment.objects.filter(post=comment.post_id, parent=None).count()
+        comment_count = Comment.objects.filter(
+            comment_visibility(request.user), post=comment.post_id, parent=None
+        ).count()
         return Response({"parent": parent, "comment_count": comment_count})
 
 

@@ -21,7 +21,7 @@
 import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { avatars } from '@/assets/images.js'
-import { navigationItems } from '@/data/navigation.js'
+import { canAccess, navigationItems } from '@/data/navigation.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
@@ -32,9 +32,7 @@ export default {
       return useAuthStore()
     },
     footerItems() {
-      return navigationItems.filter(
-        (item) => item.footer && (!item.requiresAuth || this.authStore.isAuthenticated),
-      )
+      return navigationItems.filter((item) => item.footer && canAccess(item, this.authStore))
     },
     avatarSrc() {
       return avatars[this.authStore.user?.avatar]

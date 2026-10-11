@@ -1,7 +1,9 @@
 <template>
   <div>
     <template v-if="!nested">
-      <CommentForm v-model="draft" :placeholder="placeholder" :sending="sending" @submit="add" />
+      <slot name="composer">
+        <CommentForm v-model="draft" :placeholder="placeholder" :sending="sending" @submit="add" />
+      </slot>
       <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
     </template>
     <BaseCard v-if="comments.length || $slots.head" :class="{ 'mt-4': !nested }">
@@ -11,7 +13,14 @@
           v-if="comments.length"
           class="absolute left-8 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-swissfy-border"
         ></span>
-        <CommentForm v-model="draft" :placeholder="placeholder" :sending="sending" @submit="add" />
+        <slot name="composer">
+          <CommentForm
+            v-model="draft"
+            :placeholder="placeholder"
+            :sending="sending"
+            @submit="add"
+          />
+        </slot>
         <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
       </div>
       <ul v-if="nested">
@@ -20,6 +29,7 @@
             :comment="comment"
             :depth="1"
             :sibling-below="index < comments.length - 1"
+            :moderation="moderation"
             @delete="confirmRemove"
           />
         </li>
@@ -29,13 +39,19 @@
           <CommentItem
             :comment="comment"
             :line-below="!!comment.latest_reply"
+            :moderation="moderation"
             @delete="confirmRemove"
           />
           <template v-if="comment.latest_reply">
-            <CommentItem :comment="comment.latest_reply" :depth="1" @delete="confirmRemove" />
+            <CommentItem
+              :comment="comment.latest_reply"
+              :depth="1"
+              :moderation="moderation"
+              @delete="confirmRemove"
+            />
             <RouterLink
               v-if="comment.reply_count > 1"
-              :to="commentLink(comment)"
+              :to="commentLink(comment, moderation)"
               class="block pl-15 pb-3 text-sm text-swissfy-muted link"
             >
               Alle {{ comment.reply_count }} Antworten anzeigen
@@ -73,6 +89,7 @@ export default {
     url: { type: String, required: true },
     placeholder: { type: String, default: 'Kommentar schreiben…' },
     nested: { type: Boolean, default: false },
+    moderation: { type: Boolean, default: false },
   },
   emits: ['created', 'deleted'],
   data() {

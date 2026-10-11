@@ -1,14 +1,16 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, Value, When
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
-from rest_framework.exceptions import NotFound
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.utils.urls import replace_query_param
 from rest_framework.views import APIView
 
 from accounts.models import UserProfile, get_or_create_profile
+from accounts.roles import NAME_ORDERING, is_admin, is_moderator, with_role_rank
+from main.pagination import NextPagePagination
+from moderation.sanctions import suspended_users
+from notifications.models import Notification
+from notifications.notify import notify, resolve_friend_request, withdraw
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 from .serializers import (
@@ -21,44 +23,43 @@ from .serializers import (
 )
 
 User = get_user_model()
-
-
-class ProfilePagination(PageNumberPagination):
-    page_size = 20
-
-    def paginate_queryset(self, queryset, request, view=None):
-        self.request = request
-        try:
-            self.number = max(1, int(request.query_params.get(self.page_query_param, 1)))
-        except ValueError:
-            raise NotFound("Ungültige Seite.")
-        start = (self.number - 1) * self.page_size
-        items = list(queryset[start : start + self.page_size + 1])
-        self.has_next = len(items) > self.page_size
-        return items[: self.page_size]
-
-    def get_paginated_response(self, data):
-        next_url = None
-        if self.has_next:
-            next_url = replace_query_param(
-                self.request.build_absolute_uri(), self.page_query_param, self.number + 1
-            )
-        return Response({"next": next_url, "results": data})
+Resolution = Notification.Resolution
 
 
 class ProfileListView(generics.ListAPIView):
     """All other active users, a page at a time."""
 
     serializer_class = ProfileListSerializer
-    pagination_class = ProfilePagination
+    pagination_class = NextPagePagination
 
     def get_queryset(self):
         viewer = self.request.user
         users = User.objects.filter(is_active=True).exclude(pk=viewer.pk)
+        if not is_admin(viewer):
+            users = users.exclude(pk__in=suspended_users())
         query = " ".join(self.request.query_params.get("q", "").split())
         if query:
             users = search(users, query, viewer) if len(query) >= MIN_QUERY_LENGTH else users.none()
-        return with_viewer_relations(users, viewer).order_by("username")
+        users = with_visibility_ranks(with_viewer_relations(with_role_rank(users), viewer), viewer)
+        return users.order_by("lock_rank", "shown_role_rank", *NAME_ORDERING)
+
+
+def with_visibility_ranks(users, viewer):
+    if is_admin(viewer):
+        return users.annotate(lock_rank=Value(0), shown_role_rank=F("role_rank"))
+    Visibility = UserProfile.Visibility
+    viewable = (
+        Q(profile__isnull=True)
+        | Q(profile__profile_visibility=Visibility.PUBLIC)
+        | Q(profile__profile_visibility=Visibility.FOLLOWERS, viewer_follows=True)
+        | Q(viewer_is_friend=True)
+    )
+    return users.annotate(
+        lock_rank=Case(
+            When(viewable, then=Value(0)), default=Value(1), output_field=IntegerField()
+        ),
+        shown_role_rank=Case(When(viewable, then=F("role_rank")), default=Value(0)),
+    )
 
 
 MIN_QUERY_LENGTH = 2
@@ -67,13 +68,17 @@ MIN_QUERY_LENGTH = 2
 def search(users, query, viewer):
     Visibility = UserProfile.Visibility
     names_visible = (
-        Q(profile__isnull=True)
-        | Q(profile__profile_visibility=Visibility.PUBLIC)
-        | Q(
-            profile__profile_visibility=Visibility.FOLLOWERS,
-            pk__in=Follow.objects.filter(follower=viewer).values("following"),
+        Q()
+        if is_admin(viewer)
+        else (
+            Q(profile__isnull=True)
+            | Q(profile__profile_visibility=Visibility.PUBLIC)
+            | Q(
+                profile__profile_visibility=Visibility.FOLLOWERS,
+                pk__in=Follow.objects.filter(follower=viewer).values("following"),
+            )
+            | Q(pk__in=Friendship.objects.filter(user=viewer).values("friend"))
         )
-        | Q(pk__in=Friendship.objects.filter(user=viewer).values("friend"))
     )
     terms = query.split()
     partial = User.objects.all()
@@ -94,9 +99,13 @@ def search(users, query, viewer):
 
 
 def with_viewer_relations(users, viewer):
-    return users.select_related("profile").annotate(
-        viewer_follows=Exists(Follow.objects.filter(follower=viewer, following=OuterRef("pk"))),
-        viewer_is_friend=Exists(Friendship.objects.filter(user=viewer, friend=OuterRef("pk"))),
+    return (
+        users.select_related("profile")
+        .prefetch_related("groups")
+        .annotate(
+            viewer_follows=Exists(Follow.objects.filter(follower=viewer, following=OuterRef("pk"))),
+            viewer_is_friend=Exists(Friendship.objects.filter(user=viewer, friend=OuterRef("pk"))),
+        )
     )
 
 
@@ -125,6 +134,23 @@ class FollowRequestView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class FriendRequestDecisionView(FollowRequestView):
+    def get_request(self, request, username):
+        return get_object_or_404(FriendRequest, sender__username=username, receiver=request.user)
+
+    def post(self, request, username):
+        friend_request = self.get_request(request, username)
+        resolve_friend_request(request.user, friend_request.sender, Resolution.ACCEPTED)
+        friend_request.accept()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self, request, username):
+        friend_request = self.get_request(request, username)
+        resolve_friend_request(request.user, friend_request.sender, Resolution.DECLINED)
+        friend_request.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class PrivacyView(APIView):
     def get(self, request):
         return Response(PrivacySerializer(get_or_create_profile(request.user)).data)
@@ -147,7 +173,10 @@ class ProfileView(APIView):
     def get_target(self, request, username=None):
         if username is None:
             return request.user
-        return get_object_or_404(User, username=username, is_active=True)
+        users = User.objects.filter(is_active=True)
+        if not is_moderator(request.user):
+            users = users.filter(~Q(pk__in=suspended_users()) | Q(pk=request.user.pk))
+        return get_object_or_404(users, username=username)
 
     def profile_response(self, request, target):
         return Response(ProfileSerializer(target, context={"request": request}).data)
@@ -167,12 +196,15 @@ class FollowView(ProfileView):
         if requires_follow_request(target) and not follows(request.user, target):
             FollowRequest.objects.get_or_create(follower=request.user, following=target)
         else:
-            Follow.objects.get_or_create(follower=request.user, following=target)
+            _, created = Follow.objects.get_or_create(follower=request.user, following=target)
+            if created:
+                notify(target, Notification.Kind.FOLLOW, actor=request.user)
         return self.profile_response(request, target)
 
     def delete(self, request, username):
         target = self.get_target(request, username)
         Follow.objects.filter(follower=request.user, following=target).delete()
+        withdraw(target, Notification.Kind.FOLLOW, request.user)
         FollowRequest.objects.filter(follower=request.user, following=target).delete()
         return self.profile_response(request, target)
 
@@ -189,5 +221,7 @@ class FriendRequestView(ProfileView):
             return Response(
                 {"detail": "Ihr seid bereits befreundet."}, status=status.HTTP_400_BAD_REQUEST
             )
-        FriendRequest.objects.get_or_create(sender=request.user, receiver=target)
+        _, created = FriendRequest.objects.get_or_create(sender=request.user, receiver=target)
+        if created:
+            notify(target, Notification.Kind.FRIEND_REQUEST, actor=request.user)
         return self.profile_response(request, target)

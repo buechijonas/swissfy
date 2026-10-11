@@ -104,6 +104,8 @@ INSTALLED_APPS = [
     "social",
     "chats",
     "posts",
+    "moderation",
+    "notifications",
 ]
 
 REST_FRAMEWORK = {

@@ -14,8 +14,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name="comment",
-            index=models.Index(
-                fields=["post", "parent", "created_at"], name="comment_thread"
-            ),
+            index=models.Index(fields=["post", "parent", "created_at"], name="comment_thread"),
         ),
     ]

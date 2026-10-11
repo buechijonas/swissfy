@@ -9,6 +9,7 @@ import { RouterView } from 'vue-router'
 import BasePage from '@/components/layout/BasePage.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useChatsStore } from '@/stores/chats.js'
+import { useNotificationsStore } from '@/stores/notifications.js'
 
 const DELIVERY_INTERVAL = 20000
 
@@ -37,6 +38,9 @@ export default {
       if (useAuthStore().isAuthenticated && document.visibilityState === 'visible') {
         useChatsStore()
           .sync()
+          .catch(() => {})
+        useNotificationsStore()
+          .refresh()
           .catch(() => {})
       }
     },

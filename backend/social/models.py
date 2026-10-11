@@ -72,6 +72,11 @@ class FriendRequest(models.Model):
             ),
         ]
 
+    def accept(self):
+        Friendship.objects.get_or_create(user=self.sender, friend=self.receiver)
+        Friendship.objects.get_or_create(user=self.receiver, friend=self.sender)
+        self.delete()
+
     def __str__(self):
         return f"{self.sender} -> {self.receiver}"
 

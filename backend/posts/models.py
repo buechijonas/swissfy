@@ -46,6 +46,7 @@ class Post(models.Model):
     )
     groups = models.ManyToManyField(ContactGroup, related_name="posts", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    hidden_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Post({self.author}, {self.pk})"
@@ -98,6 +99,7 @@ class Comment(models.Model):
     )
     text = models.TextField(max_length=TEXT_LENGTH)
     created_at = models.DateTimeField(auto_now_add=True)
+    hidden_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         indexes = [models.Index(fields=["post", "parent", "created_at"], name="comment_thread")]

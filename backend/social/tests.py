@@ -42,7 +42,14 @@ class ProfileTests(TestCase):
         self.assertEqual(len(data["results"]), 20)
         self.assertEqual(
             data["results"][0],
-            {"username": "anna", "first_name": "", "last_name": "", "avatar": "", "can_view": True},
+            {
+                "username": "anna",
+                "first_name": "",
+                "last_name": "",
+                "avatar": "",
+                "role": None,
+                "can_view": True,
+            },
         )
         self.assertNotIn("jonas", [u["username"] for u in data["results"]])
 
@@ -297,3 +304,30 @@ class CanChatTests(TestCase):
 
         ChatRequest.objects.create(sender=self.jonas, recipient=self.anna, status="accepted")
         self.assertTrue(self.can_chat())
+
+
+class SearchOrderTests(TestCase):
+    def test_staff_first_then_alphabetical(self):
+        from accounts.roles import Role, set_role
+
+        viewer = User.objects.create(username="viewer")
+        names = {
+            "zoe": Role.ADMIN,
+            "bert": Role.MODERATOR,
+            "carl": Role.SUPPORT,
+            "anna": Role.VERIFIED,
+            "aaron": Role.DEFAULT,
+            "max": Role.MODERATOR,
+        }
+        for username, role in names.items():
+            set_role(User.objects.create(username=username), role)
+        for username, role in (("adam", Role.ADMIN), ("abby", Role.DEFAULT)):
+            private = User.objects.create(username=username)
+            set_role(private, role)
+            UserProfile.objects.create(user=private, profile_visibility="friends")
+        self.client.force_login(viewer)
+        data = self.client.get("/api/social/profiles/").json()
+        self.assertEqual(
+            [user["username"] for user in data["results"]],
+            ["zoe", "bert", "max", "carl", "anna", "aaron", "abby", "adam"],
+        )

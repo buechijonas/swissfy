@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { useChatsStore } from '@/stores/chats.js'
+import { useNotificationsStore } from '@/stores/notifications.js'
 import { useFoldersStore, useGroupsStore } from '@/stores/posts.js'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -35,6 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
     user.value = null
     useChatsStore().reset()
+    useNotificationsStore().reset()
     useFoldersStore().reset()
     useGroupsStore().reset()
   }

@@ -30,16 +30,18 @@
       <img class="size-8" :src="avatarSrc(comment.author)" alt="" />
     </RouterLink>
     <div class="flex min-w-0 flex-1 flex-col">
-      <div class="flex items-baseline gap-2">
+      <div class="flex items-center gap-2">
         <RouterLink :to="profileLink(comment.author)" class="font-bold truncate">
           {{ comment.author.username }}
         </RouterLink>
-        <span v-if="comment.is_post_author" class="badge badge-primary badge-sm shrink-0">
+        <RoleBadge :role="comment.author.role" />
+        <span v-if="comment.is_post_author" class="text-xs font-bold text-error shrink-0">
           Verfasser
         </span>
         <span class="text-xs text-swissfy-muted shrink-0">
           {{ formatRelativeTime(comment.created_at) }}
         </span>
+        <span v-if="comment.hidden" class="text-xs font-bold text-error shrink-0">Verborgen</span>
       </div>
       <p v-if="showReplyTo && comment.reply_to" class="text-xs text-swissfy-muted">
         Antwort an
@@ -74,7 +76,7 @@
         {{ score }}
       </span>
       <DeleteButton v-if="comment.can_delete" @click="$emit('delete', comment)" />
-      <template v-else>
+      <template v-else-if="comment.can_vote">
         <BaseButton
           v-for="option in voteOptions"
           :key="option.value"
@@ -89,6 +91,15 @@
           <AppIcon :name="option.icon" :alt="option.label" />
         </BaseButton>
       </template>
+      <BaseButton
+        v-if="comment.can_report"
+        outline
+        size="sm"
+        :disabled="reporting || reported"
+        @click="report"
+      >
+        {{ reported ? 'Gemeldet' : 'Melden' }}
+      </BaseButton>
     </div>
   </div>
 </template>
@@ -98,6 +109,7 @@ import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
+import RoleBadge from '@/components/common/RoleBadge.vue'
 import { icons } from '@/assets/icons.js'
 import { avatars } from '@/assets/images.js'
 import { apiFetch } from '@/lib/api.js'
@@ -109,7 +121,7 @@ const CENTER = ['left-8', 'left-19', 'left-30']
 
 export default {
   name: 'CommentItem',
-  components: { RouterLink, AppIcon, BaseButton, DeleteButton },
+  components: { RouterLink, AppIcon, BaseButton, DeleteButton, RoleBadge },
   props: {
     comment: { type: Object, required: true },
     depth: { type: Number, default: 0 },
@@ -120,6 +132,7 @@ export default {
     lineBelow: { type: Boolean, default: false },
     focused: { type: Boolean, default: false },
     showReplyTo: { type: Boolean, default: false },
+    moderation: { type: Boolean, default: false },
   },
   emits: ['delete'],
   data() {
@@ -129,6 +142,8 @@ export default {
       score: this.comment.score,
       myVote: this.comment.my_vote,
       voting: false,
+      reported: this.comment.reported,
+      reporting: false,
       voteOptions: [
         { value: 1, icon: 'arrow-up', label: 'Upvote' },
         { value: -1, icon: 'arrow-down', label: 'Downvote' },
@@ -139,6 +154,7 @@ export default {
     comment(comment) {
       this.score = comment.score
       this.myVote = comment.my_vote
+      this.reported = comment.reported
     },
   },
   methods: {
@@ -164,9 +180,20 @@ export default {
         this.voting = false
       }
     },
+    async report() {
+      this.reporting = true
+      try {
+        const response = await apiFetch(`/api/comments/${this.comment.id}/report/`, {
+          method: 'POST',
+        })
+        if (response.ok) this.reported = true
+      } finally {
+        this.reporting = false
+      }
+    },
     open(event) {
       if (this.focused || event.target.closest('a, button')) return
-      this.$router.push(this.to ?? commentLink(this.comment))
+      this.$router.push(this.to ?? commentLink(this.comment, this.moderation))
     },
   },
 }

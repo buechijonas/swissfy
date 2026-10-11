@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from .models import UserConsent, get_or_create_profile
+from .roles import role_of
 
 User = get_user_model()
 
@@ -48,5 +49,4 @@ class UserSerializer(serializers.ModelSerializer):
         return get_or_create_profile(obj).birthdate
 
     def get_role(self, obj):
-        group = obj.groups.first()
-        return group.name if group else None
+        return role_of(obj)
