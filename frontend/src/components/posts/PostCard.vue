@@ -17,9 +17,23 @@
       >
         <AppIcon name="folder" alt="In Ordner verschieben" />
       </BaseButton>
-      <DeleteButton v-if="post.is_own" :disabled="busy" @click="$refs.confirm.open()" />
+      <BaseButton
+        v-if="post.can_report"
+        outline
+        size="sm"
+        :disabled="busy || reported"
+        @click="report"
+      >
+        {{ reported ? 'Gemeldet' : 'Melden' }}
+      </BaseButton>
+      <DeleteButton
+        v-if="post.is_own && !moderation"
+        :disabled="busy"
+        @click="$refs.confirm.open()"
+      />
     </AuthorHeader>
 
+    <p v-if="post.hidden" class="px-4 pt-3 text-xs font-bold text-error">Öffentlich verborgen</p>
     <p v-if="post.text" class="px-4 py-3 whitespace-pre-line break-words">{{ post.text }}</p>
 
     <div v-if="post.images.length" class="group relative">
@@ -78,7 +92,7 @@
       </template>
     </div>
 
-    <footer class="flex items-start gap-6 px-4 py-3">
+    <footer v-if="!moderation" class="flex items-start gap-6 px-4 py-3">
       <div :class="actionClass">
         <button
           type="button"
@@ -161,6 +175,7 @@ export default {
     detail: { type: Boolean, default: false },
     folderPicker: { type: Boolean, default: false },
     edgeToEdge: { type: Boolean, default: false },
+    moderation: { type: Boolean, default: false },
   },
   emits: ['deleted', 'saved-change'],
   data() {
@@ -168,6 +183,7 @@ export default {
       liked: this.post.liked,
       likeCount: this.post.like_count,
       saved: this.post.saved,
+      reported: this.post.reported,
       folder: this.post.saved_folder,
       slide: 0,
       busy: false,
@@ -183,7 +199,7 @@ export default {
       return `/api/posts/${this.post.id}`
     },
     postLink() {
-      return `/posts/${this.post.id}`
+      return this.moderation ? `/moderation/posts/${this.post.id}` : `/posts/${this.post.id}`
     },
   },
   methods: {
@@ -237,6 +253,9 @@ export default {
         this.folder = null
         this.$emit('saved-change', { saved: false, folder: null })
       }
+    },
+    async report() {
+      if (await this.request('report/', 'POST')) this.reported = true
     },
     async remove() {
       if (await this.request('', 'DELETE')) this.$emit('deleted', this.post.id)

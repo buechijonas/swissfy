@@ -24,10 +24,13 @@
         <div class="flex items-center justify-center gap-4">
           <img class="size-20 shrink-0" :src="avatarSrc" alt="" />
           <div class="flex flex-col min-w-0">
-            <CipherText v-if="!profile.can_view" :length="10" class="text-lg font-bold" />
-            <span v-else class="text-lg font-bold truncate">{{
-              fullName || profile.username
-            }}</span>
+            <span class="flex min-w-0 items-center gap-2">
+              <CipherText v-if="!profile.can_view" :length="10" class="text-lg font-bold" />
+              <span v-else class="text-lg font-bold truncate">{{
+                fullName || profile.username
+              }}</span>
+              <RoleBadge :role="profile.role" />
+            </span>
             <span class="text-swissfy-muted truncate">@{{ profile.username }}</span>
           </div>
         </div>
@@ -91,7 +94,7 @@
         <p v-if="actionError" class="text-error text-sm mt-4 text-center">{{ actionError }}</p>
       </BaseCard>
 
-      <template v-if="!loading && !error && profile.can_view">
+      <template v-if="!loading && !error && tabs.length">
         <BaseTabs class="border-t-0" :tabs="tabs" :active="activeTab" />
         <BaseCard v-if="activeTab === 'about'" class="p-6 border-t-0">
           <dl v-if="profile.birthdate" class="flex justify-between gap-4">
@@ -100,6 +103,11 @@
           </dl>
           <p v-else class="text-swissfy-muted">Keine Angaben.</p>
         </BaseCard>
+        <ProfileStatus
+          v-else-if="activeTab === 'status'"
+          :key="`${profile.username}-status`"
+          :username="profile.username"
+        />
         <PostList
           v-else-if="activeTab === 'tiles' || activeTab === 'activities'"
           :key="`${profile.username}-${activeTab}`"
@@ -124,7 +132,9 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import CipherText from '@/components/common/CipherText.vue'
+import RoleBadge from '@/components/common/RoleBadge.vue'
 import PostList from '@/components/posts/PostList.vue'
+import ProfileStatus from '@/components/moderation/ProfileStatus.vue'
 import { icons } from '@/assets/icons.js'
 import { avatars } from '@/assets/images.js'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
@@ -135,7 +145,9 @@ const TABS = [
   { key: 'activities', label: 'Aktivitäten', icon: 'list-timeline' },
   { key: 'albums', label: 'Alben', icon: 'gallery' },
   { key: 'about', label: 'Über mich', icon: 'info' },
+  { key: 'status', label: 'Status', icon: 'map-marker-smile' },
 ]
+const MODERATION_TABS = TABS.filter((tab) => ['tiles', 'activities', 'status'].includes(tab.key))
 
 export default {
   name: 'ProfileView',
@@ -148,6 +160,8 @@ export default {
     BaseTabs,
     CipherText,
     PostList,
+    ProfileStatus,
+    RoleBadge,
   },
   data() {
     return {
@@ -156,16 +170,19 @@ export default {
       error: null,
       busy: false,
       actionError: null,
-      tabs: TABS,
     }
   },
   computed: {
     username() {
       return this.$route.params.username
     },
+    tabs() {
+      if (!this.profile?.can_view) return this.profile?.can_view_warnings ? MODERATION_TABS : []
+      return TABS.filter((tab) => tab.key !== 'status' || this.profile.can_view_warnings)
+    },
     activeTab() {
       const tab = this.$route.query.tab
-      return this.tabs.some((t) => t.key === tab) ? tab : this.tabs[0].key
+      return this.tabs.some((t) => t.key === tab) ? tab : (this.tabs[0]?.key ?? TABS[0].key)
     },
     timeline() {
       return this.activeTab === 'activities'

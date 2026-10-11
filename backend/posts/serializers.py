@@ -1,7 +1,10 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from accounts.models import UserProfile
+from accounts.roles import is_admin, is_moderator, outranks, role_badge
 from main.numbers import compact_number
+from social.models import Follow, Friendship
 
 from . import images
 from .models import Comment, ContactGroup, Post, PostImage, SavedFolder
@@ -11,14 +14,64 @@ User = get_user_model()
 
 class AuthorSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name", "avatar"]
+        fields = ["username", "first_name", "last_name", "avatar", "role"]
 
     def get_avatar(self, obj):
         profile = getattr(obj, "profile", None)
         return profile.avatar if profile else ""
+
+    def get_role(self, obj):
+        return role_badge(obj) if self.profile_visible(obj) else None
+
+    def profile_visible(self, obj):
+        viewer = self.context["request"].user
+        if obj == viewer or is_admin(viewer):
+            return True
+        relations = self.context.setdefault("viewer_relations", viewer_relations(viewer))
+        visibility = getattr(getattr(obj, "profile", None), "profile_visibility", None)
+        Visibility = UserProfile.Visibility
+        return (
+            visibility in (None, Visibility.PUBLIC)
+            or (visibility == Visibility.FOLLOWERS and obj.pk in relations["following"])
+            or obj.pk in relations["friends"]
+        )
+
+
+def viewer_relations(viewer):
+    return {
+        "following": set(
+            Follow.objects.filter(follower=viewer).values_list("following_id", flat=True)
+        ),
+        "friends": set(Friendship.objects.filter(user=viewer).values_list("friend_id", flat=True)),
+    }
+
+
+class ModeratedMixin(serializers.Serializer):
+    hidden = serializers.SerializerMethodField()
+    reported = serializers.SerializerMethodField()
+    can_report = serializers.SerializerMethodField()
+
+    @property
+    def moderating(self):
+        return self.context.get("moderation", False)
+
+    def is_author(self, obj):
+        return obj.author_id == self.context["request"].user.pk
+
+    def get_hidden(self, obj):
+        return obj.hidden_at is not None
+
+    def get_reported(self, obj):
+        return getattr(obj, "reported", False)
+
+    def get_can_report(self, obj):
+        viewer = self.context["request"].user
+        protected = is_moderator(viewer) and outranks(obj.author, viewer)
+        return not self.moderating and not self.is_author(obj) and not protected
 
 
 def thumbnail_url(post):
@@ -39,7 +92,7 @@ class PostSummarySerializer(serializers.ModelSerializer):
         return thumbnail_url(obj)
 
 
-class PostSerializer(serializers.ModelSerializer):
+class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid", read_only=True)
     author = AuthorSerializer(read_only=True)
     images = serializers.SerializerMethodField()
@@ -72,6 +125,9 @@ class PostSerializer(serializers.ModelSerializer):
             "saved",
             "saved_folder",
             "is_own",
+            "hidden",
+            "reported",
+            "can_report",
         ]
 
     def get_images(self, obj):
@@ -91,7 +147,7 @@ class PostSerializer(serializers.ModelSerializer):
         return compact_number(obj.like_count)
 
     def get_is_own(self, obj):
-        return obj.author_id == self.context["request"].user.pk
+        return self.is_author(obj)
 
     def to_representation(self, obj):
         data = super().to_representation(obj)
@@ -144,7 +200,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
         return post
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentSerializer(ModeratedMixin, serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid", read_only=True)
     post_id = serializers.UUIDField(source="post.uuid", read_only=True)
     parent_id = serializers.SerializerMethodField()
@@ -175,6 +231,9 @@ class CommentSerializer(serializers.ModelSerializer):
             "latest_reply",
             "can_delete",
             "can_vote",
+            "hidden",
+            "reported",
+            "can_report",
         ]
 
     def get_parent_id(self, obj):
@@ -200,10 +259,10 @@ class CommentSerializer(serializers.ModelSerializer):
         return CommentSerializer(reply, context=self.context).data if reply else None
 
     def get_can_delete(self, obj):
-        return obj.author_id == self.context["request"].user.pk
+        return not self.moderating and self.is_author(obj)
 
     def get_can_vote(self, obj):
-        return not self.get_can_delete(obj)
+        return not self.moderating and not self.is_author(obj)
 
 
 class OwnedNameMixin:

@@ -6,7 +6,10 @@
     <RouterLink :to="profileLink" class="flex items-center gap-3 min-w-0">
       <img class="size-10 shrink-0" :src="avatarSrc" alt="" />
       <div class="flex flex-col min-w-0">
-        <span class="font-bold truncate">{{ fullName || author.username }}</span>
+        <span class="flex min-w-0 items-center gap-2">
+          <span class="font-bold truncate">{{ fullName || author.username }}</span>
+          <RoleBadge :role="author.role" />
+        </span>
         <span class="text-swissfy-muted text-sm truncate">@{{ author.username }}</span>
       </div>
     </RouterLink>
@@ -18,12 +21,13 @@
 
 <script>
 import { RouterLink } from 'vue-router'
+import RoleBadge from '@/components/common/RoleBadge.vue'
 import { icons } from '@/assets/icons.js'
 import { avatars } from '@/assets/images.js'
 
 export default {
   name: 'AuthorHeader',
-  components: { RouterLink },
+  components: { RouterLink, RoleBadge },
   props: {
     author: { type: Object, required: true },
   },

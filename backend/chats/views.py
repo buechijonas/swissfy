@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import get_or_create_profile
+from moderation.sanctions import ensure_not_suspended
 from social.serializers import ProfileListSerializer
 from social.views import with_viewer_relations
 
@@ -207,6 +208,7 @@ class MessagesView(ConversationView):
 
     @transaction.atomic
     def post(self, request, username):
+        ensure_not_suspended(request.user)
         partner = self.get_partner(request, username)
         serializer = MessageInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -283,6 +285,7 @@ class DeliveryView(APIView):
 class ChatRequestView(ConversationView):
     @transaction.atomic
     def post(self, request, username):
+        ensure_not_suspended(request.user)
         partner = self.get_partner(request, username)
         lock_users(request.user, partner)
         existing = ChatRequest.between(request.user, partner)
@@ -329,6 +332,7 @@ class ChatRequestWithdrawView(ConversationView):
 
 class ChatRequestAcceptView(ChatRequestView):
     def post(self, request, username):
+        ensure_not_suspended(request.user)
         chat_request = self.incoming_request(request, username)
         chat_request.status = ChatRequest.Status.ACCEPTED
         chat_request.save(update_fields=["status"])
@@ -381,7 +385,7 @@ class ConversationListView(APIView):
             }
             conversations.append(
                 {
-                    **ProfileListSerializer(user).data,
+                    **ProfileListSerializer(user, context={"request": request}).data,
                     "last_message": message and MessageSerializer(message, context=context).data,
                     "unread": bool(message and message.sender_id != me.pk and not message.seen_at),
                     "activity": message.created_at if message else started[user.pk],

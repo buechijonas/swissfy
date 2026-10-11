@@ -13,6 +13,7 @@
           :key="repliesUrl"
           :url="repliesUrl"
           nested
+          :moderation="moderation"
           placeholder="Antwort schreiben…"
           @created="comment.reply_count += 1"
           @deleted="comment.reply_count = $event.parent.reply_count"
@@ -31,6 +32,7 @@
               line-above
               line-below
               show-reply-to
+              :moderation="moderation"
               @delete="confirmRemove"
             />
             <CommentItem
@@ -39,8 +41,12 @@
               :line-below="comment.reply_count > 0"
               focused
               show-reply-to
+              :moderation="moderation"
               @delete="confirmRemove"
             />
+          </template>
+          <template v-if="moderation" #composer>
+            <ModerationPanel :key="comment.id" :url="apiBase + '/'" :details="comment" />
           </template>
         </CommentSection>
         <p v-if="deleteError" class="text-error text-sm mt-2">{{ deleteError }}</p>
@@ -60,6 +66,7 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import ModerationPanel from '@/components/moderation/ModerationPanel.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
 import CommentSection from '@/components/posts/CommentSection.vue'
 import { apiFetch } from '@/lib/api.js'
@@ -74,6 +81,10 @@ export default {
     ConfirmDialog,
     CommentItem,
     CommentSection,
+    ModerationPanel,
+  },
+  props: {
+    moderation: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -85,16 +96,20 @@ export default {
   },
   computed: {
     apiBase() {
-      return `/api/comments/${this.$route.params.id}`
+      const base = this.moderation ? '/api/moderation/comments' : '/api/comments'
+      return `${base}/${this.$route.params.id}`
     },
     repliesUrl() {
       return `${this.apiBase}/replies/`
     },
     postLink() {
-      return this.comment && `/posts/${this.comment.post.id}`
+      if (!this.comment) return null
+      const base = this.moderation ? '/moderation/posts' : '/posts'
+      return `${base}/${this.comment.post.id}`
     },
     breadcrumbs() {
       return [
+        ...(this.moderation ? [{ label: 'Moderation', to: '/moderation' }] : []),
         ...(this.postLink ? [{ label: 'Post', to: this.postLink }] : []),
         { label: 'Kommentar', to: this.$route.path },
       ]

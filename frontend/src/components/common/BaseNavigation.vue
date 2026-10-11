@@ -10,27 +10,36 @@
     >
       <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
       <ul class="menu w-full lg:w-80 p-4 gap-2">
-        <li
-          v-for="item in visibleNavigationItems"
-          :key="item.key"
-          :class="{ 'max-lg:hidden': item.footer, 'lg:hidden': item.mobileOnly }"
-        >
-          <RouterLink
-            :to="item.to"
-            class="nav-item flex items-center gap-3 p-4"
+        <template v-for="item in visibleNavigationItems" :key="item.key">
+          <li
+            v-if="item.divider"
+            role="separator"
+            class="pointer-events-none mx-4 my-2 h-px bg-swissfy-muted opacity-100!"
+          ></li>
+          <li
             :class="{
-              'active bg-swissfy-highlight text-primary shadow-none': activeNavigation === item.key,
+              'max-lg:hidden': item.footer || item.desktopOnly,
+              'lg:hidden': item.mobileOnly,
             }"
-            @click="isNavDrawerOpen = false"
           >
-            <img v-if="item.avatar && avatarSrc" class="size-5" :src="avatarSrc" alt="" />
-            <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-5!" />
-            <span>{{ item.label }}</span>
-            <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
-              {{ item.badge() }}
-            </span>
-          </RouterLink>
-        </li>
+            <RouterLink
+              :to="item.to"
+              class="nav-item flex items-center gap-3 p-4"
+              :class="{
+                'active bg-swissfy-highlight text-primary shadow-none':
+                  activeNavigation === item.key,
+              }"
+              @click="isNavDrawerOpen = false"
+            >
+              <img v-if="item.avatar && avatarSrc" class="size-5" :src="avatarSrc" alt="" />
+              <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-5!" />
+              <span>{{ item.label }}</span>
+              <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
+                {{ item.badge() }}
+              </span>
+            </RouterLink>
+          </li>
+        </template>
       </ul>
       <div v-if="!authStore.ready" class="mt-auto flex w-full flex-col gap-1 p-4">
         <div class="skeleton h-3 w-20"></div>
@@ -64,7 +73,7 @@ import { RouterLink } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { avatars } from '@/assets/images.js'
-import { navigationItems } from '@/data/navigation.js'
+import { canAccess, navigationItems } from '@/data/navigation.js'
 import { isNavDrawerOpen } from '@/lib/navDrawer.js'
 import { useAuthStore } from '@/stores/auth.js'
 import packageJson from '../../../package.json'
@@ -90,9 +99,7 @@ export default {
       return useAuthStore()
     },
     visibleNavigationItems() {
-      return this.navigationItems.filter(
-        (item) => !item.requiresAuth || this.authStore.isAuthenticated,
-      )
+      return this.navigationItems.filter((item) => canAccess(item, this.authStore))
     },
     avatarSrc() {
       return avatars[this.authStore.user?.avatar]

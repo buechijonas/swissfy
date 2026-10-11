@@ -23,6 +23,21 @@
       >
         <img :src="icons.settings" alt="Einstellungen" class="size-5 invert" />
       </BaseButton>
+      <BaseButton
+        v-if="authStore.isAuthenticated"
+        class="lg:hidden"
+        variant="ghost"
+        shape="square"
+        size="sm"
+        to="/notifications"
+        aria-current-value="false"
+      >
+        <img
+          :src="notificationsStore.unread ? icons['bell-notification-social-media'] : icons.bell"
+          :alt="notificationsStore.unread ? 'Neue Benachrichtigungen' : 'Benachrichtigungen'"
+          class="size-5 invert"
+        />
+      </BaseButton>
       <label
         for="my-drawer-3"
         aria-label="Navigation öffnen"
@@ -39,6 +54,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import { icons } from '@/assets/icons.js'
 import { isNavDrawerOpen } from '@/lib/navDrawer.js'
 import { useAuthStore } from '@/stores/auth.js'
+import { useNotificationsStore } from '@/stores/notifications.js'
 import packageJson from '../../../package.json'
 
 export default {
@@ -50,6 +66,9 @@ export default {
   computed: {
     authStore() {
       return useAuthStore()
+    },
+    notificationsStore() {
+      return useNotificationsStore()
     },
     drawerIcon() {
       return isNavDrawerOpen.value ? icons.cross : icons['menu-burger']

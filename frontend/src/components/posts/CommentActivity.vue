@@ -21,7 +21,10 @@
           loading="lazy"
         />
         <div class="flex min-w-0 flex-col">
-          <span class="text-sm font-bold truncate">@{{ post.author.username }}</span>
+          <span class="flex min-w-0 items-center gap-1">
+            <span class="text-sm font-bold truncate">@{{ post.author.username }}</span>
+            <RoleBadge :role="post.author.role" />
+          </span>
           <p v-if="post.text" class="text-sm text-swissfy-muted line-clamp-2 break-words">
             {{ post.text }}
           </p>
@@ -34,13 +37,14 @@
 <script>
 import { RouterLink } from 'vue-router'
 import BaseCard from '@/components/common/BaseCard.vue'
+import RoleBadge from '@/components/common/RoleBadge.vue'
 import AuthorHeader from '@/components/posts/AuthorHeader.vue'
 import { commentLink } from '@/lib/comments.js'
 import { formatRelativeTime } from '@/lib/time.js'
 
 export default {
   name: 'CommentActivity',
-  components: { RouterLink, AuthorHeader, BaseCard },
+  components: { RouterLink, AuthorHeader, BaseCard, RoleBadge },
   props: {
     comment: { type: Object, required: true },
     edgeToEdge: { type: Boolean, default: false },

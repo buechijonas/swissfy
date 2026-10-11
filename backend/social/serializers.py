@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from accounts.models import UserProfile, get_or_create_profile
+from accounts.roles import is_admin, is_moderator, role_badge
 from main.numbers import compact_number
 from chats.models import ChatRequest
 
@@ -31,7 +32,16 @@ def is_visible(visibility, is_following, is_friend):
     )
 
 
-HIDDEN_LIST_FIELDS = ["first_name", "last_name"]
+def can_view_profile(viewer, user):
+    if user == viewer or is_admin(viewer):
+        return True
+    profile = getattr(user, "profile", None)
+    return not profile or is_visible(
+        profile.profile_visibility, follows(viewer, user), are_friends(viewer, user)
+    )
+
+
+HIDDEN_LIST_FIELDS = ["first_name", "last_name", "role"]
 HIDDEN_PROFILE_FIELDS = [*HIDDEN_LIST_FIELDS, "follower_count", "following_count", "friend_count"]
 
 
@@ -40,20 +50,26 @@ class ProfileListSerializer(serializers.ModelSerializer):
     select_related, since not every user has one (e.g. local admins)."""
 
     avatar = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name", "avatar"]
+        fields = ["username", "first_name", "last_name", "avatar", "role"]
 
     def get_avatar(self, obj):
         profile = getattr(obj, "profile", None)
         return profile.avatar if profile else ""
 
+    def get_role(self, obj):
+        return role_badge(obj)
+
     def to_representation(self, obj):
         data = super().to_representation(obj)
         profile = getattr(obj, "profile", None)
-        data["can_view"] = not profile or is_visible(
-            profile.profile_visibility, obj.viewer_follows, obj.viewer_is_friend
+        data["can_view"] = (
+            not profile
+            or is_admin(self.context["request"].user)
+            or is_visible(profile.profile_visibility, obj.viewer_follows, obj.viewer_is_friend)
         )
         if not data["can_view"]:
             for field in HIDDEN_LIST_FIELDS:
@@ -65,6 +81,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     """A user's public profile, seen by the requesting user (`context["request"]`)."""
 
     avatar = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     friend_count = serializers.SerializerMethodField()
@@ -76,6 +93,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     follow_requested = serializers.SerializerMethodField()
     requires_follow_request = serializers.SerializerMethodField()
     can_chat = serializers.SerializerMethodField()
+    can_view_warnings = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -84,6 +102,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "avatar",
+            "role",
             "follower_count",
             "following_count",
             "friend_count",
@@ -95,6 +114,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "follow_requested",
             "requires_follow_request",
             "can_chat",
+            "can_view_warnings",
         ]
 
     @property
@@ -103,6 +123,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_avatar(self, obj):
         return get_or_create_profile(obj).avatar
+
+    def get_role(self, obj):
+        return role_badge(obj)
+
+    def get_can_view_warnings(self, obj):
+        return obj == self.viewer or is_moderator(self.viewer)
 
     def get_follower_count(self, obj):
         return compact_number(obj.followers.count())
@@ -145,8 +171,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         data = super().to_representation(obj)
         profile = get_or_create_profile(obj)
 
-        data["can_view"] = data["is_self"] or is_visible(
-            profile.profile_visibility, data["is_following"], data["is_friend"]
+        data["can_view"] = (
+            data["is_self"]
+            or is_admin(self.viewer)
+            or is_visible(profile.profile_visibility, data["is_following"], data["is_friend"])
         )
         if not data["can_view"]:
             for field in HIDDEN_PROFILE_FIELDS:
