@@ -1,7 +1,8 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-48px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-96px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    :class="{ 'max-sm:pb-0': timeline }"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseCard v-if="loading" class="p-6">
@@ -89,6 +90,27 @@
 
         <p v-if="actionError" class="text-error text-sm mt-4 text-center">{{ actionError }}</p>
       </BaseCard>
+
+      <template v-if="!loading && !error && profile.can_view">
+        <BaseTabs class="border-t-0" :tabs="tabs" :active="activeTab" />
+        <BaseCard v-if="activeTab === 'about'" class="p-6 border-t-0">
+          <dl v-if="profile.birthdate" class="flex justify-between gap-4">
+            <dt class="text-swissfy-muted">Geburtsdatum</dt>
+            <dd>{{ formatDate(profile.birthdate) }}</dd>
+          </dl>
+          <p v-else class="text-swissfy-muted">Keine Angaben.</p>
+        </BaseCard>
+        <PostList
+          v-else-if="activeTab === 'tiles' || activeTab === 'activities'"
+          :key="`${profile.username}-${activeTab}`"
+          class="mt-4"
+          :class="{ 'max-sm:mt-0': timeline }"
+          :url="postsUrl"
+          :grid="activeTab === 'tiles'"
+          :edge-to-edge="timeline"
+          :empty-text="activeTab === 'tiles' ? 'Noch keine Bilder.' : 'Noch keine Posts.'"
+        />
+      </template>
     </div>
   </div>
   <BaseFooter />
@@ -100,14 +122,33 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseTabs from '@/components/common/BaseTabs.vue'
 import CipherText from '@/components/common/CipherText.vue'
+import PostList from '@/components/posts/PostList.vue'
 import { icons } from '@/assets/icons.js'
 import { avatars } from '@/assets/images.js'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import { formatDate } from '@/lib/time.js'
+
+const TABS = [
+  { key: 'tiles', label: 'Kachel', icon: 'grid' },
+  { key: 'activities', label: 'Aktivitäten', icon: 'list-timeline' },
+  { key: 'albums', label: 'Alben', icon: 'gallery' },
+  { key: 'about', label: 'Über mich', icon: 'info' },
+]
 
 export default {
   name: 'ProfileView',
-  components: { AppIcon, BaseBreadcrumbs, BaseButton, BaseCard, BaseFooter, CipherText },
+  components: {
+    AppIcon,
+    BaseBreadcrumbs,
+    BaseButton,
+    BaseCard,
+    BaseFooter,
+    BaseTabs,
+    CipherText,
+    PostList,
+  },
   data() {
     return {
       profile: null,
@@ -115,11 +156,19 @@ export default {
       error: null,
       busy: false,
       actionError: null,
+      tabs: TABS,
     }
   },
   computed: {
     username() {
       return this.$route.params.username
+    },
+    activeTab() {
+      const tab = this.$route.query.tab
+      return this.tabs.some((t) => t.key === tab) ? tab : this.tabs[0].key
+    },
+    timeline() {
+      return this.activeTab === 'activities'
     },
     breadcrumbs() {
       return this.username
@@ -131,6 +180,10 @@ export default {
     },
     avatarSrc() {
       return avatars[this.profile.avatar] ?? icons.user
+    },
+    postsUrl() {
+      const base = `/api/posts/users/${encodeURIComponent(this.profile.username)}/`
+      return this.activeTab === 'tiles' ? `${base}?images=1` : `${base}activities/`
     },
     followLabel() {
       const p = this.profile
@@ -155,6 +208,7 @@ export default {
     },
   },
   methods: {
+    formatDate,
     async loadProfile() {
       this.loading = true
       this.error = null

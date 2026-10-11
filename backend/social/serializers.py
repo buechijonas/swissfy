@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from accounts.models import UserProfile, get_or_create_profile
+from main.numbers import compact_number
 from chats.models import ChatRequest
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
@@ -104,13 +105,13 @@ class ProfileSerializer(serializers.ModelSerializer):
         return get_or_create_profile(obj).avatar
 
     def get_follower_count(self, obj):
-        return obj.followers.count()
+        return compact_number(obj.followers.count())
 
     def get_following_count(self, obj):
-        return obj.following.count()
+        return compact_number(obj.following.count())
 
     def get_friend_count(self, obj):
-        return obj.friendships.count()
+        return compact_number(obj.friendships.count())
 
     def get_is_self(self, obj):
         return obj == self.viewer
@@ -150,10 +151,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         if not data["can_view"]:
             for field in HIDDEN_PROFILE_FIELDS:
                 del data[field]
+        elif data["is_self"] or profile.show_birthdate:
+            data["birthdate"] = profile.birthdate
         return data
 
 
 class PrivacySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ["profile_visibility", "read_receipts", "chat_requests"]
+        fields = ["profile_visibility", "read_receipts", "chat_requests", "show_birthdate"]
