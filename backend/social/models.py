@@ -17,9 +17,7 @@ class Follow(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["follower", "following"], name="unique_follow"),
-            models.CheckConstraint(
-                condition=~Q(follower=F("following")), name="no_follow_of_self"
-            ),
+            models.CheckConstraint(condition=~Q(follower=F("following")), name="no_follow_of_self"),
         ]
 
     def __str__(self):
@@ -39,9 +37,7 @@ class FollowRequest(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["follower", "following"], name="unique_follow_request"
-            ),
+            models.UniqueConstraint(fields=["follower", "following"], name="unique_follow_request"),
             models.CheckConstraint(
                 condition=~Q(follower=F("following")), name="no_follow_request_to_self"
             ),
@@ -87,9 +83,7 @@ class Friendship(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friendships"
     )
-    friend = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
-    )
+    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -127,9 +121,7 @@ class Nickname(models.Model):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="given_nicknames"
     )
-    target = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
-    )
+    target = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
     nickname = models.CharField(max_length=100)
 
     class Meta:

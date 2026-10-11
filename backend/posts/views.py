@@ -55,7 +55,7 @@ class SavedOrder(NewestFirst):
 
 class OldestFirst(CursorPagination):
     page_size = 50
-    ordering = "id"
+    ordering = "created_at"
 
 
 def visible_post(request, uuid):
@@ -319,16 +319,18 @@ class SavedListView(generics.ListAPIView):
     pagination_class = SavedOrder
 
     def get_queryset(self):
-        saves = SavedPost.objects.filter(user=self.request.user, post=OuterRef("pk"))
+        saves = SavedPost.objects.filter(user=self.request.user)
         folder = self.request.query_params.get("folder")
         if folder == "none":
             saves = saves.filter(folder=None)
         elif folder:
             saves = saves.filter(folder=folder)
-        posts = visible_posts(self.request.user).annotate(
-            saved_at=Subquery(saves.values("created_at"))
+        posts = (
+            visible_posts(self.request.user)
+            .filter(pk__in=saves.values("post"))
+            .annotate(saved_at=Subquery(saves.filter(post=OuterRef("pk")).values("created_at")))
         )
-        return with_details(posts.filter(saved_at__isnull=False), self.request.user)
+        return with_details(posts, self.request.user)
 
 
 class OwnedListView(generics.ListCreateAPIView):

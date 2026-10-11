@@ -49,9 +49,7 @@ class Migration(migrations.Migration):
                         fields=("follower", "following"), name="unique_follow_request"
                     ),
                     models.CheckConstraint(
-                        condition=models.Q(
-                            ("follower", models.F("following")), _negated=True
-                        ),
+                        condition=models.Q(("follower", models.F("following")), _negated=True),
                         name="no_follow_request_to_self",
                     ),
                 ],

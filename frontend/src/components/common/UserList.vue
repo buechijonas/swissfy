@@ -6,7 +6,9 @@
   </BaseCard>
 
   <BaseCard v-else-if="!hasMore && !loading" class="p-6">
-    <p class="text-swissfy-muted">Noch keine anderen User.</p>
+    <p class="text-swissfy-muted">
+      {{ query ? 'Keine User gefunden.' : 'Noch keine anderen User.' }}
+    </p>
   </BaseCard>
 
   <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
@@ -34,6 +36,7 @@ export default {
   components: { BaseCard, UserRow },
   props: {
     linkTo: { type: Function, required: true },
+    query: { type: String, default: '' },
   },
   data() {
     return {
@@ -43,6 +46,12 @@ export default {
       loading: false,
       error: null,
     }
+  },
+  watch: {
+    query() {
+      Object.assign(this, { users: [], page: 0, hasMore: true, error: null })
+      this.loadMore()
+    },
   },
   mounted() {
     // Loads the next page whenever the end of the list scrolls into view.
@@ -58,18 +67,23 @@ export default {
     async loadMore() {
       if (this.loading || !this.hasMore || this.error) return
       this.loading = true
+      const query = this.query
       try {
-        const response = await apiFetch(`/api/social/profiles/?page=${this.page + 1}`)
-        if (!response.ok) {
+        const params = new URLSearchParams({ page: this.page + 1 })
+        if (query) params.set('q', query)
+        const response = await apiFetch(`/api/social/profiles/?${params}`)
+        const data = response.ok ? await response.json() : null
+        if (query !== this.query) return
+        if (!data) {
           this.error = 'User konnten nicht geladen werden.'
           return
         }
-        const data = await response.json()
         this.users.push(...data.results)
         this.page += 1
         this.hasMore = data.next !== null
       } finally {
         this.loading = false
+        if (query !== this.query) this.loadMore()
       }
       // A page too short to fill the screen leaves the sentinel visible, which
       // fires no new event. Re-observing reports its current visibility again.

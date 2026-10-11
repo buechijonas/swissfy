@@ -40,9 +40,11 @@ def visible_posts(viewer):
 
 
 def feed(viewer):
+    followed = Follow.objects.filter(follower=viewer).values("following")
+    friends = Friendship.objects.filter(user=viewer).values("friend")
     return (
         visible_posts(viewer)
-        .filter(Q(viewer_follows=True) | Q(viewer_is_friend=True))
+        .filter(author__in=followed.union(friends))
         .annotate(day=TruncDate("created_at"))
     )
 

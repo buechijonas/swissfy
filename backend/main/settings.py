@@ -34,9 +34,7 @@ if not SECRET_KEY:
         )
     SECRET_KEY = "django-insecure-swissfy-local-development-only-0c9f2e7a41b5d8"
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,backend").split(
-    ","
-)
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,backend").split(",")
 
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "DJANGO_CSRF_TRUSTED_ORIGINS", "http://localhost:5175,http://127.0.0.1:5175"
@@ -161,6 +159,7 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT", "5432"),
         "CONN_MAX_AGE": 60,
         "CONN_HEALTH_CHECKS": True,
+        "OPTIONS": {"options": "-c jit=off"},
     }
 }
 

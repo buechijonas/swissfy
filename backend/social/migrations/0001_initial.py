@@ -46,13 +46,9 @@ class Migration(migrations.Migration):
             ],
             options={
                 "constraints": [
-                    models.UniqueConstraint(
-                        fields=("user", "blocked"), name="unique_block"
-                    ),
+                    models.UniqueConstraint(fields=("user", "blocked"), name="unique_block"),
                     models.CheckConstraint(
-                        condition=models.Q(
-                            ("user", models.F("blocked")), _negated=True
-                        ),
+                        condition=models.Q(("user", models.F("blocked")), _negated=True),
                         name="no_block_of_self",
                     ),
                 ],
@@ -94,9 +90,7 @@ class Migration(migrations.Migration):
                         fields=("sender", "receiver"), name="unique_friend_request"
                     ),
                     models.CheckConstraint(
-                        condition=models.Q(
-                            ("sender", models.F("receiver")), _negated=True
-                        ),
+                        condition=models.Q(("sender", models.F("receiver")), _negated=True),
                         name="no_friend_request_to_self",
                     ),
                 ],
@@ -134,9 +128,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 "constraints": [
-                    models.UniqueConstraint(
-                        fields=("user", "friend"), name="unique_friendship"
-                    ),
+                    models.UniqueConstraint(fields=("user", "friend"), name="unique_friendship"),
                     models.CheckConstraint(
                         condition=models.Q(("user", models.F("friend")), _negated=True),
                         name="no_friendship_with_self",
@@ -176,9 +168,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 "constraints": [
-                    models.UniqueConstraint(
-                        fields=("owner", "target"), name="unique_nickname"
-                    )
+                    models.UniqueConstraint(fields=("owner", "target"), name="unique_nickname")
                 ],
             },
         ),
