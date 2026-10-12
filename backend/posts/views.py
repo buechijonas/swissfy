@@ -1,10 +1,12 @@
+import re
 from datetime import timedelta
 from urllib.parse import urlencode
+from uuid import UUID
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import OuterRef, Q, Subquery
-from django.http import FileResponse
+from django.db.models import Count, Exists, OuterRef, Q, Subquery
+from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -22,10 +24,12 @@ from notifications.models import Notification
 from notifications.notify import notify, withdraw
 from social.serializers import can_view_profile
 
+from . import hashtags
 from .models import (
     Comment,
     CommentVote,
     ContactGroup,
+    Hashtag,
     Like,
     Post,
     PostCreation,
@@ -46,6 +50,7 @@ from .queries import (
 from .serializers import (
     CommentSerializer,
     ContactGroupSerializer,
+    HashtagSerializer,
     PostCreateSerializer,
     PostSerializer,
     PostSummarySerializer,
@@ -55,6 +60,8 @@ from .serializers import (
 User = get_user_model()
 
 POSTS_PER_DAY = 10
+BYTE_RANGE = re.compile(r"bytes=(\d*)-(\d*)$")
+CHUNK_SIZE = 64 * 1024
 
 
 class NewestFirst(CursorPagination):
@@ -73,6 +80,31 @@ class SavedOrder(NewestFirst):
 class OldestFirst(CursorPagination):
     page_size = 50
     ordering = "created_at"
+
+
+def starting_from(posts, request):
+    try:
+        start = UUID(request.query_params.get("from", ""))
+    except ValueError:
+        return posts
+    return posts.filter(pk__lte=Subquery(Post.objects.filter(uuid=start).values("pk")))
+
+
+def by_media(posts, request):
+    if request.query_params.get("images"):
+        posts = posts.exclude(thumbnail="").filter(video_status="")
+    if request.query_params.get("videos"):
+        posts = posts.filter(video_status=Post.VideoStatus.READY)
+    return starting_from(posts, request)
+
+
+def hashtags_for(viewer):
+    followers = Hashtag.followers.through.objects.filter(hashtag=OuterRef("pk"), user=viewer)
+    visible = visible_posts(viewer).values("pk")
+    return Hashtag.objects.annotate(
+        post_count=Count("posts", filter=Q(posts__in=visible), distinct=True),
+        following=Exists(followers),
+    )
 
 
 def visible_post(request, uuid):
@@ -102,6 +134,44 @@ def notify_comment(comment):
 
 def serve_image(file):
     response = FileResponse(file.open("rb"), content_type="image/webp")
+    response["Cache-Control"] = "private, max-age=31536000, immutable"
+    return response
+
+
+def read_range(file, start, length):
+    try:
+        file.seek(start)
+        while length > 0:
+            chunk = file.read(min(CHUNK_SIZE, length))
+            if not chunk:
+                break
+            length -= len(chunk)
+            yield chunk
+    finally:
+        file.close()
+
+
+def serve_video(request, file):
+    size = file.size
+    match = BYTE_RANGE.match(request.headers.get("Range", ""))
+    if not match or match.groups() == ("", ""):
+        response = FileResponse(file.open("rb"), content_type="video/mp4")
+    else:
+        first, last = match.groups()
+        if first:
+            start, end = int(first), min(int(last), size - 1) if last else size - 1
+        else:
+            start, end = max(0, size - int(last)), size - 1
+        if start > end:
+            return HttpResponse(status=416, headers={"Content-Range": f"bytes */{size}"})
+        response = StreamingHttpResponse(
+            read_range(file.open("rb"), start, end - start + 1),
+            status=206,
+            content_type="video/mp4",
+        )
+        response["Content-Length"] = end - start + 1
+        response["Content-Range"] = f"bytes {start}-{end}/{size}"
+    response["Accept-Ranges"] = "bytes"
     response["Cache-Control"] = "private, max-age=31536000, immutable"
     return response
 
@@ -140,9 +210,56 @@ class UserPostListView(generics.ListAPIView):
 
     def get_queryset(self):
         posts = visible_posts(self.request.user).filter(author__username=self.kwargs["username"])
-        if self.request.query_params.get("images"):
-            posts = posts.exclude(thumbnail="")
-        return with_details(posts, self.request.user)
+        return with_details(by_media(posts, self.request), self.request.user)
+
+
+class ReelFeedView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    pagination_class = NewestFirst
+
+    def get_queryset(self):
+        reels = feed(self.request.user).filter(video_status=Post.VideoStatus.READY)
+        return with_details(starting_from(reels, self.request), self.request.user)
+
+
+class HashtagSearchView(generics.ListAPIView):
+    serializer_class = HashtagSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        query = hashtags.normalize(self.request.query_params.get("q", ""))
+        if not query:
+            return Hashtag.objects.none()
+        tags = hashtags_for(self.request.user).filter(name__startswith=query, post_count__gt=0)
+        return tags.order_by("-post_count", "name")[:20]
+
+
+class HashtagDetailView(generics.RetrieveAPIView):
+    serializer_class = HashtagSerializer
+
+    def get_object(self):
+        name = hashtags.normalize(self.kwargs["name"])
+        return get_object_or_404(hashtags_for(self.request.user), name=name)
+
+
+class HashtagFollowView(HashtagDetailView):
+    def put(self, request, name):
+        self.get_object().followers.add(request.user)
+        return self.retrieve(request)
+
+    def delete(self, request, name):
+        self.get_object().followers.remove(request.user)
+        return self.retrieve(request)
+
+
+class HashtagPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    pagination_class = NewestFirst
+
+    def get_queryset(self):
+        name = hashtags.normalize(self.kwargs["name"])
+        posts = visible_posts(self.request.user).filter(hashtags__name=name)
+        return with_details(by_media(posts, self.request), self.request.user)
 
 
 class ActivityView(APIView):
@@ -217,6 +334,14 @@ class PostImageView(APIView):
     def get(self, request, uuid, position):
         image = get_object_or_404(PostImage, post=visible_post(request, uuid), position=position)
         return serve_image(image.file)
+
+
+class PostVideoView(APIView):
+    def get(self, request, uuid):
+        post = visible_post(request, uuid)
+        if post.video_status != Post.VideoStatus.READY:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return serve_video(request, post.video)
 
 
 class PostThumbnailView(APIView):

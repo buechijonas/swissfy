@@ -1,6 +1,31 @@
 <template>
   <BaseDialog ref="dialog" title="Neuer Post">
-    <ImageDropzone v-if="!images.length" class="h-56" multiple @select="addImages" />
+    <div v-if="video" class="relative">
+      <video
+        :src="video.preview"
+        class="max-h-80 w-full rounded-box bg-black object-contain"
+        controls
+        playsinline
+      ></video>
+      <BaseButton
+        variant="neutral"
+        shape="circle"
+        size="sm"
+        class="absolute top-2 right-2"
+        title="Video entfernen"
+        @click="clearVideo"
+      >
+        <AppIcon name="cross" alt="Video entfernen" />
+      </BaseButton>
+    </div>
+    <ImageDropzone
+      v-else-if="!images.length"
+      class="h-56"
+      accept="image/*,video/*"
+      label="Bilder oder ein Video hierher ziehen oder klicken"
+      multiple
+      @select="addMedia"
+    />
     <div v-else class="flex gap-2 overflow-x-auto">
       <div
         v-for="(image, index) in images"
@@ -31,14 +56,28 @@
     <p v-if="images.length > 1" class="text-xs text-swissfy-muted mt-1">
       Alle Bilder werden im Format des ersten Bildes zugeschnitten.
     </p>
+    <p v-if="video" class="text-xs text-swissfy-muted mt-1">
+      Das Video wird nach dem Posten verarbeitet und erscheint danach für andere.
+    </p>
 
     <textarea
       v-model="text"
       class="textarea w-full h-28 resize-none mt-4"
       :maxlength="maxLength"
-      placeholder="Was gibt's Neues?"
+      placeholder="Was gibt's Neues? Hashtags mit # markieren, z. B. #zürich"
     ></textarea>
-    <p class="text-xs text-swissfy-muted text-right mt-1">{{ text.length }} / {{ maxLength }}</p>
+    <div class="mt-2 flex items-start gap-2">
+      <div class="flex min-w-0 flex-1 flex-wrap gap-1">
+        <span
+          v-for="hashtag in hashtags"
+          :key="hashtag"
+          class="badge badge-sm badge-soft badge-primary"
+        >
+          #{{ hashtag }}
+        </span>
+      </div>
+      <p class="shrink-0 text-xs text-swissfy-muted">{{ text.length }} / {{ maxLength }}</p>
+    </div>
 
     <p class="mt-4 mb-2 text-sm">Sichtbar für</p>
     <div class="flex flex-wrap gap-2">
@@ -98,7 +137,9 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import ImageDropzone from '@/components/common/ImageDropzone.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import { extractHashtags } from '@/lib/hashtags.js'
 import { compressImage, imageSize } from '@/lib/image.js'
+import { MAX_VIDEO_DURATION, MAX_VIDEO_SIZE, videoDuration } from '@/lib/video.js'
 import { useGroupsStore } from '@/stores/posts.js'
 
 const MAX_LENGTH = 500
@@ -108,6 +149,7 @@ function initialState() {
   return {
     text: '',
     images: [],
+    video: null,
     quota: null,
     visibility: 'public',
     selectedGroups: [],
@@ -140,12 +182,15 @@ export default {
     groups() {
       return this.groupsStore.items ?? []
     },
+    hashtags() {
+      return extractHashtags(this.text)
+    },
     aspectRatio() {
       const [first] = this.images
       return `${first.width} / ${first.height}`
     },
     canSubmit() {
-      const hasContent = this.text.trim() !== '' || this.images.length
+      const hasContent = this.text.trim() !== '' || this.images.length || this.video
       const hasAudience = this.visibility !== 'groups' || this.selectedGroups.length
       const hasQuota = this.quota?.remaining !== 0
       return !this.sending && hasContent && hasAudience && hasQuota
@@ -154,6 +199,7 @@ export default {
   methods: {
     open() {
       this.clearImages()
+      this.clearVideo()
       Object.assign(this.$data, initialState())
       this.groupsStore.load().catch(() => {})
       this.loadQuota()
@@ -166,6 +212,29 @@ export default {
       } catch {
         this.quota = null
       }
+    },
+    addMedia(files) {
+      const video = files.find((file) => file.type.startsWith('video/'))
+      return video ? this.setVideo(video) : this.addImages(files)
+    },
+    async setVideo(file) {
+      this.error = null
+      if (file.size > MAX_VIDEO_SIZE) {
+        this.error = 'Das Video ist zu gross (max. 250 MB).'
+        return
+      }
+      const preview = URL.createObjectURL(file)
+      const duration = await videoDuration(preview).catch(() => 0)
+      if (duration > MAX_VIDEO_DURATION + 0.5) {
+        URL.revokeObjectURL(preview)
+        this.error = `Das Video ist zu lang (max. ${MAX_VIDEO_DURATION} Sekunden).`
+        return
+      }
+      this.video = { file, preview }
+    },
+    clearVideo() {
+      if (this.video) URL.revokeObjectURL(this.video.preview)
+      this.video = null
     },
     async addImages(files) {
       this.error = null
@@ -200,6 +269,7 @@ export default {
         for (const id of this.selectedGroups) body.append('groups', id)
       }
       this.images.forEach((image, index) => body.append('images', image.blob, `image-${index}`))
+      if (this.video) body.append('video', this.video.file)
       try {
         const response = await apiFetch('/api/posts/', { method: 'POST', body })
         const data = await response.json().catch(() => null)
@@ -209,6 +279,7 @@ export default {
           return
         }
         this.clearImages()
+        this.clearVideo()
         this.$refs.dialog.close()
         this.$emit('created', data)
       } catch {

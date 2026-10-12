@@ -56,6 +56,8 @@ def visible_posts(viewer):
         viewer_is_friend=Exists(Friendship.objects.filter(user=viewer, friend=OuterRef("author"))),
         viewer_in_group=Exists(ContactGroup.objects.filter(posts=OuterRef("pk"), members=viewer)),
     )
+    unfinished_video = Q(video_status__in=[Post.VideoStatus.PROCESSING, Post.VideoStatus.FAILED])
+    posts = posts.filter(~unfinished_video | Q(author=viewer))
     if is_admin(viewer):
         return posts
     visible = NOT_HIDDEN & (
@@ -66,12 +68,16 @@ def visible_posts(viewer):
     return posts.filter(visible)
 
 
+def with_followed_hashtag(viewer):
+    return Post.objects.filter(hashtags__followers=viewer).values("pk")
+
+
 def feed(viewer):
     followed = Follow.objects.filter(follower=viewer).values("following")
     friends = Friendship.objects.filter(user=viewer).values("friend")
     return (
         visible_posts(viewer)
-        .filter(author__in=followed.union(friends))
+        .filter(Q(author__in=followed.union(friends)) | Q(pk__in=with_followed_hashtag(viewer)))
         .annotate(day=TruncDate("created_at"))
     )
 

@@ -14,6 +14,8 @@ import NotificationsView from '@/views/NotificationsView.vue'
 import AdministrationView from '@/views/AdministrationView.vue'
 import SavedView from '@/views/SavedView.vue'
 import ProfileView from '@/views/ProfileView.vue'
+import ReelsView from '@/views/ReelsView.vue'
+import HashtagView from '@/views/HashtagView.vue'
 import ImpressumView from '@/views/legal/ImpressumView.vue'
 import PrivacyView from '@/views/legal/PrivacyView.vue'
 import TermsView from '@/views/legal/TermsView.vue'
@@ -30,6 +32,12 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
       meta: { title: 'Startseite', activeNavigation: 'dashboard' },
+    },
+    {
+      path: '/reels',
+      name: 'reels',
+      component: ReelsView,
+      meta: { title: 'Reels', activeNavigation: 'reels', requiresAuth: true },
     },
     {
       path: '/search',
@@ -134,6 +142,24 @@ const router = createRouter({
       name: 'user-profile',
       component: ProfileView,
       meta: { title: 'Profil', requiresAuth: true },
+    },
+    {
+      path: '/profile/:username/reels/:id([0-9a-f-]{36})',
+      name: 'user-reels',
+      component: ReelsView,
+      meta: { title: 'Reels', requiresAuth: true },
+    },
+    {
+      path: '/hashtags/:name',
+      name: 'hashtag',
+      component: HashtagView,
+      meta: { title: 'Hashtag', activeNavigation: 'search', requiresAuth: true },
+    },
+    {
+      path: '/hashtags/:name/reels/:id([0-9a-f-]{36})',
+      name: 'hashtag-reels',
+      component: ReelsView,
+      meta: { title: 'Reels', requiresAuth: true },
     },
     {
       path: '/impressum',

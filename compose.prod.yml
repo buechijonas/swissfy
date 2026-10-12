@@ -70,6 +70,22 @@ services:
       backend:
         condition: service_healthy
 
+  video-worker:
+    image: buechijonas/swissfy-backend:latest
+
+    restart: unless-stopped
+
+    command: python manage.py process_videos
+
+    environment: *backend-environment
+
+    volumes:
+      - backend_media:/app/media
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
   origin:
     image: buechijonas/swissfy-proxy:latest
 

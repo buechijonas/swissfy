@@ -1,10 +1,13 @@
 import io
 import shutil
+import subprocess
 import tempfile
 from datetime import timedelta
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from PIL import Image
@@ -361,3 +364,162 @@ class PostTests(TestCase):
         self.as_user(self.jonas)
         self.assertEqual(self.client.get("/api/posts/groups/").json(), [])
         self.assertEqual(self.client.delete(f"/api/posts/groups/{group['id']}/").status_code, 404)
+
+
+def video_upload(seconds=2, width=1080, height=1920):
+    with tempfile.NamedTemporaryFile(suffix=".mov") as file:
+        subprocess.run(
+            [
+                *("ffmpeg", "-v", "error", "-y"),
+                *("-f", "lavfi", "-i", f"testsrc=size={width}x{height}:rate=30"),
+                *("-f", "lavfi", "-i", "sine"),
+                *("-t", str(seconds), "-pix_fmt", "yuv420p", file.name),
+            ],
+            check=True,
+        )
+        data = Path(file.name).read_bytes()
+    return SimpleUploadedFile("clip.mov", data, content_type="video/quicktime")
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class VideoTests(TestCase):
+    def setUp(self):
+        self.anna = User.objects.create(username="anna")
+        self.jonas = User.objects.create(username="jonas")
+        self.client.force_login(self.anna)
+
+    def post(self, **data):
+        return self.client.post("/api/posts/", {"text": "Clip", **data})
+
+    def process(self):
+        call_command("process_videos", "--once", stdout=io.StringIO(), stderr=io.StringIO())
+
+    def ids(self, query=""):
+        data = self.client.get(f"/api/posts/users/anna/{query}").json()
+        return [post["id"] for post in data["results"]]
+
+    def test_video_is_transcoded_in_background(self):
+        data = self.post(video=video_upload()).json()
+        self.assertEqual((data["video_status"], data["video"]), ("processing", None))
+        self.assertEqual(self.ids(), [data["id"]])
+        self.client.force_login(self.jonas)
+        self.assertEqual(self.ids(), [])
+
+        self.process()
+        post = Post.objects.get()
+        self.assertFalse(post.video_upload)
+        self.assertEqual((post.image_width, post.image_height), (720, 1280))
+
+        data = self.client.get(f"/api/posts/{data['id']}/").json()
+        self.assertEqual(data["video_status"], "ready")
+        self.assertEqual(self.ids("?videos=1"), [data["id"]])
+        self.assertEqual(self.ids("?images=1"), [])
+
+        response = self.client.get(data["video"])
+        self.assertEqual(response["Content-Type"], "video/mp4")
+        video = b"".join(response.streaming_content)
+        self.assertEqual(len(video), post.video.size)
+
+        response = self.client.get(data["video"], HTTP_RANGE="bytes=100-199")
+        self.assertEqual(response.status_code, 206)
+        self.assertEqual(response["Content-Range"], f"bytes 100-199/{len(video)}")
+        self.assertEqual(b"".join(response.streaming_content), video[100:200])
+        response = self.client.get(data["video"], HTTP_RANGE="bytes=-10")
+        self.assertEqual(b"".join(response.streaming_content), video[-10:])
+        response = self.client.get(data["video"], HTTP_RANGE=f"bytes={len(video)}-")
+        self.assertEqual(response.status_code, 416)
+
+    def test_invalid_videos_are_rejected(self):
+        self.assertEqual(self.post(video=video_upload(seconds=62)).status_code, 400)
+        upload = SimpleUploadedFile("x.mp4", b"no video", content_type="video/mp4")
+        self.assertEqual(self.post(video=upload).status_code, 400)
+        response = self.post(video=video_upload(), images=[image_upload(10, 10)])
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Post.objects.exists())
+
+    def test_failed_video_stays_private(self):
+        data = self.post(video=video_upload()).json()
+        post = Post.objects.get()
+        Path(post.video_upload.path).write_bytes(b"broken")
+        self.process()
+        post.refresh_from_db()
+        self.assertEqual(post.video_status, Post.VideoStatus.FAILED)
+        self.assertFalse(post.video_upload)
+        self.client.force_login(self.jonas)
+        self.assertEqual(self.client.get(f"/api/posts/{data['id']}/").status_code, 404)
+
+    def test_deleting_post_removes_video_files(self):
+        data = self.post(video=video_upload()).json()
+        self.process()
+        path = Path(Post.objects.get().video.path)
+        self.assertTrue(path.exists())
+        self.client.delete(f"/api/posts/{data['id']}/")
+        self.assertFalse(path.exists())
+
+    def test_reel_feed_shows_followed_videos_newest_first(self):
+        first = self.post(video=video_upload()).json()["id"]
+        second = self.post(video=video_upload()).json()["id"]
+        self.post()
+        self.process()
+
+        self.client.force_login(self.jonas)
+        self.assertEqual(self.client.get("/api/posts/reels/").json()["results"], [])
+        Follow.objects.create(follower=self.jonas, following=self.anna)
+        reels = self.client.get("/api/posts/reels/").json()["results"]
+        self.assertEqual([reel["id"] for reel in reels], [second, first])
+
+    def test_reels_continue_from_opened_reel(self):
+        first = self.post(video=video_upload()).json()["id"]
+        second = self.post(video=video_upload()).json()["id"]
+        third = self.post(video=video_upload()).json()["id"]
+        self.process()
+        self.assertEqual(self.ids(f"?videos=1&from={second}"), [second, first])
+        self.assertEqual(self.ids(f"?videos=1&from={third}"), [third, second, first])
+        self.assertEqual(self.ids("?videos=1&from=kaputt"), [third, second, first])
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class HashtagTests(TestCase):
+    def setUp(self):
+        self.anna = User.objects.create(username="anna")
+        self.jonas = User.objects.create(username="jonas")
+        self.client.force_login(self.anna)
+
+    def post(self, text, **data):
+        return self.client.post("/api/posts/", {"text": text, **data}).json()["id"]
+
+    def test_hashtags_are_extracted_from_text(self):
+        self.post("Ferien in #Zürich und #zürich, #Berg-Tour ##double")
+        post = Post.objects.get()
+        self.assertEqual(sorted(post.hashtags.values_list("name", flat=True)), ["berg", "zürich"])
+
+    def test_search_finds_hashtags_with_visible_posts(self):
+        self.post("#zürich")
+        self.post("#zug", visibility="friends")
+        self.client.force_login(self.jonas)
+        results = self.client.get("/api/posts/hashtags/", {"q": "#z"}).json()
+        self.assertEqual(results, [{"name": "zürich", "post_count": "1", "following": False}])
+
+    def test_followed_hashtags_appear_in_feeds(self):
+        text_post = self.post("Hallo #zürich")
+        reel = self.post("Clip #zürich", video=video_upload())
+        call_command("process_videos", "--once", stdout=io.StringIO())
+        self.post("Anderes #bern")
+
+        self.client.force_login(self.jonas)
+        self.assertEqual(self.client.get("/api/posts/").json()["results"], [])
+        response = self.client.put("/api/posts/hashtags/Zürich/follow/")
+        self.assertTrue(response.json()["following"])
+
+        feed = self.client.get("/api/posts/").json()["results"]
+        self.assertEqual({post["id"] for post in feed}, {text_post, reel})
+        reels = self.client.get("/api/posts/reels/").json()["results"]
+        self.assertEqual([post["id"] for post in reels], [reel])
+        tagged = self.client.get("/api/posts/hashtags/zürich/posts/").json()["results"]
+        self.assertEqual([post["id"] for post in tagged], [reel, text_post])
+
+        self.assertFalse(
+            self.client.delete("/api/posts/hashtags/zürich/follow/").json()["following"]
+        )
+        self.assertEqual(self.client.get("/api/posts/").json()["results"], [])
+        self.assertEqual(self.client.get("/api/posts/hashtags/unbekannt/").status_code, 404)

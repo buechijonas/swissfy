@@ -79,6 +79,22 @@ services:
     depends_on:
       - backend
 
+  video-worker:
+    build:
+      context: ./backend
+
+    restart: unless-stopped
+
+    command: python manage.py process_videos
+
+    volumes:
+      - ./backend:/app
+
+    environment: *backend-environment
+
+    depends_on:
+      - backend
+
   frontend:
     build:
       context: ./frontend

@@ -109,14 +109,14 @@
           :username="profile.username"
         />
         <PostList
-          v-else-if="activeTab === 'tiles' || activeTab === 'activities'"
+          v-else-if="postList"
           :key="`${profile.username}-${activeTab}`"
           class="mt-4"
           :class="{ 'max-sm:mt-0': timeline }"
           :url="postsUrl"
-          :grid="activeTab === 'tiles'"
+          :grid="!timeline"
           :edge-to-edge="timeline"
-          :empty-text="activeTab === 'tiles' ? 'Noch keine Bilder.' : 'Noch keine Posts.'"
+          :empty-text="postList.emptyText"
         />
       </template>
     </div>
@@ -142,11 +142,17 @@ import { formatDate } from '@/lib/time.js'
 
 const TABS = [
   { key: 'tiles', label: 'Kachel', icon: 'grid' },
+  { key: 'reels', label: 'Reels', icon: 'clapperboard-play' },
   { key: 'activities', label: 'Aktivitäten', icon: 'list-timeline' },
   { key: 'albums', label: 'Alben', icon: 'gallery' },
   { key: 'about', label: 'Über mich', icon: 'info' },
   { key: 'status', label: 'Status', icon: 'map-marker-smile' },
 ]
+const POST_LISTS = {
+  tiles: { query: '?images=1', emptyText: 'Noch keine Bilder.' },
+  reels: { query: '?videos=1', emptyText: 'Noch keine Reels.' },
+  activities: { query: 'activities/', emptyText: 'Noch keine Posts.' },
+}
 const MODERATION_TABS = TABS.filter((tab) => ['tiles', 'activities', 'status'].includes(tab.key))
 
 export default {
@@ -187,6 +193,9 @@ export default {
     timeline() {
       return this.activeTab === 'activities'
     },
+    postList() {
+      return POST_LISTS[this.activeTab]
+    },
     breadcrumbs() {
       return this.username
         ? [{ label: this.username, to: `/profile/${this.username}` }]
@@ -200,7 +209,7 @@ export default {
     },
     postsUrl() {
       const base = `/api/posts/users/${encodeURIComponent(this.profile.username)}/`
-      return this.activeTab === 'tiles' ? `${base}?images=1` : `${base}activities/`
+      return `${base}${this.postList.query}`
     },
     followLabel() {
       const p = this.profile

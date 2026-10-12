@@ -6,7 +6,7 @@
     @dragleave.prevent="dragging = false"
     @drop.prevent="onDrop"
   >
-    <input type="file" accept="image/*" class="sr-only" :multiple="multiple" @change="onChange" />
+    <input type="file" :accept="accept" class="sr-only" :multiple="multiple" @change="onChange" />
     <AppIcon name="picture" class="size-10!" />
     <span v-if="label" class="text-sm text-center px-4">{{ label }}</span>
   </label>
@@ -21,24 +21,26 @@ export default {
   props: {
     label: { type: String, default: 'Bilder hierher ziehen oder klicken' },
     multiple: { type: Boolean, default: false },
+    accept: { type: String, default: 'image/*' },
   },
   emits: ['select'],
   data() {
     return { dragging: false }
   },
   methods: {
-    emitImages(files) {
-      const images = files.filter((file) => file.type.startsWith('image/'))
-      if (images.length) this.$emit('select', this.multiple ? images : images.slice(0, 1))
+    emitFiles(files) {
+      const types = this.accept.split(',').map((type) => type.trim().replace('*', ''))
+      const accepted = files.filter((file) => types.some((type) => file.type.startsWith(type)))
+      if (accepted.length) this.$emit('select', this.multiple ? accepted : accepted.slice(0, 1))
     },
     onChange(event) {
       const files = [...event.target.files]
       event.target.value = ''
-      this.emitImages(files)
+      this.emitFiles(files)
     },
     onDrop(event) {
       this.dragging = false
-      this.emitImages([...event.dataTransfer.files])
+      this.emitFiles([...event.dataTransfer.files])
     },
   },
 }

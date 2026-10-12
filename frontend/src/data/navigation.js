@@ -12,6 +12,14 @@ export function canAccess(item, authStore) {
 export const navigationItems = [
   { key: 'dashboard', label: 'Startseite', icon: 'house-blank', to: '/', footer: true },
   {
+    key: 'reels',
+    label: 'Reels',
+    icon: 'clapperboard-play',
+    to: '/reels',
+    requiresAuth: true,
+    footer: true,
+  },
+  {
     key: 'search',
     label: 'Suchen',
     icon: 'search',

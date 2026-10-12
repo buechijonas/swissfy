@@ -168,6 +168,37 @@
           <GroupManager />
         </div>
 
+        <div v-else-if="activeTab === 'wellbeing'" class="mb-10">
+          <h3 class="text-xl my-4">Suchtprävention</h3>
+          <p class="text-swissfy-muted text-sm mb-4">
+            Swissfy verzichtet standardmässig auf Funktionen, die dich länger am Bildschirm halten
+            sollen. Du kannst sie hier bewusst einschalten. Gilt für dieses Gerät.
+          </p>
+          <BaseCard
+            v-for="(toggle, index) in wellbeingToggles"
+            :key="toggle.label"
+            class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
+            :class="{ 'mt-4': index }"
+          >
+            <div class="min-w-0">
+              <p>{{ toggle.label }}</p>
+              <p class="text-swissfy-muted text-sm">{{ toggle.hint }}</p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2 shrink-0">
+              <BaseButton
+                v-for="option in onOffOptions"
+                :key="option.label"
+                type="button"
+                size="sm"
+                :variant="toggle.setting.value === option.value ? 'primary' : 'neutral'"
+                @click="toggle.setting.value = option.value"
+              >
+                {{ option.label }}
+              </BaseButton>
+            </div>
+          </BaseCard>
+        </div>
+
         <template v-else>
           <div class="mb-10">
             <h3 class="text-xl my-4">Darstellung</h3>
@@ -239,6 +270,7 @@
 </template>
 
 <script>
+import { markRaw } from 'vue'
 import { RouterLink } from 'vue-router'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
@@ -251,6 +283,7 @@ import { useAuthStore } from '@/stores/auth.js'
 import { themeMode } from '@/lib/theme.js'
 import { dyslexiaFont } from '@/lib/dyslexia.js'
 import { contrastMode } from '@/lib/contrast.js'
+import { videoAutoplay, videoLoop } from '@/lib/wellbeing.js'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { footerLinks } from '@/data/footer.js'
 import { fetchProtection, setProtection } from '@/lib/chatKeys.js'
@@ -332,6 +365,18 @@ export default {
       ],
       savingPrivacy: false,
       privacyError: null,
+      wellbeingToggles: markRaw([
+        {
+          setting: videoAutoplay,
+          label: 'Autoplay',
+          hint: 'Wenn an, starten Videos von selbst und ohne Ton, sobald du zu ihnen scrollst.',
+        },
+        {
+          setting: videoLoop,
+          label: 'Wiederholen',
+          hint: 'Wenn an, beginnen Videos am Ende automatisch von vorne.',
+        },
+      ]),
     }
   },
   computed: {
@@ -348,6 +393,7 @@ export default {
             ]
           : []),
         { key: 'display', label: 'Darstellung' },
+        { key: 'wellbeing', label: 'Wohlbefinden' },
       ]
     },
     pinValid() {
