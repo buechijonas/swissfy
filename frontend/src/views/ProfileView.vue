@@ -103,6 +103,11 @@
           </dl>
           <p v-else class="text-swissfy-muted">Keine Angaben.</p>
         </BaseCard>
+        <ProfileAchievements
+          v-else-if="activeTab === 'achievements'"
+          :key="`${profile.username}-achievements`"
+          :username="profile.username"
+        />
         <ProfileStatus
           v-else-if="activeTab === 'status'"
           :key="`${profile.username}-status`"
@@ -133,6 +138,7 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
+import ProfileAchievements from '@/components/achievements/ProfileAchievements.vue'
 import PostList from '@/components/posts/PostList.vue'
 import ProfileStatus from '@/components/moderation/ProfileStatus.vue'
 import { icons } from '@/assets/icons.js'
@@ -146,6 +152,7 @@ const TABS = [
   { key: 'activities', label: 'Aktivitäten', icon: 'list-timeline' },
   { key: 'albums', label: 'Alben', icon: 'gallery' },
   { key: 'about', label: 'Über mich', icon: 'info' },
+  { key: 'achievements', label: 'Erfolge', icon: 'trophy' },
   { key: 'status', label: 'Status', icon: 'map-marker-smile' },
 ]
 const POST_LISTS = {
@@ -166,6 +173,7 @@ export default {
     BaseTabs,
     CipherText,
     PostList,
+    ProfileAchievements,
     ProfileStatus,
     RoleBadge,
   },
