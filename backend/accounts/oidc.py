@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
 import secrets
 import time
 from urllib.parse import urlencode
@@ -19,6 +20,8 @@ from django.views.decorators.http import require_POST
 from .models import AVATAR_CHOICES, DEFAULT_ROLE, UserProfile, get_or_create_profile
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 # `govex_meta` carries the name, birthdate and avatar managed in govex.
 SCOPE = "openid profile email govex_meta"
@@ -74,6 +77,11 @@ def fetch_userinfo(code, code_verifier):
         timeout=10,
     )
     if not token_response.ok:
+        logger.warning(
+            "govex token exchange failed (%s): %s",
+            token_response.status_code,
+            token_response.text[:500],
+        )
         return None
 
     userinfo_response = requests.get(
@@ -82,6 +90,11 @@ def fetch_userinfo(code, code_verifier):
         timeout=10,
     )
     if not userinfo_response.ok:
+        logger.warning(
+            "govex userinfo request failed (%s): %s",
+            userinfo_response.status_code,
+            userinfo_response.text[:500],
+        )
         return None
     return userinfo_response.json()
 
@@ -152,6 +165,14 @@ def govex_callback(request):
     code_verifier = request.session.pop("govex_oauth_code_verifier", None)
     code = request.GET.get("code")
     if not code or not expected_state or request.GET.get("state") != expected_state:
+        if request.user.is_authenticated:
+            return redirect_to_frontend("/")
+        logger.warning(
+            "govex callback rejected: code=%s, session state=%s, error=%s",
+            bool(code),
+            bool(expected_state),
+            request.GET.get("error"),
+        )
         return redirect_to_frontend("/login?error=oidc_failed")
 
     userinfo = fetch_userinfo(code, code_verifier)
