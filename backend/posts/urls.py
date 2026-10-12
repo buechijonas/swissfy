@@ -5,6 +5,19 @@ from . import views
 urlpatterns = [
     path("posts/", views.FeedView.as_view(), name="feed"),
     path("posts/quota/", views.PostQuotaView.as_view(), name="post-quota"),
+    path("posts/reels/", views.ReelFeedView.as_view(), name="reel-feed"),
+    path("posts/hashtags/", views.HashtagSearchView.as_view(), name="hashtags"),
+    path("posts/hashtags/<str:name>/", views.HashtagDetailView.as_view(), name="hashtag"),
+    path(
+        "posts/hashtags/<str:name>/follow/",
+        views.HashtagFollowView.as_view(),
+        name="hashtag-follow",
+    ),
+    path(
+        "posts/hashtags/<str:name>/posts/",
+        views.HashtagPostListView.as_view(),
+        name="hashtag-posts",
+    ),
     path("posts/saved/", views.SavedListView.as_view(), name="saved-posts"),
     path("posts/folders/", views.FolderListView.as_view(), name="saved-folders"),
     path("posts/folders/<int:pk>/", views.FolderDetailView.as_view(), name="saved-folder"),
@@ -22,6 +35,7 @@ urlpatterns = [
         views.PostImageView.as_view(),
         name="post-image",
     ),
+    path("posts/<uuid:uuid>/video/", views.PostVideoView.as_view(), name="post-video"),
     path("posts/<uuid:uuid>/thumbnail/", views.PostThumbnailView.as_view(), name="post-thumbnail"),
     path("posts/<uuid:uuid>/like/", views.LikeView.as_view(), name="post-like"),
     path("posts/<uuid:uuid>/save/", views.SaveView.as_view(), name="post-save"),

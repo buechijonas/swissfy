@@ -36,6 +36,11 @@ def load(upload):
     return image
 
 
+def thumbnail(image):
+    side = min(THUMBNAIL_SIDE, *image.size)
+    return webp(ImageOps.fit(image, (side, side), method=Image.Resampling.LANCZOS))
+
+
 def compress(uploads):
     if len(uploads) > MAX_IMAGES:
         raise InvalidImage(f"Du kannst höchstens {MAX_IMAGES} Bilder hochladen.")
@@ -44,10 +49,8 @@ def compress(uploads):
     image = load(first)
     image.thumbnail((MAX_SIDE, MAX_SIDE), Image.Resampling.LANCZOS)
     size = image.size
-    side = min(THUMBNAIL_SIDE, *size)
-    thumbnail = ImageOps.fit(image, (side, side), method=Image.Resampling.LANCZOS)
 
     files = [webp(image)]
     for upload in rest:
         files.append(webp(ImageOps.fit(load(upload), size, method=Image.Resampling.LANCZOS)))
-    return files, webp(thumbnail), *size
+    return files, thumbnail(image), *size

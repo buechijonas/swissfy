@@ -12,7 +12,7 @@
         <PostList
           url="/api/posts/"
           edge-to-edge
-          empty-text="Noch keine Posts. Folge Leuten, um ihre Posts hier zu sehen."
+          empty-text="Noch keine Posts. Folge Leuten oder Hashtags, um ihre Posts hier zu sehen."
         />
       </div>
     </div>

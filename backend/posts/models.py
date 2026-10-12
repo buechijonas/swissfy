@@ -26,12 +26,30 @@ class ContactGroup(models.Model):
         return f"{self.owner}: {self.name}"
 
 
+class Hashtag(models.Model):
+    name = models.CharField(max_length=NAME_LENGTH, unique=True)
+    followers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="followed_hashtags", blank=True
+    )
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"#{self.name}"
+
+
 class Post(models.Model):
     class Visibility(models.TextChoices):
         PUBLIC = "public", "Alle"
         FOLLOWERS = "followers", "Follower"
         FRIENDS = "friends", "Freunde"
         GROUPS = "groups", "Gruppen"
+
+    class VideoStatus(models.TextChoices):
+        PROCESSING = "processing", "Wird verarbeitet"
+        READY = "ready", "Bereit"
+        FAILED = "failed", "Fehlgeschlagen"
 
     uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
     author = models.ForeignKey(
@@ -41,10 +59,16 @@ class Post(models.Model):
     thumbnail = models.FileField(upload_to="posts/thumbnails/", blank=True)
     image_width = models.PositiveIntegerField(null=True, blank=True)
     image_height = models.PositiveIntegerField(null=True, blank=True)
+    video = models.FileField(upload_to="posts/videos/", blank=True)
+    video_upload = models.FileField(upload_to="posts/uploads/", blank=True)
+    video_status = models.CharField(
+        max_length=20, choices=VideoStatus.choices, blank=True, db_index=True
+    )
     visibility = models.CharField(
         max_length=20, choices=Visibility.choices, default=Visibility.PUBLIC
     )
     groups = models.ManyToManyField(ContactGroup, related_name="posts", blank=True)
+    hashtags = models.ManyToManyField(Hashtag, related_name="posts", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     hidden_at = models.DateTimeField(null=True, blank=True)
 
@@ -70,8 +94,10 @@ class PostImage(models.Model):
 
 
 @receiver(post_delete, sender=Post)
-def delete_post_thumbnail(sender, instance, **kwargs):
+def delete_post_files(sender, instance, **kwargs):
     instance.thumbnail.delete(save=False)
+    instance.video.delete(save=False)
+    instance.video_upload.delete(save=False)
 
 
 @receiver(post_delete, sender=PostImage)

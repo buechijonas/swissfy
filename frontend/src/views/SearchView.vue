@@ -10,11 +10,13 @@
           v-model="term"
           type="search"
           class="grow"
-          placeholder="Nach Benutzername oder Name suchen"
+          placeholder="Nach Benutzern oder #Hashtags suchen"
           autocomplete="off"
         />
       </label>
+      <HashtagList :query="query" />
       <UserList
+        v-if="!query.startsWith('#')"
         :query="query"
         :link-to="(user) => `/profile/${encodeURIComponent(user.username)}`"
       />
@@ -28,13 +30,14 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import UserList from '@/components/common/UserList.vue'
+import HashtagList from '@/components/posts/HashtagList.vue'
 
 const DEBOUNCE_MS = 300
 const MIN_QUERY_LENGTH = 2
 
 export default {
   name: 'SearchView',
-  components: { AppIcon, BaseBreadcrumbs, BaseFooter, UserList },
+  components: { AppIcon, BaseBreadcrumbs, BaseFooter, HashtagList, UserList },
   data() {
     return {
       breadcrumbs: [{ label: 'Suchen', to: '/search' }],

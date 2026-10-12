@@ -1,10 +1,10 @@
 <template>
-  <BaseCard role="tablist" class="tabs px-2">
+  <BaseCard role="tablist" class="tabs flex-nowrap overflow-x-auto px-2 [scrollbar-width:none]">
     <RouterLink
       v-for="tab in tabs"
       :key="tab.key"
       role="tab"
-      class="tab h-12 border-y-2 border-t-transparent"
+      class="tab h-12 shrink-0 whitespace-nowrap border-y-2 border-t-transparent"
       :class="[
         active === tab.key ? 'tab-active border-b-primary' : 'border-b-transparent',
         { 'flex-1': tab.icon },

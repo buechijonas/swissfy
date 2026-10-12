@@ -6,8 +6,8 @@ from accounts.roles import is_admin, is_moderator, outranks, role_badge
 from main.numbers import compact_number
 from social.models import Follow, Friendship
 
-from . import images
-from .models import Comment, ContactGroup, Post, PostImage, SavedFolder
+from . import hashtags, images, videos
+from .models import Comment, ContactGroup, Hashtag, Post, PostImage, SavedFolder
 
 User = get_user_model()
 
@@ -96,6 +96,7 @@ class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid", read_only=True)
     author = AuthorSerializer(read_only=True)
     images = serializers.SerializerMethodField()
+    video = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
     aspect_ratio = serializers.SerializerMethodField()
     list_aspect_ratio = serializers.SerializerMethodField()
@@ -113,6 +114,8 @@ class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
             "author",
             "text",
             "images",
+            "video",
+            "video_status",
             "thumbnail",
             "aspect_ratio",
             "list_aspect_ratio",
@@ -132,6 +135,11 @@ class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
 
     def get_images(self, obj):
         return [f"/api/posts/{obj.uuid}/images/{image.position}/" for image in obj.images.all()]
+
+    def get_video(self, obj):
+        if obj.video_status != Post.VideoStatus.READY:
+            return None
+        return f"/api/posts/{obj.uuid}/video/"
 
     def get_thumbnail(self, obj):
         return thumbnail_url(obj)
@@ -161,10 +169,11 @@ class PostCreateSerializer(serializers.ModelSerializer):
     images = serializers.ListField(
         child=serializers.FileField(), required=False, allow_empty=False, write_only=True
     )
+    video = serializers.FileField(required=False, write_only=True)
 
     class Meta:
         model = Post
-        fields = ["text", "images", "visibility", "groups"]
+        fields = ["text", "images", "video", "visibility", "groups"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -178,9 +187,19 @@ class PostCreateSerializer(serializers.ModelSerializer):
         except images.InvalidImage as error:
             raise serializers.ValidationError(str(error))
 
+    def validate_video(self, upload):
+        try:
+            return videos.validate(upload)
+        except videos.InvalidVideo as error:
+            raise serializers.ValidationError(str(error))
+
     def validate(self, data):
-        if not data.get("text", "").strip() and not data.get("images"):
-            raise serializers.ValidationError({"text": "Schreib etwas oder wähle ein Bild."})
+        if data.get("images") and data.get("video"):
+            raise serializers.ValidationError({"video": "Wähle entweder Bilder oder ein Video."})
+        if not data.get("text", "").strip() and not data.get("images") and not data.get("video"):
+            raise serializers.ValidationError(
+                {"text": "Schreib etwas oder wähle ein Bild oder Video."}
+            )
         if data.get("visibility") == Post.Visibility.GROUPS:
             if not data.get("groups"):
                 raise serializers.ValidationError({"groups": "Wähle mindestens eine Gruppe."})
@@ -192,12 +211,28 @@ class PostCreateSerializer(serializers.ModelSerializer):
         files = []
         if "images" in data:
             files, data["thumbnail"], data["image_width"], data["image_height"] = data.pop("images")
+        if "video" in data:
+            data["video_upload"] = data.pop("video")
+            data["video_status"] = Post.VideoStatus.PROCESSING
         post = super().create({**data, "author": self.context["request"].user})
+        hashtags.tag(post)
         PostImage.objects.bulk_create(
             PostImage(post=post, file=file, position=position)
             for position, file in enumerate(files)
         )
         return post
+
+
+class HashtagSerializer(serializers.ModelSerializer):
+    post_count = serializers.SerializerMethodField()
+    following = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Hashtag
+        fields = ["name", "post_count", "following"]
+
+    def get_post_count(self, obj):
+        return compact_number(obj.post_count)
 
 
 class CommentSerializer(ModeratedMixin, serializers.ModelSerializer):
