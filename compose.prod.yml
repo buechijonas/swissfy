@@ -95,8 +95,7 @@ services:
       - backend
 
   anubis:
-    image: ghcr.io/techarohq/anubis:latest
-    pull_policy: always
+    image: ghcr.io/techarohq/anubis:v1.27.0
 
     restart: unless-stopped
 
