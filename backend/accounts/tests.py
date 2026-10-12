@@ -55,6 +55,13 @@ class GovexCallbackTests(TestCase):
         self.assertEqual(response["Location"], "http://frontend/login?error=oidc_failed")
         self.assertFalse(User.objects.exists())
 
+    def test_repeated_callback_after_login_goes_home(self):
+        state = self.start_login()
+        self.callback({"sub": "s1", "preferred_username": "jonas"}, state=state)
+        response = self.callback({"sub": "s1", "preferred_username": "jonas"}, state=state)
+        self.assertEqual(response["Location"], "http://frontend/")
+        self.assertEqual(User.objects.count(), 1)
+
     def test_first_login_creates_user_with_default_role_and_meta(self):
         response = self.callback(
             {
