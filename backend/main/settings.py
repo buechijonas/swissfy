@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     "posts",
     "moderation",
     "notifications",
+    "achievements",
 ]
 
 REST_FRAMEWORK = {
