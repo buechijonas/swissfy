@@ -22,6 +22,11 @@ export default defineConfig([
   },
 
   js.configs.recommended,
+  {
+    rules: {
+      'no-empty': ['error', { allowEmptyCatch: true }],
+    },
+  },
   ...pluginVue.configs['flat/essential'],
 
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),

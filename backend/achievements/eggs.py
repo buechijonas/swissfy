@@ -425,7 +425,9 @@ EGGS = [
     {
         "key": "fight_club",
         "title": "Erste Regel",
-        "quote": "Die erste Regel des Fight Club lautet: Ihr verliert kein Wort über den Fight Club",
+        "quote": (
+            "Die erste Regel des Fight Club lautet: Ihr verliert kein Wort über den Fight Club"
+        ),
         "source": "Fight Club",
         "phrases": ["the first rule of fight club", "die erste regel des fight club"],
     },

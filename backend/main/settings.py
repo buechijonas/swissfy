@@ -1,31 +1,13 @@
-"""
-Django settings for main project.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/6.0/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/6.0/ref/settings/
-"""
-
-from pathlib import Path
 import os
+from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# The fallback below is committed to the repo, so it is public - fine for local
-# dev, but refuse to start with it once DEBUG is off.
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
     if not DEBUG:
@@ -42,11 +24,6 @@ CSRF_TRUSTED_ORIGINS = os.getenv(
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5175")
 
-# govex is the identity provider (OIDC). GOVEX_PUBLIC_URL is where the browser
-# is sent to log in; GOVEX_INTERNAL_URL is where this backend reaches govex for
-# the token/userinfo exchange. They only differ in local Docker dev, where
-# "localhost" inside this container isn't the host. GOVEX_ACCOUNT_URL is where
-# users change their password, username, email and profile.
 GOVEX_PUBLIC_URL = os.getenv("GOVEX_PUBLIC_URL")
 GOVEX_ACCOUNT_URL = os.getenv("GOVEX_ACCOUNT_URL")
 GOVEX_INTERNAL_URL = os.getenv("GOVEX_INTERNAL_URL", GOVEX_PUBLIC_URL)
@@ -78,19 +55,13 @@ if not CHAT_ENCRYPTION_KEY:
 CHAT_RETENTION_DAYS = 14
 CHAT_SLOW_MODE_SECONDS = 5
 
-# Caddy terminates TLS and talks plain HTTP to this container, marking the
-# original scheme in this header so Django knows the outer request was HTTPS.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
-# Cookies don't care about ports, so in local dev every app on localhost shares
-# them. Own names keep a wintersehn login from overwriting the swissfy one.
 SESSION_COOKIE_NAME = "swissfy_sessionid"
 CSRF_COOKIE_NAME = "swissfy_csrftoken"
 
-
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -116,10 +87,16 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_PARSER_CLASSES": [
+        "main.parsers.JSONParser",
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
+    ],
 }
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "main.middleware.RejectNullBytes",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -149,9 +126,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "main.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -166,9 +140,6 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -186,9 +157,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = "de-ch"
 
 TIME_ZONE = "Europe/Zurich"
@@ -197,9 +165,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"

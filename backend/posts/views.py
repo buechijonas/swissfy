@@ -13,12 +13,13 @@ from django.utils.dateparse import parse_datetime
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied, Throttled
 from rest_framework.pagination import CursorPagination
-from rest_framework.parsers import JSONParser, MultiPartParser
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.roles import is_moderator
 from main.numbers import compact_number
+from main.parsers import JSONParser
 from moderation.sanctions import ensure_not_suspended
 from notifications.models import Notification
 from notifications.notify import notify, withdraw
@@ -527,8 +528,10 @@ class SavedListView(generics.ListAPIView):
         folder = self.request.query_params.get("folder")
         if folder == "none":
             saves = saves.filter(folder=None)
-        elif folder:
+        elif folder and folder.isdigit():
             saves = saves.filter(folder=folder)
+        elif folder:
+            saves = saves.none()
         posts = (
             visible_posts(self.request.user)
             .filter(pk__in=saves.values("post"))

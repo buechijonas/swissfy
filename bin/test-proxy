@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+IMAGE="swissfy-proxy:test"
+NETWORK="swissfy-proxy-test"
+CADDY="caddy:2-alpine"
+CURL="curlimages/curl:8.11.1"
+failures=0
+
+cleanup() {
+  docker rm -f swissfy-test-backend swissfy-test-origin swissfy-test-anubis swissfy-test-edge >/dev/null 2>&1 || true
+  docker network rm "$NETWORK" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+check() {
+  local name="$1" expected="$2" actual="$3"
+  if grep -qiE -- "$expected" <<<"$actual"; then
+    echo "  ok   $name"
+  else
+    echo "  FAIL $name (expected /$expected/)"
+    failures=$((failures + 1))
+  fi
+}
+
+check_absent() {
+  local name="$1" unexpected="$2" actual="$3"
+  if grep -qiE -- "$unexpected" <<<"$actual"; then
+    echo "  FAIL $name (found /$unexpected/)"
+    failures=$((failures + 1))
+  else
+    echo "  ok   $name"
+  fi
+}
+
+curl_in() {
+  docker run --rm --network "$NETWORK" "$CURL" -sk --max-time 10 --path-as-is "$@"
+}
+
+edge() {
+  curl_in --resolve "swissfy.test:443:$(edge_ip)" "$@"
+}
+
+edge_ip() {
+  docker inspect -f "{{(index .NetworkSettings.Networks \"$NETWORK\").IPAddress}}" swissfy-test-edge
+}
+
+echo "==> Building $IMAGE"
+docker build -q -f frontend/Dockerfile.prod -t "$IMAGE" frontend >/dev/null
+
+cleanup
+docker network create "$NETWORK" >/dev/null
+docker run -d --name swissfy-test-backend --network "$NETWORK" --network-alias backend "$CADDY" \
+  caddy respond --listen :8000 --header "X-Stub: backend" "backend {http.request.uri}" >/dev/null
+docker run -d --name swissfy-test-origin --network "$NETWORK" --network-alias origin "$IMAGE" >/dev/null
+docker run -d --name swissfy-test-anubis --network "$NETWORK" --network-alias anubis "$CADDY" \
+  caddy reverse-proxy --from :3000 --to origin:80 >/dev/null
+docker run -d --name swissfy-test-edge --network "$NETWORK" \
+  -e DOMAIN=swissfy.test -e ACME_EMAIL=test@swissfy.test "$IMAGE" \
+  sh -c 'sed "s/email {\$ACME_EMAIL}/local_certs/" /etc/caddy/Caddyfile.edge > /tmp/Caddyfile && caddy run --config /tmp/Caddyfile --adapter caddyfile' >/dev/null
+sleep 4
+
+echo "==> Edge headers"
+headers="$(edge -D - -o /dev/null https://swissfy.test/)"
+check "HSTS" "^strict-transport-security: max-age=31536000" "$headers"
+check "nosniff" "^x-content-type-options: nosniff" "$headers"
+check "frame denied" "^x-frame-options: DENY" "$headers"
+check "referrer policy" "^referrer-policy: strict-origin-when-cross-origin" "$headers"
+check "permissions policy" "^permissions-policy: camera=\(\)" "$headers"
+check_absent "no server banner" "^server:" "$headers"
+
+echo "==> HTTP is redirected to HTTPS"
+redirect="$(curl_in -D - -o /dev/null -H "Host: swissfy.test" "http://$(edge_ip)/posts")"
+check "redirect" "^location: https://swissfy.test/posts" "$redirect"
+
+echo "==> Content Security Policy on the app"
+check "csp present" "^content-security-policy: default-src 'self'" "$headers"
+check "csp blocks inline scripts" "script-src 'self';" "$headers"
+check "csp blocks framing" "frame-ancestors 'none'" "$headers"
+check "csp blocks plugins" "object-src 'none'" "$headers"
+check_absent "csp has no unsafe-eval" "unsafe-eval" "$headers"
+page="$(edge https://swissfy.test/)"
+check_absent "index.html has no inline scripts" "<script>|<script type=\"module\">[^<]" "$page"
+check "theme script is external" "src=\"/theme.js\"" "$page"
+check "theme script is served" "localStorage" "$(edge https://swissfy.test/theme.js)"
+
+echo "==> API is routed to the backend"
+check "api" "^backend /api/health/" "$(edge https://swissfy.test/api/health/)"
+check "django admin" "^backend /django-admin/" "$(edge https://swissfy.test/django-admin/)"
+check "static" "^backend /static/x.css" "$(edge https://swissfy.test/static/x.css)"
+
+echo "==> No files outside the build are reachable"
+for path in \
+  "/../../../../etc/passwd" \
+  "/%2e%2e/%2e%2e/%2e%2e/etc/passwd" \
+  "/..%2f..%2f..%2fetc%2fpasswd" \
+  "/%252e%252e/etc/passwd" \
+  "/....//....//etc/passwd" \
+  "/etc/passwd%00.js" \
+  "/srv/../etc/passwd" \
+  "/media/posts/x.webp" \
+  "/.git/config" \
+  "/.env" \
+  "/Caddyfile" \
+  "/etc/caddy/Caddyfile"; do
+  body="$(edge "https://swissfy.test$path" || true)"
+  check_absent "traversal $path" "root:x:0:0|reverse_proxy|DJANGO_SECRET" "$body"
+done
+
+echo "==> API prefix tricks still hit the SPA, not the backend"
+for path in "/apix/health/" "/xapi/health/" "/api"; do
+  check_absent "prefix $path" "^backend" "$(edge "https://swissfy.test$path")"
+done
+
+echo "==> Foreign host names are not served"
+foreign="$(curl_in -o /dev/null -w "%{http_code}" --resolve "evil.test:443:$(edge_ip)" https://evil.test/ || true)"
+check_absent "foreign host gets no app" "^200$" "$foreign"
+
+echo
+if [[ "$failures" -gt 0 ]]; then
+  echo "$failures check(s) failed."
+  exit 1
+fi
+echo "All proxy checks passed."

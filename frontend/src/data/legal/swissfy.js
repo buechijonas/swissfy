@@ -1,4 +1,3 @@
-// The swissfy contracts, taken over from the former Django templates.
 export default {
   impressum: {
     title: 'Impressum',

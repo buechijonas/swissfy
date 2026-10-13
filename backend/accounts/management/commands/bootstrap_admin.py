@@ -5,6 +5,8 @@ from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from accounts.models import UserProfile
+
 User = get_user_model()
 
 DEFAULT_USERNAME = "admin"
@@ -41,6 +43,14 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.SUCCESS(f"Admin user '{username}' created with the given password.")
                 )
+            elif UserProfile.objects.filter(user=user, govex_sub__isnull=False).exists():
+                self.stderr.write(
+                    self.style.ERROR(
+                        f"'{username}' belongs to a govex identity - not granting admin rights. "
+                        "Set ADMIN_USERNAME to a name no govex user has."
+                    )
+                )
+                return
             else:
                 self.stdout.write(
                     self.style.WARNING(

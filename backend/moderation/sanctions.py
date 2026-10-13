@@ -5,7 +5,6 @@ from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 
 from accounts.roles import Role, role_of, set_role
-
 from notifications.models import Notification
 from notifications.notify import notify
 

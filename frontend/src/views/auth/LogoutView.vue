@@ -26,9 +26,7 @@ export default {
   async mounted() {
     try {
       await this.authStore.logout()
-    } catch {
-      // nothing more useful to do on this page
-    }
+    } catch {}
     this.done = true
   },
 }

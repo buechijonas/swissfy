@@ -3,8 +3,8 @@ from rest_framework import serializers
 
 from accounts.models import UserProfile, get_or_create_profile
 from accounts.roles import is_admin, is_moderator, role_badge
-from main.numbers import compact_number
 from chats.models import ChatRequest
+from main.numbers import compact_number
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 
@@ -46,9 +46,6 @@ HIDDEN_PROFILE_FIELDS = [*HIDDEN_LIST_FIELDS, "follower_count", "following_count
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
-    """The short form of a profile, for user lists. Expects `profile` to be
-    select_related, since not every user has one (e.g. local admins)."""
-
     avatar = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
 
@@ -78,8 +75,6 @@ class ProfileListSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    """A user's public profile, seen by the requesting user (`context["request"]`)."""
-
     avatar = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()

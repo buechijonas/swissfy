@@ -4,8 +4,6 @@ from django.db.models import F, Q
 
 
 class Follow(models.Model):
-    """`follower` follows `following`. Anyone can follow anyone."""
-
     follower = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="following"
     )
@@ -52,8 +50,6 @@ class FollowRequest(models.Model):
 
 
 class FriendRequest(models.Model):
-    """A pending friend request. Accepting it turns it into a Friendship."""
-
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_friend_requests"
     )
@@ -82,9 +78,6 @@ class FriendRequest(models.Model):
 
 
 class Friendship(models.Model):
-    """One direction of a friendship. Both directions are stored, so a user's
-    friends are simply `user.friendships`."""
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friendships"
     )
@@ -121,8 +114,6 @@ class Block(models.Model):
 
 
 class Nickname(models.Model):
-    """A nickname `owner` gave `target`, only visible to `owner`."""
-
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="given_nicknames"
     )

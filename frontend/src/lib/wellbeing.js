@@ -13,9 +13,7 @@ function storedFlag(key) {
   watch(flag, (enabled) => {
     try {
       localStorage.setItem(key, enabled ? 'on' : 'off')
-    } catch {
-      // ignore storage errors (private browsing, disabled storage, etc.)
-    }
+    } catch {}
   })
   return flag
 }

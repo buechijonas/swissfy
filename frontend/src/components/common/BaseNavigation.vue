@@ -117,17 +117,6 @@ export default {
 </script>
 
 <style>
-/*
-  `drawer-end` is needed so the mobile overlay slides in from the right
-  (the toggle sits at the right of the header) - but it also flips the
-  drawer's internal grid column order. At desktop, where the sidebar is
-  permanently open via `lg:drawer-open`, that reversed order gives the
-  empty `.drawer-content` placeholder the "auto" track, which then
-  soaks up whatever width `.drawer-side` doesn't use, pushing the
-  sidebar a few pixels away from the left accent bar. Pinning the
-  columns to 0/max-content at that breakpoint removes that gap without
-  touching the mobile slide-in behavior.
-*/
 @media (width >= 1024px) {
   .drawer.drawer-end.lg\:drawer-open {
     grid-template-columns: 0 max-content;
