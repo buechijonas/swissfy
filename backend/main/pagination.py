@@ -3,6 +3,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.utils.urls import replace_query_param
 
+MAX_PAGE = 100_000
+
 
 class NextPagePagination(PageNumberPagination):
     page_size = 20
@@ -12,6 +14,8 @@ class NextPagePagination(PageNumberPagination):
         try:
             self.number = max(1, int(request.query_params.get(self.page_query_param, 1)))
         except ValueError:
+            raise NotFound("Ungültige Seite.")
+        if self.number > MAX_PAGE:
             raise NotFound("Ungültige Seite.")
         start = (self.number - 1) * self.page_size
         items = list(queryset[start : start + self.page_size + 1])

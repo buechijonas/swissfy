@@ -24,7 +24,9 @@ export default {
   components: { AuthPage, BaseButton },
   data() {
     return {
-      error: ERROR_MESSAGES[this.$route.query.error] ?? '',
+      error: Object.hasOwn(ERROR_MESSAGES, this.$route.query.error ?? '')
+        ? ERROR_MESSAGES[this.$route.query.error]
+        : '',
     }
   },
   computed: {

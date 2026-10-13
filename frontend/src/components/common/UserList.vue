@@ -54,7 +54,6 @@ export default {
     },
   },
   mounted() {
-    // Loads the next page whenever the end of the list scrolls into view.
     this.observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) this.loadMore()
     })
@@ -85,8 +84,6 @@ export default {
         this.loading = false
         if (query !== this.query) this.loadMore()
       }
-      // A page too short to fill the screen leaves the sentinel visible, which
-      // fires no new event. Re-observing reports its current visibility again.
       await this.$nextTick()
       this.observer.unobserve(this.$refs.sentinel)
       this.observer.observe(this.$refs.sentinel)

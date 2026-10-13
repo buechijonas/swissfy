@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import models
 
-# The avatars govex offers (govex-meta blueprint there).
 AVATAR_CHOICES = [
     "bee",
     "bison",
@@ -55,8 +54,6 @@ AVATAR_CHOICES = [
     "whale",
 ]
 
-# Roles are Django groups, created by migration 0002_roles. Every new account
-# starts with this one.
 DEFAULT_ROLE = "Standard"
 
 
@@ -91,16 +88,13 @@ class UserProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )
-    # The `sub` claim of this user's govex identity (authentik user UUID).
     govex_sub = models.CharField(max_length=64, unique=True, null=True, blank=True)
 
-    # Managed in govex and taken over on every login and account update.
     avatar = models.CharField(
         max_length=20, blank=True, default="", choices=[(a, a) for a in AVATAR_CHOICES]
     )
     birthdate = models.DateField("Geburtsdatum", null=True, blank=True)
 
-    # Managed in swissfy.
     biography = models.TextField("Biografie", max_length=500, blank=True)
     sex = models.CharField("Geschlecht", max_length=20, choices=Sex.choices, blank=True)
     profession = models.CharField("Tätigkeit", max_length=50, blank=True)

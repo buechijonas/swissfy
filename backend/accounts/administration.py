@@ -57,7 +57,8 @@ class AdminUserSerializer(serializers.ModelSerializer):
             raise PermissionDenied("Du kannst deine eigene Rolle nicht ändern.")
         if role_locked_until(user):
             raise PermissionDenied(
-                "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt und Sperren abgelaufen sind."
+                "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt "
+                "und Sperren abgelaufen sind."
             )
         set_role(user, data["current_role"])
         return User.objects.prefetch_related("groups").get(pk=user.pk)

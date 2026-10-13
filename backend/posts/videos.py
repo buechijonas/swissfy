@@ -16,6 +16,8 @@ MAX_SIDE = 1280
 CRF = 28
 AUDIO_BITRATE = "96k"
 TRANSCODE_TIMEOUT = 600
+FORMATS = {"mov,mp4,m4a,3gp,3g2,mj2", "matroska,webm", "avi"}
+LOCAL_ONLY = ["-protocol_whitelist", "file"]
 
 
 class InvalidVideo(Exception):
@@ -41,10 +43,11 @@ def probe(path):
                 "ffprobe",
                 "-v",
                 "error",
+                *LOCAL_ONLY,
                 "-select_streams",
                 "v:0",
                 "-show_entries",
-                "stream=codec_type:format=duration",
+                "stream=codec_type:format=format_name,duration",
                 "-of",
                 "json",
                 path,
@@ -54,6 +57,8 @@ def probe(path):
             timeout=30,
         )
         info = json.loads(result.stdout)
+        if info["format"]["format_name"] not in FORMATS:
+            raise InvalidVideo("Die Datei ist kein gültiges Video.")
         return info["streams"], float(info["format"]["duration"])
     except (subprocess.SubprocessError, ValueError, KeyError):
         raise InvalidVideo("Die Datei ist kein gültiges Video.")
@@ -80,7 +85,7 @@ def transcode(source):
             f"scale=w='min({MAX_SIDE},iw)':h='min({MAX_SIDE},ih)'"
             ":force_original_aspect_ratio=decrease:force_divisible_by=2"
         )
-        ffmpeg = ["ffmpeg", "-v", "error", "-y"]
+        ffmpeg = ["ffmpeg", "-v", "error", "-y", *LOCAL_ONLY]
         commands = [
             [
                 *ffmpeg,

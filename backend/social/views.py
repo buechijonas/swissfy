@@ -27,8 +27,6 @@ Resolution = Notification.Resolution
 
 
 class ProfileListView(generics.ListAPIView):
-    """All other active users, a page at a time."""
-
     serializer_class = ProfileListSerializer
     pagination_class = NextPagePagination
 
@@ -168,8 +166,6 @@ class PrivacyView(APIView):
 
 
 class ProfileView(APIView):
-    """Shows a user's profile. Without a username, the requesting user's own."""
-
     def get_target(self, request, username=None):
         if username is None:
             return request.user

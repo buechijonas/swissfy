@@ -13,13 +13,7 @@
     <meta name="apple-mobile-web-app-title" content="Swissfy">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Swissfy</title>
-    <script>
-      try {
-        const mode = localStorage.getItem('theme')
-        if (mode === 'light') document.documentElement.setAttribute('data-theme', 'swissfy')
-        if (mode === 'dark') document.documentElement.setAttribute('data-theme', 'dark')
-      } catch {}
-    </script>
+    <script src="/theme.js"></script>
     <style>
       html {
         background-color: oklch(100% 0 0);

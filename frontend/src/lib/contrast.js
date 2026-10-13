@@ -27,9 +27,7 @@ watch(
     applyContrastMode(enabled)
     try {
       localStorage.setItem(STORAGE_KEY, enabled ? 'on' : 'off')
-    } catch {
-      // ignore storage errors (private browsing, disabled storage, etc.)
-    }
+    } catch {}
   },
   { immediate: true },
 )

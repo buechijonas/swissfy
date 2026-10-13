@@ -9,6 +9,7 @@ MAX_IMAGES = 10
 MAX_SIDE = 1280
 THUMBNAIL_SIDE = 400
 QUALITY = 80
+FORMATS = ["JPEG", "PNG", "WEBP", "GIF", "AVIF"]
 
 
 class InvalidImage(Exception):
@@ -25,7 +26,7 @@ def load(upload):
     if upload.size > MAX_UPLOAD_SIZE:
         raise InvalidImage("Ein Bild ist zu gross (max. 15 MB).")
     try:
-        with Image.open(upload) as original:
+        with Image.open(upload, formats=FORMATS) as original:
             image = ImageOps.exif_transpose(original)
             image.load()
     except (OSError, ValueError, Image.DecompressionBombError):

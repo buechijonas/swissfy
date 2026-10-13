@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.models import Group
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
@@ -23,7 +24,6 @@ User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
-# `govex_meta` carries the name, birthdate and avatar managed in govex.
 SCOPE = "openid profile email govex_meta"
 
 MAX_CLOCK_SKEW_SECONDS = 300
@@ -39,7 +39,6 @@ def redirect_to_frontend(path):
 
 
 def govex_login(request):
-    """Starts the OIDC Authorization Code + PKCE flow on govex."""
     state = secrets.token_urlsafe(32)
     code_verifier = secrets.token_urlsafe(64)
     request.session["govex_oauth_state"] = state
@@ -100,9 +99,6 @@ def fetch_userinfo(code, code_verifier):
 
 
 def create_user(govex_sub, username, email):
-    # Never link to an existing local account by email: govex doesn't verify
-    # email addresses, so that would let anyone claim e.g. the admin account.
-    # Local accounts are linked explicitly with `manage.py link_govex_user`.
     with transaction.atomic():
         release_username(username)
         user = User(username=username, email=email)
@@ -113,19 +109,23 @@ def create_user(govex_sub, username, email):
     return user
 
 
+def claimable_username(username, govex_sub, owner=None):
+    staff = User.objects.filter(Q(is_staff=True) | Q(is_superuser=True), username=username)
+    if staff.exclude(pk=getattr(owner, "pk", None)).exists():
+        return f"govex-{govex_sub[:8]}"
+    return username
+
+
 def release_username(username, owner=None):
-    """govex decides who a username belongs to. A different local account
-    still holding it (unlinked, or stale because a rename never reached us)
-    is moved to a fallback name so the govex identity can take it."""
-    holder = (
-        User.objects.filter(username=username).exclude(pk=getattr(owner, "pk", None)).first()
-    )
+    holder = User.objects.filter(username=username).exclude(pk=getattr(owner, "pk", None)).first()
     if holder is not None:
         holder.username = f"{holder.username[:140]}-{holder.pk}"
         holder.save(update_fields=["username"])
 
 
 def find_profile(govex_sub):
+    if not isinstance(govex_sub, str) or not govex_sub:
+        return None
     return UserProfile.objects.filter(govex_sub=govex_sub).select_related("user").first()
 
 
@@ -140,12 +140,6 @@ def sync_user(user, username, email):
 
 
 def sync_meta(user, meta):
-    """Takes over name, birthdate and avatar managed in govex, which is the
-    only source for them: a key govex doesn't send is cleared here.
-
-    `meta` is None when govex didn't hand out the `govex_meta` scope; then
-    nothing is touched.
-    """
     if meta is None:
         return
     profile = get_or_create_profile(user)
@@ -159,8 +153,6 @@ def sync_meta(user, meta):
 
 
 def govex_callback(request):
-    """Exchanges the code with govex server-to-server and logs the matching
-    local user in, creating it on first login."""
     expected_state = request.session.pop("govex_oauth_state", None)
     code_verifier = request.session.pop("govex_oauth_code_verifier", None)
     code = request.GET.get("code")
@@ -185,10 +177,10 @@ def govex_callback(request):
 
     profile = find_profile(govex_sub)
     if profile is None:
-        user = create_user(govex_sub, username, email)
+        user = create_user(govex_sub, claimable_username(username, govex_sub), email)
     else:
         user = profile.user
-        sync_user(user, username, email)
+        sync_user(user, claimable_username(username, govex_sub, owner=user), email)
     sync_meta(user, userinfo.get("meta"))
 
     login(request, user)
@@ -198,6 +190,8 @@ def govex_callback(request):
 def valid_govex_signature(request):
     timestamp = request.headers.get("X-Govex-Timestamp", "")
     signature = request.headers.get("X-Govex-Signature", "")
+    if not settings.GOVEX_CLIENT_SECRET:
+        return False
     if not timestamp.isdigit() or abs(time.time() - int(timestamp)) > MAX_CLOCK_SKEW_SECONDS:
         return False
     expected = hmac.new(
@@ -211,11 +205,6 @@ def valid_govex_signature(request):
 @csrf_exempt
 @require_POST
 def govex_account_deleted(request):
-    """Deletes the local account of a govex identity that was deleted in govex.
-
-    govex calls this server-to-server right before it deletes the identity,
-    signed with the OAuth client secret both sides share.
-    """
     if not valid_govex_signature(request):
         return HttpResponse(status=403)
     try:
@@ -232,11 +221,6 @@ def govex_account_deleted(request):
 @csrf_exempt
 @require_POST
 def govex_account_updated(request):
-    """Takes over a username, email or meta change made in govex.
-
-    Updates the existing user in place, so the user stays signed in: Django
-    ties a session to the user id and password hash, neither changes here.
-    """
     if not valid_govex_signature(request):
         return HttpResponse(status=403)
     try:
@@ -246,7 +230,8 @@ def govex_account_updated(request):
 
     profile = find_profile(payload.get("sub"))
     if profile is not None and payload.get("username"):
-        sync_user(profile.user, payload["username"], payload.get("email") or "")
+        username = claimable_username(payload["username"], profile.govex_sub, owner=profile.user)
+        sync_user(profile.user, username, payload.get("email") or "")
     if profile is not None:
         sync_meta(profile.user, payload.get("meta"))
     return HttpResponse(status=204)

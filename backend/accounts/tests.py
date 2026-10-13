@@ -128,7 +128,9 @@ class GovexWebhookTests(TestCase):
         )
         self.assertEqual(response.status_code, 204)
         user.refresh_from_db()
-        self.assertEqual((user.username, user.email, user.last_name), ("jonas2", "new@example.com", "Büchi"))
+        self.assertEqual(
+            (user.username, user.email, user.last_name), ("jonas2", "new@example.com", "Büchi")
+        )
         self.assertEqual(user.profile.avatar, "")
 
 

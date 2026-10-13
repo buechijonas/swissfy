@@ -31,9 +31,7 @@ watch(
     applyTheme(mode)
     try {
       localStorage.setItem(STORAGE_KEY, mode)
-    } catch {
-      // ignore storage errors (private browsing, disabled storage, etc.)
-    }
+    } catch {}
   },
   { immediate: true },
 )
