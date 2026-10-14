@@ -22,7 +22,7 @@
       class="flex flex-col gap-4"
       :class="{ 'max-sm:gap-2 max-sm:bg-base-200': edgeToEdge }"
     >
-      <template v-for="item in posts" :key="`${item.type ?? 'post'}-${item.id}`">
+      <template v-for="item in posts" :key="itemKey(item)">
         <CommentActivity
           v-if="item.type === 'comment'"
           :comment="item"
@@ -61,6 +61,10 @@ import CommentActivity from '@/components/posts/CommentActivity.vue'
 import PostCard from '@/components/posts/PostCard.vue'
 import { apiFetch } from '@/lib/api.js'
 
+function itemKey(item) {
+  return `${item.type ?? 'post'}-${item.id}`
+}
+
 export default {
   name: 'PostList',
   components: { RouterLink, AppIcon, BaseCard, CommentActivity, PostCard },
@@ -92,6 +96,7 @@ export default {
     this.observer.disconnect()
   },
   methods: {
+    itemKey,
     tileLink(post) {
       if (!post.video) return `/posts/${post.id}`
       const base = this.reelBase ?? `/profile/${encodeURIComponent(post.author.username)}/reels`
@@ -109,7 +114,8 @@ export default {
           return
         }
         const data = await response.json()
-        this.posts.push(...data.results)
+        const known = new Set(this.posts.map(itemKey))
+        this.posts.push(...data.results.filter((item) => !known.has(itemKey(item))))
         this.nextQuery = data.next && new URL(data.next, window.location.origin).searchParams
         this.hasMore = Boolean(this.nextQuery)
       } finally {
@@ -118,6 +124,9 @@ export default {
       await this.$nextTick()
       this.observer.unobserve(this.$refs.sentinel)
       this.observer.observe(this.$refs.sentinel)
+    },
+    prepend(post) {
+      this.posts.unshift(post)
     },
     remove(id) {
       this.posts = this.posts.filter((item) => item.type === 'comment' || item.id !== id)

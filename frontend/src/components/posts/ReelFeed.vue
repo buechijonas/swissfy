@@ -8,7 +8,7 @@
       :key="post.id"
       class="flex h-full snap-start snap-always items-center justify-center"
     >
-      <PostCard :post="post" detail reel @comments="openComments(post)" @deleted="remove" />
+      <PostCard :post="post" detail reel @deleted="remove" />
     </section>
 
     <div v-if="loading" class="flex h-full items-center justify-center">
@@ -21,35 +21,16 @@
       {{ error || emptyText }}
     </div>
     <div ref="sentinel" class="h-px"></div>
-
-    <BaseDialog
-      ref="comments"
-      title="Kommentare"
-      class="modal-bottom sm:modal-middle"
-      box-class="h-[80dvh] max-w-150 pb-0"
-    >
-      <div class="-mx-6 min-h-0 flex-1 overflow-y-auto px-6 pb-6">
-        <CommentSection
-          v-if="commentPost"
-          :key="commentPost.id"
-          :url="`/api/posts/${commentPost.id}/comments/`"
-          @created="commentPost.comment_count += 1"
-          @deleted="commentPost.comment_count = $event.comment_count"
-        />
-      </div>
-    </BaseDialog>
   </div>
 </template>
 
 <script>
-import BaseDialog from '@/components/common/BaseDialog.vue'
-import CommentSection from '@/components/posts/CommentSection.vue'
 import PostCard from '@/components/posts/PostCard.vue'
 import { apiFetch } from '@/lib/api.js'
 
 export default {
   name: 'ReelFeed',
-  components: { BaseDialog, CommentSection, PostCard },
+  components: { PostCard },
   props: {
     url: { type: String, default: null },
     initialPosts: { type: Array, default: () => [] },
@@ -63,7 +44,6 @@ export default {
       hasMore: Boolean(this.url),
       loading: false,
       error: null,
-      commentPost: null,
     }
   },
   mounted() {
@@ -100,10 +80,6 @@ export default {
       await this.$nextTick()
       this.observer.unobserve(this.$refs.sentinel)
       this.observer.observe(this.$refs.sentinel)
-    },
-    openComments(post) {
-      this.commentPost = post
-      this.$refs.comments.open()
     },
     remove(id) {
       this.posts = this.posts.filter((post) => post.id !== id)

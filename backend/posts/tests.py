@@ -156,6 +156,51 @@ class PostTests(TestCase):
         foreign = ContactGroup.objects.create(owner=self.jonas, name="Fremd")
         self.assertEqual(self.post(visibility="groups", groups=[foreign.pk]).status_code, 400)
 
+    def test_author_changes_visibility(self):
+        post = self.post().json()["id"]
+        group = ContactGroup.objects.create(owner=self.anna, name="Familie")
+        group.members.add(self.jonas)
+
+        self.as_user(self.jonas)
+        response = self.client.patch(
+            f"/api/posts/{post}/", {"visibility": "friends"}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        self.as_user(self.anna)
+        response = self.client.patch(
+            f"/api/posts/{post}/",
+            {"visibility": "groups", "groups": [group.pk]},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            (response.json()["visibility"], response.json()["groups"]), ("groups", [group.pk])
+        )
+        self.as_user(self.eve)
+        self.assertEqual(self.visible_ids(), [])
+
+        self.as_user(self.anna)
+        response = self.client.patch(
+            f"/api/posts/{post}/", {"visibility": "public"}, content_type="application/json"
+        )
+        self.assertEqual(response.json()["groups"], [])
+        self.as_user(self.eve)
+        self.assertEqual(self.visible_ids(), [post])
+
+    def test_visibility_change_needs_own_group(self):
+        post = self.post().json()["id"]
+        foreign = ContactGroup.objects.create(owner=self.jonas, name="Fremd")
+        for data in (
+            {"visibility": "groups"},
+            {"visibility": "groups", "groups": [foreign.pk]},
+            {},
+        ):
+            response = self.client.patch(
+                f"/api/posts/{post}/", data, content_type="application/json"
+            )
+            self.assertEqual(response.status_code, 400)
+
     def test_feed_orders_by_day_with_friends_first(self):
         Follow.objects.create(follower=self.jonas, following=self.anna)
         Follow.objects.create(follower=self.jonas, following=self.eve)
@@ -164,14 +209,14 @@ class PostTests(TestCase):
         Post.objects.filter(pk=yesterday.pk).update(created_at=timezone.now() - timedelta(days=1))
         friend = Post.objects.create(author=self.eve, text="Freundin")
         follow = Post.objects.create(author=self.anna, text="Folge")
-        Post.objects.create(author=self.jonas, text="eigener")
+        own = Post.objects.create(author=self.jonas, text="eigener")
         Post.objects.create(author=User.objects.create(username="mia"), text="fremd")
 
         self.as_user(self.jonas)
         data = self.client.get("/api/posts/").json()
         self.assertEqual(
             [post["id"] for post in data["results"]],
-            [str(post.uuid) for post in (friend, follow, yesterday)],
+            [str(post.uuid) for post in (friend, own, follow, yesterday)],
         )
 
     def test_feed_pages(self):
