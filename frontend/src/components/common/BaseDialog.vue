@@ -8,8 +8,9 @@
           shape="circle"
           size="sm"
           class="absolute right-2 top-2"
+          title="Schliessen"
         >
-          ✕
+          <AppIcon name="cross" size="sm" alt="Schliessen" />
         </BaseButton>
       </form>
       <slot name="header">

@@ -14,9 +14,13 @@
         </option>
       </select>
       <BaseButton v-if="canWarn" type="submit" variant="primary" :disabled="busy || !reason">
+        <AppIcon name="shield-exclamation" />
         Verwarnen
       </BaseButton>
-      <BaseButton v-if="reportCount" :disabled="busy" @click="dismiss">Verwerfen</BaseButton>
+      <BaseButton v-if="reportCount" :disabled="busy" @click="dismiss">
+        <AppIcon name="cross" />
+        Verwerfen
+      </BaseButton>
     </form>
     <p v-if="error" class="text-error text-sm">{{ error }}</p>
     <ul v-if="warnings.length" class="flex flex-col gap-1 text-sm">
@@ -29,13 +33,14 @@
 </template>
 
 <script>
+import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { formatDate } from '@/lib/time.js'
 
 export default {
   name: 'ModerationPanel',
-  components: { BaseButton },
+  components: { AppIcon, BaseButton },
   props: {
     url: { type: String, required: true },
     details: { type: Object, required: true },

@@ -1,5 +1,9 @@
 <template>
-  <BaseBreadcrumbs :items="breadcrumbs" />
+  <BaseBreadcrumbs :items="breadcrumbs">
+    <template v-if="profile?.is_self" #actions>
+      <AddButton label="Posten" @click="$refs.composer.open()" />
+    </template>
+  </BaseBreadcrumbs>
   <div
     class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-96px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
     :class="{ 'max-sm:pb-0': timeline }"
@@ -48,6 +52,7 @@
               :disabled="busy"
               @click="toggleFollow"
             >
+              <AppIcon :name="followIcon" />
               {{ followLabel }}
             </BaseButton>
           </div>
@@ -63,6 +68,7 @@
               :to="profile.can_chat ? `/chats/${encodeURIComponent(profile.username)}` : null"
               :disabled="!profile.can_chat"
             >
+              <AppIcon name="comments" />
               Chat
             </BaseButton>
           </div>
@@ -78,6 +84,7 @@
               :disabled="busy || profile.friend_request_sent"
               @click="sendFriendRequest"
             >
+              <AppIcon :name="profile.friend_request_sent ? 'clock' : 'users'" />
               {{ profile.friend_request_sent ? 'Angefragt' : 'Anfragen' }}
             </BaseButton>
           </div>
@@ -115,7 +122,7 @@
         />
         <PostList
           v-else-if="postList"
-          :key="`${profile.username}-${activeTab}`"
+          :key="`${profile.username}-${activeTab}-${postsVersion}`"
           class="mt-4"
           :class="{ 'max-sm:mt-0': timeline }"
           :url="postsUrl"
@@ -126,10 +133,12 @@
       </template>
     </div>
   </div>
+  <PostComposer v-if="profile?.is_self" ref="composer" @created="showOwnPosts" />
   <BaseFooter />
 </template>
 
 <script>
+import AddButton from '@/components/common/AddButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -139,6 +148,7 @@ import BaseTabs from '@/components/common/BaseTabs.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import ProfileAchievements from '@/components/achievements/ProfileAchievements.vue'
+import PostComposer from '@/components/posts/PostComposer.vue'
 import PostList from '@/components/posts/PostList.vue'
 import ProfileStatus from '@/components/moderation/ProfileStatus.vue'
 import { icons } from '@/assets/icons.js'
@@ -165,6 +175,7 @@ const MODERATION_TABS = TABS.filter((tab) => ['tiles', 'activities', 'status'].i
 export default {
   name: 'ProfileView',
   components: {
+    AddButton,
     AppIcon,
     BaseBreadcrumbs,
     BaseButton,
@@ -172,6 +183,7 @@ export default {
     BaseFooter,
     BaseTabs,
     CipherText,
+    PostComposer,
     PostList,
     ProfileAchievements,
     ProfileStatus,
@@ -184,6 +196,7 @@ export default {
       error: null,
       busy: false,
       actionError: null,
+      postsVersion: 0,
     }
   },
   computed: {
@@ -224,6 +237,11 @@ export default {
       if (p.is_following) return 'Entfolgen'
       if (p.follow_requested) return 'Angefragt'
       return p.requires_follow_request ? 'Anfragen' : 'Folgen'
+    },
+    followIcon() {
+      const p = this.profile
+      if (p.is_following) return 'user-minus'
+      return p.follow_requested ? 'clock' : 'user-add'
     },
     fullName() {
       return [this.profile.first_name, this.profile.last_name].filter(Boolean).join(' ')
@@ -277,6 +295,10 @@ export default {
     },
     sendFriendRequest() {
       return this.runAction('friend-request/', 'POST', 'Anfrage fehlgeschlagen.')
+    },
+    showOwnPosts() {
+      this.postsVersion++
+      this.$router.push({ query: { ...this.$route.query, tab: 'activities' } })
     },
   },
 }

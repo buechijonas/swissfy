@@ -31,6 +31,7 @@
       <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
       <div v-if="loading" class="skeleton h-48 w-full mt-4"></div>
       <BaseButton v-else-if="next" class="mt-4" size="sm" block @click="load">
+        <AppIcon name="down" />
         Weitere laden
       </BaseButton>
     </div>
@@ -39,6 +40,7 @@
 </template>
 
 <script>
+import AppIcon from '@/components/common/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
@@ -51,6 +53,7 @@ import { apiFetch } from '@/lib/api.js'
 export default {
   name: 'ModerationView',
   components: {
+    AppIcon,
     BaseBreadcrumbs,
     BaseButton,
     BaseCard,

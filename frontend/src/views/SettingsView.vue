@@ -34,6 +34,7 @@
             >
               <p class="text-swissfy-muted min-w-0">Melde dich mit deinem govex Konto an.</p>
               <BaseButton class="shrink-0" @click="authStore.startGovexLogin()">
+                <AppIcon name="enter" />
                 Anmelden
               </BaseButton>
             </BaseCard>
@@ -71,6 +72,7 @@
                 :disabled="savingPrivacy"
                 @click="savePrivacy('profile_visibility', option.value)"
               >
+                <AppIcon :name="option.icon" />
                 {{ option.label }}
               </BaseButton>
             </div>
@@ -95,6 +97,7 @@
                 :disabled="savingPrivacy"
                 @click="savePrivacy(toggle.field, option.value)"
               >
+                <AppIcon :name="option.icon" />
                 {{ option.label }}
               </BaseButton>
             </div>
@@ -122,6 +125,7 @@
                   :disabled="savingChat"
                   @click="selectChatProtection(option.value)"
                 >
+                  <AppIcon :name="option.icon" />
                   {{ option.label }}
                 </BaseButton>
               </div>
@@ -147,6 +151,7 @@
               </p>
               <div class="flex justify-end gap-2">
                 <BaseButton size="sm" :disabled="savingChat" @click="pinSetup = false">
+                  <AppIcon name="cross" />
                   Abbrechen
                 </BaseButton>
                 <BaseButton
@@ -155,6 +160,7 @@
                   variant="primary"
                   :disabled="!pinValid || savingChat"
                 >
+                  <AppIcon name="lock" />
                   PIN festlegen
                 </BaseButton>
               </div>
@@ -193,6 +199,7 @@
                 :variant="toggle.setting.value === option.value ? 'primary' : 'neutral'"
                 @click="toggle.setting.value = option.value"
               >
+                <AppIcon :name="option.icon" />
                 {{ option.label }}
               </BaseButton>
             </div>
@@ -240,6 +247,7 @@
                   :variant="dyslexiaFont === option.value ? 'primary' : 'neutral'"
                   @click="dyslexiaFont = option.value"
                 >
+                  <AppIcon :name="option.icon" />
                   {{ option.label }}
                 </BaseButton>
               </div>
@@ -257,6 +265,7 @@
                   :variant="contrastMode === option.value ? 'primary' : 'neutral'"
                   @click="contrastMode = option.value"
                 >
+                  <AppIcon :name="option.icon" />
                   {{ option.label }}
                 </BaseButton>
               </div>
@@ -312,17 +321,17 @@ export default {
         { value: 'dark', icon: 'moon-stars', label: 'Dunkel' },
       ],
       dyslexiaOptions: [
-        { value: true, label: 'An' },
-        { value: false, label: 'Aus' },
+        { value: true, label: 'An', icon: 'check' },
+        { value: false, label: 'Aus', icon: 'cross' },
       ],
       contrastOptions: [
-        { value: true, label: 'An' },
-        { value: false, label: 'Aus' },
+        { value: true, label: 'An', icon: 'check' },
+        { value: false, label: 'Aus', icon: 'cross' },
       ],
       chatProtectionOptions: [
-        { value: 'standard', label: 'Standard' },
-        { value: 'device', label: 'Nur auf diesem Gerät' },
-        { value: 'pin', label: 'Chat-PIN' },
+        { value: 'standard', label: 'Standard', icon: 'shield-trust' },
+        { value: 'device', label: 'Nur auf diesem Gerät', icon: 'laptop' },
+        { value: 'pin', label: 'Chat-PIN', icon: 'lock' },
       ],
       chatProtectionHints: {
         standard: 'Verschlüsselt gespeichert. Zugang auf jedem Gerät mit deinem Login.',
@@ -337,9 +346,9 @@ export default {
       newPin: '',
       newPinRepeat: '',
       visibilityOptions: [
-        { value: 'public', label: 'Öffentlich' },
-        { value: 'followers', label: 'Follower' },
-        { value: 'friends', label: 'Freunde' },
+        { value: 'public', label: 'Öffentlich', icon: 'globe' },
+        { value: 'followers', label: 'Follower', icon: 'user' },
+        { value: 'friends', label: 'Freunde', icon: 'users' },
       ],
       privacy: null,
       privacyToggles: [
@@ -360,8 +369,8 @@ export default {
         },
       ],
       onOffOptions: [
-        { value: true, label: 'An' },
-        { value: false, label: 'Aus' },
+        { value: true, label: 'An', icon: 'check' },
+        { value: false, label: 'Aus', icon: 'cross' },
       ],
       savingPrivacy: false,
       privacyError: null,

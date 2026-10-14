@@ -5,6 +5,7 @@
     </p>
     <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
     <BaseButton variant="primary" block @click="authStore.startGovexLogin()">
+      <AppIcon name="enter" />
       Mit govex anmelden
     </BaseButton>
   </AuthPage>
@@ -12,6 +13,7 @@
 
 <script>
 import AuthPage from '@/components/layout/AuthPage.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 
@@ -21,7 +23,7 @@ const ERROR_MESSAGES = {
 
 export default {
   name: 'LoginView',
-  components: { AuthPage, BaseButton },
+  components: { AppIcon, AuthPage, BaseButton },
   data() {
     return {
       error: Object.hasOwn(ERROR_MESSAGES, this.$route.query.error ?? '')

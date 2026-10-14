@@ -56,6 +56,7 @@
       <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
       <div v-if="loading" class="skeleton h-24 w-full mt-4"></div>
       <BaseButton v-else-if="next" class="mt-4" size="sm" block @click="load">
+        <AppIcon name="down" />
         Weitere laden
       </BaseButton>
     </div>

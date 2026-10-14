@@ -36,6 +36,7 @@
     <form class="flex gap-2" @submit.prevent="addMember(group)">
       <input v-model="drafts[group.id]" class="input input-sm flex-1" placeholder="Benutzername" />
       <BaseButton type="submit" size="sm" :disabled="!drafts[group.id]?.trim()">
+        <AppIcon name="plus" />
         Hinzufügen
       </BaseButton>
     </form>

@@ -50,7 +50,10 @@
               {{ report.open_count ? `· ${report.open_count} offen` : '· erledigt' }}
             </span>
           </div>
-          <BaseButton size="sm" :to="report.link">Ansehen</BaseButton>
+          <BaseButton size="sm" :to="report.link">
+            <AppIcon name="eye" />
+            Ansehen
+          </BaseButton>
         </li>
       </ul>
       <p v-else>Keine gemeldeten Inhalte.</p>
@@ -60,6 +63,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
+import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import { apiFetch } from '@/lib/api.js'
@@ -67,7 +71,7 @@ import { formatDate } from '@/lib/time.js'
 
 export default {
   name: 'ProfileStatus',
-  components: { RouterLink, BaseButton, BaseCard },
+  components: { RouterLink, AppIcon, BaseButton, BaseCard },
   props: {
     username: { type: String, required: true },
   },

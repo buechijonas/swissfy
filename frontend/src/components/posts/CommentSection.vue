@@ -61,6 +61,7 @@
       </ul>
     </BaseCard>
     <BaseButton v-if="cursor" class="mt-2" size="sm" block @click="load">
+      <AppIcon name="down" />
       Weitere Kommentare laden
     </BaseButton>
 
@@ -74,6 +75,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
+import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
@@ -84,7 +86,15 @@ import { commentLink } from '@/lib/comments.js'
 
 export default {
   name: 'CommentSection',
-  components: { RouterLink, BaseButton, BaseCard, ConfirmDialog, CommentForm, CommentItem },
+  components: {
+    RouterLink,
+    AppIcon,
+    BaseButton,
+    BaseCard,
+    ConfirmDialog,
+    CommentForm,
+    CommentItem,
+  },
   props: {
     url: { type: String, required: true },
     placeholder: { type: String, default: 'Kommentar schreiben…' },

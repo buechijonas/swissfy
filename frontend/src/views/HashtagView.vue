@@ -25,6 +25,7 @@
             :disabled="busy"
             @click="toggleFollow"
           >
+            <AppIcon :name="hashtag.following ? 'cross' : 'plus'" />
             {{ hashtag.following ? 'Entfolgen' : 'Folgen' }}
           </BaseButton>
         </BaseCard>
@@ -45,6 +46,7 @@
 </template>
 
 <script>
+import AppIcon from '@/components/common/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
@@ -60,7 +62,7 @@ const TABS = [
 
 export default {
   name: 'HashtagView',
-  components: { BaseBreadcrumbs, BaseButton, BaseCard, BaseFooter, BaseTabs, PostList },
+  components: { AppIcon, BaseBreadcrumbs, BaseButton, BaseCard, BaseFooter, BaseTabs, PostList },
   data() {
     return {
       hashtag: null,
