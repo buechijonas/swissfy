@@ -466,3 +466,28 @@ class ChatRequestTests(TestCase):
         self.assertEqual(self.unread(), ["anna", "eve"])
         self.client.get("/api/chats/anna/messages/?read=true")
         self.assertEqual(self.unread(), ["eve"])
+
+    def archived(self):
+        conversations = self.client.get("/api/chats/conversations/").json()
+        return {user["username"]: user["archived"] for user in conversations}
+
+    def test_archive(self):
+        self.request_chat()
+        self.client.force_login(self.anna)
+        self.accept()
+        self.send("jonas")
+
+        self.client.force_login(self.jonas)
+        self.assertEqual(self.archived(), {"anna": False})
+        self.assertEqual(self.client.post("/api/chats/anna/archive/").json(), {"archived": True})
+        self.client.post("/api/chats/anna/archive/")
+        self.assertEqual(self.archived(), {"anna": True})
+        self.assertEqual(self.unread(), [])
+
+        self.client.force_login(self.anna)
+        self.assertEqual(self.archived(), {"jonas": False})
+
+        self.client.force_login(self.jonas)
+        self.client.delete("/api/chats/anna/archive/")
+        self.assertEqual(self.archived(), {"anna": False})
+        self.assertEqual(self.unread(), ["anna"])

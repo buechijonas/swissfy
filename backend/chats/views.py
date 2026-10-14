@@ -17,7 +17,7 @@ from social.serializers import ProfileListSerializer
 from social.views import with_viewer_relations
 
 from .crypto import wrap_message_key
-from .models import ChatKey, ChatRequest, Envelope, Message, retention_cutoff
+from .models import ArchivedChat, ChatKey, ChatRequest, Envelope, Message, retention_cutoff
 from .serializers import (
     ChatKeySerializer,
     DeviceKeyInputSerializer,
@@ -260,9 +260,11 @@ def unread_partners(user):
         Q(sender=OuterRef("sender"), recipient=user) | Q(sender=user, recipient=OuterRef("sender")),
         status=ChatRequest.Status.ACCEPTED,
     )
+    archived = ArchivedChat.objects.filter(user=user, partner=OuterRef("sender"))
     return (
         Message.objects.filter(
             Exists(accepted),
+            ~Exists(archived),
             recipient=user,
             sender__is_active=True,
             seen_at__isnull=True,
@@ -339,6 +341,18 @@ class ChatRequestAcceptView(ChatRequestView):
         return Response(request_state(chat_request, request.user))
 
 
+class ChatArchiveView(ConversationView):
+    def post(self, request, username):
+        partner = self.get_partner(request, username)
+        ArchivedChat.objects.get_or_create(user=request.user, partner=partner)
+        return Response({"archived": True})
+
+    def delete(self, request, username):
+        partner = self.get_partner(request, username)
+        ArchivedChat.objects.filter(user=request.user, partner=partner).delete()
+        return Response({"archived": False})
+
+
 class ChatRequestListView(generics.ListAPIView):
     serializer_class = ProfileListSerializer
     pagination_class = None
@@ -375,6 +389,7 @@ class ConversationListView(APIView):
         ).prefetch_related(Prefetch("envelopes", queryset=Envelope.objects.filter(key__user=me)))
         messages = {message.pk: message for message in messages.select_related("sender")}
 
+        archived = set(me.archived_chats.values_list("partner_id", flat=True))
         my_receipts = get_or_create_profile(me).read_receipts
         conversations = []
         for user in users:
@@ -388,6 +403,7 @@ class ConversationListView(APIView):
                     **ProfileListSerializer(user, context={"request": request}).data,
                     "last_message": message and MessageSerializer(message, context=context).data,
                     "unread": bool(message and message.sender_id != me.pk and not message.seen_at),
+                    "archived": user.pk in archived,
                     "activity": message.created_at if message else started[user.pk],
                 }
             )
