@@ -18,6 +18,8 @@ export default {
     title: { type: String, default: 'Löschen bestätigen' },
     message: { type: String, required: true },
     confirmLabel: { type: String, default: 'Löschen' },
+    confirmIcon: { type: String, default: 'trash' },
+    confirmVariant: { type: String, default: 'error' },
     cancelLabel: { type: String, default: 'Abbrechen' },
   },
   emits: ['confirm'],
@@ -28,9 +30,9 @@ export default {
         {
           value: 'confirm',
           label: this.confirmLabel,
-          variant: 'error',
+          variant: this.confirmVariant,
           outline: true,
-          icon: 'trash',
+          icon: this.confirmIcon,
         },
       ]
     },

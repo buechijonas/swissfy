@@ -90,3 +90,19 @@ class Envelope(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["message", "key"], name="unique_envelope"),
         ]
+
+
+class ArchivedChat(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="archived_chats"
+    )
+    partner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "partner"], name="unique_archived_chat"),
+        ]
+
+    def __str__(self):
+        return f"ArchivedChat({self.user} -> {self.partner})"

@@ -19,6 +19,7 @@ urlpatterns = [
         views.ChatRequestAcceptView.as_view(),
         name="chat-request-accept",
     ),
+    path("<str:username>/archive/", views.ChatArchiveView.as_view(), name="chat-archive"),
     path("<str:username>/keys/", views.ConversationKeysView.as_view(), name="chat-keys"),
     path("<str:username>/messages/", views.MessagesView.as_view(), name="chat-messages"),
 ]
