@@ -43,16 +43,15 @@
             <AppIcon name="flag" />
             {{ reported ? 'Gemeldet' : 'Melden' }}
           </BaseButton>
-          <BaseButton
+          <button
             v-if="post.is_own && !moderation"
-            outline
-            shape="square"
-            size="sm"
+            type="button"
+            :class="triggerClass"
             title="Bearbeiten"
             @click="$refs.edit.open()"
           >
-            <AppIcon name="pencil" alt="Bearbeiten" />
-          </BaseButton>
+            <AppIcon name="pencil" alt="Bearbeiten" :class="iconClass" />
+          </button>
         </template>
       </AuthorHeader>
 
@@ -332,8 +331,8 @@ export default {
       busy: false,
       error: null,
       actionClass: 'flex flex-col items-center gap-1',
-      triggerClass: 'relative flex size-6 box-content p-2.5 -m-2.5 cursor-pointer',
-      iconClass: 'size-6!',
+      triggerClass: 'relative flex size-7 box-content p-2.5 -m-2.5 cursor-pointer',
+      iconClass: 'size-7!',
       labelClass: 'text-xs leading-4',
     }
   },
