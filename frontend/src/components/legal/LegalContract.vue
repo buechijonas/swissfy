@@ -15,6 +15,7 @@
     <template v-if="pending">
       <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
       <BaseButton variant="primary" block :disabled="accepting" @click="onAccept">
+        <AppIcon name="check" />
         Zustimmen
       </BaseButton>
     </template>
@@ -22,6 +23,7 @@
 </template>
 
 <script>
+import AppIcon from '@/components/common/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import LegalPage from '@/components/layout/LegalPage.vue'
@@ -31,7 +33,7 @@ import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'LegalContract',
-  components: { BaseBreadcrumbs, BaseButton, LegalPage, LegalSection },
+  components: { AppIcon, BaseBreadcrumbs, BaseButton, LegalPage, LegalSection },
   props: {
     page: { type: String, required: true },
   },

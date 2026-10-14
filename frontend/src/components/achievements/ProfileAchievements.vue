@@ -18,6 +18,7 @@
             :variant="activeView === view.key ? 'primary' : 'neutral'"
             @click="activeView = view.key"
           >
+            <AppIcon :name="view.icon" />
             {{ view.label }}
           </BaseButton>
         </div>
@@ -129,8 +130,8 @@ import { apiFetch } from '@/lib/api.js'
 import { formatDate } from '@/lib/time.js'
 
 const VIEWS = [
-  { key: 'timeline', label: 'Timeline' },
-  { key: 'collection', label: 'Sammlung' },
+  { key: 'timeline', label: 'Timeline', icon: 'list-timeline' },
+  { key: 'collection', label: 'Sammlung', icon: 'list' },
 ]
 const DEFAULT_ACCENT = { icon: 'bg-primary text-primary-content', title: '' }
 const SECRET_ACCENT = {

@@ -88,6 +88,7 @@
         :variant="visibility === option.value ? 'primary' : 'neutral'"
         @click="visibility = option.value"
       >
+        <AppIcon :name="option.icon" />
         {{ option.label }}
       </BaseButton>
     </div>
@@ -121,7 +122,10 @@
     </p>
 
     <template #actions>
-      <BaseButton @click="$refs.dialog.close()">Abbrechen</BaseButton>
+      <BaseButton @click="$refs.dialog.close()">
+        <AppIcon name="cross" />
+        Abbrechen
+      </BaseButton>
       <BaseButton variant="primary" :disabled="!canSubmit" @click="submit">
         <AppIcon name="paper-plane-top" />
         {{ sending ? 'Wird gepostet…' : 'Posten' }}
@@ -168,10 +172,10 @@ export default {
       maxLength: MAX_LENGTH,
       maxImages: MAX_IMAGES,
       visibilityOptions: [
-        { value: 'public', label: 'Alle' },
-        { value: 'followers', label: 'Follower' },
-        { value: 'friends', label: 'Freunde' },
-        { value: 'groups', label: 'Gruppen' },
+        { value: 'public', label: 'Alle', icon: 'globe' },
+        { value: 'followers', label: 'Follower', icon: 'user' },
+        { value: 'friends', label: 'Freunde', icon: 'users' },
+        { value: 'groups', label: 'Gruppen', icon: 'users-alt' },
       ],
     }
   },

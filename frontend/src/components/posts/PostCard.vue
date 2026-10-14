@@ -38,6 +38,7 @@
             :disabled="busy || reported"
             @click="report"
           >
+            <AppIcon name="flag" />
             {{ reported ? 'Gemeldet' : 'Melden' }}
           </BaseButton>
           <DeleteButton

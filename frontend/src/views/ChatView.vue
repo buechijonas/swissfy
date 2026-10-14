@@ -53,6 +53,7 @@
           />
           <div class="flex justify-end">
             <BaseButton type="submit" size="sm" variant="primary" :disabled="!pin || unlocking">
+              <AppIcon name="unlock" />
               Entsperren
             </BaseButton>
           </div>
@@ -102,7 +103,10 @@
           </BaseButton>
         </div>
         <div v-else-if="incomingRequest && confirmDecline" class="my-4 flex justify-center gap-2">
-          <BaseButton :disabled="answering" @click="confirmDecline = false">Abbrechen</BaseButton>
+          <BaseButton :disabled="answering" @click="confirmDecline = false">
+            <AppIcon name="cross" />
+            Abbrechen
+          </BaseButton>
           <BaseButton variant="error" :disabled="answering" @click="updateRequest('', 'DELETE')">
             <AppIcon name="cross" />
             Endgültig ablehnen

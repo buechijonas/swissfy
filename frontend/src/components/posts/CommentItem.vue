@@ -98,6 +98,7 @@
         :disabled="reporting || reported"
         @click="report"
       >
+        <AppIcon name="flag" />
         {{ reported ? 'Gemeldet' : 'Melden' }}
       </BaseButton>
     </div>

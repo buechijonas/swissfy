@@ -3,6 +3,7 @@
     <ul class="menu w-full p-0 gap-1">
       <li>
         <button type="button" :class="{ 'menu-active': selected === null }" @click="select(null)">
+          <AppIcon name="bookmark" />
           Ohne Ordner
         </button>
       </li>

@@ -16,7 +16,7 @@
           :variant="activeFolder === filter.value ? 'primary' : 'neutral'"
           :to="{ query: filter.value ? { folder: filter.value } : {} }"
         >
-          <AppIcon v-if="filter.folder" name="folder" />
+          <AppIcon :name="filter.icon" />
           {{ filter.label }}
         </BaseButton>
       </div>
@@ -24,6 +24,7 @@
       <div v-if="currentFolder" class="flex items-center gap-2 mb-4">
         <h3 class="text-xl truncate">{{ currentFolder.name }}</h3>
         <BaseButton size="sm" class="ml-auto" @click="openFolderDialog(currentFolder)">
+          <AppIcon name="pencil" />
           Umbenennen
         </BaseButton>
         <DeleteButton @click="$refs.confirm.open()" />
@@ -52,8 +53,12 @@
     />
     <p v-if="folderError" class="text-error text-sm mt-2">{{ folderError }}</p>
     <template #actions>
-      <BaseButton @click="$refs.folderDialog.close()">Abbrechen</BaseButton>
+      <BaseButton @click="$refs.folderDialog.close()">
+        <AppIcon name="cross" />
+        Abbrechen
+      </BaseButton>
       <BaseButton variant="primary" :disabled="!folderName.trim()" @click="saveFolder">
+        <AppIcon name="disk" />
         Speichern
       </BaseButton>
     </template>
@@ -105,12 +110,12 @@ export default {
     },
     filters() {
       return [
-        { value: null, label: 'Alle' },
-        { value: 'none', label: 'Ohne Ordner' },
+        { value: null, label: 'Alle', icon: 'apps' },
+        { value: 'none', label: 'Ohne Ordner', icon: 'bookmark' },
         ...(this.foldersStore.items ?? []).map((folder) => ({
           value: String(folder.id),
           label: folder.name,
-          folder: true,
+          icon: 'folder',
         })),
       ]
     },
