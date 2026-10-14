@@ -52,6 +52,7 @@ from .serializers import (
     CommentSerializer,
     ContactGroupSerializer,
     HashtagSerializer,
+    PostAudienceSerializer,
     PostCreateSerializer,
     PostSerializer,
     PostSummarySerializer,
@@ -313,12 +314,22 @@ class ActivityView(APIView):
         return Response({"results": results, "next": next_page})
 
 
-class PostDetailView(generics.RetrieveDestroyAPIView):
+class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
     lookup_field = "uuid"
+    http_method_names = ["get", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
         return with_details(visible_posts(self.request.user), self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        post = self.get_object()
+        if post.author_id != request.user.pk:
+            raise PermissionDenied("Du kannst nur eigene Posts bearbeiten.")
+        serializer = PostAudienceSerializer(post, data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(self.get_serializer(self.get_object()).data)
 
     def perform_destroy(self, post):
         if post.author_id != self.request.user.pk:

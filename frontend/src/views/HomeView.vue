@@ -6,17 +6,19 @@
       </template>
     </BaseBreadcrumbs>
     <div
+      ref="scroller"
       class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-96px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
     >
       <div class="mx-auto w-full max-w-150 pt-4 max-sm:pt-0">
         <PostList
+          ref="feed"
           url="/api/posts/"
           edge-to-edge
           empty-text="Noch keine Posts. Folge Leuten oder Hashtags, um ihre Posts hier zu sehen."
         />
       </div>
     </div>
-    <PostComposer ref="composer" @created="showOwnPosts" />
+    <PostComposer ref="composer" @created="showNewPost" />
     <BaseFooter />
   </template>
   <template v-else>
@@ -53,8 +55,10 @@ export default {
     },
   },
   methods: {
-    showOwnPosts() {
-      this.$router.push({ path: '/profile', query: { tab: 'activities' } })
+    showNewPost(post) {
+      this.$refs.feed.prepend(post)
+      this.$refs.scroller.scrollTo({ top: 0, behavior: 'smooth' })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     },
   },
 }

@@ -79,33 +79,19 @@
       <p class="shrink-0 text-xs text-swissfy-muted">{{ text.length }} / {{ maxLength }}</p>
     </div>
 
-    <p class="mt-4 mb-2 text-sm">Sichtbar für</p>
-    <div class="flex flex-wrap gap-2">
-      <BaseButton
-        v-for="option in visibilityOptions"
-        :key="option.value"
-        size="sm"
-        :variant="visibility === option.value ? 'primary' : 'neutral'"
-        @click="visibility = option.value"
-      >
-        <AppIcon :name="option.icon" />
-        {{ option.label }}
-      </BaseButton>
-    </div>
-    <div v-if="visibility === 'groups'" class="mt-3 flex flex-col gap-2">
-      <label v-for="group in groups" :key="group.id" class="flex items-center gap-2">
-        <input
-          v-model="selectedGroups"
-          type="checkbox"
-          class="checkbox checkbox-sm"
-          :value="group.id"
-        />
-        {{ group.name }}
-      </label>
-      <p v-if="!groups.length" class="text-sm text-swissfy-muted">
-        Du hast noch keine Gruppen.
-        <RouterLink to="/settings?tab=groups" class="link">Gruppen anlegen</RouterLink>
-      </p>
+    <label class="mt-4 flex items-center gap-3 text-sm">
+      <input v-model="acceptedTerms" type="checkbox" class="size-8 shrink-0 accent-primary" />
+      <span>
+        Ich bestätige, dass mein Post den
+        <a href="/terms" target="_blank" rel="noopener" class="link text-primary"
+          >Nutzungsrichtlinien</a
+        >
+        entspricht.
+      </span>
+    </label>
+
+    <div class="mt-4">
+      <VisibilityPicker v-model:visibility="visibility" v-model:groups="selectedGroups" />
     </div>
 
     <p v-if="error" class="text-error text-sm mt-4">{{ error }}</p>
@@ -122,12 +108,13 @@
     </p>
 
     <template #actions>
-      <BaseButton @click="$refs.dialog.close()">
+      <BaseButton :disabled="sending" @click="$refs.dialog.close()">
         <AppIcon name="cross" />
         Abbrechen
       </BaseButton>
       <BaseButton variant="primary" :disabled="!canSubmit" @click="submit">
-        <AppIcon name="paper-plane-top" />
+        <span v-if="sending" class="loading loading-spinner loading-sm"></span>
+        <AppIcon v-else name="paper-plane-top" />
         {{ sending ? 'Wird gepostet…' : 'Posten' }}
       </BaseButton>
     </template>
@@ -135,11 +122,11 @@
 </template>
 
 <script>
-import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import ImageDropzone from '@/components/common/ImageDropzone.vue'
+import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { extractHashtags } from '@/lib/hashtags.js'
 import { compressImage, imageSize } from '@/lib/image.js'
@@ -157,6 +144,7 @@ function initialState() {
     quota: null,
     visibility: 'public',
     selectedGroups: [],
+    acceptedTerms: false,
     sending: false,
     error: null,
   }
@@ -164,27 +152,18 @@ function initialState() {
 
 export default {
   name: 'PostComposer',
-  components: { RouterLink, AppIcon, BaseButton, BaseDialog, ImageDropzone },
+  components: { AppIcon, BaseButton, BaseDialog, ImageDropzone, VisibilityPicker },
   emits: ['created'],
   data() {
     return {
       ...initialState(),
       maxLength: MAX_LENGTH,
       maxImages: MAX_IMAGES,
-      visibilityOptions: [
-        { value: 'public', label: 'Alle', icon: 'globe' },
-        { value: 'followers', label: 'Follower', icon: 'user' },
-        { value: 'friends', label: 'Freunde', icon: 'users' },
-        { value: 'groups', label: 'Gruppen', icon: 'users-alt' },
-      ],
     }
   },
   computed: {
     groupsStore() {
       return useGroupsStore()
-    },
-    groups() {
-      return this.groupsStore.items ?? []
     },
     hashtags() {
       return extractHashtags(this.text)
@@ -197,7 +176,7 @@ export default {
       const hasContent = this.text.trim() !== '' || this.images.length || this.video
       const hasAudience = this.visibility !== 'groups' || this.selectedGroups.length
       const hasQuota = this.quota?.remaining !== 0
-      return !this.sending && hasContent && hasAudience && hasQuota
+      return !this.sending && this.acceptedTerms && hasContent && hasAudience && hasQuota
     },
   },
   methods: {

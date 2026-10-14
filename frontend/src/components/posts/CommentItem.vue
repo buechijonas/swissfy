@@ -30,8 +30,8 @@
       <img class="size-8" :src="avatarSrc(comment.author)" alt="" />
     </RouterLink>
     <div class="flex min-w-0 flex-1 flex-col">
-      <div class="flex items-center gap-2">
-        <RouterLink :to="profileLink(comment.author)" class="font-bold truncate">
+      <div class="flex flex-wrap items-center gap-x-2">
+        <RouterLink :to="profileLink(comment.author)" class="font-bold truncate max-w-full">
           {{ comment.author.username }}
         </RouterLink>
         <RoleBadge :role="comment.author.role" />
@@ -63,44 +63,46 @@
         alt=""
         loading="lazy"
       />
-      <span class="mt-1 flex items-center gap-1 text-xs text-swissfy-muted">
-        <AppIcon name="comment-alt-middle" size="sm" alt="Antworten" />
-        {{ count ?? comment.reply_count }}
-      </span>
-    </div>
-    <div v-if="'score' in comment" class="flex shrink-0 items-center gap-2 self-start">
-      <span
-        class="min-w-5 text-right text-sm leading-none"
-        :class="myVote ? 'text-primary' : 'text-swissfy-muted'"
-      >
-        {{ score }}
-      </span>
-      <DeleteButton v-if="comment.can_delete" @click="$emit('delete', comment)" />
-      <template v-else-if="comment.can_vote">
-        <BaseButton
-          v-for="option in voteOptions"
-          :key="option.value"
-          :variant="myVote === option.value ? 'primary' : 'neutral'"
-          :outline="myVote !== option.value"
-          shape="square"
-          size="sm"
-          :disabled="voting"
-          :title="option.label"
-          @click="vote(option.value)"
-        >
-          <AppIcon :name="option.icon" :alt="option.label" />
-        </BaseButton>
-      </template>
-      <BaseButton
-        v-if="comment.can_report"
-        outline
-        size="sm"
-        :disabled="reporting || reported"
-        @click="report"
-      >
-        <AppIcon name="flag" />
-        {{ reported ? 'Gemeldet' : 'Melden' }}
-      </BaseButton>
+      <div class="mt-1 flex flex-wrap items-center gap-2">
+        <span class="flex items-center gap-1 text-xs text-swissfy-muted">
+          <AppIcon name="comment-alt-middle" size="sm" alt="Antworten" />
+          {{ count ?? comment.reply_count }}
+        </span>
+        <div v-if="'score' in comment" class="ml-auto flex items-center gap-2">
+          <span
+            class="min-w-5 text-right text-sm leading-none"
+            :class="myVote ? 'text-primary' : 'text-swissfy-muted'"
+          >
+            {{ score }}
+          </span>
+          <DeleteButton v-if="comment.can_delete" @click="$emit('delete', comment)" />
+          <template v-else-if="comment.can_vote">
+            <BaseButton
+              v-for="option in voteOptions"
+              :key="option.value"
+              :variant="myVote === option.value ? 'primary' : 'neutral'"
+              :outline="myVote !== option.value"
+              shape="square"
+              size="sm"
+              :disabled="voting"
+              :title="option.label"
+              @click="vote(option.value)"
+            >
+              <AppIcon :name="option.icon" :alt="option.label" />
+            </BaseButton>
+          </template>
+          <BaseButton
+            v-if="comment.can_report"
+            outline
+            size="sm"
+            :disabled="reporting || reported"
+            @click="report"
+          >
+            <AppIcon name="flag" />
+            {{ reported ? 'Gemeldet' : 'Melden' }}
+          </BaseButton>
+        </div>
+      </div>
     </div>
   </div>
 </template>

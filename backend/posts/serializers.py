@@ -165,7 +165,33 @@ class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
         return data
 
 
-class PostCreateSerializer(serializers.ModelSerializer):
+class AudienceMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["groups"].child_relation.queryset = ContactGroup.objects.filter(
+            owner=self.context["request"].user
+        )
+
+    def clean_audience(self, data):
+        if data.get("visibility") == Post.Visibility.GROUPS:
+            if not data.get("groups"):
+                raise serializers.ValidationError({"groups": "Wähle mindestens eine Gruppe."})
+        else:
+            data["groups"] = []
+        return data
+
+
+class PostAudienceSerializer(AudienceMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ["visibility", "groups"]
+        extra_kwargs = {"visibility": {"required": True}}
+
+    def validate(self, data):
+        return self.clean_audience(data)
+
+
+class PostCreateSerializer(AudienceMixin, serializers.ModelSerializer):
     images = serializers.ListField(
         child=serializers.FileField(), required=False, allow_empty=False, write_only=True
     )
@@ -174,12 +200,6 @@ class PostCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ["text", "images", "video", "visibility", "groups"]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["groups"].child_relation.queryset = ContactGroup.objects.filter(
-            owner=self.context["request"].user
-        )
 
     def validate_images(self, uploads):
         try:
@@ -200,12 +220,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"text": "Schreib etwas oder wähle ein Bild oder Video."}
             )
-        if data.get("visibility") == Post.Visibility.GROUPS:
-            if not data.get("groups"):
-                raise serializers.ValidationError({"groups": "Wähle mindestens eine Gruppe."})
-        else:
-            data["groups"] = []
-        return data
+        return self.clean_audience(data)
 
     def create(self, data):
         files = []

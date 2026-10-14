@@ -77,7 +77,11 @@ def feed(viewer):
     friends = Friendship.objects.filter(user=viewer).values("friend")
     return (
         visible_posts(viewer)
-        .filter(Q(author__in=followed.union(friends)) | Q(pk__in=with_followed_hashtag(viewer)))
+        .filter(
+            Q(author=viewer)
+            | Q(author__in=followed.union(friends))
+            | Q(pk__in=with_followed_hashtag(viewer))
+        )
         .annotate(day=TruncDate("created_at"))
     )
 

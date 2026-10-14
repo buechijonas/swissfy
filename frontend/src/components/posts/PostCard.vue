@@ -7,7 +7,9 @@
       'cursor-pointer': !detail,
       'relative max-w-full border-0! bg-black!': reel,
     }"
-    @click="open"
+    class="touch-manipulation"
+    @click="onCardClick"
+    @mousedown="preventSelection"
   >
     <div
       :class="{ relative: post.video }"
@@ -41,11 +43,16 @@
             <AppIcon name="flag" />
             {{ reported ? 'Gemeldet' : 'Melden' }}
           </BaseButton>
-          <DeleteButton
+          <BaseButton
             v-if="post.is_own && !moderation"
-            :disabled="busy"
-            @click="$refs.confirm.open()"
-          />
+            outline
+            shape="square"
+            size="sm"
+            title="Bearbeiten"
+            @click="$refs.edit.open()"
+          >
+            <AppIcon name="pencil" alt="Bearbeiten" />
+          </BaseButton>
         </template>
       </AuthorHeader>
 
@@ -100,7 +107,7 @@
         <div
           class="absolute inset-x-0 top-0 cursor-pointer"
           :class="controlsVisible ? 'bottom-12' : 'bottom-0'"
-          @click.stop="togglePlay"
+          @click.stop="tap(togglePlay)"
         ></div>
         <button
           v-if="!playing"
@@ -123,13 +130,7 @@
         class="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none]"
         @scroll.passive="onSlide"
       >
-        <component
-          :is="detail ? 'div' : 'RouterLink'"
-          v-for="src in post.images"
-          :key="src"
-          :to="postLink"
-          class="w-full shrink-0 snap-center"
-        >
+        <div v-for="src in post.images" :key="src" class="w-full shrink-0 snap-center">
           <img
             class="w-full object-cover bg-base-200"
             :style="{ aspectRatio: detail ? post.aspect_ratio : post.list_aspect_ratio }"
@@ -137,7 +138,7 @@
             alt=""
             loading="lazy"
           />
-        </component>
+        </div>
       </div>
       <template v-if="post.images.length > 1">
         <BaseButton
@@ -200,24 +201,18 @@
       </div>
       <div :class="actionClass">
         <button
-          v-if="reel"
+          v-if="hasCommentSheet"
           type="button"
           :class="triggerClass"
           title="Kommentare"
-          @click="$emit('comments')"
+          @click="$refs.comments.open()"
         >
           <AppIcon name="comment-alt-middle" alt="Kommentare" :class="iconClass" />
         </button>
-        <component
-          :is="detail ? 'span' : 'RouterLink'"
-          v-else
-          :to="detail ? null : postLink"
-          :class="triggerClass"
-          title="Kommentare"
-        >
+        <span v-else :class="triggerClass" title="Kommentare">
           <AppIcon name="comment-alt-middle" alt="Kommentare" :class="iconClass" />
-        </component>
-        <span :class="labelClass">{{ post.comment_count }}</span>
+        </span>
+        <span :class="labelClass">{{ commentCount }}</span>
       </div>
       <div class="flex flex-col gap-1" :class="reel ? 'items-center' : 'ml-auto items-end'">
         <button
@@ -251,15 +246,9 @@
 
     <BaseDialog v-if="reel && hasMenu" ref="menu" title="Reel" class="modal-bottom sm:modal-middle">
       <div class="flex flex-col gap-2">
-        <BaseButton
-          v-if="post.is_own && !moderation"
-          variant="error"
-          outline
-          block
-          @click="confirmRemove"
-        >
-          <AppIcon name="trash" />
-          Reel löschen
+        <BaseButton v-if="post.is_own && !moderation" block @click="editFromMenu">
+          <AppIcon name="pencil" />
+          Reel bearbeiten
         </BaseButton>
         <BaseButton
           v-if="post.can_report"
@@ -272,38 +261,51 @@
         </BaseButton>
       </div>
     </BaseDialog>
-    <ConfirmDialog ref="confirm" message="Willst du diesen Post löschen?" @confirm="remove" />
+    <PostEditDialog
+      v-if="post.is_own && !moderation"
+      ref="edit"
+      :post="{ ...post, ...audience }"
+      @updated="audience = { visibility: $event.visibility, groups: $event.groups }"
+      @deleted="$emit('deleted', post.id)"
+    />
+    <CommentSheet
+      v-if="hasCommentSheet"
+      ref="comments"
+      :post-id="post.id"
+      @created="commentCount += 1"
+      @deleted="commentCount = $event.comment_count"
+    />
     <FolderDialog v-if="folderPicker" ref="folderDialog" @select="save" />
   </BaseCard>
 </template>
 
 <script>
-import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
-import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
-import DeleteButton from '@/components/common/DeleteButton.vue'
 import AuthorHeader from '@/components/posts/AuthorHeader.vue'
+import CommentSheet from '@/components/posts/CommentSheet.vue'
 import FolderDialog from '@/components/posts/FolderDialog.vue'
+import PostEditDialog from '@/components/posts/PostEditDialog.vue'
 import PostText from '@/components/posts/PostText.vue'
 import { apiFetch } from '@/lib/api.js'
 import { formatRelativeTime } from '@/lib/time.js'
 import { videoAutoplay, videoLoop } from '@/lib/wellbeing.js'
 
+const DOUBLE_TAP_MS = 250
+
 export default {
   name: 'PostCard',
   components: {
-    RouterLink,
     AppIcon,
     AuthorHeader,
     BaseButton,
     BaseCard,
     BaseDialog,
-    ConfirmDialog,
-    DeleteButton,
+    CommentSheet,
     FolderDialog,
+    PostEditDialog,
     PostText,
   },
   props: {
@@ -314,7 +316,7 @@ export default {
     moderation: { type: Boolean, default: false },
     reel: { type: Boolean, default: false },
   },
-  emits: ['deleted', 'saved-change', 'comments'],
+  emits: ['deleted', 'saved-change'],
   data() {
     return {
       liked: this.post.liked,
@@ -322,6 +324,8 @@ export default {
       saved: this.post.saved,
       reported: this.post.reported,
       folder: this.post.saved_folder,
+      commentCount: this.post.comment_count,
+      audience: { visibility: this.post.visibility, groups: this.post.groups },
       slide: 0,
       playing: false,
       controlsVisible: true,
@@ -351,11 +355,15 @@ export default {
   },
   beforeUnmount() {
     clearTimeout(this.hideControlsTimer)
+    clearTimeout(this.tapTimer)
     this.visibilityObserver?.disconnect()
   },
   computed: {
     videoLoop() {
       return videoLoop.value
+    },
+    hasCommentSheet() {
+      return !this.moderation && (this.reel || !this.detail)
     },
     hasMenu() {
       return (this.post.is_own && !this.moderation) || this.post.can_report
@@ -363,15 +371,31 @@ export default {
     apiBase() {
       return `/api/posts/${this.post.id}`
     },
-    postLink() {
-      return this.moderation ? `/moderation/posts/${this.post.id}` : `/posts/${this.post.id}`
-    },
   },
   methods: {
     formatRelativeTime,
-    open(event) {
-      if (this.detail || event.target.closest('a, button, dialog, header, video')) return
-      this.$router.push(this.postLink)
+    onCardClick(event) {
+      if (event.target.closest('a, button, dialog, header, video')) return
+      if (this.moderation) {
+        if (!this.detail) this.$router.push(`/moderation/posts/${this.post.id}`)
+        return
+      }
+      this.tap(this.hasCommentSheet && !this.reel ? () => this.$refs.comments.open() : null)
+    },
+    preventSelection(event) {
+      if (event.detail > 1 && !event.target.closest('dialog')) event.preventDefault()
+    },
+    tap(action) {
+      if (this.tapTimer) {
+        clearTimeout(this.tapTimer)
+        this.tapTimer = null
+        if (!this.liked && !this.moderation) this.toggleLike()
+        return
+      }
+      this.tapTimer = setTimeout(() => {
+        this.tapTimer = null
+        action?.()
+      }, DOUBLE_TAP_MS)
     },
     showControls() {
       clearTimeout(this.hideControlsTimer)
@@ -439,9 +463,9 @@ export default {
         this.$emit('saved-change', { saved: false, folder: null })
       }
     },
-    confirmRemove() {
+    editFromMenu() {
       this.$refs.menu.close()
-      this.$refs.confirm.open()
+      this.$refs.edit.open()
     },
     async reportFromMenu() {
       await this.report()
@@ -449,9 +473,6 @@ export default {
     },
     async report() {
       if (await this.request('report/', 'POST')) this.reported = true
-    },
-    async remove() {
-      if (await this.request('', 'DELETE')) this.$emit('deleted', this.post.id)
     },
   },
 }
