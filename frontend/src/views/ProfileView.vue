@@ -157,9 +157,9 @@ import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { formatDate } from '@/lib/time.js'
 
 const TABS = [
+  { key: 'activities', label: 'Aktivitäten', icon: 'list-timeline' },
   { key: 'tiles', label: 'Kachel', icon: 'grid' },
   { key: 'reels', label: 'Reels', icon: 'clapperboard-play' },
-  { key: 'activities', label: 'Aktivitäten', icon: 'list-timeline' },
   { key: 'albums', label: 'Alben', icon: 'gallery' },
   { key: 'about', label: 'Über mich', icon: 'info' },
   { key: 'achievements', label: 'Erfolge', icon: 'trophy' },
