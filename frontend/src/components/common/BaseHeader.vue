@@ -8,50 +8,32 @@
     <span v-if="$route.meta.title" class="lg:hidden ml-4 truncate text-white">
       {{ $route.meta.title }}
     </span>
-    <div class="flex items-center gap-3 ml-auto px-6">
+    <div class="flex h-full items-center gap-3 ml-auto px-4">
       <span v-if="!authStore.ready" class="skeleton h-4 w-24 max-lg:hidden"></span>
       <span v-else-if="authStore.isAuthenticated" class="text-white text-sm max-lg:hidden">
         {{ authStore.user.display_name }}
       </span>
-      <BaseButton
-        class="max-lg:hidden"
-        variant="ghost"
-        shape="square"
-        size="sm"
-        to="/settings"
-        aria-current-value="false"
-      >
-        <img :src="icons.settings" alt="Einstellungen" class="size-5 invert" />
-      </BaseButton>
-      <BaseButton
+      <RouterLink to="/settings" title="Einstellungen" :class="[iconLinkClass, 'max-lg:hidden']">
+        <AppIcon name="settings" alt="Einstellungen" class="size-6!" />
+      </RouterLink>
+      <RouterLink
         v-if="authStore.isAuthenticated"
-        class="lg:hidden"
-        variant="ghost"
-        shape="square"
-        size="sm"
         to="/notifications"
-        aria-current-value="false"
+        :title="notificationsLabel"
+        :class="[iconLinkClass, 'lg:hidden']"
       >
-        <img
-          :src="notificationsStore.unread ? icons['bell-notification-social-media'] : icons.bell"
-          :alt="notificationsStore.unread ? 'Neue Benachrichtigungen' : 'Benachrichtigungen'"
-          class="size-5 invert"
-        />
-      </BaseButton>
-      <label
-        for="my-drawer-3"
-        aria-label="Navigation öffnen"
-        class="btn btn-square btn-ghost btn-sm lg:hidden"
-      >
-        <img :src="drawerIcon" alt="" class="size-5 invert" />
+        <AppIcon :name="notificationsIcon" :alt="notificationsLabel" class="size-6!" />
+      </RouterLink>
+      <label for="my-drawer-3" aria-label="Navigation öffnen" :class="[iconLinkClass, 'lg:hidden']">
+        <AppIcon :name="drawerIcon" class="size-6!" />
       </label>
     </div>
   </div>
 </template>
 
 <script>
-import BaseButton from '@/components/common/BaseButton.vue'
-import { icons } from '@/assets/icons.js'
+import { RouterLink } from 'vue-router'
+import AppIcon from '@/components/common/AppIcon.vue'
 import { isNavDrawerOpen } from '@/lib/navDrawer.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
@@ -59,9 +41,12 @@ import packageJson from '../../../package.json'
 
 export default {
   name: 'BaseHeader',
-  components: { BaseButton },
+  components: { RouterLink, AppIcon },
   data() {
-    return { icons, brandInitial: packageJson.name.charAt(0) }
+    return {
+      brandInitial: packageJson.name.charAt(0),
+      iconLinkClass: 'flex h-full cursor-pointer items-center px-2 text-white',
+    }
   },
   computed: {
     authStore() {
@@ -70,8 +55,14 @@ export default {
     notificationsStore() {
       return useNotificationsStore()
     },
+    notificationsIcon() {
+      return this.notificationsStore.unread ? 'bell-notification-social-media' : 'bell'
+    },
+    notificationsLabel() {
+      return this.notificationsStore.unread ? 'Neue Benachrichtigungen' : 'Benachrichtigungen'
+    },
     drawerIcon() {
-      return isNavDrawerOpen.value ? icons.cross : icons['menu-burger']
+      return isNavDrawerOpen.value ? 'cross' : 'menu-burger'
     },
   },
 }

@@ -1,7 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-96px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseCard v-if="items.length" tag="ul" class="divide-y divide-swissfy-border">
@@ -17,7 +17,7 @@
             class="flex size-10 shrink-0 items-center justify-center rounded-full"
             :class="KIND_BUBBLES[item.kind] ?? 'bg-base-200'"
           >
-            <AppIcon :name="KIND_ICONS[item.kind]" class="size-5!" />
+            <AppIcon :name="KIND_ICONS[item.kind]" class="size-6!" />
           </span>
           <div class="flex min-w-0 flex-1 flex-col gap-1">
             <RouterLink
@@ -59,7 +59,7 @@
             class="flex shrink-0 self-center box-content p-2.5 -m-2.5 text-swissfy-muted hover:text-base-content"
             title="Öffnen"
           >
-            <AppIcon name="arrow-up-right-from-square" alt="Öffnen" class="size-5!" />
+            <AppIcon name="arrow-up-right-from-square" alt="Öffnen" class="size-6!" />
           </RouterLink>
         </li>
       </BaseCard>

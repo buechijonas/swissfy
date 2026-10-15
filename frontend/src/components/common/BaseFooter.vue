@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="sticky bottom-0 mt-auto flex h-12 w-full shrink-0 items-center justify-evenly border-t border-solid lg:hidden"
+    class="sticky bottom-0 mt-auto flex h-(--footer-height) pb-[env(safe-area-inset-bottom)] w-full shrink-0 items-center justify-evenly border-t border-solid lg:hidden"
     :class="dark ? 'bg-black border-white/15 text-white' : 'bg-base-100 border-swissfy-border'"
   >
     <RouterLink
