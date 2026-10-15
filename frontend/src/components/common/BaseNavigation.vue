@@ -31,8 +31,12 @@
               }"
               @click="isNavDrawerOpen = false"
             >
-              <UserAvatar v-if="item.avatar && hasAvatar" class="size-5" :user="authStore.user" />
-              <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-5!" />
+              <UserAvatar
+                v-if="item.avatar && hasAvatar"
+                class="size-6 lg:size-5"
+                :user="authStore.user"
+              />
+              <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-6! lg:size-5!" />
               <span>{{ item.label }}</span>
               <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
                 {{ item.badge() }}

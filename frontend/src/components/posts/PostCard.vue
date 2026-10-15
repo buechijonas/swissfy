@@ -82,7 +82,9 @@
           ref="video"
           class="post-video block bg-black object-contain"
           :class="
-            reel ? 'h-[calc(100dvh-96px)] w-auto max-w-full lg:h-[calc(100dvh-48px)]' : 'w-full'
+            reel
+              ? 'h-[calc(100dvh-var(--mobile-chrome-height))] w-auto max-w-full lg:h-[calc(100dvh-48px)]'
+              : 'w-full'
           "
           :style="{ aspectRatio: detail ? post.aspect_ratio : post.list_aspect_ratio }"
           :src="`${post.video}#t=0.001`"
@@ -331,8 +333,8 @@ export default {
       busy: false,
       error: null,
       actionClass: 'flex flex-col items-center gap-1',
-      triggerClass: 'relative flex size-7 box-content p-2.5 -m-2.5 cursor-pointer',
-      iconClass: 'size-7!',
+      triggerClass: 'relative flex size-6 box-content p-2.5 -m-2.5 cursor-pointer',
+      iconClass: 'size-6!',
       labelClass: 'text-xs leading-4',
     }
   },

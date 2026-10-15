@@ -14,7 +14,7 @@
       :to="{ query: { tab: tab.key } }"
       replace
     >
-      <AppIcon v-if="tab.icon" :name="tab.icon" :alt="tab.label" />
+      <AppIcon v-if="tab.icon" :name="tab.icon" :alt="tab.label" class="size-5!" />
       <template v-else>{{ tab.label }}</template>
     </RouterLink>
   </BaseCard>

@@ -1,6 +1,8 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col px-6 h-[calc(100dvh-96px)] lg:h-[calc(100dvh-101px)]">
+  <div
+    class="flex flex-col px-6 h-[calc(100dvh-var(--mobile-chrome-height))] lg:h-[calc(100dvh-101px)]"
+  >
     <div class="mx-auto w-full max-w-150 flex flex-col flex-1 min-h-0">
       <BaseCard v-if="partner" class="sm:mt-4 max-sm:border-t-0 px-4 py-3 flex items-center gap-4">
         <RouterLink :to="profileLink" class="flex items-center gap-4 min-w-0">

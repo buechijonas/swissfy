@@ -1,7 +1,7 @@
 <template>
   <div
     ref="scroller"
-    class="h-[calc(100dvh-96px)] snap-y snap-mandatory overflow-y-auto bg-black lg:h-[calc(100dvh-48px)]"
+    class="h-[calc(100dvh-var(--mobile-chrome-height))] snap-y snap-mandatory overflow-y-auto bg-black lg:h-[calc(100dvh-48px)]"
   >
     <section
       v-for="post in posts"

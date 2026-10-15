@@ -1,7 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-96px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <div v-if="!authStore.ready" class="mb-10">
@@ -45,7 +45,7 @@
             <div class="flex flex-col gap-4">
               <RouterLink v-for="link in footerLinks" :key="link.to" :to="link.to">
                 <BaseCard class="p-6 flex items-center gap-4 hover:bg-swissfy-highlight">
-                  <AppIcon :name="link.icon" :alt="link.label" class="size-5!" />
+                  <AppIcon :name="link.icon" :alt="link.label" class="size-6!" />
                   <span>{{ link.label }}</span>
                 </BaseCard>
               </RouterLink>

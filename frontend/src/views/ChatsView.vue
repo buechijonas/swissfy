@@ -2,7 +2,7 @@
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
     ref="list"
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-96px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
     @touchstart.passive="swipeStart"
     @touchend="swipeEnd"
     @wheel.passive="wheel"

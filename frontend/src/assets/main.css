@@ -25,6 +25,11 @@
   --text-title: 2.5rem;
 }
 
+:root {
+  --footer-height: calc(3.5rem + env(safe-area-inset-bottom));
+  --mobile-chrome-height: calc(3rem + var(--footer-height));
+}
+
 [data-theme='dark'] {
   --color-swissfy-muted: #8b96a3;
   --color-swissfy-slate: #a7b6c8;
@@ -128,10 +133,6 @@
 
 [data-contrast='on'] .app-topbar {
   border-bottom: 1px solid var(--swissfy-contrast-primary-border);
-}
-
-[data-contrast='on'] .app-topbar .btn {
-  border-color: var(--swissfy-contrast-primary-border);
 }
 
 [data-contrast='on'] .app-nav-accent {

@@ -7,7 +7,7 @@
     </BaseBreadcrumbs>
     <div
       ref="scroller"
-      class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-96px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+      class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
     >
       <div class="mx-auto w-full max-w-150 pt-4 max-sm:pt-0">
         <PostList
