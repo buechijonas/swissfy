@@ -9,6 +9,12 @@ urlpatterns = [
     path("profiles/", views.ProfileListView.as_view(), name="profile-list"),
     path("profiles/me/", views.ProfileView.as_view(), name="profile-me"),
     path("profiles/me/privacy/", views.PrivacyView.as_view(), name="profile-privacy"),
+    path("profiles/me/pictures/", views.PictureSettingsView.as_view(), name="profile-pictures"),
+    path(
+        "profiles/me/pictures/<str:kind>/",
+        views.OwnPictureView.as_view(),
+        name="profile-own-picture",
+    ),
     path(
         "profiles/me/follow-requests/",
         views.FollowRequestListView.as_view(),
@@ -25,6 +31,11 @@ urlpatterns = [
         name="profile-friend-request-decision",
     ),
     path("profiles/<str:username>/", views.ProfileView.as_view(), name="profile"),
+    path(
+        "profiles/<str:username>/pictures/<str:kind>/",
+        views.PictureView.as_view(),
+        name="profile-picture",
+    ),
     path("profiles/<str:username>/status/", StatusView.as_view(), name="profile-status"),
     path(
         "profiles/<str:username>/achievements/",

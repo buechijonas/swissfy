@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from main.pagination import NextPagePagination
 from moderation.sanctions import role_locked_until
+from social.pictures import PictureField
 
 from .roles import USER_ORDERING, IsAdmin, Role, role_badge, role_of, set_role, with_role_rank
 
@@ -16,6 +17,7 @@ User = get_user_model()
 
 class AdminUserSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
+    picture = PictureField()
     role = serializers.ChoiceField(choices=Role.choices, source="current_role")
     badge = serializers.SerializerMethodField()
     role_locked_until = serializers.SerializerMethodField()
@@ -28,6 +30,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "avatar",
+            "picture",
             "role",
             "badge",
             "role_locked_until",

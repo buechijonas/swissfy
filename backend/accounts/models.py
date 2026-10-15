@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 AVATAR_CHOICES = [
     "bee",
@@ -80,6 +82,11 @@ class UserProfile(models.Model):
         FOLLOWERS = "followers", "Nur Follower"
         FRIENDS = "friends", "Nur Freunde"
 
+    class PictureAudience(models.TextChoices):
+        FOLLOWERS = "followers", "Follower"
+        FRIENDS = "friends", "Freunde"
+        GROUPS = "groups", "Gruppen"
+
     class ChatProtection(models.TextChoices):
         STANDARD = "standard", "Standard"
         DEVICE = "device", "Nur auf diesem Gerät"
@@ -92,6 +99,17 @@ class UserProfile(models.Model):
 
     avatar = models.CharField(
         max_length=20, blank=True, default="", choices=[(a, a) for a in AVATAR_CHOICES]
+    )
+    public_picture = models.FileField("Öffentliches Profilbild", upload_to="profiles/", blank=True)
+    private_picture = models.FileField("Privates Profilbild", upload_to="profiles/", blank=True)
+    private_picture_visibility = models.CharField(
+        "Privates Profilbild sichtbar für",
+        max_length=20,
+        choices=PictureAudience.choices,
+        default=PictureAudience.FRIENDS,
+    )
+    private_picture_groups = models.ManyToManyField(
+        "posts.ContactGroup", related_name="+", blank=True
     )
     birthdate = models.DateField("Geburtsdatum", null=True, blank=True)
 
@@ -119,6 +137,12 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profile({self.user})"
+
+
+@receiver(post_delete, sender=UserProfile)
+def delete_profile_pictures(sender, instance, **kwargs):
+    instance.public_picture.delete(save=False)
+    instance.private_picture.delete(save=False)
 
 
 def get_or_create_profile(user):

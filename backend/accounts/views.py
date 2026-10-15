@@ -37,5 +37,7 @@ class MeView(APIView):
     def get(self, request):
         get_token(request)
         if request.user.is_authenticated:
-            return Response({"user": UserSerializer(request.user).data})
+            return Response(
+                {"user": UserSerializer(request.user, context={"request": request}).data}
+            )
         return Response({"user": None})

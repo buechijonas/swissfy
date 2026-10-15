@@ -12,7 +12,12 @@
         $route.meta.activeNavigation === item.key ? 'border-b-current' : 'border-b-transparent'
       "
     >
-      <img v-if="item.avatar && avatarSrc" class="size-6" :src="avatarSrc" :alt="item.label" />
+      <UserAvatar
+        v-if="item.avatar && hasAvatar"
+        class="size-6"
+        :user="authStore.user"
+        :alt="item.label"
+      />
       <AppIcon v-else :name="item.avatar ? 'user' : item.icon" :alt="item.label" class="size-6!" />
     </RouterLink>
   </footer>
@@ -21,13 +26,14 @@
 <script>
 import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
-import { avatars } from '@/assets/images.js'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 import { canAccess, navigationItems } from '@/data/navigation.js'
+import { avatarSrc } from '@/lib/avatar.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'BaseFooter',
-  components: { RouterLink, AppIcon },
+  components: { RouterLink, AppIcon, UserAvatar },
   props: {
     dark: { type: Boolean, default: false },
   },
@@ -38,8 +44,8 @@ export default {
     footerItems() {
       return navigationItems.filter((item) => item.footer && canAccess(item, this.authStore))
     },
-    avatarSrc() {
-      return avatars[this.authStore.user?.avatar]
+    hasAvatar() {
+      return Boolean(avatarSrc(this.authStore.user))
     },
   },
 }

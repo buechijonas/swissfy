@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, Value, When
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -11,9 +13,12 @@ from main.pagination import NextPagePagination
 from moderation.sanctions import suspended_users
 from notifications.models import Notification
 from notifications.notify import notify, resolve_friend_request, withdraw
+from posts.views import serve_image
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
+from .pictures import KINDS, picture_file, sees_private, viewer_relations
 from .serializers import (
+    PictureSettingsSerializer,
     PrivacySerializer,
     ProfileListSerializer,
     ProfileSerializer,
@@ -165,6 +170,40 @@ class PrivacyView(APIView):
         return Response(serializer.data)
 
 
+def picture_settings_response(request, profile):
+    return Response(PictureSettingsSerializer(profile, context={"request": request}).data)
+
+
+def checked_kind(kind):
+    if kind not in KINDS:
+        raise Http404
+    return kind
+
+
+class PictureSettingsView(APIView):
+    parser_classes = [MultiPartParser, JSONParser]
+
+    def get(self, request):
+        return picture_settings_response(request, get_or_create_profile(request.user))
+
+    def patch(self, request):
+        serializer = PictureSettingsSerializer(
+            get_or_create_profile(request.user),
+            data=request.data,
+            partial=True,
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        return picture_settings_response(request, serializer.save())
+
+
+class OwnPictureView(APIView):
+    def delete(self, request, kind):
+        profile = get_or_create_profile(request.user)
+        picture_file(profile, checked_kind(kind)).delete()
+        return picture_settings_response(request, profile)
+
+
 class ProfileView(APIView):
     def get_target(self, request, username=None):
         if username is None:
@@ -221,3 +260,17 @@ class FriendRequestView(ProfileView):
         if created:
             notify(target, Notification.Kind.FRIEND_REQUEST, actor=request.user)
         return self.profile_response(request, target)
+
+
+class PictureView(ProfileView):
+    def get(self, request, username, kind):
+        target = self.get_target(request, username)
+        profile = get_or_create_profile(target)
+        file = picture_file(profile, checked_kind(kind))
+        if kind == "private" and not sees_private(
+            profile, request.user, viewer_relations(request.user, [target])
+        ):
+            file = None
+        if not file:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return serve_image(file)

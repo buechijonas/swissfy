@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from social.pictures import PictureField
+
 from .models import UserConsent, get_or_create_profile
 from .roles import role_of
 
@@ -17,6 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
     consent = serializers.SerializerMethodField()
     display_name = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
+    picture = PictureField()
     birthdate = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
 
@@ -31,6 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
             "display_name",
             "birthdate",
             "avatar",
+            "picture",
             "role",
             "consent",
         ]

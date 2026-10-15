@@ -27,7 +27,7 @@
     ></span>
 
     <RouterLink :to="profileLink(comment.author)" class="shrink-0">
-      <img class="size-8" :src="avatarSrc(comment.author)" alt="" />
+      <UserAvatar class="size-8" :user="comment.author" />
     </RouterLink>
     <div class="flex min-w-0 flex-1 flex-col">
       <div class="flex flex-wrap items-center gap-x-2">
@@ -113,8 +113,7 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
-import { icons } from '@/assets/icons.js'
-import { avatars } from '@/assets/images.js'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 import { apiFetch } from '@/lib/api.js'
 import { commentLink } from '@/lib/comments.js'
 import { formatRelativeTime } from '@/lib/time.js'
@@ -124,7 +123,7 @@ const CENTER = ['left-8', 'left-19', 'left-30']
 
 export default {
   name: 'CommentItem',
-  components: { RouterLink, AppIcon, BaseButton, DeleteButton, RoleBadge },
+  components: { RouterLink, AppIcon, BaseButton, DeleteButton, RoleBadge, UserAvatar },
   props: {
     comment: { type: Object, required: true },
     depth: { type: Number, default: 0 },
@@ -164,9 +163,6 @@ export default {
     formatRelativeTime,
     profileLink(author) {
       return `/profile/${encodeURIComponent(author.username)}`
-    },
-    avatarSrc(author) {
-      return avatars[author.avatar] ?? icons.user
     },
     async vote(value) {
       this.voting = true

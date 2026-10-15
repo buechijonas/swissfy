@@ -54,13 +54,17 @@
         </template>
 
         <div v-else-if="activeTab === 'profile'" class="mb-10">
-          <h3 class="text-xl my-4">Datenschutz</h3>
+          <ProfilePictures />
+          <h3 class="text-xl mt-10 mb-4">Datenschutz</h3>
           <BaseCard
             class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
           >
             <div class="min-w-0">
               <p>Profil sichtbar für</p>
-              <p class="text-swissfy-muted text-sm">Gilt auch für deinen Vor- und Nachnamen.</p>
+              <p class="text-swissfy-muted text-sm">
+                Gilt auch für deinen Vor- und Nachnamen sowie deine Posts und Reels. Deine
+                Profilbilder sind davon nicht betroffen, ihre Sichtbarkeit legst du oben fest.
+              </p>
             </div>
             <div v-if="privacy" class="flex flex-wrap justify-center gap-2">
               <BaseButton
@@ -288,6 +292,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import GroupManager from '@/components/posts/GroupManager.vue'
+import ProfilePictures from '@/components/settings/ProfilePictures.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { themeMode } from '@/lib/theme.js'
 import { dyslexiaFont } from '@/lib/dyslexia.js'
@@ -310,6 +315,7 @@ export default {
     BaseTabs,
     AppIcon,
     GroupManager,
+    ProfilePictures,
   },
   data() {
     return {
