@@ -26,7 +26,7 @@
 
       <BaseCard v-else class="p-6">
         <div class="flex items-center justify-center gap-4">
-          <img class="size-20 shrink-0" :src="avatarSrc" alt="" />
+          <UserAvatar class="size-20" :user="profile" />
           <div class="flex flex-col min-w-0">
             <span class="flex min-w-0 items-center gap-2">
               <CipherText v-if="!profile.can_view" :length="10" class="text-lg font-bold" />
@@ -37,6 +37,15 @@
             </span>
             <span class="text-swissfy-muted truncate">@{{ profile.username }}</span>
           </div>
+          <BaseButton
+            v-if="profile.is_self"
+            shape="square"
+            class="shrink-0"
+            to="/settings?tab=profile"
+            title="Bearbeiten"
+          >
+            <AppIcon name="pencil" alt="Bearbeiten" />
+          </BaseButton>
         </div>
 
         <div class="grid grid-cols-3 gap-4 mt-6 text-center">
@@ -151,8 +160,7 @@ import ProfileAchievements from '@/components/achievements/ProfileAchievements.v
 import PostComposer from '@/components/posts/PostComposer.vue'
 import PostList from '@/components/posts/PostList.vue'
 import ProfileStatus from '@/components/moderation/ProfileStatus.vue'
-import { icons } from '@/assets/icons.js'
-import { avatars } from '@/assets/images.js'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { formatDate } from '@/lib/time.js'
 
@@ -188,6 +196,7 @@ export default {
     ProfileAchievements,
     ProfileStatus,
     RoleBadge,
+    UserAvatar,
   },
   data() {
     return {
@@ -224,9 +233,6 @@ export default {
     },
     apiUrl() {
       return `/api/social/profiles/${this.username ? encodeURIComponent(this.username) : 'me'}/`
-    },
-    avatarSrc() {
-      return avatars[this.profile.avatar] ?? icons.user
     },
     postsUrl() {
       const base = `/api/posts/users/${encodeURIComponent(this.profile.username)}/`

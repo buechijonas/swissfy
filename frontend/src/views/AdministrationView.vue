@@ -25,7 +25,7 @@
 
       <BaseCard v-if="users.length" tag="ul" class="divide-y divide-swissfy-border">
         <li v-for="user in users" :key="user.username" class="flex items-center gap-4 px-6 py-3">
-          <img class="size-12 shrink-0" :src="avatarSrc(user)" alt="" />
+          <UserAvatar class="size-12" :user="user" />
           <RouterLink :to="profileLink(user)" class="flex min-w-0 flex-1 flex-col">
             <span class="flex min-w-0 items-center gap-2">
               <span class="font-bold truncate">{{ fullName(user) || user.username }}</span>
@@ -72,8 +72,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
-import { icons } from '@/assets/icons.js'
-import { avatars } from '@/assets/images.js'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { formatDate } from '@/lib/time.js'
 
@@ -89,6 +88,7 @@ export default {
     BaseCard,
     BaseFooter,
     RoleBadge,
+    UserAvatar,
   },
   data() {
     return {
@@ -127,9 +127,6 @@ export default {
     clearTimeout(this.timer)
   },
   methods: {
-    avatarSrc(user) {
-      return avatars[user.avatar] ?? icons.user
-    },
     fullName(user) {
       return [user.first_name, user.last_name].filter(Boolean).join(' ')
     },

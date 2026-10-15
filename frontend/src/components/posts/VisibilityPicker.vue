@@ -2,7 +2,7 @@
   <p class="mb-2 text-sm">Sichtbar für</p>
   <div class="flex flex-wrap gap-2">
     <BaseButton
-      v-for="option in options"
+      v-for="option in shownOptions"
       :key="option.value"
       size="sm"
       :variant="visibility === option.value ? 'primary' : 'neutral'"
@@ -41,6 +41,7 @@ export default {
   props: {
     visibility: { type: String, required: true },
     groups: { type: Array, required: true },
+    allowPublic: { type: Boolean, default: true },
   },
   emits: ['update:visibility', 'update:groups'],
   data() {
@@ -54,6 +55,9 @@ export default {
     }
   },
   computed: {
+    shownOptions() {
+      return this.options.filter((option) => this.allowPublic || option.value !== 'public')
+    },
     groupList() {
       return useGroupsStore().items ?? []
     },

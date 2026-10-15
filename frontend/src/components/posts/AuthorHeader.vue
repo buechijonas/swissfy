@@ -9,7 +9,7 @@
     @click="openProfile"
   >
     <RouterLink :to="profileLink" class="flex items-center gap-3 min-w-0">
-      <img class="size-10 shrink-0" :src="avatarSrc" alt="" />
+      <UserAvatar class="size-10" :user="author" />
       <div class="flex flex-col min-w-0">
         <span class="flex min-w-0 items-center gap-2">
           <span class="font-bold truncate">{{ fullName || author.username }}</span>
@@ -29,12 +29,11 @@
 <script>
 import { RouterLink } from 'vue-router'
 import RoleBadge from '@/components/common/RoleBadge.vue'
-import { icons } from '@/assets/icons.js'
-import { avatars } from '@/assets/images.js'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 
 export default {
   name: 'AuthorHeader',
-  components: { RouterLink, RoleBadge },
+  components: { RouterLink, RoleBadge, UserAvatar },
   props: {
     author: { type: Object, required: true },
     overlay: { type: Boolean, default: false },
@@ -48,9 +47,6 @@ export default {
   computed: {
     profileLink() {
       return `/profile/${encodeURIComponent(this.author.username)}`
-    },
-    avatarSrc() {
-      return avatars[this.author.avatar] ?? icons.user
     },
     fullName() {
       return [this.author.first_name, this.author.last_name].filter(Boolean).join(' ')

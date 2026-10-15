@@ -11,7 +11,7 @@
           class="flex gap-3 px-4 py-3"
           :class="{ 'bg-swissfy-highlight': unreadIds.has(item.id) }"
         >
-          <img v-if="item.actor" class="size-10 shrink-0" :src="avatarSrc(item.actor)" alt="" />
+          <UserAvatar v-if="item.actor" class="size-10" :user="item.actor" />
           <span
             v-else
             class="flex size-10 shrink-0 items-center justify-center rounded-full"
@@ -85,8 +85,7 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
-import { icons } from '@/assets/icons.js'
-import { avatars } from '@/assets/images.js'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { formatRelativeTime } from '@/lib/time.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
@@ -109,7 +108,15 @@ const KIND_BUBBLES = {
 
 export default {
   name: 'NotificationsView',
-  components: { RouterLink, AppIcon, BaseBreadcrumbs, BaseButton, BaseCard, BaseFooter },
+  components: {
+    RouterLink,
+    AppIcon,
+    BaseBreadcrumbs,
+    BaseButton,
+    BaseCard,
+    BaseFooter,
+    UserAvatar,
+  },
   data() {
     return {
       KIND_ICONS,
@@ -132,9 +139,6 @@ export default {
   },
   methods: {
     formatRelativeTime,
-    avatarSrc(user) {
-      return avatars[user.avatar] ?? icons.user
-    },
     async load() {
       this.loading = true
       this.error = null

@@ -1,14 +1,21 @@
+import shutil
+import tempfile
 from datetime import date
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 
 from accounts.models import UserProfile, get_or_create_profile
 from chats.models import ChatRequest
+from posts.models import ContactGroup
+from posts.tests import image_upload
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 
 User = get_user_model()
+MEDIA = tempfile.mkdtemp()
 
 
 class ProfileTests(TestCase):
@@ -47,6 +54,7 @@ class ProfileTests(TestCase):
                 "first_name": "",
                 "last_name": "",
                 "avatar": "",
+                "picture": None,
                 "role": None,
                 "can_view": True,
             },
@@ -330,4 +338,98 @@ class SearchOrderTests(TestCase):
         self.assertEqual(
             [user["username"] for user in data["results"]],
             ["zoe", "bert", "max", "carl", "anna", "aaron", "abby", "adam"],
+        )
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class PictureTests(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(MEDIA, ignore_errors=True)
+
+    def setUp(self):
+        self.jonas = User.objects.create(username="jonas")
+        self.anna = User.objects.create(username="anna")
+        self.client.force_login(self.jonas)
+
+    def upload(self, **data):
+        return self.client.patch(
+            "/api/social/profiles/me/pictures/",
+            encode_multipart(BOUNDARY, data),
+            content_type=MULTIPART_CONTENT,
+        )
+
+    def picture_for(self, viewer):
+        self.client.force_login(viewer)
+        return self.client.get("/api/social/profiles/jonas/").json()["picture"]
+
+    def test_without_upload_uses_govex_avatar(self):
+        data = self.client.get("/api/social/profiles/me/").json()
+        self.assertIsNone(data["picture"])
+
+    def test_public_picture_is_square_and_visible_to_all(self):
+        response = self.upload(public_picture=image_upload(2000, 1000))
+        self.assertEqual(response.status_code, 200)
+        url = response.json()["public_picture"]
+        self.assertTrue(url.startswith("/api/social/profiles/jonas/pictures/public/?v="))
+
+        self.assertEqual(self.picture_for(self.anna), url)
+        image = self.client.get(url)
+        self.assertEqual(image["Content-Type"], "image/webp")
+
+    def test_private_picture_for_friends(self):
+        self.upload(public_picture=image_upload(), private_picture=image_upload())
+        settings = self.client.get("/api/social/profiles/me/pictures/").json()
+        self.assertEqual(settings["private_picture_visibility"], "friends")
+
+        self.assertEqual(self.picture_for(self.jonas), settings["private_picture"])
+        self.assertEqual(self.picture_for(self.anna), settings["public_picture"])
+        self.assertEqual(self.client.get(settings["private_picture"]).status_code, 404)
+
+        Friendship.objects.create(user=self.anna, friend=self.jonas)
+        self.assertEqual(self.picture_for(self.anna), settings["private_picture"])
+        self.assertEqual(self.client.get(settings["private_picture"]).status_code, 200)
+
+    def test_private_picture_for_followers(self):
+        self.upload(private_picture=image_upload(), private_picture_visibility="followers")
+        self.assertIsNone(self.picture_for(self.anna))
+        Follow.objects.create(follower=self.anna, following=self.jonas)
+        self.assertIsNotNone(self.picture_for(self.anna))
+
+    def test_private_picture_for_groups(self):
+        group = ContactGroup.objects.create(owner=self.jonas, name="Familie")
+        response = self.upload(private_picture=image_upload(), private_picture_visibility="groups")
+        self.assertEqual(response.status_code, 400)
+
+        response = self.upload(
+            private_picture=image_upload(),
+            private_picture_visibility="groups",
+            private_picture_groups=[group.pk],
+        )
+        self.assertEqual(response.json()["private_picture_groups"], [group.pk])
+        self.assertIsNone(self.picture_for(self.anna))
+        group.members.add(self.anna)
+        self.assertIsNotNone(self.picture_for(self.anna))
+
+    def test_foreign_groups_are_rejected(self):
+        foreign = ContactGroup.objects.create(owner=self.anna, name="Fremd")
+        response = self.upload(
+            private_picture_visibility="groups", private_picture_groups=[foreign.pk]
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_remove_picture(self):
+        self.upload(public_picture=image_upload())
+        response = self.client.delete("/api/social/profiles/me/pictures/public/")
+        self.assertIsNone(response.json()["public_picture"])
+        self.assertIsNone(self.picture_for(self.anna))
+
+    def test_invalid_upload(self):
+        upload = SimpleUploadedFile("photo.jpg", b"no image", content_type="image/jpeg")
+        self.assertEqual(self.upload(public_picture=upload).status_code, 400)
+
+    def test_unknown_kind(self):
+        self.assertEqual(
+            self.client.get("/api/social/profiles/jonas/pictures/avatar/").status_code, 404
         )

@@ -4,7 +4,7 @@ from rest_framework import serializers
 from accounts.models import UserProfile
 from accounts.roles import is_admin, is_moderator, outranks, role_badge
 from main.numbers import compact_number
-from social.models import Follow, Friendship
+from social.pictures import PictureField, cached_relations
 
 from . import hashtags, images, videos
 from .models import Comment, ContactGroup, Hashtag, Post, PostImage, SavedFolder
@@ -14,11 +14,12 @@ User = get_user_model()
 
 class AuthorSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
+    picture = PictureField()
     role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name", "avatar", "role"]
+        fields = ["username", "first_name", "last_name", "avatar", "picture", "role"]
 
     def get_avatar(self, obj):
         profile = getattr(obj, "profile", None)
@@ -31,7 +32,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         viewer = self.context["request"].user
         if obj == viewer or is_admin(viewer):
             return True
-        relations = self.context.setdefault("viewer_relations", viewer_relations(viewer))
+        relations = cached_relations(self.context)
         visibility = getattr(getattr(obj, "profile", None), "profile_visibility", None)
         Visibility = UserProfile.Visibility
         return (
@@ -39,15 +40,6 @@ class AuthorSerializer(serializers.ModelSerializer):
             or (visibility == Visibility.FOLLOWERS and obj.pk in relations["following"])
             or obj.pk in relations["friends"]
         )
-
-
-def viewer_relations(viewer):
-    return {
-        "following": set(
-            Follow.objects.filter(follower=viewer).values_list("following_id", flat=True)
-        ),
-        "friends": set(Friendship.objects.filter(user=viewer).values_list("friend_id", flat=True)),
-    }
 
 
 class ModeratedMixin(serializers.Serializer):

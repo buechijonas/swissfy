@@ -31,7 +31,7 @@
               }"
               @click="isNavDrawerOpen = false"
             >
-              <img v-if="item.avatar && avatarSrc" class="size-5" :src="avatarSrc" alt="" />
+              <UserAvatar v-if="item.avatar && hasAvatar" class="size-5" :user="authStore.user" />
               <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-5!" />
               <span>{{ item.label }}</span>
               <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
@@ -72,15 +72,16 @@
 import { RouterLink } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
-import { avatars } from '@/assets/images.js'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 import { canAccess, navigationItems } from '@/data/navigation.js'
+import { avatarSrc } from '@/lib/avatar.js'
 import { isNavDrawerOpen } from '@/lib/navDrawer.js'
 import { useAuthStore } from '@/stores/auth.js'
 import packageJson from '../../../package.json'
 
 export default {
   name: 'BaseNavigation',
-  components: { RouterLink, BaseButton, AppIcon },
+  components: { RouterLink, BaseButton, AppIcon, UserAvatar },
   props: {
     activeNavigation: {
       type: String,
@@ -101,8 +102,8 @@ export default {
     visibleNavigationItems() {
       return this.navigationItems.filter((item) => canAccess(item, this.authStore))
     },
-    avatarSrc() {
-      return avatars[this.authStore.user?.avatar]
+    hasAvatar() {
+      return Boolean(avatarSrc(this.authStore.user))
     },
     isNavDrawerOpen: {
       get() {

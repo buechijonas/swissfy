@@ -4,7 +4,7 @@
     <div class="mx-auto w-full max-w-150 flex flex-col flex-1 min-h-0">
       <BaseCard v-if="partner" class="sm:mt-4 max-sm:border-t-0 px-4 py-3 flex items-center gap-4">
         <RouterLink :to="profileLink" class="flex items-center gap-4 min-w-0">
-          <img class="size-12 shrink-0" :src="avatarSrc" alt="" />
+          <UserAvatar class="size-12" :user="partner" />
           <div class="flex flex-col min-w-0">
             <span class="flex min-w-0 items-center gap-2">
               <CipherText v-if="!partner.can_view" :length="10" class="font-bold" />
@@ -164,8 +164,7 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import MessageStatus from '@/components/common/MessageStatus.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
-import { icons } from '@/assets/icons.js'
-import { avatars } from '@/assets/images.js'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { decryptMessage, encryptMessage } from '@/lib/chatCrypto.js'
 import { localKeys, prepareChatKeys, unlockWithPin } from '@/lib/chatKeys.js'
@@ -187,6 +186,7 @@ export default {
     CipherText,
     MessageStatus,
     RoleBadge,
+    UserAvatar,
   },
   data() {
     return {
@@ -231,9 +231,6 @@ export default {
     },
     profileLink() {
       return `/profile/${encodeURIComponent(this.username)}`
-    },
-    avatarSrc() {
-      return avatars[this.partner.avatar] ?? icons.user
     },
     fullName() {
       return [this.partner.first_name, this.partner.last_name].filter(Boolean).join(' ')

@@ -5,8 +5,11 @@ from accounts.models import UserProfile, get_or_create_profile
 from accounts.roles import is_admin, is_moderator, role_badge
 from chats.models import ChatRequest
 from main.numbers import compact_number
+from posts import images
+from posts.models import ContactGroup
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
+from .pictures import KINDS, PictureField, file_url, picture_file
 
 User = get_user_model()
 
@@ -47,11 +50,12 @@ HIDDEN_PROFILE_FIELDS = [*HIDDEN_LIST_FIELDS, "follower_count", "following_count
 
 class ProfileListSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
+    picture = PictureField()
     role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name", "avatar", "role"]
+        fields = ["username", "first_name", "last_name", "avatar", "picture", "role"]
 
     def get_avatar(self, obj):
         profile = getattr(obj, "profile", None)
@@ -76,6 +80,7 @@ class ProfileListSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
+    picture = PictureField()
     role = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
@@ -97,6 +102,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "avatar",
+            "picture",
             "role",
             "follower_count",
             "following_count",
@@ -183,3 +189,59 @@ class PrivacySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ["profile_visibility", "read_receipts", "chat_requests", "show_birthdate"]
+
+
+class PictureSettingsSerializer(serializers.ModelSerializer):
+    public_picture = serializers.FileField(required=False, write_only=True)
+    private_picture = serializers.FileField(required=False, write_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            "public_picture",
+            "private_picture",
+            "private_picture_visibility",
+            "private_picture_groups",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["private_picture_groups"].child_relation.queryset = ContactGroup.objects.filter(
+            owner=self.context["request"].user
+        )
+
+    def compress(self, upload):
+        try:
+            return images.thumbnail(images.load(upload))
+        except images.InvalidImage as error:
+            raise serializers.ValidationError(str(error))
+
+    def validate_public_picture(self, upload):
+        return self.compress(upload)
+
+    def validate_private_picture(self, upload):
+        return self.compress(upload)
+
+    def validate(self, data):
+        visibility = data.get("private_picture_visibility")
+        if visibility == UserProfile.PictureAudience.GROUPS:
+            if not data.get("private_picture_groups"):
+                raise serializers.ValidationError(
+                    {"private_picture_groups": "Wähle mindestens eine Gruppe."}
+                )
+        elif visibility:
+            data["private_picture_groups"] = []
+        return data
+
+    def update(self, profile, data):
+        for kind in KINDS:
+            if f"{kind}_picture" in data:
+                picture_file(profile, kind).delete(save=False)
+        return super().update(profile, data)
+
+    def to_representation(self, profile):
+        data = super().to_representation(profile)
+        for kind in KINDS:
+            file = picture_file(profile, kind)
+            data[f"{kind}_picture"] = file_url(profile.user, kind, file) if file else None
+        return data
