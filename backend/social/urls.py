@@ -36,6 +36,21 @@ urlpatterns = [
         views.PictureView.as_view(),
         name="profile-picture",
     ),
+    path(
+        "profiles/<str:username>/followers/",
+        views.ConnectionListView.as_view(connections=views.followers_of),
+        name="profile-followers",
+    ),
+    path(
+        "profiles/<str:username>/following/",
+        views.ConnectionListView.as_view(connections=views.followed_by),
+        name="profile-following",
+    ),
+    path(
+        "profiles/<str:username>/friends/",
+        views.ConnectionListView.as_view(connections=views.friends_of),
+        name="profile-friends",
+    ),
     path("profiles/<str:username>/status/", StatusView.as_view(), name="profile-status"),
     path(
         "profiles/<str:username>/achievements/",

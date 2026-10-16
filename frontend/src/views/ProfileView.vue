@@ -50,9 +50,18 @@
 
         <div class="grid grid-cols-3 gap-4 mt-6 text-center">
           <div class="flex flex-col items-center gap-2">
-            <CipherText v-if="!profile.can_view" class="text-xl font-bold" />
-            <span v-else class="text-xl font-bold">{{ profile.follower_count }}</span>
-            <span class="text-swissfy-muted text-sm">Follower</span>
+            <RouterLink
+              v-if="profile.can_view"
+              :to="connectionLink('followers')"
+              class="flex flex-col items-center gap-2 hover:underline"
+            >
+              <span class="text-xl font-bold">{{ profile.follower_count }}</span>
+              <span class="text-swissfy-muted text-sm">Follower</span>
+            </RouterLink>
+            <template v-else>
+              <CipherText class="text-xl font-bold" />
+              <span class="text-swissfy-muted text-sm">Follower</span>
+            </template>
             <BaseButton
               v-if="!profile.is_self"
               size="sm"
@@ -66,9 +75,18 @@
             </BaseButton>
           </div>
           <div class="flex flex-col items-center gap-2">
-            <CipherText v-if="!profile.can_view" class="text-xl font-bold" />
-            <span v-else class="text-xl font-bold">{{ profile.following_count }}</span>
-            <span class="text-swissfy-muted text-sm">Gefolgt</span>
+            <RouterLink
+              v-if="profile.can_view"
+              :to="connectionLink('following')"
+              class="flex flex-col items-center gap-2 hover:underline"
+            >
+              <span class="text-xl font-bold">{{ profile.following_count }}</span>
+              <span class="text-swissfy-muted text-sm">Gefolgt</span>
+            </RouterLink>
+            <template v-else>
+              <CipherText class="text-xl font-bold" />
+              <span class="text-swissfy-muted text-sm">Gefolgt</span>
+            </template>
             <BaseButton
               v-if="!profile.is_self"
               size="sm"
@@ -82,9 +100,18 @@
             </BaseButton>
           </div>
           <div class="flex flex-col items-center gap-2">
-            <CipherText v-if="!profile.can_view" class="text-xl font-bold" />
-            <span v-else class="text-xl font-bold">{{ profile.friend_count }}</span>
-            <span class="text-swissfy-muted text-sm">Freunde</span>
+            <RouterLink
+              v-if="profile.can_view"
+              :to="connectionLink('friends')"
+              class="flex flex-col items-center gap-2 hover:underline"
+            >
+              <span class="text-xl font-bold">{{ profile.friend_count }}</span>
+              <span class="text-swissfy-muted text-sm">Freunde</span>
+            </RouterLink>
+            <template v-else>
+              <CipherText class="text-xl font-bold" />
+              <span class="text-swissfy-muted text-sm">Freunde</span>
+            </template>
             <BaseButton
               v-if="canRequestFriendship"
               size="sm"
@@ -147,6 +174,7 @@
 </template>
 
 <script>
+import { RouterLink } from 'vue-router'
 import AddButton from '@/components/common/AddButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
@@ -183,6 +211,7 @@ const MODERATION_TABS = TABS.filter((tab) => ['tiles', 'activities', 'status'].i
 export default {
   name: 'ProfileView',
   components: {
+    RouterLink,
     AddButton,
     AppIcon,
     BaseBreadcrumbs,
@@ -266,6 +295,9 @@ export default {
     },
   },
   methods: {
+    connectionLink(connection) {
+      return `/profile/${encodeURIComponent(this.profile.username)}/${connection}`
+    },
     formatDate,
     async loadProfile() {
       this.loading = true

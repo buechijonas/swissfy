@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth.js'
 import { ADMINISTRATION_ROLES, MODERATION_ROLES, canAccess } from '@/data/navigation.js'
+import { connectionTitle } from '@/data/connections.js'
+import { pageTitle } from '@/lib/title.js'
 import HomeView from '@/views/HomeView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import SearchView from '@/views/SearchView.vue'
@@ -14,6 +16,7 @@ import NotificationsView from '@/views/NotificationsView.vue'
 import AdministrationView from '@/views/AdministrationView.vue'
 import SavedView from '@/views/SavedView.vue'
 import ProfileView from '@/views/ProfileView.vue'
+import ConnectionsView from '@/views/ConnectionsView.vue'
 import ReelsView from '@/views/ReelsView.vue'
 import HashtagView from '@/views/HashtagView.vue'
 import ImpressumView from '@/views/legal/ImpressumView.vue'
@@ -144,6 +147,12 @@ const router = createRouter({
       meta: { title: 'Profil', requiresAuth: true },
     },
     {
+      path: '/profile/:username/:connection(followers|following|friends)',
+      name: 'user-connections',
+      component: ConnectionsView,
+      meta: { title: connectionTitle, requiresAuth: true },
+    },
+    {
       path: '/profile/:username/reels/:id([0-9a-f-]{36})',
       name: 'user-reels',
       component: ReelsView,
@@ -241,7 +250,7 @@ router.beforeEach((to) => {
 })
 
 router.afterEach((to) => {
-  const title = to.meta.title
+  const title = pageTitle(to)
   document.title = title ? `${title} – Swissfy` : 'Swissfy'
 })
 

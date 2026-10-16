@@ -5,8 +5,8 @@
     >
       {{ brandInitial }}
     </div>
-    <span v-if="$route.meta.title" class="lg:hidden ml-4 truncate text-white">
-      {{ $route.meta.title }}
+    <span v-if="title" class="lg:hidden ml-4 truncate text-white">
+      {{ title }}
     </span>
     <div class="flex h-full items-center gap-3 ml-auto px-4">
       <span v-if="!authStore.ready" class="skeleton h-4 w-24 max-lg:hidden"></span>
@@ -35,6 +35,7 @@
 import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { isNavDrawerOpen } from '@/lib/navDrawer.js'
+import { pageTitle } from '@/lib/title.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
 import packageJson from '../../../package.json'
@@ -54,6 +55,9 @@ export default {
     },
     notificationsStore() {
       return useNotificationsStore()
+    },
+    title() {
+      return pageTitle(this.$route)
     },
     notificationsIcon() {
       return this.notificationsStore.unread ? 'bell-notification-social-media' : 'bell'
