@@ -7,7 +7,7 @@
 
   <BaseCard v-else-if="!hasMore && !loading" class="p-6">
     <p class="text-swissfy-muted">
-      {{ query ? 'Keine User gefunden.' : 'Noch keine anderen User.' }}
+      {{ query ? 'Keine User gefunden.' : emptyText }}
     </p>
   </BaseCard>
 
@@ -29,7 +29,7 @@
 <script>
 import BaseCard from '@/components/common/BaseCard.vue'
 import UserRow from '@/components/common/UserRow.vue'
-import { apiFetch } from '@/lib/api.js'
+import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 
 export default {
   name: 'UserList',
@@ -37,6 +37,8 @@ export default {
   props: {
     linkTo: { type: Function, required: true },
     query: { type: String, default: '' },
+    url: { type: String, default: '/api/social/profiles/' },
+    emptyText: { type: String, default: 'Noch keine anderen User.' },
   },
   data() {
     return {
@@ -70,11 +72,11 @@ export default {
       try {
         const params = new URLSearchParams({ page: this.page + 1 })
         if (query) params.set('q', query)
-        const response = await apiFetch(`/api/social/profiles/?${params}`)
-        const data = response.ok ? await response.json() : null
+        const response = await apiFetch(`${this.url}?${params}`)
+        const data = await response.json().catch(() => null)
         if (query !== this.query) return
-        if (!data) {
-          this.error = 'User konnten nicht geladen werden.'
+        if (!response.ok) {
+          this.error = extractErrorMessage(data, 'User konnten nicht geladen werden.')
           return
         }
         this.users.push(...data.results)

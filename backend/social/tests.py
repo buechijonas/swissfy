@@ -433,3 +433,43 @@ class PictureTests(TestCase):
         self.assertEqual(
             self.client.get("/api/social/profiles/jonas/pictures/avatar/").status_code, 404
         )
+
+
+class ConnectionListTests(TestCase):
+    def setUp(self):
+        self.jonas = User.objects.create(username="jonas")
+        self.anna = User.objects.create(username="anna")
+        self.eve = User.objects.create(username="eve")
+        self.client.force_login(self.anna)
+
+    def usernames(self, path, **params):
+        response = self.client.get(f"/api/social/profiles/jonas/{path}/", params)
+        self.assertEqual(response.status_code, 200)
+        return [user["username"] for user in response.json()["results"]]
+
+    def test_followers_following_and_friends(self):
+        Follow.objects.create(follower=self.anna, following=self.jonas)
+        Follow.objects.create(follower=self.eve, following=self.jonas)
+        Follow.objects.create(follower=self.jonas, following=self.eve)
+        Friendship.objects.create(user=self.jonas, friend=self.eve)
+
+        self.assertEqual(self.usernames("followers"), ["anna", "eve"])
+        self.assertEqual(self.usernames("following"), ["eve"])
+        self.assertEqual(self.usernames("friends"), ["eve"])
+
+    def test_search(self):
+        Follow.objects.create(follower=self.anna, following=self.jonas)
+        Follow.objects.create(follower=self.eve, following=self.jonas)
+        self.assertEqual(self.usernames("followers", q="ev"), ["eve"])
+
+    def test_private_profile(self):
+        UserProfile.objects.create(user=self.jonas, profile_visibility="friends")
+        response = self.client.get("/api/social/profiles/jonas/followers/")
+        self.assertEqual(response.status_code, 403)
+
+        Friendship.objects.create(user=self.anna, friend=self.jonas)
+        self.assertEqual(self.usernames("friends"), [])
+
+    def test_unknown_profile(self):
+        response = self.client.get("/api/social/profiles/nobody/followers/")
+        self.assertEqual(response.status_code, 404)

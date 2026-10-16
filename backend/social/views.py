@@ -3,6 +3,7 @@ from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, Value, 
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,6 +24,7 @@ from .serializers import (
     ProfileListSerializer,
     ProfileSerializer,
     are_friends,
+    can_view_profile,
     follows,
     requires_follow_request,
 )
@@ -35,9 +37,12 @@ class ProfileListView(generics.ListAPIView):
     serializer_class = ProfileListSerializer
     pagination_class = NextPagePagination
 
+    def get_users(self):
+        return User.objects.filter(is_active=True).exclude(pk=self.request.user.pk)
+
     def get_queryset(self):
         viewer = self.request.user
-        users = User.objects.filter(is_active=True).exclude(pk=viewer.pk)
+        users = self.get_users()
         if not is_admin(viewer):
             users = users.exclude(pk__in=suspended_users())
         query = " ".join(self.request.query_params.get("q", "").split())
@@ -204,14 +209,38 @@ class OwnPictureView(APIView):
         return picture_settings_response(request, profile)
 
 
+def profile_target(request, username):
+    users = User.objects.filter(is_active=True)
+    if not is_moderator(request.user):
+        users = users.filter(~Q(pk__in=suspended_users()) | Q(pk=request.user.pk))
+    return get_object_or_404(users, username=username)
+
+
+def followers_of(user):
+    return Follow.objects.filter(following=user).values("follower")
+
+
+def followed_by(user):
+    return Follow.objects.filter(follower=user).values("following")
+
+
+def friends_of(user):
+    return Friendship.objects.filter(user=user).values("friend")
+
+
+class ConnectionListView(ProfileListView):
+    connections = None
+
+    def get_users(self):
+        target = profile_target(self.request, self.kwargs["username"])
+        if not can_view_profile(self.request.user, target):
+            raise PermissionDenied("Dieses Profil ist privat.")
+        return User.objects.filter(is_active=True, pk__in=self.connections(target))
+
+
 class ProfileView(APIView):
     def get_target(self, request, username=None):
-        if username is None:
-            return request.user
-        users = User.objects.filter(is_active=True)
-        if not is_moderator(request.user):
-            users = users.filter(~Q(pk__in=suspended_users()) | Q(pk=request.user.pk))
-        return get_object_or_404(users, username=username)
+        return request.user if username is None else profile_target(request, username)
 
     def profile_response(self, request, target):
         return Response(ProfileSerializer(target, context={"request": request}).data)
