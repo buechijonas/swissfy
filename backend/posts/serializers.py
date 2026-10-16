@@ -165,6 +165,10 @@ class AudienceMixin:
         )
 
     def clean_audience(self, data):
+        if data.get("visibility") == Post.Visibility.GLOBAL and not is_admin(
+            self.context["request"].user
+        ):
+            raise serializers.ValidationError({"visibility": "Nur Admins können global posten."})
         if data.get("visibility") == Post.Visibility.GROUPS:
             if not data.get("groups"):
                 raise serializers.ValidationError({"groups": "Wähle mindestens eine Gruppe."})

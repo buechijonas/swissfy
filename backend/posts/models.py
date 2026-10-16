@@ -45,6 +45,7 @@ class Post(models.Model):
         FOLLOWERS = "followers", "Follower"
         FRIENDS = "friends", "Freunde"
         GROUPS = "groups", "Gruppen"
+        GLOBAL = "global", "Global"
 
     class VideoStatus(models.TextChoices):
         PROCESSING = "processing", "Wird verarbeitet"

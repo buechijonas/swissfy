@@ -13,6 +13,7 @@ from django.utils import timezone
 from PIL import Image
 
 from accounts.models import get_or_create_profile
+from accounts.roles import Role, set_role
 from social.models import Follow, Friendship
 
 from .models import Comment, ContactGroup, Post, PostCreation, SavedFolder
@@ -218,6 +219,33 @@ class PostTests(TestCase):
             [post["id"] for post in data["results"]],
             [str(post.uuid) for post in (friend, own, follow, yesterday)],
         )
+
+    def test_only_admins_post_globally(self):
+        response = self.post(visibility="global")
+        self.assertEqual(response.status_code, 400)
+
+        set_role(self.anna, Role.ADMIN)
+        response = self.post(visibility="global")
+        self.assertEqual(response.status_code, 201)
+
+        own = self.post().json()["id"]
+        set_role(self.anna, Role.DEFAULT)
+        response = self.client.patch(
+            f"/api/posts/{own}/", {"visibility": "global"}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_global_post_in_every_feed(self):
+        profile = get_or_create_profile(self.anna)
+        profile.profile_visibility = "friends"
+        profile.save()
+        global_post = Post.objects.create(author=self.anna, text="an alle", visibility="global")
+        Post.objects.create(author=self.anna, text="nur Freunde", visibility="public")
+
+        self.as_user(self.jonas)
+        feed = self.client.get("/api/posts/").json()["results"]
+        self.assertEqual([post["id"] for post in feed], [str(global_post.uuid)])
+        self.assertEqual(self.visible_ids(), [str(global_post.uuid)])
 
     def test_feed_pages(self):
         Follow.objects.create(follower=self.jonas, following=self.anna)
