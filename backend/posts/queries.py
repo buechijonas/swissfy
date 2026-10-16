@@ -69,6 +69,14 @@ def visible_posts(viewer):
     return posts.filter(visible)
 
 
+def image_posts(posts):
+    return posts.exclude(thumbnail="").filter(video_status="")
+
+
+def video_posts(posts):
+    return posts.filter(video_status=Post.VideoStatus.READY)
+
+
 def with_followed_hashtag(viewer):
     return Post.objects.filter(hashtags__followers=viewer).values("pk")
 

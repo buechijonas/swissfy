@@ -44,8 +44,10 @@ from .queries import (
     comment_details,
     comment_visibility,
     feed,
+    image_posts,
     reported_comments,
     unavailable,
+    video_posts,
     visible_posts,
     with_details,
 )
@@ -95,9 +97,9 @@ def starting_from(posts, request):
 
 def by_media(posts, request):
     if request.query_params.get("images"):
-        posts = posts.exclude(thumbnail="").filter(video_status="")
+        posts = image_posts(posts)
     if request.query_params.get("videos"):
-        posts = posts.filter(video_status=Post.VideoStatus.READY)
+        posts = video_posts(posts)
     return starting_from(posts, request)
 
 
