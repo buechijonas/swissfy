@@ -9,7 +9,7 @@ from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 
 from accounts.models import UserProfile, get_or_create_profile
 from chats.models import ChatRequest
-from posts.models import ContactGroup
+from posts.models import ContactGroup, Post
 from posts.tests import image_upload
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
@@ -473,3 +473,28 @@ class ConnectionListTests(TestCase):
     def test_unknown_profile(self):
         response = self.client.get("/api/social/profiles/nobody/followers/")
         self.assertEqual(response.status_code, 404)
+
+
+class ProfileMediaTests(TestCase):
+    def setUp(self):
+        self.jonas = User.objects.create(username="jonas")
+        self.anna = User.objects.create(username="anna")
+        self.client.force_login(self.anna)
+
+    def media(self):
+        return self.client.get("/api/social/profiles/jonas/").json()["media"]
+
+    def test_media_flags(self):
+        self.assertEqual(self.media(), {"pictures": False, "reels": False})
+        Post.objects.create(author=self.jonas, text="Text")
+        Post.objects.create(author=self.jonas, video="v.mp4", video_status="processing")
+        self.assertEqual(self.media(), {"pictures": False, "reels": False})
+
+        Post.objects.create(author=self.jonas, video="v.mp4", video_status="ready")
+        self.assertEqual(self.media(), {"pictures": False, "reels": True})
+        Post.objects.create(author=self.jonas, thumbnail="t.webp")
+        self.assertEqual(self.media(), {"pictures": True, "reels": True})
+
+    def test_media_respects_visibility(self):
+        Post.objects.create(author=self.jonas, thumbnail="t.webp", visibility="friends")
+        self.assertEqual(self.media(), {"pictures": False, "reels": False})

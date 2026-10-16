@@ -35,6 +35,7 @@ from .models import (
     Post,
     PostCreation,
     PostImage,
+    Repost,
     SavedFolder,
     SavedPost,
 )
@@ -43,8 +44,10 @@ from .queries import (
     comment_details,
     comment_visibility,
     feed,
+    image_posts,
     reported_comments,
     unavailable,
+    video_posts,
     visible_posts,
     with_details,
 )
@@ -72,7 +75,7 @@ class NewestFirst(CursorPagination):
 
 
 class FeedOrder(NewestFirst):
-    ordering = ("-day", "-viewer_is_friend", "-id")
+    ordering = ("-day", "-viewer_is_friend", "-shown_at", "-id")
 
 
 class SavedOrder(NewestFirst):
@@ -94,9 +97,9 @@ def starting_from(posts, request):
 
 def by_media(posts, request):
     if request.query_params.get("images"):
-        posts = posts.exclude(thumbnail="").filter(video_status="")
+        posts = image_posts(posts)
     if request.query_params.get("videos"):
-        posts = posts.filter(video_status=Post.VideoStatus.READY)
+        posts = video_posts(posts)
     return starting_from(posts, request)
 
 
@@ -380,6 +383,27 @@ class LikeView(APIView):
 
     def state(self, post, liked):
         return Response({"liked": liked, "like_count": compact_number(post.likes.count())})
+
+
+class RepostView(APIView):
+    def post(self, request, uuid):
+        post = visible_post(request, uuid)
+        if post.author == request.user:
+            return Response(
+                {"detail": "Du kannst deine eigenen Posts nicht reposten."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        Repost.objects.get_or_create(user=request.user, post=post)
+        return self.state(request, post)
+
+    def delete(self, request, uuid):
+        post = visible_post(request, uuid)
+        Repost.objects.filter(user=request.user, post=post).delete()
+        return self.state(request, post)
+
+    def state(self, request, post):
+        post = with_details(Post.objects.filter(pk=post.pk), request.user).get()
+        return Response({"reposted": post.reposted, "reposter": post.reposter})
 
 
 class SaveView(APIView):

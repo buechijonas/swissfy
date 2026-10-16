@@ -115,6 +115,15 @@ class Like(models.Model):
         constraints = [models.UniqueConstraint(fields=["user", "post"], name="unique_like")]
 
 
+class Repost(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reposts")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "post"], name="unique_repost")]
+
+
 class Comment(models.Model):
     uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")

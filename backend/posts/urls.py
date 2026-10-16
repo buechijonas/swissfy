@@ -38,6 +38,7 @@ urlpatterns = [
     path("posts/<uuid:uuid>/video/", views.PostVideoView.as_view(), name="post-video"),
     path("posts/<uuid:uuid>/thumbnail/", views.PostThumbnailView.as_view(), name="post-thumbnail"),
     path("posts/<uuid:uuid>/like/", views.LikeView.as_view(), name="post-like"),
+    path("posts/<uuid:uuid>/repost/", views.RepostView.as_view(), name="post-repost"),
     path("posts/<uuid:uuid>/save/", views.SaveView.as_view(), name="post-save"),
     path("posts/<uuid:uuid>/comments/", views.CommentListView.as_view(), name="post-comments"),
     path("comments/<uuid:uuid>/", views.CommentDetailView.as_view(), name="comment"),

@@ -156,11 +156,32 @@
           :key="`${profile.username}-status`"
           :username="profile.username"
         />
+        <div
+          v-if="activeTab === 'tiles' && showMediaSwitcher"
+          class="flex max-sm:-mx-6 lg:mt-2 lg:justify-end"
+        >
+          <div class="join w-full lg:w-auto">
+            <BaseButton
+              v-for="(option, key) in MEDIA"
+              :key="key"
+              class="join-item max-lg:flex-1 max-lg:rounded-none"
+              :variant="media === key ? 'primary' : 'neutral'"
+              :aria-pressed="media === key"
+              @click="$router.replace({ query: { ...$route.query, media: key } })"
+            >
+              <AppIcon :name="option.icon" />
+              {{ option.label }}
+            </BaseButton>
+          </div>
+        </div>
         <PostList
-          v-else-if="postList"
-          :key="`${profile.username}-${activeTab}-${postsVersion}`"
-          class="mt-4"
-          :class="{ 'max-sm:mt-0': timeline }"
+          v-if="postList"
+          :key="`${profile.username}-${activeTab}-${media}-${postsVersion}`"
+          :class="
+            activeTab === 'tiles' && showMediaSwitcher
+              ? 'lg:mt-2'
+              : ['mt-4', { 'max-sm:mt-0': timeline }]
+          "
           :url="postsUrl"
           :grid="!timeline"
           :edge-to-edge="timeline"
@@ -195,15 +216,28 @@ import { formatDate } from '@/lib/time.js'
 const TABS = [
   { key: 'activities', label: 'Aktivitäten', icon: 'list-timeline' },
   { key: 'tiles', label: 'Kachel', icon: 'grid' },
-  { key: 'reels', label: 'Reels', icon: 'clapperboard-play' },
   { key: 'albums', label: 'Alben', icon: 'gallery' },
   { key: 'about', label: 'Über mich', icon: 'info' },
   { key: 'achievements', label: 'Erfolge', icon: 'trophy' },
   { key: 'status', label: 'Status', icon: 'map-marker-smile' },
 ]
+const MEDIA = {
+  pictures: {
+    flag: 'pictures',
+    label: 'Feeds',
+    icon: 'picture',
+    query: '?images=1',
+    emptyText: 'Noch keine Feeds.',
+  },
+  clips: {
+    flag: 'reels',
+    label: 'Seeds',
+    icon: 'clapperboard-play',
+    query: '?videos=1',
+    emptyText: 'Noch keine Seeds.',
+  },
+}
 const POST_LISTS = {
-  tiles: { query: '?images=1', emptyText: 'Noch keine Bilder.' },
-  reels: { query: '?videos=1', emptyText: 'Noch keine Reels.' },
   activities: { query: 'activities/', emptyText: 'Noch keine Posts.' },
 }
 const MODERATION_TABS = TABS.filter((tab) => ['tiles', 'activities', 'status'].includes(tab.key))
@@ -229,6 +263,7 @@ export default {
   },
   data() {
     return {
+      MEDIA,
       profile: null,
       loading: true,
       error: null,
@@ -252,8 +287,19 @@ export default {
     timeline() {
       return this.activeTab === 'activities'
     },
+    availableMedia() {
+      return Object.keys(MEDIA).filter((key) => this.profile.media?.[MEDIA[key].flag])
+    },
+    showMediaSwitcher() {
+      return this.availableMedia.length > 1
+    },
+    media() {
+      const requested = this.$route.query.media
+      if (this.availableMedia.includes(requested)) return requested
+      return this.availableMedia[0] ?? 'pictures'
+    },
     postList() {
-      return POST_LISTS[this.activeTab]
+      return this.activeTab === 'tiles' ? MEDIA[this.media] : POST_LISTS[this.activeTab]
     },
     breadcrumbs() {
       return this.username
@@ -334,9 +380,11 @@ export default {
     sendFriendRequest() {
       return this.runAction('friend-request/', 'POST', 'Anfrage fehlgeschlagen.')
     },
-    showOwnPosts() {
+    async showOwnPosts() {
       this.postsVersion++
       this.$router.push({ query: { ...this.$route.query, tab: 'activities' } })
+      const response = await apiFetch(this.apiUrl).catch(() => null)
+      if (response?.ok) this.profile = await response.json()
     },
   },
 }

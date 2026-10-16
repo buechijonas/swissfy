@@ -1,12 +1,12 @@
 from django.db.models import Count, Exists, IntegerField, OuterRef, Q, Subquery, Sum, Value
-from django.db.models.functions import Coalesce, TruncDate
+from django.db.models.functions import Coalesce, Greatest, TruncDate
 
 from accounts.models import UserProfile
 from accounts.roles import is_admin, is_moderator
 from moderation.sanctions import is_suspended, suspended_users
 from social.models import Follow, Friendship
 
-from .models import Comment, CommentVote, ContactGroup, Like, Post, SavedPost
+from .models import Comment, CommentVote, ContactGroup, Like, Post, Repost, SavedPost
 
 NOT_HIDDEN = Q(hidden_at__isnull=True)
 
@@ -69,22 +69,42 @@ def visible_posts(viewer):
     return posts.filter(visible)
 
 
+def image_posts(posts):
+    return posts.exclude(thumbnail="").filter(video_status="")
+
+
+def video_posts(posts):
+    return posts.filter(video_status=Post.VideoStatus.READY)
+
+
 def with_followed_hashtag(viewer):
     return Post.objects.filter(hashtags__followers=viewer).values("pk")
 
 
-def feed(viewer):
+def followed_by(viewer):
     followed = Follow.objects.filter(follower=viewer).values("following")
     friends = Friendship.objects.filter(user=viewer).values("friend")
+    return followed.union(friends)
+
+
+def followed_reposts(viewer):
+    return Repost.objects.filter(user__in=followed_by(viewer)).order_by("-created_at")
+
+
+def feed(viewer):
+    reposts = followed_reposts(viewer)
+    reposted_at = Subquery(reposts.filter(post=OuterRef("pk")).values("created_at")[:1])
     return (
         visible_posts(viewer)
         .filter(
             Q(author=viewer)
-            | Q(author__in=followed.union(friends))
+            | Q(author__in=followed_by(viewer))
             | Q(pk__in=with_followed_hashtag(viewer))
             | Q(visibility=Post.Visibility.GLOBAL)
+            | Q(pk__in=reposts.values("post"))
         )
-        .annotate(day=TruncDate("created_at"))
+        .annotate(shown_at=Greatest("created_at", Coalesce(reposted_at, "created_at")))
+        .annotate(day=TruncDate("shown_at"))
     )
 
 
@@ -109,6 +129,10 @@ def with_details(posts, viewer):
             like_count=count_of(Like.objects.all()),
             comment_count=count_of(Comment.objects.filter(comment_visibility(viewer), parent=None)),
             liked=Exists(Like.objects.filter(user=viewer, post=OuterRef("pk"))),
+            reposted=Exists(Repost.objects.filter(user=viewer, post=OuterRef("pk"))),
+            reposter=Subquery(
+                followed_reposts(viewer).filter(post=OuterRef("pk")).values("user__username")[:1]
+            ),
             saved=Exists(saves),
             saved_folder=Subquery(saves.values("folder")),
         )

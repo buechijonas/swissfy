@@ -7,6 +7,7 @@ from chats.models import ChatRequest
 from main.numbers import compact_number
 from posts import images
 from posts.models import ContactGroup
+from posts.queries import image_posts, video_posts, visible_posts
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 from .pictures import KINDS, PictureField, file_url, picture_file
@@ -94,6 +95,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     requires_follow_request = serializers.SerializerMethodField()
     can_chat = serializers.SerializerMethodField()
     can_view_warnings = serializers.SerializerMethodField()
+    media = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -116,6 +118,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "requires_follow_request",
             "can_chat",
             "can_view_warnings",
+            "media",
         ]
 
     @property
@@ -130,6 +133,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_can_view_warnings(self, obj):
         return obj == self.viewer or is_moderator(self.viewer)
+
+    def get_media(self, obj):
+        posts = visible_posts(self.viewer).filter(author=obj)
+        return {"pictures": image_posts(posts).exists(), "reels": video_posts(posts).exists()}
 
     def get_follower_count(self, obj):
         return compact_number(obj.followers.count())
