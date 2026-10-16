@@ -95,6 +95,8 @@ class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
     like_count = serializers.SerializerMethodField()
     comment_count = serializers.IntegerField(read_only=True)
     liked = serializers.BooleanField(read_only=True)
+    reposted = serializers.BooleanField(read_only=True)
+    reposter = serializers.CharField(read_only=True)
     saved = serializers.BooleanField(read_only=True)
     saved_folder = serializers.IntegerField(read_only=True)
     is_own = serializers.SerializerMethodField()
@@ -117,6 +119,8 @@ class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
             "like_count",
             "comment_count",
             "liked",
+            "reposted",
+            "reposter",
             "saved",
             "saved_folder",
             "is_own",

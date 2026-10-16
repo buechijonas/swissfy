@@ -16,7 +16,7 @@ from accounts.models import get_or_create_profile
 from accounts.roles import Role, set_role
 from social.models import Follow, Friendship
 
-from .models import Comment, ContactGroup, Post, PostCreation, SavedFolder
+from .models import Comment, ContactGroup, Post, PostCreation, Repost, SavedFolder
 
 User = get_user_model()
 MEDIA = tempfile.mkdtemp()
@@ -246,6 +246,63 @@ class PostTests(TestCase):
         feed = self.client.get("/api/posts/").json()["results"]
         self.assertEqual([post["id"] for post in feed], [str(global_post.uuid)])
         self.assertEqual(self.visible_ids(), [str(global_post.uuid)])
+
+    def test_repost_reaches_followers_of_reposter(self):
+        post = Post.objects.create(author=self.eve, text="teilen")
+        Post.objects.filter(pk=post.pk).update(created_at=timezone.now() - timedelta(days=3))
+        Follow.objects.create(follower=self.jonas, following=self.anna)
+        newer = Post.objects.create(author=self.anna, text="heute")
+
+        self.as_user(self.jonas)
+        self.assertEqual(
+            [p["id"] for p in self.client.get("/api/posts/").json()["results"]], [str(newer.uuid)]
+        )
+
+        self.as_user(self.anna)
+        response = self.client.post(f"/api/posts/{post.uuid}/repost/")
+        self.assertEqual(response.json(), {"reposted": True, "reposter": None})
+
+        self.as_user(self.jonas)
+        feed = self.client.get("/api/posts/").json()["results"]
+        self.assertEqual([p["id"] for p in feed], [str(post.uuid), str(newer.uuid)])
+        self.assertEqual(feed[0]["reposter"], "anna")
+        self.assertFalse(feed[0]["reposted"])
+
+        self.as_user(self.anna)
+        self.client.delete(f"/api/posts/{post.uuid}/repost/")
+        self.as_user(self.jonas)
+        self.assertEqual(len(self.client.get("/api/posts/").json()["results"]), 1)
+
+    def test_latest_repost_moves_post_up(self):
+        mia = User.objects.create(username="mia")
+        Follow.objects.create(follower=self.jonas, following=self.anna)
+        Follow.objects.create(follower=self.jonas, following=mia)
+        shared = Post.objects.create(author=self.eve, text="geteilt")
+        Repost.objects.create(user=self.anna, post=shared)
+        newer = Post.objects.create(author=self.anna, text="neuer")
+
+        self.as_user(self.jonas)
+        ids = [p["id"] for p in self.client.get("/api/posts/").json()["results"]]
+        self.assertEqual(ids, [str(newer.uuid), str(shared.uuid)])
+
+        Repost.objects.create(user=mia, post=shared)
+        feed = self.client.get("/api/posts/").json()["results"]
+        self.assertEqual([p["id"] for p in feed], [str(shared.uuid), str(newer.uuid)])
+        self.assertEqual(feed[0]["reposter"], "mia")
+
+    def test_cannot_repost_own_or_invisible_post(self):
+        own = Post.objects.create(author=self.anna, text="meins")
+        self.assertEqual(self.client.post(f"/api/posts/{own.uuid}/repost/").status_code, 400)
+        hidden = Post.objects.create(author=self.eve, text="geheim", visibility="friends")
+        self.assertEqual(self.client.post(f"/api/posts/{hidden.uuid}/repost/").status_code, 404)
+
+    def test_repost_does_not_widen_audience(self):
+        post = Post.objects.create(author=self.eve, text="Freunde", visibility="friends")
+        self.befriend(self.anna, self.eve)
+        self.client.post(f"/api/posts/{post.uuid}/repost/")
+        Follow.objects.create(follower=self.jonas, following=self.anna)
+        self.as_user(self.jonas)
+        self.assertEqual(self.client.get("/api/posts/").json()["results"], [])
 
     def test_feed_pages(self):
         Follow.objects.create(follower=self.jonas, following=self.anna)

@@ -22,6 +22,7 @@
   --color-swissfy-slate: #6c829c;
   --color-swissfy-border: #e3e5e8;
   --color-swissfy-highlight: #ffe0e0;
+  --color-swissfy-repost: #12936f;
   --text-title: 2.5rem;
 }
 
@@ -35,6 +36,7 @@
   --color-swissfy-slate: #a7b6c8;
   --color-swissfy-border: #3a3f4a;
   --color-swissfy-highlight: #451a1a;
+  --color-swissfy-repost: #3ccf9f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,6 +45,7 @@
     --color-swissfy-slate: #a7b6c8;
     --color-swissfy-border: #3a3f4a;
     --color-swissfy-highlight: #451a1a;
+    --color-swissfy-repost: #3ccf9f;
   }
 }
 

@@ -215,6 +215,22 @@
         </span>
         <span :class="labelClass">{{ commentCount }}</span>
       </div>
+      <div :class="actionClass">
+        <button
+          type="button"
+          :class="triggerClass"
+          :disabled="busy || post.is_own"
+          :title="reposted ? 'Repost entfernen' : 'Reposten'"
+          @click="toggleRepost"
+        >
+          <AppIcon
+            name="arrows-retweet"
+            :alt="reposted ? 'Repost entfernen' : 'Reposten'"
+            :class="[iconClass, { 'text-swissfy-repost': reposted, 'opacity-40': post.is_own }]"
+          />
+        </button>
+        <span class="max-w-20 truncate" :class="labelClass">{{ repostLabel }}</span>
+      </div>
       <div class="flex flex-col gap-1" :class="reel ? 'items-center' : 'ml-auto items-end'">
         <button
           type="button"
@@ -322,6 +338,8 @@ export default {
     return {
       liked: this.post.liked,
       likeCount: this.post.like_count,
+      reposted: this.post.reposted,
+      reposter: this.post.reposter,
       saved: this.post.saved,
       reported: this.post.reported,
       folder: this.post.saved_folder,
@@ -360,6 +378,10 @@ export default {
     this.visibilityObserver?.disconnect()
   },
   computed: {
+    repostLabel() {
+      if (this.reposter) return `@${this.reposter}`
+      return this.reposted ? 'Du' : ''
+    },
     videoLoop() {
       return videoLoop.value
     },
@@ -449,6 +471,13 @@ export default {
       const data = await response.json()
       this.liked = data.liked
       this.likeCount = data.like_count
+    },
+    async toggleRepost() {
+      const response = await this.request('repost/', this.reposted ? 'DELETE' : 'POST')
+      if (!response) return
+      const data = await response.json()
+      this.reposted = data.reposted
+      this.reposter = data.reposter
     },
     async save(folder) {
       if (await this.request('save/', 'PUT', { folder })) {
