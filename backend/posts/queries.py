@@ -60,8 +60,9 @@ def visible_posts(viewer):
     posts = posts.filter(~unfinished_video | Q(author=viewer))
     if is_admin(viewer):
         return posts
+    global_post = Q(visibility=Audience.GLOBAL)
     visible = NOT_HIDDEN & (
-        Q(author=viewer) | (profile_visible & audience & ~by_suspended_author())
+        Q(author=viewer) | (((profile_visible & audience) | global_post) & ~by_suspended_author())
     )
     if is_moderator(viewer):
         visible |= Q(pk__in=Post.objects.filter(reports__isnull=False).values("pk"))
@@ -81,6 +82,7 @@ def feed(viewer):
             Q(author=viewer)
             | Q(author__in=followed.union(friends))
             | Q(pk__in=with_followed_hashtag(viewer))
+            | Q(visibility=Post.Visibility.GLOBAL)
         )
         .annotate(day=TruncDate("created_at"))
     )

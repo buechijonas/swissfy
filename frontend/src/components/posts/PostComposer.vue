@@ -79,6 +79,12 @@
       <p class="shrink-0 text-xs text-swissfy-muted">{{ text.length }} / {{ maxLength }}</p>
     </div>
 
+    <div class="mt-4">
+      <VisibilityPicker v-model:visibility="visibility" v-model:groups="selectedGroups" />
+    </div>
+
+    <p v-if="error" class="text-error text-sm mt-4">{{ error }}</p>
+
     <label class="mt-4 flex items-center gap-3 text-sm">
       <input v-model="acceptedTerms" type="checkbox" class="size-8 shrink-0 accent-primary" />
       <span>
@@ -89,12 +95,6 @@
         entspricht.
       </span>
     </label>
-
-    <div class="mt-4">
-      <VisibilityPicker v-model:visibility="visibility" v-model:groups="selectedGroups" />
-    </div>
-
-    <p v-if="error" class="text-error text-sm mt-4">{{ error }}</p>
     <p
       v-if="quota"
       class="text-sm mt-4"
