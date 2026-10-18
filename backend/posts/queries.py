@@ -15,6 +15,8 @@ from .models import (
     Repost,
     SavedPost,
     Story,
+    StoryLike,
+    StoryView,
     story_cutoff,
 )
 
@@ -93,6 +95,15 @@ def visible_stories(viewer):
     if is_admin(viewer):
         return stories
     return stories.filter(Q(author=viewer) | (shared & ~by_suspended_author()))
+
+
+def story_details(stories, viewer):
+    return stories.annotate(
+        liked=Exists(StoryLike.objects.filter(story=OuterRef("pk"), user=viewer)),
+        seen=Exists(StoryView.objects.filter(story=OuterRef("pk"), user=viewer)),
+        like_total=count_of(StoryLike.objects.all(), "story"),
+        view_total=count_of(StoryView.objects.exclude(user=OuterRef("author")), "story"),
+    )
 
 
 def image_posts(posts):

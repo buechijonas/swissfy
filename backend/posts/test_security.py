@@ -7,13 +7,26 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
+from django.utils import timezone
 from PIL import Image
 
 from accounts.models import UserProfile, get_or_create_profile
 from accounts.roles import Role, set_role
+from moderation.models import Reason, Suspension, Warning
+from moderation.sanctions import suspend
 from social.models import Follow, Friendship
 
-from .models import Comment, ContactGroup, Post, PostImage, SavedFolder
+from .models import (
+    Comment,
+    ContactGroup,
+    Post,
+    PostImage,
+    Repost,
+    SavedFolder,
+    Story,
+    StoryLike,
+    StoryView,
+)
 from .tests import image_upload, video_upload
 
 User = get_user_model()
@@ -507,3 +520,123 @@ class ModeratorVisibilityTests(SecurityTestCase):
         self.as_user(mod)
         self.assertEqual(self.client.get(f"/api/posts/{post.uuid}/").status_code, 404)
         self.assertEqual(self.client.get(f"/api/moderation/posts/{post.uuid}/").status_code, 404)
+
+
+class StorySecurityTests(SecurityTestCase):
+    def create_story(self, **data):
+        response = self.client.post("/api/stories/", {"image": image_upload(), **data})
+        self.assertEqual(response.status_code, 201, response.content)
+        return Story.objects.get(uuid=response.json()["id"])
+
+    def test_server_controlled_fields_cannot_be_set(self):
+        self.client.post(
+            "/api/stories/",
+            {
+                "image": image_upload(),
+                "author": self.eve.pk,
+                "created_at": "2000-01-01T00:00:00Z",
+                "uuid": "00000000-0000-0000-0000-000000000000",
+            },
+        )
+        story = Story.objects.get()
+        self.assertEqual(story.author, self.anna)
+        self.assertGreater(story.created_at.year, 2000)
+        self.assertNotEqual(str(story.uuid), "00000000-0000-0000-0000-000000000000")
+
+    def test_invalid_stories_are_rejected(self):
+        cases = {
+            "no image": {"text": "Hallo"},
+            "html image": {"image": file_upload("x.png", "<script>alert(1)</script>", "image/png")},
+            "svg image": {
+                "image": file_upload("x.svg", "<svg onload=alert(1)/>", "image/svg+xml"),
+            },
+            "too long text": {"image": image_upload(), "text": "x" * 201},
+            "unknown visibility": {"image": image_upload(), "visibility": "everyone"},
+            "groups without group": {"image": image_upload(), "visibility": "groups"},
+        }
+        for name, data in cases.items():
+            with self.subTest(name):
+                self.assertEqual(self.client.post("/api/stories/", data).status_code, 400)
+        self.assertFalse(Story.objects.exists())
+
+    def test_cannot_share_story_with_foreign_groups(self):
+        foreign = ContactGroup.objects.create(owner=self.eve, name="Fremd")
+        response = self.client.post(
+            "/api/stories/",
+            {"image": image_upload(), "visibility": "groups", "groups": [foreign.pk]},
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_strangers_cannot_reach_private_stories(self):
+        story = self.create_story(visibility="friends")
+        self.as_user(self.eve)
+        for method, path in [
+            ("get", "image/"),
+            ("post", "view/"),
+            ("post", "like/"),
+            ("delete", "like/"),
+            ("get", "viewers/"),
+            ("delete", ""),
+        ]:
+            with self.subTest(method=method, path=path):
+                response = getattr(self.client, method)(f"/api/stories/{story.uuid}/{path}")
+                self.assertEqual(response.status_code, 404)
+        self.assertFalse(StoryView.objects.exists())
+        self.assertFalse(StoryLike.objects.exists())
+
+    def test_viewers_and_counts_stay_with_the_owner(self):
+        story = self.create_story()
+        self.as_user(self.jonas)
+        self.client.post(f"/api/stories/{story.uuid}/view/")
+        seen = self.client.get("/api/social/profiles/anna/").json()["stories"][0]
+        self.assertIsNone(seen["like_count"])
+        self.assertIsNone(seen["view_count"])
+        self.assertEqual(self.client.get(f"/api/stories/{story.uuid}/viewers/").status_code, 404)
+
+    def test_stories_of_suspended_or_inactive_authors_disappear(self):
+        story = self.create_story()
+        self.as_user(self.jonas)
+        warning = Warning.objects.create(user=self.anna, reason=Reason.INSULT)
+        suspend(self.anna, warning, 0, timezone.now())
+        self.assertEqual(self.client.get(f"/api/stories/{story.uuid}/image/").status_code, 404)
+
+        Suspension.objects.all().delete()
+        self.anna.is_active = False
+        self.anna.save()
+        self.assertEqual(self.client.get(f"/api/stories/{story.uuid}/image/").status_code, 404)
+
+
+class RepostSecurityTests(SecurityTestCase):
+    def test_cannot_repost_posts_out_of_reach(self):
+        hidden = Post.objects.create(author=self.eve, text="geheim", visibility="friends")
+        blocked = Post.objects.create(author=self.eve, text="gesperrt", hidden_at=timezone.now())
+        for post in (hidden, blocked):
+            with self.subTest(post=post.text):
+                response = self.client.post(f"/api/posts/{post.uuid}/repost/")
+                self.assertEqual(response.status_code, 404)
+        self.assertFalse(Repost.objects.exists())
+
+    def test_reposting_twice_keeps_one_repost(self):
+        post = Post.objects.create(author=self.eve, text="Hallo")
+        for _ in range(3):
+            self.client.post(f"/api/posts/{post.uuid}/repost/")
+        self.assertEqual(Repost.objects.count(), 1)
+
+    def test_reposter_name_never_leaks_strangers(self):
+        post = Post.objects.create(author=self.eve, text="Hallo")
+        Repost.objects.create(user=self.jonas, post=post)
+        data = self.client.get(f"/api/posts/{post.uuid}/").json()
+        self.assertIsNone(data["reposter"])
+
+
+class GlobalVisibilityTests(SecurityTestCase):
+    def test_only_admins_can_reach_everyone(self):
+        response = self.client.post("/api/posts/", {"text": "an alle", "visibility": "global"})
+        self.assertEqual(response.status_code, 400)
+        post = self.create_post()
+        response = self.client.patch(
+            f"/api/posts/{post.uuid}/", {"visibility": "global"}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+        post.refresh_from_db()
+        self.assertEqual(post.visibility, "public")

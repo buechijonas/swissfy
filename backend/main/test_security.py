@@ -48,7 +48,7 @@ INJECTIONS = [
     "${7*7}",
     "{{7*7}}",
     "<script>alert(1)</script>",
-    "‮gnp.exe",
+    "\u202egnp.exe",
     "𝕒𝕕𝕞𝕚𝕟",
     "(a+)+$",
     "*",
