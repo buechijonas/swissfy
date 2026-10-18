@@ -6,6 +6,7 @@
       'max-sm:border-y-0': edgeToEdge,
       'cursor-pointer': !detail,
       'relative max-w-full border-0! bg-black!': reel,
+      relative: !post.video && !post.images.length,
     }"
     class="touch-manipulation"
     @click="onCardClick"
@@ -110,6 +111,7 @@
           :class="controlsVisible ? 'bottom-12' : 'bottom-0'"
           @click.stop="tap(togglePlay)"
         ></div>
+        <HeartBurst ref="heart" />
         <button
           v-if="!playing"
           type="button"
@@ -126,6 +128,7 @@
     </p>
 
     <div v-if="post.images.length" class="group relative">
+      <HeartBurst ref="heart" />
       <div
         ref="slides"
         class="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none]"
@@ -174,6 +177,8 @@
         </div>
       </template>
     </div>
+
+    <HeartBurst v-if="!post.video && !post.images.length" ref="heart" />
 
     <footer
       v-if="!moderation"
@@ -261,11 +266,11 @@
     </footer>
     <p v-if="error" class="text-error text-sm px-4 pb-3">{{ error }}</p>
 
-    <BaseDialog v-if="reel && hasMenu" ref="menu" title="Reel" class="modal-bottom sm:modal-middle">
+    <BaseDialog v-if="reel && hasMenu" ref="menu" title="Seed" class="modal-bottom sm:modal-middle">
       <div class="flex flex-col gap-2">
         <BaseButton v-if="post.is_own && !moderation" block @click="editFromMenu">
           <AppIcon name="pencil" />
-          Reel bearbeiten
+          Seed bearbeiten
         </BaseButton>
         <BaseButton
           v-if="post.can_report"
@@ -274,7 +279,7 @@
           @click="reportFromMenu"
         >
           <AppIcon name="shield-exclamation" />
-          {{ reported ? 'Gemeldet' : 'Reel melden' }}
+          {{ reported ? 'Gemeldet' : 'Seed melden' }}
         </BaseButton>
       </div>
     </BaseDialog>
@@ -305,6 +310,7 @@ import AuthorHeader from '@/components/posts/AuthorHeader.vue'
 import CommentSheet from '@/components/posts/CommentSheet.vue'
 import FolderDialog from '@/components/posts/FolderDialog.vue'
 import PostEditDialog from '@/components/posts/PostEditDialog.vue'
+import HeartBurst from '@/components/posts/HeartBurst.vue'
 import PostText from '@/components/posts/PostText.vue'
 import { apiFetch } from '@/lib/api.js'
 import { formatRelativeTime } from '@/lib/time.js'
@@ -322,6 +328,7 @@ export default {
     BaseDialog,
     CommentSheet,
     FolderDialog,
+    HeartBurst,
     PostEditDialog,
     PostText,
   },
@@ -412,7 +419,9 @@ export default {
       if (this.tapTimer) {
         clearTimeout(this.tapTimer)
         this.tapTimer = null
-        if (!this.liked && !this.moderation) this.toggleLike()
+        if (this.moderation) return
+        this.$refs.heart?.show()
+        if (!this.liked) this.toggleLike()
         return
       }
       this.tapTimer = setTimeout(() => {

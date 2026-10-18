@@ -38,6 +38,9 @@ from .models import (
     Repost,
     SavedFolder,
     SavedPost,
+    Story,
+    StoryLike,
+    StoryView,
 )
 from .queries import (
     attach_latest_replies,
@@ -49,6 +52,7 @@ from .queries import (
     unavailable,
     video_posts,
     visible_posts,
+    visible_stories,
     with_details,
 )
 from .serializers import (
@@ -60,6 +64,8 @@ from .serializers import (
     PostSerializer,
     PostSummarySerializer,
     SavedFolderSerializer,
+    StoryCreateSerializer,
+    StorySerializer,
 )
 
 User = get_user_model()
@@ -124,7 +130,7 @@ def remaining_posts(user):
 
 def check_quota(user):
     if not remaining_posts(user):
-        raise Throttled(detail=f"Du kannst höchstens {POSTS_PER_DAY} Posts pro Tag erstellen.")
+        raise Throttled(detail=f"Du kannst höchstens {POSTS_PER_DAY} Feeds pro Tag erstellen.")
 
 
 def notify_comment(comment):
@@ -328,7 +334,7 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         post = self.get_object()
         if post.author_id != request.user.pk:
-            raise PermissionDenied("Du kannst nur eigene Posts bearbeiten.")
+            raise PermissionDenied("Du kannst nur eigene Feeds bearbeiten.")
         serializer = PostAudienceSerializer(post, data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -336,7 +342,7 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, post):
         if post.author_id != self.request.user.pk:
-            raise PermissionDenied("Du kannst nur eigene Posts löschen.")
+            raise PermissionDenied("Du kannst nur eigene Feeds löschen.")
         post.delete()
 
 
@@ -390,7 +396,7 @@ class RepostView(APIView):
         post = visible_post(request, uuid)
         if post.author == request.user:
             return Response(
-                {"detail": "Du kannst deine eigenen Posts nicht reposten."},
+                {"detail": "Du kannst deine eigenen Feeds nicht reposten."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         Repost.objects.get_or_create(user=request.user, post=post)
@@ -430,7 +436,7 @@ def visible_comments(viewer):
 def post_summary(post, visible, context):
     if post.pk in visible:
         return PostSummarySerializer(visible[post.pk], context=context).data
-    return unavailable(post, "Post")
+    return unavailable(post, "Feed")
 
 
 class CommentListView(generics.ListCreateAPIView):
@@ -477,7 +483,7 @@ class CommentReplyListView(CommentListView):
     def perform_create(self, serializer):
         parent = self.parent()
         if not visible_posts(self.request.user).filter(pk=parent.post_id).exists():
-            raise PermissionDenied("Dieser Post ist nicht mehr verfügbar.")
+            raise PermissionDenied("Dieser Feed ist nicht mehr verfügbar.")
         comment = serializer.save(post=parent.post, parent=parent, author=self.request.user)
         notify_comment(comment)
 
@@ -611,3 +617,53 @@ class GroupListView(OwnedListView):
 class GroupDetailView(OwnedDetailView):
     model = ContactGroup
     serializer_class = ContactGroupSerializer
+
+
+class StoryCreateView(APIView):
+    parser_classes = [MultiPartParser, JSONParser]
+
+    def post(self, request):
+        ensure_not_suspended(request.user)
+        serializer = StoryCreateSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        story = serializer.save()
+        data = StorySerializer(story, context={"request": request}).data
+        return Response(data, status=status.HTTP_201_CREATED)
+
+
+class StoryDetailView(APIView):
+    def delete(self, request, uuid):
+        story = get_object_or_404(Story, uuid=uuid, author=request.user)
+        story.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def record_view(story, user):
+    StoryView.objects.get_or_create(user=user, story=story)
+
+
+class StoryViewView(APIView):
+    def post(self, request, uuid):
+        record_view(get_object_or_404(visible_stories(request.user), uuid=uuid), request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class StoryLikeView(APIView):
+    def post(self, request, uuid):
+        story = get_object_or_404(visible_stories(request.user), uuid=uuid)
+        StoryLike.objects.get_or_create(user=request.user, story=story)
+        record_view(story, request.user)
+        return self.state(request, story)
+
+    def delete(self, request, uuid):
+        story = get_object_or_404(visible_stories(request.user), uuid=uuid)
+        StoryLike.objects.filter(user=request.user, story=story).delete()
+        return self.state(request, story)
+
+    def state(self, request, story):
+        return Response(StorySerializer(story, context={"request": request}).data)
+
+
+class StoryImageView(APIView):
+    def get(self, request, uuid):
+        return serve_image(get_object_or_404(visible_stories(request.user), uuid=uuid).image)

@@ -7,7 +7,17 @@ from main.numbers import compact_number
 from social.pictures import PictureField, cached_relations
 
 from . import hashtags, images, videos
-from .models import Comment, ContactGroup, Hashtag, Post, PostImage, SavedFolder
+from .models import (
+    STORY_LIFETIME,
+    Comment,
+    ContactGroup,
+    Hashtag,
+    Post,
+    PostImage,
+    SavedFolder,
+    Story,
+)
+from .queries import visible_stories
 
 User = get_user_model()
 
@@ -16,10 +26,21 @@ class AuthorSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
     picture = PictureField()
     role = serializers.SerializerMethodField()
+    has_story = serializers.SerializerMethodField()
+    story_seen = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name", "avatar", "picture", "role"]
+        fields = [
+            "username",
+            "first_name",
+            "last_name",
+            "avatar",
+            "picture",
+            "role",
+            "has_story",
+            "story_seen",
+        ]
 
     def get_avatar(self, obj):
         profile = getattr(obj, "profile", None)
@@ -27,6 +48,24 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     def get_role(self, obj):
         return role_badge(obj) if self.profile_visible(obj) else None
+
+    def story_authors(self):
+        if "story_authors" not in self.context:
+            viewer = self.context["request"].user
+            stories = visible_stories(viewer)
+            unseen = stories.exclude(views__user=viewer)
+            self.context["story_authors"] = (
+                set(stories.values_list("author_id", flat=True)),
+                set(unseen.values_list("author_id", flat=True)),
+            )
+        return self.context["story_authors"]
+
+    def get_has_story(self, obj):
+        return obj.pk in self.story_authors()[0]
+
+    def get_story_seen(self, obj):
+        authors, unseen = self.story_authors()
+        return obj.pk in authors and obj.pk not in unseen
 
     def profile_visible(self, obj):
         viewer = self.context["request"].user
@@ -236,6 +275,78 @@ class PostCreateSerializer(AudienceMixin, serializers.ModelSerializer):
             for position, file in enumerate(files)
         )
         return post
+
+
+class StorySerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source="uuid", read_only=True)
+    image = serializers.SerializerMethodField()
+    expires_at = serializers.SerializerMethodField()
+    is_own = serializers.SerializerMethodField()
+    liked = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
+    view_count = serializers.SerializerMethodField()
+    seen = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Story
+        fields = [
+            "id",
+            "image",
+            "text",
+            "created_at",
+            "expires_at",
+            "is_own",
+            "liked",
+            "like_count",
+            "view_count",
+            "seen",
+        ]
+
+    def get_image(self, obj):
+        return f"/api/stories/{obj.uuid}/image/"
+
+    def get_expires_at(self, obj):
+        return obj.created_at + STORY_LIFETIME
+
+    def get_is_own(self, obj):
+        return obj.author_id == self.context["request"].user.pk
+
+    def get_liked(self, obj):
+        return obj.likes.filter(user=self.context["request"].user).exists()
+
+    def get_like_count(self, obj):
+        return compact_number(obj.likes.count()) if self.get_is_own(obj) else None
+
+    def get_view_count(self, obj):
+        if not self.get_is_own(obj):
+            return None
+        return compact_number(obj.views.exclude(user=obj.author_id).count())
+
+    def get_seen(self, obj):
+        return obj.views.filter(user=self.context["request"].user).exists()
+
+
+class StoryCreateSerializer(AudienceMixin, serializers.ModelSerializer):
+    image = serializers.FileField(write_only=True)
+
+    class Meta:
+        model = Story
+        fields = ["image", "text", "visibility", "groups"]
+
+    def validate_image(self, upload):
+        try:
+            files, *_ = images.compress([upload])
+        except images.InvalidImage as error:
+            raise serializers.ValidationError(str(error))
+        return files[0]
+
+    def validate(self, data):
+        if data.get("visibility") == Post.Visibility.GLOBAL:
+            raise serializers.ValidationError({"visibility": "Stories können nicht global sein."})
+        return self.clean_audience(data)
+
+    def create(self, data):
+        return super().create({**data, "author": self.context["request"].user})
 
 
 class HashtagSerializer(serializers.ModelSerializer):

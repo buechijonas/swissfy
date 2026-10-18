@@ -73,7 +73,7 @@ export default {
     grid: { type: Boolean, default: false },
     folderPicker: { type: Boolean, default: false },
     edgeToEdge: { type: Boolean, default: false },
-    emptyText: { type: String, default: 'Noch keine Posts.' },
+    emptyText: { type: String, default: 'Noch keine Feeds.' },
     reelBase: { type: String, default: null },
   },
   emits: ['saved-change'],
@@ -110,7 +110,7 @@ export default {
         for (const [key, value] of this.nextQuery ?? []) url.searchParams.set(key, value)
         const response = await apiFetch(url.pathname + url.search)
         if (!response.ok) {
-          this.error = 'Posts konnten nicht geladen werden.'
+          this.error = 'Feeds konnten nicht geladen werden.'
           return
         }
         const data = await response.json()
@@ -124,9 +124,6 @@ export default {
       await this.$nextTick()
       this.observer.unobserve(this.$refs.sentinel)
       this.observer.observe(this.$refs.sentinel)
-    },
-    prepend(post) {
-      this.posts.unshift(post)
     },
     remove(id) {
       this.posts = this.posts.filter((item) => item.type === 'comment' || item.id !== id)

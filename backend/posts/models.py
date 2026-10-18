@@ -1,12 +1,16 @@
+from datetime import timedelta
 from uuid import uuid4
 
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from django.utils import timezone
 
 TEXT_LENGTH = 500
 NAME_LENGTH = 50
+STORY_TEXT_LENGTH = 200
+STORY_LIFETIME = timedelta(hours=24)
 
 
 class ContactGroup(models.Model):
@@ -113,6 +117,50 @@ class Like(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["user", "post"], name="unique_like")]
+
+
+class Story(models.Model):
+    uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="stories"
+    )
+    image = models.FileField(upload_to="stories/")
+    text = models.CharField(max_length=STORY_TEXT_LENGTH, blank=True)
+    visibility = models.CharField(
+        max_length=20, choices=Post.Visibility.choices, default=Post.Visibility.PUBLIC
+    )
+    groups = models.ManyToManyField(ContactGroup, related_name="stories", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self):
+        return f"Story({self.author}, {self.pk})"
+
+
+def story_cutoff():
+    return timezone.now() - STORY_LIFETIME
+
+
+class StoryLike(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name="likes")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "story"], name="unique_story_like")]
+
+
+class StoryView(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name="views")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "story"], name="unique_story_view")]
+
+
+@receiver(post_delete, sender=Story)
+def delete_story_image(sender, instance, **kwargs):
+    instance.image.delete(save=False)
 
 
 class Repost(models.Model):

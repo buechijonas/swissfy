@@ -16,7 +16,17 @@ from accounts.models import get_or_create_profile
 from accounts.roles import Role, set_role
 from social.models import Follow, Friendship
 
-from .models import Comment, ContactGroup, Post, PostCreation, Repost, SavedFolder
+from .models import (
+    Comment,
+    ContactGroup,
+    Post,
+    PostCreation,
+    Repost,
+    SavedFolder,
+    Story,
+    StoryLike,
+    StoryView,
+)
 
 User = get_user_model()
 MEDIA = tempfile.mkdtemp()
@@ -653,3 +663,136 @@ class HashtagTests(TestCase):
         )
         self.assertEqual(self.client.get("/api/posts/").json()["results"], [])
         self.assertEqual(self.client.get("/api/posts/hashtags/unbekannt/").status_code, 404)
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class StoryTests(TestCase):
+    def setUp(self):
+        self.jonas = User.objects.create(username="jonas")
+        self.anna = User.objects.create(username="anna")
+        self.client.force_login(self.anna)
+
+    def create(self, **data):
+        return self.client.post("/api/stories/", {"image": image_upload(), **data})
+
+    def stories_for(self, viewer):
+        self.client.force_login(viewer)
+        return self.client.get("/api/social/profiles/anna/").json()["stories"]
+
+    def test_create_and_view_stories(self):
+        response = self.create(text="Hallo Welt")
+        self.assertEqual(response.status_code, 201)
+        first = response.json()
+        self.assertEqual(first["text"], "Hallo Welt")
+        self.assertTrue(first["is_own"])
+        second = self.create().json()
+
+        seen = self.stories_for(self.jonas)
+        self.assertEqual([story["id"] for story in seen], [first["id"], second["id"]])
+        self.assertFalse(seen[0]["is_own"])
+        image = self.client.get(first["image"])
+        self.assertEqual(image["Content-Type"], "image/webp")
+
+    def test_story_expires_after_a_day(self):
+        story = self.create().json()
+        Story.objects.update(created_at=timezone.now() - timedelta(hours=25))
+        self.assertEqual(self.stories_for(self.jonas), [])
+        self.assertEqual(self.client.get(story["image"]).status_code, 404)
+
+        self.client.force_login(self.anna)
+        self.create()
+        call_command("delete_expired_stories", stdout=io.StringIO())
+        self.assertEqual(Story.objects.count(), 1)
+
+    def test_story_audience(self):
+        self.create(visibility="friends")
+        self.assertEqual(self.stories_for(self.jonas), [])
+        Friendship.objects.create(user=self.jonas, friend=self.anna)
+        self.assertEqual(len(self.stories_for(self.jonas)), 1)
+
+    def test_story_cannot_be_global(self):
+        set_role(self.anna, Role.ADMIN)
+        self.assertEqual(self.create(visibility="global").status_code, 400)
+
+    def test_like_story(self):
+        story = self.create().json()
+        self.client.force_login(self.jonas)
+        liked = self.client.post(f"/api/stories/{story['id']}/like/").json()
+        self.assertTrue(liked["liked"])
+        self.assertIsNone(liked["like_count"])
+
+        self.client.force_login(self.anna)
+        own = self.stories_for(self.anna)[0]
+        self.assertEqual(own["like_count"], "1")
+
+        self.client.force_login(self.jonas)
+        unliked = self.client.delete(f"/api/stories/{story['id']}/like/").json()
+        self.assertFalse(unliked["liked"])
+
+    def test_post_author_shows_story(self):
+        post = Post.objects.create(author=self.anna, text="Hallo")
+        self.client.force_login(self.jonas)
+        author = self.client.get(f"/api/posts/{post.uuid}/").json()["author"]
+        self.assertFalse(author["has_story"])
+
+        Story.objects.create(author=self.anna, image="s.webp", visibility="friends")
+        author = self.client.get(f"/api/posts/{post.uuid}/").json()["author"]
+        self.assertFalse(author["has_story"])
+
+        Story.objects.create(author=self.anna, image="s.webp")
+        author = self.client.get(f"/api/posts/{post.uuid}/").json()["author"]
+        self.assertTrue(author["has_story"])
+
+    def test_story_viewers(self):
+        story = self.create().json()
+        mia = User.objects.create(username="mia")
+        for viewer in (self.jonas, mia):
+            self.client.force_login(viewer)
+            self.client.post(f"/api/stories/{story['id']}/view/")
+        self.client.post(f"/api/stories/{story['id']}/like/")
+
+        viewers_url = f"/api/stories/{story['id']}/viewers/"
+        self.assertEqual(self.client.get(viewers_url).status_code, 404)
+
+        self.client.force_login(self.anna)
+        self.client.post(f"/api/stories/{story['id']}/view/")
+        self.assertEqual(self.stories_for(self.anna)[0]["view_count"], "2")
+        viewers = self.client.get(viewers_url).json()["results"]
+        self.assertEqual(
+            [(user["username"], user["liked"]) for user in viewers],
+            [("mia", True), ("jonas", False)],
+        )
+
+    def test_expired_story_leaves_no_trace(self):
+        story = self.create().json()
+        self.client.force_login(self.jonas)
+        self.client.post(f"/api/stories/{story['id']}/like/")
+        Story.objects.update(created_at=timezone.now() - timedelta(hours=25))
+
+        self.client.force_login(self.anna)
+        response = self.client.get(f"/api/stories/{story['id']}/viewers/")
+        self.assertEqual(response.status_code, 404)
+
+        call_command("delete_expired_stories", stdout=io.StringIO())
+        self.assertFalse(StoryLike.objects.exists())
+        self.assertFalse(StoryView.objects.exists())
+
+    def test_story_seen(self):
+        story = self.create().json()
+        self.assertFalse(self.stories_for(self.jonas)[0]["seen"])
+        post = Post.objects.create(author=self.anna, text="Hallo")
+        author = self.client.get(f"/api/posts/{post.uuid}/").json()["author"]
+        self.assertEqual((author["has_story"], author["story_seen"]), (True, False))
+
+        self.client.post(f"/api/stories/{story['id']}/view/")
+        self.assertTrue(self.stories_for(self.jonas)[0]["seen"])
+        author = self.client.get(f"/api/posts/{post.uuid}/").json()["author"]
+        self.assertEqual((author["has_story"], author["story_seen"]), (True, True))
+
+    def test_only_author_deletes_story(self):
+        story = self.create().json()
+        self.client.force_login(self.jonas)
+        self.assertEqual(self.client.delete(f"/api/stories/{story['id']}/").status_code, 404)
+        self.client.force_login(self.anna)
+        self.assertEqual(self.client.delete(f"/api/stories/{story['id']}/").status_code, 204)
+        self.assertFalse(Story.objects.exists())

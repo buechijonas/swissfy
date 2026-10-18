@@ -1,7 +1,7 @@
 <template>
   <BaseCard class="p-6">
     <p class="text-swissfy-muted text-sm mb-4">
-      Mit Gruppen bestimmst du, wer einen Post sieht. Nur du siehst deine Gruppen.
+      Mit Gruppen bestimmst du, wer einen Feed sieht. Nur du siehst deine Gruppen.
     </p>
     <form class="flex gap-2" @submit.prevent="createGroup">
       <input v-model="newName" class="input flex-1" maxlength="50" placeholder="Neue Gruppe" />

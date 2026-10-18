@@ -93,7 +93,7 @@ export default {
   },
   methods: {
     caption(item) {
-      const parts = [item.type === 'post' ? 'Post' : 'Kommentar', `${item.report_count}× gemeldet`]
+      const parts = [item.type === 'post' ? 'Feed' : 'Kommentar', `${item.report_count}× gemeldet`]
       if (this.resolved) parts.push(item.warned ? 'verwarnt' : 'verworfen')
       return parts.join(' · ')
     },

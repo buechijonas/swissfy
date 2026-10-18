@@ -38,8 +38,8 @@ class NotificationTests(TestCase):
             [item["message"] for item in items],
             [
                 "@jonas folgt dir jetzt.",
-                "@jonas gefällt dein Post.",
-                "@jonas hat deinen Post kommentiert: «Schön!»",
+                "@jonas gefällt dein Feed.",
+                "@jonas hat deinen Feed kommentiert: «Schön!»",
             ],
         )
         self.assertEqual(self.unread(), 3)

@@ -294,7 +294,7 @@ class PrivilegedViewTests(TestCase):
         self.assertEqual((profile["can_view"], profile["can_view_warnings"]), (False, True))
         status = self.client.get("/api/social/profiles/anna/status/").json()
         self.assertEqual(
-            [(item["type"], item["open_count"]) for item in status["reports"]], [("Post", 1)]
+            [(item["type"], item["open_count"]) for item in status["reports"]], [("Feed", 1)]
         )
         self.assertEqual(self.client.get(f"/api/posts/{self.post.uuid}/").status_code, 200)
 

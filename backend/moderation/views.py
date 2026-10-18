@@ -304,7 +304,7 @@ def reported_content(user):
     )
     return [
         {
-            "type": "Post" if group["post"] else "Kommentar",
+            "type": "Feed" if group["post"] else "Kommentar",
             "text": group["post__text"] if group["post"] else group["comment__text"],
             "report_count": group["report_count"],
             "open_count": group["open_count"],

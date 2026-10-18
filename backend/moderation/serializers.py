@@ -44,7 +44,7 @@ class WarningSerializer(serializers.ModelSerializer):
     def get_target(self, obj):
         if obj.comment_id:
             return "Kommentar"
-        return "Post" if obj.post_id else None
+        return "Feed" if obj.post_id else None
 
     def get_link(self, obj):
         if not self.context.get("moderation"):

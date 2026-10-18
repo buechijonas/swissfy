@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog ref="dialog" title="Post bearbeiten" class="modal-bottom sm:modal-middle">
+  <BaseDialog ref="dialog" title="Feed bearbeiten" class="modal-bottom sm:modal-middle">
     <VisibilityPicker v-model:visibility="visibility" v-model:groups="groups" />
     <p v-if="error" class="text-error text-sm mt-4">{{ error }}</p>
     <BaseButton
@@ -11,7 +11,7 @@
       @click="$refs.confirm.open()"
     >
       <AppIcon name="trash" />
-      Post löschen
+      Feed löschen
     </BaseButton>
     <template #actions>
       <BaseButton @click="$refs.dialog.close()">
@@ -24,7 +24,7 @@
       </BaseButton>
     </template>
   </BaseDialog>
-  <ConfirmDialog ref="confirm" message="Willst du diesen Post löschen?" @confirm="remove" />
+  <ConfirmDialog ref="confirm" message="Willst du diesen Feed löschen?" @confirm="remove" />
 </template>
 
 <script>
@@ -85,13 +85,13 @@ export default {
     },
     async save() {
       const body = { visibility: this.visibility, groups: this.groups }
-      const response = await this.request('PATCH', body, 'Post konnte nicht gespeichert werden.')
+      const response = await this.request('PATCH', body, 'Feed konnte nicht gespeichert werden.')
       if (!response) return
       this.$refs.dialog.close()
       this.$emit('updated', await response.json())
     },
     async remove() {
-      if (!(await this.request('DELETE', null, 'Post konnte nicht gelöscht werden.'))) return
+      if (!(await this.request('DELETE', null, 'Feed konnte nicht gelöscht werden.'))) return
       this.$refs.dialog.close()
       this.$emit('deleted', this.post.id)
     },

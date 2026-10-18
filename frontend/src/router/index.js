@@ -17,6 +17,7 @@ import AdministrationView from '@/views/AdministrationView.vue'
 import SavedView from '@/views/SavedView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ConnectionsView from '@/views/ConnectionsView.vue'
+import UploadView from '@/views/UploadView.vue'
 import ReelsView from '@/views/ReelsView.vue'
 import HashtagView from '@/views/HashtagView.vue'
 import ImpressumView from '@/views/legal/ImpressumView.vue'
@@ -40,7 +41,7 @@ const router = createRouter({
       path: '/reels',
       name: 'reels',
       component: ReelsView,
-      meta: { title: 'Reels', activeNavigation: 'reels', requiresAuth: true },
+      meta: { title: 'Seeds', activeNavigation: 'reels', requiresAuth: true },
     },
     {
       path: '/search',
@@ -64,7 +65,7 @@ const router = createRouter({
       path: '/posts/:id([0-9a-f-]{36})',
       name: 'post',
       component: PostView,
-      meta: { title: 'Post', requiresAuth: true },
+      meta: { title: 'Feed', requiresAuth: true },
     },
     {
       path: '/comments/:id([0-9a-f-]{36})',
@@ -156,7 +157,16 @@ const router = createRouter({
       path: '/profile/:username/reels/:id([0-9a-f-]{36})',
       name: 'user-reels',
       component: ReelsView,
-      meta: { title: 'Reels', requiresAuth: true },
+      meta: { title: 'Seeds', requiresAuth: true },
+    },
+    {
+      path: '/upload/:kind(feed|story)',
+      name: 'upload',
+      component: UploadView,
+      meta: {
+        title: (route) => (route.params.kind === 'story' ? 'Neue Story' : 'Neuer Feed'),
+        requiresAuth: true,
+      },
     },
     {
       path: '/hashtags/:name',
@@ -168,7 +178,7 @@ const router = createRouter({
       path: '/hashtags/:name/reels/:id([0-9a-f-]{36})',
       name: 'hashtag-reels',
       component: ReelsView,
-      meta: { title: 'Reels', requiresAuth: true },
+      meta: { title: 'Seeds', requiresAuth: true },
     },
     {
       path: '/impressum',

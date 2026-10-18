@@ -65,7 +65,7 @@
   </BaseDialog>
   <ConfirmDialog
     ref="confirm"
-    message="Ordner löschen? Die gespeicherten Posts bleiben unter «Ohne Ordner»."
+    message="Ordner löschen? Die gespeicherten Feeds bleiben unter «Ohne Ordner»."
     @confirm="deleteFolder"
   />
   <BaseFooter />
