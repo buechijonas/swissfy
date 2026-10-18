@@ -48,9 +48,9 @@ class NotificationSerializer(serializers.ModelSerializer):
             case Kind.SUSPENSION:
                 return self.suspension_message(obj.suspension)
             case Kind.COMMENT:
-                return f"{name} hat deinen Post kommentiert: {quote(obj.comment.text)}"
+                return f"{name} hat deinen Feed kommentiert: {quote(obj.comment.text)}"
             case Kind.LIKE:
-                return f"{name} gefällt dein Post."
+                return f"{name} gefällt dein Feed."
             case Kind.FOLLOW:
                 return f"{name} folgt dir jetzt."
             case Kind.FRIEND_REQUEST:

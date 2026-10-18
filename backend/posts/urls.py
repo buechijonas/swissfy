@@ -1,5 +1,7 @@
 from django.urls import path
 
+from social import views as social_views
+
 from . import views
 
 urlpatterns = [
@@ -41,6 +43,16 @@ urlpatterns = [
     path("posts/<uuid:uuid>/repost/", views.RepostView.as_view(), name="post-repost"),
     path("posts/<uuid:uuid>/save/", views.SaveView.as_view(), name="post-save"),
     path("posts/<uuid:uuid>/comments/", views.CommentListView.as_view(), name="post-comments"),
+    path("stories/", views.StoryCreateView.as_view(), name="stories"),
+    path("stories/<uuid:uuid>/", views.StoryDetailView.as_view(), name="story"),
+    path("stories/<uuid:uuid>/image/", views.StoryImageView.as_view(), name="story-image"),
+    path("stories/<uuid:uuid>/like/", views.StoryLikeView.as_view(), name="story-like"),
+    path("stories/<uuid:uuid>/view/", views.StoryViewView.as_view(), name="story-view"),
+    path(
+        "stories/<uuid:uuid>/viewers/",
+        social_views.StoryViewerListView.as_view(),
+        name="story-viewers",
+    ),
     path("comments/<uuid:uuid>/", views.CommentDetailView.as_view(), name="comment"),
     path("comments/<uuid:uuid>/vote/", views.CommentVoteView.as_view(), name="comment-vote"),
     path(

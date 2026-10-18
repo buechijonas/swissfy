@@ -12,7 +12,7 @@
         </span>
         <div class="flex min-w-0 flex-1 flex-col">
           <span class="truncate font-bold">#{{ hashtag.name }}</span>
-          <span class="truncate text-sm text-swissfy-muted">{{ hashtag.post_count }} Posts</span>
+          <span class="truncate text-sm text-swissfy-muted">{{ hashtag.post_count }} Feeds</span>
         </div>
         <span v-if="hashtag.following" class="text-sm text-swissfy-muted">Gefolgt</span>
       </RouterLink>

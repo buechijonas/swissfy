@@ -76,7 +76,7 @@ export default {
       return Boolean(this.post?.video) && !this.moderation
     },
     breadcrumbs() {
-      const post = { label: 'Post', to: this.$route.path }
+      const post = { label: 'Feed', to: this.$route.path }
       return this.moderation ? [{ label: 'Moderation', to: '/moderation' }, post] : [post]
     },
   },
@@ -84,7 +84,7 @@ export default {
     const response = await apiFetch(`${this.apiBase}/`)
     if (!response.ok) {
       this.error =
-        response.status === 404 ? 'Post nicht gefunden.' : 'Post konnte nicht geladen werden.'
+        response.status === 404 ? 'Feed nicht gefunden.' : 'Feed konnte nicht geladen werden.'
       return
     }
     const data = await response.json()

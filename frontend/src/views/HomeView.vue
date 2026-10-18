@@ -6,19 +6,17 @@
       </template>
     </BaseBreadcrumbs>
     <div
-      ref="scroller"
       class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
     >
       <div class="mx-auto w-full max-w-150 pt-4 max-sm:pt-0">
         <PostList
-          ref="feed"
           url="/api/posts/"
           edge-to-edge
-          empty-text="Noch keine Posts. Folge Leuten oder Hashtags, um ihre Posts hier zu sehen."
+          empty-text="Noch keine Feeds. Folge Leuten oder Hashtags, um ihre Feeds hier zu sehen."
         />
       </div>
     </div>
-    <PostComposer ref="composer" @created="showNewPost" />
+    <CreateDialog ref="composer" />
     <BaseFooter />
   </template>
   <template v-else>
@@ -37,13 +35,13 @@
 import AddButton from '@/components/common/AddButton.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
-import PostComposer from '@/components/posts/PostComposer.vue'
+import CreateDialog from '@/components/posts/CreateDialog.vue'
 import PostList from '@/components/posts/PostList.vue'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'HomeView',
-  components: { AddButton, BaseBreadcrumbs, BaseFooter, PostComposer, PostList },
+  components: { AddButton, BaseBreadcrumbs, BaseFooter, CreateDialog, PostList },
   data() {
     return {
       breadcrumbs: [{ label: 'Home', to: '/' }],
@@ -52,13 +50,6 @@ export default {
   computed: {
     authStore() {
       return useAuthStore()
-    },
-  },
-  methods: {
-    showNewPost(post) {
-      this.$refs.feed.prepend(post)
-      this.$refs.scroller.scrollTo({ top: 0, behavior: 'smooth' })
-      window.scrollTo({ top: 0, behavior: 'smooth' })
     },
   },
 }

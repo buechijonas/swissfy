@@ -17,7 +17,7 @@
           </span>
           <div class="flex min-w-0 flex-1 flex-col">
             <span class="truncate text-lg font-bold">#{{ hashtag.name }}</span>
-            <span class="text-sm text-swissfy-muted">{{ hashtag.post_count }} Posts</span>
+            <span class="text-sm text-swissfy-muted">{{ hashtag.post_count }} Feeds</span>
           </div>
           <BaseButton
             size="sm"
@@ -37,7 +37,7 @@
           :url="postsUrl"
           :grid="activeTab === 'reels'"
           :reel-base="`/hashtags/${encodeURIComponent(hashtag.name)}/reels`"
-          :empty-text="activeTab === 'reels' ? 'Noch keine Reels.' : 'Noch keine Posts.'"
+          :empty-text="activeTab === 'reels' ? 'Noch keine Seeds.' : 'Noch keine Feeds.'"
         />
       </template>
     </div>
@@ -56,8 +56,8 @@ import PostList from '@/components/posts/PostList.vue'
 import { apiFetch } from '@/lib/api.js'
 
 const TABS = [
-  { key: 'posts', label: 'Posts', icon: 'list-timeline' },
-  { key: 'reels', label: 'Reels', icon: 'clapperboard-play' },
+  { key: 'posts', label: 'Feeds', icon: 'list-timeline' },
+  { key: 'reels', label: 'Seeds', icon: 'clapperboard-play' },
 ]
 
 export default {
@@ -100,7 +100,7 @@ export default {
         } else {
           this.error =
             response.status === 404
-              ? 'Zu diesem Hashtag gibt es noch keine Posts.'
+              ? 'Zu diesem Hashtag gibt es noch keine Feeds.'
               : 'Hashtag konnte nicht geladen werden.'
         }
       },

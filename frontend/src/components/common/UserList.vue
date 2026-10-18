@@ -1,7 +1,11 @@
 <template>
   <BaseCard v-if="users.length" tag="ul" class="divide-y divide-swissfy-border">
     <li v-for="user in users" :key="user.username">
-      <UserRow :user="user" :to="linkTo(user)" />
+      <UserRow :user="user" :to="linkTo(user)">
+        <template v-if="$slots.default" #default>
+          <slot :user="user" />
+        </template>
+      </UserRow>
     </li>
   </BaseCard>
 

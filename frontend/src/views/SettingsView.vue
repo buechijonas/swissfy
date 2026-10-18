@@ -62,7 +62,7 @@
             <div class="min-w-0">
               <p>Profil sichtbar für</p>
               <p class="text-swissfy-muted text-sm">
-                Gilt auch für deinen Vor- und Nachnamen sowie deine Posts und Reels. Deine
+                Gilt auch für deinen Vor- und Nachnamen sowie deine Feeds und Seeds. Deine
                 Profilbilder sind davon nicht betroffen, ihre Sichtbarkeit legst du oben fest.
               </p>
             </div>

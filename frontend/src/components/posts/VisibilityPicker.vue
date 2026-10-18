@@ -51,6 +51,7 @@ export default {
     visibility: { type: String, required: true },
     groups: { type: Array, required: true },
     allowPublic: { type: Boolean, default: true },
+    allowGlobal: { type: Boolean, default: true },
   },
   emits: ['update:visibility', 'update:groups'],
   data() {
@@ -74,7 +75,7 @@ export default {
     },
     shownOptions() {
       return this.options.filter((option) => {
-        if (option.adminOnly) return this.allowPublic && this.isAdmin
+        if (option.adminOnly) return this.allowPublic && this.allowGlobal && this.isAdmin
         return this.allowPublic || option.value !== 'public'
       })
     },

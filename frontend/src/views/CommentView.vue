@@ -110,7 +110,7 @@ export default {
     breadcrumbs() {
       return [
         ...(this.moderation ? [{ label: 'Moderation', to: '/moderation' }] : []),
-        ...(this.postLink ? [{ label: 'Post', to: this.postLink }] : []),
+        ...(this.postLink ? [{ label: 'Feed', to: this.postLink }] : []),
         { label: 'Kommentar', to: this.$route.path },
       ]
     },

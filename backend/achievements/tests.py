@@ -43,7 +43,7 @@ class AchievementTests(TestCase):
         self.assertTrue(achievements["posts-1"]["unlocked"])
         self.assertFalse(achievements["posts-2"]["unlocked"])
         self.assertEqual(achievements["posts-2"]["count"], 1)
-        self.assertEqual(achievements["posts-2"]["description"], "Veröffentliche 2 Posts.")
+        self.assertEqual(achievements["posts-2"]["description"], "Veröffentliche 2 Feeds.")
         self.assertEqual(achievements["likes_received-1"]["count"], 1)
         self.assertEqual(achievements["likes_given-1"]["count"], 1)
 

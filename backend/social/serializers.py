@@ -7,7 +7,8 @@ from chats.models import ChatRequest
 from main.numbers import compact_number
 from posts import images
 from posts.models import ContactGroup
-from posts.queries import image_posts, video_posts, visible_posts
+from posts.queries import image_posts, video_posts, visible_posts, visible_stories
+from posts.serializers import StorySerializer
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 from .pictures import KINDS, PictureField, file_url, picture_file
@@ -79,6 +80,13 @@ class ProfileListSerializer(serializers.ModelSerializer):
         return data
 
 
+class StoryViewerSerializer(ProfileListSerializer):
+    liked = serializers.BooleanField(read_only=True)
+
+    class Meta(ProfileListSerializer.Meta):
+        fields = [*ProfileListSerializer.Meta.fields, "liked"]
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
     picture = PictureField()
@@ -96,6 +104,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     can_chat = serializers.SerializerMethodField()
     can_view_warnings = serializers.SerializerMethodField()
     media = serializers.SerializerMethodField()
+    stories = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -119,6 +128,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "can_chat",
             "can_view_warnings",
             "media",
+            "stories",
         ]
 
     @property
@@ -133,6 +143,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_can_view_warnings(self, obj):
         return obj == self.viewer or is_moderator(self.viewer)
+
+    def get_stories(self, obj):
+        stories = visible_stories(self.viewer).filter(author=obj).order_by("created_at")
+        return StorySerializer(stories, many=True, context=self.context).data
 
     def get_media(self, obj):
         posts = visible_posts(self.viewer).filter(author=obj)

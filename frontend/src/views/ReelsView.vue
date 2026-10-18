@@ -19,8 +19,8 @@ export default {
     },
     emptyText() {
       return this.$route.params.id
-        ? 'Noch keine Reels.'
-        : 'Noch keine Reels von Leuten oder Hashtags, denen du folgst.'
+        ? 'Noch keine Seeds.'
+        : 'Noch keine Seeds von Leuten oder Hashtags, denen du folgst.'
     },
   },
 }

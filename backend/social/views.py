@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, Value, When
+from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, Subquery, Value, When
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
@@ -14,6 +14,7 @@ from main.pagination import NextPagePagination
 from moderation.sanctions import suspended_users
 from notifications.models import Notification
 from notifications.notify import notify, resolve_friend_request, withdraw
+from posts.models import Story, StoryLike, StoryView, story_cutoff
 from posts.views import serve_image
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
@@ -23,6 +24,7 @@ from .serializers import (
     PrivacySerializer,
     ProfileListSerializer,
     ProfileSerializer,
+    StoryViewerSerializer,
     are_friends,
     can_view_profile,
     follows,
@@ -303,3 +305,19 @@ class PictureView(ProfileView):
         if not file:
             return Response(status=status.HTTP_404_NOT_FOUND)
         return serve_image(file)
+
+
+class StoryViewerListView(generics.ListAPIView):
+    serializer_class = StoryViewerSerializer
+    pagination_class = NextPagePagination
+
+    def get_queryset(self):
+        stories = Story.objects.filter(author=self.request.user, created_at__gte=story_cutoff())
+        story = get_object_or_404(stories, uuid=self.kwargs["uuid"])
+        views = StoryView.objects.filter(story=story, user=OuterRef("pk"))
+        users = User.objects.filter(pk__in=views.values("user")).exclude(pk=self.request.user.pk)
+        users = users.annotate(
+            viewed_at=Subquery(views.values("created_at")),
+            liked=Exists(StoryLike.objects.filter(story=story, user=OuterRef("pk"))),
+        )
+        return with_viewer_relations(users, self.request.user).order_by("-viewed_at")

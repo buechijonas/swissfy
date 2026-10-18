@@ -6,7 +6,17 @@ from accounts.roles import is_admin, is_moderator
 from moderation.sanctions import is_suspended, suspended_users
 from social.models import Follow, Friendship
 
-from .models import Comment, CommentVote, ContactGroup, Like, Post, Repost, SavedPost
+from .models import (
+    Comment,
+    CommentVote,
+    ContactGroup,
+    Like,
+    Post,
+    Repost,
+    SavedPost,
+    Story,
+    story_cutoff,
+)
 
 NOT_HIDDEN = Q(hidden_at__isnull=True)
 
@@ -36,7 +46,7 @@ def unavailable(item, label):
     return {"id": str(item.uuid), "unavailable": reason}
 
 
-def visible_posts(viewer):
+def with_audience(items, viewer, groups):
     Audience = Post.Visibility
     Profile = UserProfile.Visibility
     profile_visible = (
@@ -51,22 +61,38 @@ def visible_posts(viewer):
         | Q(visibility=Audience.FRIENDS, viewer_is_friend=True)
         | Q(visibility=Audience.GROUPS, viewer_in_group=True)
     )
-    posts = Post.objects.filter(author__is_active=True).annotate(
+    items = items.filter(author__is_active=True).annotate(
         viewer_follows=Exists(Follow.objects.filter(follower=viewer, following=OuterRef("author"))),
         viewer_is_friend=Exists(Friendship.objects.filter(user=viewer, friend=OuterRef("author"))),
-        viewer_in_group=Exists(ContactGroup.objects.filter(posts=OuterRef("pk"), members=viewer)),
+        viewer_in_group=Exists(groups.filter(members=viewer)),
+    )
+    return items, profile_visible & audience
+
+
+def visible_posts(viewer):
+    posts, shared = with_audience(
+        Post.objects.all(), viewer, ContactGroup.objects.filter(posts=OuterRef("pk"))
     )
     unfinished_video = Q(video_status__in=[Post.VideoStatus.PROCESSING, Post.VideoStatus.FAILED])
     posts = posts.filter(~unfinished_video | Q(author=viewer))
     if is_admin(viewer):
         return posts
-    global_post = Q(visibility=Audience.GLOBAL)
-    visible = NOT_HIDDEN & (
-        Q(author=viewer) | (((profile_visible & audience) | global_post) & ~by_suspended_author())
-    )
+    global_post = Q(visibility=Post.Visibility.GLOBAL)
+    visible = NOT_HIDDEN & (Q(author=viewer) | ((shared | global_post) & ~by_suspended_author()))
     if is_moderator(viewer):
         visible |= Q(pk__in=Post.objects.filter(reports__isnull=False).values("pk"))
     return posts.filter(visible)
+
+
+def visible_stories(viewer):
+    stories, shared = with_audience(
+        Story.objects.filter(created_at__gte=story_cutoff()),
+        viewer,
+        ContactGroup.objects.filter(stories=OuterRef("pk")),
+    )
+    if is_admin(viewer):
+        return stories
+    return stories.filter(Q(author=viewer) | (shared & ~by_suspended_author()))
 
 
 def image_posts(posts):

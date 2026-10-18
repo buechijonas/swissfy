@@ -9,7 +9,12 @@
     @click="openProfile"
   >
     <RouterLink :to="profileLink" class="flex items-center gap-3 min-w-0">
-      <UserAvatar class="size-10" :user="author" />
+      <UserAvatar
+        class="size-10"
+        :user="author"
+        :story-ring="author.has_story"
+        :story-seen="author.story_seen"
+      />
       <div class="flex flex-col min-w-0">
         <span class="flex min-w-0 items-center gap-2">
           <span class="font-bold truncate">{{ fullName || author.username }}</span>

@@ -34,7 +34,7 @@ export default {
   props: {
     url: { type: String, default: null },
     initialPosts: { type: Array, default: () => [] },
-    emptyText: { type: String, default: 'Noch keine Reels.' },
+    emptyText: { type: String, default: 'Noch keine Seeds.' },
   },
   emits: ['deleted'],
   data() {
@@ -67,7 +67,7 @@ export default {
         for (const [key, value] of this.nextQuery ?? []) url.searchParams.set(key, value)
         const response = await apiFetch(url.pathname + url.search)
         if (!response.ok) {
-          this.error = 'Reels konnten nicht geladen werden.'
+          this.error = 'Seeds konnten nicht geladen werden.'
           return
         }
         const data = await response.json()

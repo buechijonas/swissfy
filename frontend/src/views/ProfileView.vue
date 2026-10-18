@@ -26,7 +26,41 @@
 
       <BaseCard v-else class="p-6">
         <div class="flex items-center justify-center gap-4">
-          <UserAvatar class="size-20" :user="profile" />
+          <div class="relative shrink-0">
+            <button
+              v-if="profile.stories?.length"
+              type="button"
+              class="block cursor-pointer rounded-full"
+              title="Story ansehen"
+              @click="$refs.storyViewer.open()"
+            >
+              <UserAvatar
+                class="size-20"
+                :user="profile"
+                story-ring
+                :story-seen="profile.stories.every((story) => story.seen)"
+              />
+            </button>
+            <button
+              v-else-if="profile.is_self"
+              type="button"
+              class="block cursor-pointer rounded-full"
+              title="Story hinzufügen"
+              @click="$router.push('/upload/story')"
+            >
+              <UserAvatar class="size-20" :user="profile" />
+            </button>
+            <UserAvatar v-else class="size-20" :user="profile" />
+            <button
+              v-if="profile.is_self && !profile.stories?.length"
+              type="button"
+              class="absolute -right-0.5 -bottom-0.5 flex size-6 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-content ring-2 ring-base-100"
+              title="Story hinzufügen"
+              @click="$router.push('/upload/story')"
+            >
+              <AppIcon name="plus" alt="Story hinzufügen" class="size-3!" />
+            </button>
+          </div>
           <div class="flex flex-col min-w-0">
             <span class="flex min-w-0 items-center gap-2">
               <CipherText v-if="!profile.can_view" :length="10" class="text-lg font-bold" />
@@ -176,7 +210,7 @@
         </div>
         <PostList
           v-if="postList"
-          :key="`${profile.username}-${activeTab}-${media}-${postsVersion}`"
+          :key="`${profile.username}-${activeTab}-${media}`"
           :class="
             activeTab === 'tiles' && showMediaSwitcher
               ? 'lg:mt-2'
@@ -190,7 +224,15 @@
       </template>
     </div>
   </div>
-  <PostComposer v-if="profile?.is_self" ref="composer" @created="showOwnPosts" />
+  <CreateDialog v-if="profile?.is_self" ref="composer" />
+  <StoryViewer
+    v-if="profile"
+    ref="storyViewer"
+    :stories="profile.stories ?? []"
+    :author="profile"
+    @deleted="refreshProfile"
+    @closed="refreshProfile"
+  />
   <BaseFooter />
 </template>
 
@@ -206,8 +248,9 @@ import BaseTabs from '@/components/common/BaseTabs.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import ProfileAchievements from '@/components/achievements/ProfileAchievements.vue'
-import PostComposer from '@/components/posts/PostComposer.vue'
+import CreateDialog from '@/components/posts/CreateDialog.vue'
 import PostList from '@/components/posts/PostList.vue'
+import StoryViewer from '@/components/posts/StoryViewer.vue'
 import ProfileStatus from '@/components/moderation/ProfileStatus.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
@@ -238,13 +281,14 @@ const MEDIA = {
   },
 }
 const POST_LISTS = {
-  activities: { query: 'activities/', emptyText: 'Noch keine Posts.' },
+  activities: { query: 'activities/', emptyText: 'Noch keine Feeds.' },
 }
 const MODERATION_TABS = TABS.filter((tab) => ['tiles', 'activities', 'status'].includes(tab.key))
 
 export default {
   name: 'ProfileView',
   components: {
+    CreateDialog,
     RouterLink,
     AddButton,
     AppIcon,
@@ -254,11 +298,11 @@ export default {
     BaseFooter,
     BaseTabs,
     CipherText,
-    PostComposer,
     PostList,
     ProfileAchievements,
     ProfileStatus,
     RoleBadge,
+    StoryViewer,
     UserAvatar,
   },
   data() {
@@ -269,7 +313,6 @@ export default {
       error: null,
       busy: false,
       actionError: null,
-      postsVersion: 0,
     }
   },
   computed: {
@@ -380,9 +423,7 @@ export default {
     sendFriendRequest() {
       return this.runAction('friend-request/', 'POST', 'Anfrage fehlgeschlagen.')
     },
-    async showOwnPosts() {
-      this.postsVersion++
-      this.$router.push({ query: { ...this.$route.query, tab: 'activities' } })
+    async refreshProfile() {
       const response = await apiFetch(this.apiUrl).catch(() => null)
       if (response?.ok) this.profile = await response.json()
     },

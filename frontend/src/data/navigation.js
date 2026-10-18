@@ -13,7 +13,7 @@ export const navigationItems = [
   { key: 'dashboard', label: 'Startseite', icon: 'house-blank', to: '/', footer: true },
   {
     key: 'reels',
-    label: 'Reels',
+    label: 'Seeds',
     icon: 'clapperboard-play',
     to: '/reels',
     requiresAuth: true,
