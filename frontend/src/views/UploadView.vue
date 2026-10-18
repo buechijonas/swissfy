@@ -241,7 +241,7 @@ export default {
       const hasAudience = this.visibility !== 'groups' || this.selectedGroups.length
       if (this.sending || !this.acceptedTerms || !hasAudience) return false
       if (this.kind === 'story') return Boolean(this.storyImage)
-      const hasContent = this.text.trim() !== '' || this.images.length || this.video
+      const hasContent = this.text.trim() !== '' || this.images.length > 0 || Boolean(this.video)
       return hasContent && this.quota?.remaining !== 0
     },
   },

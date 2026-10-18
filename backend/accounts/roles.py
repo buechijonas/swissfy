@@ -1,6 +1,14 @@
 from django.contrib.auth.models import Group
 from django.db import models
-from django.db.models import Case, IntegerField, OuterRef, Subquery, Value, When
+from django.db.models import (
+    Case,
+    IntegerField,
+    OuterRef,
+    Subquery,
+    Value,
+    When,
+    prefetch_related_objects,
+)
 from django.db.models.functions import Coalesce
 from rest_framework.permissions import BasePermission
 
@@ -31,6 +39,8 @@ def with_role_rank(users):
 
 
 def role_of(user):
+    if user.pk and "groups" not in getattr(user, "_prefetched_objects_cache", {}):
+        prefetch_related_objects([user], "groups")
     group = next(iter(user.groups.all()), None)
     return ROLE_BY_GROUP.get(group.name, Role.DEFAULT) if group else Role.DEFAULT
 

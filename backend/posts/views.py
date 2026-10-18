@@ -49,6 +49,7 @@ from .queries import (
     feed,
     image_posts,
     reported_comments,
+    story_details,
     unavailable,
     video_posts,
     visible_posts,
@@ -627,8 +628,7 @@ class StoryCreateView(APIView):
         serializer = StoryCreateSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         story = serializer.save()
-        data = StorySerializer(story, context={"request": request}).data
-        return Response(data, status=status.HTTP_201_CREATED)
+        return Response(story_response(request, story).data, status=status.HTTP_201_CREATED)
 
 
 class StoryDetailView(APIView):
@@ -636,6 +636,11 @@ class StoryDetailView(APIView):
         story = get_object_or_404(Story, uuid=uuid, author=request.user)
         story.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def story_response(request, story):
+    story = story_details(Story.objects.filter(pk=story.pk), request.user).get()
+    return StorySerializer(story, context={"request": request})
 
 
 def record_view(story, user):
@@ -661,7 +666,7 @@ class StoryLikeView(APIView):
         return self.state(request, story)
 
     def state(self, request, story):
-        return Response(StorySerializer(story, context={"request": request}).data)
+        return Response(story_response(request, story).data)
 
 
 class StoryImageView(APIView):

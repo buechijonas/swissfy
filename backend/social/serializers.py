@@ -7,7 +7,13 @@ from chats.models import ChatRequest
 from main.numbers import compact_number
 from posts import images
 from posts.models import ContactGroup
-from posts.queries import image_posts, video_posts, visible_posts, visible_stories
+from posts.queries import (
+    image_posts,
+    story_details,
+    video_posts,
+    visible_posts,
+    visible_stories,
+)
 from posts.serializers import StorySerializer
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
@@ -146,6 +152,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_stories(self, obj):
         stories = visible_stories(self.viewer).filter(author=obj).order_by("created_at")
+        stories = story_details(stories, self.viewer)
         return StorySerializer(stories, many=True, context=self.context).data
 
     def get_media(self, obj):

@@ -282,10 +282,10 @@ class StorySerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     expires_at = serializers.SerializerMethodField()
     is_own = serializers.SerializerMethodField()
-    liked = serializers.SerializerMethodField()
+    liked = serializers.BooleanField(read_only=True)
     like_count = serializers.SerializerMethodField()
     view_count = serializers.SerializerMethodField()
-    seen = serializers.SerializerMethodField()
+    seen = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Story
@@ -311,19 +311,11 @@ class StorySerializer(serializers.ModelSerializer):
     def get_is_own(self, obj):
         return obj.author_id == self.context["request"].user.pk
 
-    def get_liked(self, obj):
-        return obj.likes.filter(user=self.context["request"].user).exists()
-
     def get_like_count(self, obj):
-        return compact_number(obj.likes.count()) if self.get_is_own(obj) else None
+        return compact_number(obj.like_total) if self.get_is_own(obj) else None
 
     def get_view_count(self, obj):
-        if not self.get_is_own(obj):
-            return None
-        return compact_number(obj.views.exclude(user=obj.author_id).count())
-
-    def get_seen(self, obj):
-        return obj.views.filter(user=self.context["request"].user).exists()
+        return compact_number(obj.view_total) if self.get_is_own(obj) else None
 
 
 class StoryCreateSerializer(AudienceMixin, serializers.ModelSerializer):
