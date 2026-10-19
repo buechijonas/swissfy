@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase, override_settings
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.utils import timezone
 from PIL import Image
 
@@ -17,6 +18,7 @@ from accounts.roles import Role, set_role
 from social.models import Follow, Friendship
 
 from .models import (
+    Album,
     Comment,
     ContactGroup,
     Post,
@@ -542,6 +544,7 @@ class VideoTests(TestCase):
         data = self.post(video=video_upload()).json()
         self.assertEqual((data["video_status"], data["video"]), ("processing", None))
         self.assertEqual(self.ids(), [data["id"]])
+        self.assertEqual(self.ids("?media=1"), [])
         self.client.force_login(self.jonas)
         self.assertEqual(self.ids(), [])
 
@@ -554,6 +557,7 @@ class VideoTests(TestCase):
         self.assertEqual(data["video_status"], "ready")
         self.assertEqual(self.ids("?videos=1"), [data["id"]])
         self.assertEqual(self.ids("?images=1"), [])
+        self.assertEqual(self.ids("?media=1"), [data["id"]])
 
         response = self.client.get(data["video"])
         self.assertEqual(response["Content-Type"], "video/mp4")
@@ -796,3 +800,143 @@ class StoryTests(TestCase):
         self.client.force_login(self.anna)
         self.assertEqual(self.client.delete(f"/api/stories/{story['id']}/").status_code, 204)
         self.assertFalse(Story.objects.exists())
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class AlbumTests(TestCase):
+    def setUp(self):
+        self.anna = User.objects.create(username="anna")
+        self.jonas = User.objects.create(username="jonas")
+        self.client.force_login(self.anna)
+
+    def feed(self, **data):
+        data = {"text": "Bild", "images": [image_upload(10, 10)], **data}
+        return self.client.post("/api/posts/", data).json()["id"]
+
+    def album(self, name="Ferien", **data):
+        response = self.client.post("/api/albums/", {"name": name, **data})
+        self.assertEqual(response.status_code, 201)
+        return response.json()
+
+    def albums(self):
+        return [a["name"] for a in self.client.get("/api/posts/users/anna/albums/").json()]
+
+    def send(self, method, url, data=None):
+        return getattr(self.client, method)(url, data, content_type="application/json")
+
+    def add(self, album, *entries):
+        return self.send("post", f"/api/albums/{album['id']}/entries/", {"entries": entries})
+
+    def detail(self, album):
+        return self.client.get(f"/api/albums/{album['id']}/").json()
+
+    def posts(self, album):
+        return [entry["post"]["id"] for entry in self.detail(album)["entries"]]
+
+    def test_existing_posts_are_added_with_optional_dates(self):
+        album = self.album(cover=image_upload())
+        self.assertTrue(album["is_own"])
+        self.assertEqual(album["entries"], [])
+        self.assertEqual(self.client.get(album["cover"])["Content-Type"], "image/webp")
+
+        beach, city = self.feed(), self.feed()
+        response = self.add(
+            album, {"post": beach, "date": "2003-05-01", "title": "Strand"}, {"post": city}
+        )
+        self.assertEqual(response.status_code, 201)
+        entries = response.json()["entries"]
+        self.assertEqual([e["post"]["id"] for e in entries], [beach, city])
+        self.assertEqual((entries[0]["date"], entries[0]["title"]), ("2003-05-01", "Strand"))
+        self.assertEqual((entries[1]["date"], entries[1]["title"]), (None, ""))
+
+        self.assertEqual(self.add(album, {"post": beach}).status_code, 400)
+        later = self.feed()
+        self.assertEqual(self.add(album, {"post": later}, {"post": later}).status_code, 400)
+        self.assertEqual(self.posts(album), [beach, city])
+
+    def test_new_albums_come_first_and_order_is_draggable(self):
+        ferien, familie = self.album("Ferien"), self.album("Familie")
+        self.assertEqual(self.albums(), ["Familie", "Ferien"])
+
+        order = {"albums": [ferien["id"], familie["id"]]}
+        response = self.send("put", "/api/albums/order/", order)
+        self.assertEqual([a["name"] for a in response.json()], ["Ferien", "Familie"])
+        self.album("Neu")
+        self.assertEqual(self.albums(), ["Neu", "Ferien", "Familie"])
+
+        partial = {"albums": [ferien["id"]]}
+        self.assertEqual(self.send("put", "/api/albums/order/", partial).status_code, 400)
+        self.client.force_login(self.jonas)
+        self.assertEqual(self.send("put", "/api/albums/order/", order).status_code, 400)
+
+    def test_timeline_is_sorted_by_date_with_undated_posts_last(self):
+        album = self.album()
+        undated, summer, spring = self.feed(), self.feed(), self.feed()
+        self.add(album, {"post": undated}, {"post": summer, "date": "2019-07-14"})
+        self.add(album, {"post": spring, "date": "2019-03-01"})
+        self.assertEqual(self.posts(album), [spring, summer, undated])
+
+        entry = self.detail(album)["entries"][2]
+        url = f"/api/album-entries/{entry['id']}/"
+        self.send("patch", url, {"date": "2001-01-01"})
+        self.assertEqual(self.posts(album), [undated, spring, summer])
+
+    def test_entry_date_can_be_set_and_cleared(self):
+        album = self.album()
+        entry = self.add(album, {"post": self.feed()}).json()["entries"][0]
+        url = f"/api/album-entries/{entry['id']}/"
+        entry = self.send("patch", url, {"date": "1999-12-31", "title": "Silvester"}).json()
+        self.assertEqual(
+            (entry["entries"][0]["date"], entry["entries"][0]["title"]), ("1999-12-31", "Silvester")
+        )
+        entry = self.send("patch", url, {"date": None}).json()
+        self.assertIsNone(entry["entries"][0]["date"])
+
+        self.assertEqual(self.client.delete(url).json()["entries"], [])
+
+    def test_only_own_media_posts_can_be_added(self):
+        album = self.album()
+        text_only = self.client.post("/api/posts/", {"text": "Nur Text"}).json()["id"]
+        self.assertEqual(self.add(album, {"post": text_only}).status_code, 400)
+
+        self.client.force_login(self.jonas)
+        foreign = self.feed()
+        self.client.force_login(self.anna)
+        self.assertEqual(self.add(album, {"post": foreign}).status_code, 400)
+
+    def test_others_see_albums_but_cannot_change_them(self):
+        album = self.album()
+        public, friends = self.feed(), self.feed(visibility="friends")
+        self.add(album, {"post": public}, {"post": friends})
+
+        self.client.force_login(self.jonas)
+        self.assertFalse(self.detail(album)["is_own"])
+        self.assertEqual(self.posts(album), [public])
+        url = f"/api/albums/{album['id']}/"
+        self.assertEqual(self.send("patch", url, {"name": "X"}).status_code, 404)
+        self.assertEqual(self.client.delete(url).status_code, 404)
+        self.assertEqual(self.add(album, {"post": public}).status_code, 404)
+        self.assertTrue(Album.objects.filter(name="Ferien").exists())
+
+    def test_private_profile_hides_albums(self):
+        album = self.album()
+        profile = get_or_create_profile(self.anna)
+        profile.profile_visibility = "friends"
+        profile.save()
+
+        self.client.force_login(self.jonas)
+        self.assertEqual(self.client.get("/api/posts/users/anna/albums/").status_code, 403)
+        self.assertEqual(self.client.get(f"/api/albums/{album['id']}/").status_code, 403)
+
+    def test_cover_can_be_replaced_and_removed(self):
+        album = self.album(cover=image_upload())
+        old = Album.objects.get().cover.name
+        url = f"/api/albums/{album['id']}/"
+        response = self.client.patch(
+            url,
+            encode_multipart(BOUNDARY, {"cover": image_upload()}),
+            content_type=MULTIPART_CONTENT,
+        )
+        self.assertIsNotNone(response.json()["cover"])
+        self.assertNotEqual(Album.objects.get().cover.name, old)
+        self.assertIsNone(self.send("patch", url, {"cover": None}).json()["cover"])

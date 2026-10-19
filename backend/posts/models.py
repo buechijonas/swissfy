@@ -237,3 +237,40 @@ class SavedPost(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["user", "post"], name="unique_saved_post"),
         ]
+
+
+class Album(models.Model):
+    uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="albums"
+    )
+    name = models.CharField(max_length=NAME_LENGTH)
+    cover = models.FileField(upload_to="albums/", blank=True)
+    position = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["position", "-created_at", "-id"]
+
+    def __str__(self):
+        return self.name
+
+
+class AlbumEntry(models.Model):
+    uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
+    album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name="entries")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="+")
+    date = models.DateField(null=True, blank=True)
+    title = models.CharField(max_length=NAME_LENGTH, blank=True)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["album", "post"], name="unique_album_post"),
+        ]
+
+
+@receiver(post_delete, sender=Album)
+def delete_album_cover(sender, instance, **kwargs):
+    instance.cover.delete(save=False)

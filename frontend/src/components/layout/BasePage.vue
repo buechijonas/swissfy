@@ -11,16 +11,18 @@
         <slot />
       </div>
     </div>
+    <FloatingAddButton />
   </div>
 </template>
 
 <script>
 import BaseNavigation from '@/components/common/BaseNavigation.vue'
 import BaseHeader from '@/components/common/BaseHeader.vue'
+import FloatingAddButton from '@/components/common/FloatingAddButton.vue'
 
 export default {
   name: 'BasePage',
-  components: { BaseNavigation, BaseHeader },
+  components: { BaseNavigation, BaseHeader, FloatingAddButton },
   props: {
     activeNavigation: {
       type: String,

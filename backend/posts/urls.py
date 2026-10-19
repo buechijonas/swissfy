@@ -27,6 +27,11 @@ urlpatterns = [
     path("posts/groups/<int:pk>/", views.GroupDetailView.as_view(), name="contact-group"),
     path("posts/users/<str:username>/", views.UserPostListView.as_view(), name="user-posts"),
     path(
+        "posts/users/<str:username>/albums/",
+        views.UserAlbumListView.as_view(),
+        name="user-albums",
+    ),
+    path(
         "posts/users/<str:username>/activities/",
         views.ActivityView.as_view(),
         name="user-activities",
@@ -43,6 +48,20 @@ urlpatterns = [
     path("posts/<uuid:uuid>/repost/", views.RepostView.as_view(), name="post-repost"),
     path("posts/<uuid:uuid>/save/", views.SaveView.as_view(), name="post-save"),
     path("posts/<uuid:uuid>/comments/", views.CommentListView.as_view(), name="post-comments"),
+    path("albums/", views.AlbumListView.as_view(), name="albums"),
+    path("albums/order/", views.AlbumOrderView.as_view(), name="album-order"),
+    path("albums/<uuid:uuid>/", views.AlbumDetailView.as_view(), name="album"),
+    path("albums/<uuid:uuid>/cover/", views.AlbumCoverView.as_view(), name="album-cover"),
+    path(
+        "albums/<uuid:uuid>/entries/",
+        views.AlbumEntryListView.as_view(),
+        name="album-entries",
+    ),
+    path(
+        "album-entries/<uuid:uuid>/",
+        views.AlbumEntryDetailView.as_view(),
+        name="album-entry",
+    ),
     path("stories/", views.StoryCreateView.as_view(), name="stories"),
     path("stories/<uuid:uuid>/", views.StoryDetailView.as_view(), name="story"),
     path("stories/<uuid:uuid>/image/", views.StoryImageView.as_view(), name="story-image"),

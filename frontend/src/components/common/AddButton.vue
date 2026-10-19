@@ -3,34 +3,52 @@
     variant="primary"
     size="sm"
     class="hidden lg:inline-flex -my-1.5"
-    @click="$emit('click')"
+    :aria-busy="loading"
+    @click="!loading && $emit('click')"
   >
-    <AppIcon name="plus" />
+    <span v-if="loading" class="loading loading-spinner loading-xs"></span>
+    <AppIcon v-else :name="icon" />
     {{ label }}
   </BaseButton>
-  <Teleport to="body">
-    <BaseButton
-      variant="primary"
-      shape="circle"
-      :title="label"
-      class="fixed bottom-[calc(var(--footer-height)+1.5rem)] right-6 z-10 size-14 lg:hidden"
-      @click="$emit('click')"
-    >
-      <AppIcon name="plus" :alt="label" class="size-6!" />
-    </BaseButton>
-  </Teleport>
 </template>
 
 <script>
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import { useAddButtonStore } from '@/stores/addButton.js'
 
 export default {
   name: 'AddButton',
   components: { AppIcon, BaseButton },
   props: {
     label: { type: String, required: true },
+    icon: { type: String, default: 'plus' },
+    loading: { type: Boolean, default: false },
   },
   emits: ['click'],
+  computed: {
+    config() {
+      return {
+        label: this.label,
+        icon: this.icon,
+        loading: this.loading,
+        onClick: () => this.$emit('click'),
+      }
+    },
+  },
+  watch: {
+    config: {
+      immediate: true,
+      handler(config) {
+        useAddButtonStore().show(this.owner, config)
+      },
+    },
+  },
+  beforeCreate() {
+    this.owner = Symbol('AddButton')
+  },
+  beforeUnmount() {
+    useAddButtonStore().hide(this.owner)
+  },
 }
 </script>
