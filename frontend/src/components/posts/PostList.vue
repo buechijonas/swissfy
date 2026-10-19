@@ -1,20 +1,7 @@
 <template>
   <div>
     <div v-if="grid && posts.length" class="grid grid-cols-3 gap-1 max-sm:-mx-6">
-      <RouterLink v-for="post in posts" :key="post.id" :to="tileLink(post)" class="relative">
-        <img
-          class="aspect-square w-full object-cover bg-base-200"
-          :src="post.thumbnail"
-          alt=""
-          loading="lazy"
-        />
-        <AppIcon
-          v-if="post.video"
-          name="clapperboard-play"
-          alt="Video"
-          class="absolute top-2 right-2 size-5! text-white drop-shadow"
-        />
-      </RouterLink>
+      <PostTile v-for="post in posts" :key="post.id" :post="post" :reel-base="reelBase" />
     </div>
 
     <div
@@ -54,11 +41,10 @@
 </template>
 
 <script>
-import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import CommentActivity from '@/components/posts/CommentActivity.vue'
 import PostCard from '@/components/posts/PostCard.vue'
+import PostTile from '@/components/posts/PostTile.vue'
 import { apiFetch } from '@/lib/api.js'
 
 function itemKey(item) {
@@ -67,7 +53,7 @@ function itemKey(item) {
 
 export default {
   name: 'PostList',
-  components: { RouterLink, AppIcon, BaseCard, CommentActivity, PostCard },
+  components: { BaseCard, CommentActivity, PostCard, PostTile },
   props: {
     url: { type: String, required: true },
     grid: { type: Boolean, default: false },
@@ -97,11 +83,6 @@ export default {
   },
   methods: {
     itemKey,
-    tileLink(post) {
-      if (!post.video) return `/posts/${post.id}`
-      const base = this.reelBase ?? `/profile/${encodeURIComponent(post.author.username)}/reels`
-      return `${base}/${post.id}`
-    },
     async loadMore() {
       if (this.loading || !this.hasMore || this.error) return
       this.loading = true

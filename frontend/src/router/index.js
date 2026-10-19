@@ -17,6 +17,7 @@ import AdministrationView from '@/views/AdministrationView.vue'
 import SavedView from '@/views/SavedView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ConnectionsView from '@/views/ConnectionsView.vue'
+import AlbumView from '@/views/AlbumView.vue'
 import UploadView from '@/views/UploadView.vue'
 import ReelsView from '@/views/ReelsView.vue'
 import HashtagView from '@/views/HashtagView.vue'
@@ -152,6 +153,12 @@ const router = createRouter({
       name: 'user-connections',
       component: ConnectionsView,
       meta: { title: connectionTitle, requiresAuth: true },
+    },
+    {
+      path: '/profile/:username/albums/:id([0-9a-f-]{36})',
+      name: 'user-album',
+      component: AlbumView,
+      meta: { title: 'Album', requiresAuth: true },
     },
     {
       path: '/profile/:username/reels/:id([0-9a-f-]{36})',

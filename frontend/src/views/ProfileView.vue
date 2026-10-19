@@ -1,7 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs">
-    <template v-if="profile?.is_self" #actions>
-      <AddButton label="Posten" @click="$refs.composer.open()" />
+    <template v-if="ownProfile" #actions>
+      <AddButton label="Posten" :loading="loading" @click="$refs.composer.open()" />
     </template>
   </BaseBreadcrumbs>
   <div
@@ -185,6 +185,12 @@
           :key="`${profile.username}-achievements`"
           :username="profile.username"
         />
+        <ProfileAlbums
+          v-else-if="activeTab === 'albums'"
+          :key="`${profile.username}-albums`"
+          :username="profile.username"
+          :editable="profile.is_self"
+        />
         <ProfileStatus
           v-else-if="activeTab === 'status'"
           :key="`${profile.username}-status`"
@@ -248,12 +254,14 @@ import BaseTabs from '@/components/common/BaseTabs.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import ProfileAchievements from '@/components/achievements/ProfileAchievements.vue'
+import ProfileAlbums from '@/components/albums/ProfileAlbums.vue'
 import CreateDialog from '@/components/posts/CreateDialog.vue'
 import PostList from '@/components/posts/PostList.vue'
 import StoryViewer from '@/components/posts/StoryViewer.vue'
 import ProfileStatus from '@/components/moderation/ProfileStatus.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import { useAuthStore } from '@/stores/auth.js'
 import { formatDate } from '@/lib/time.js'
 
 const TABS = [
@@ -300,6 +308,7 @@ export default {
     CipherText,
     PostList,
     ProfileAchievements,
+    ProfileAlbums,
     ProfileStatus,
     RoleBadge,
     StoryViewer,
@@ -318,6 +327,10 @@ export default {
   computed: {
     username() {
       return this.$route.params.username
+    },
+    ownProfile() {
+      if (this.profile && !this.loading) return this.profile.is_self
+      return !this.username || this.username === useAuthStore().user?.username
     },
     tabs() {
       if (!this.profile?.can_view) return this.profile?.can_view_warnings ? MODERATION_TABS : []

@@ -9,6 +9,8 @@ from social.pictures import PictureField, cached_relations
 from . import hashtags, images, videos
 from .models import (
     STORY_LIFETIME,
+    Album,
+    AlbumEntry,
     Comment,
     ContactGroup,
     Hashtag,
@@ -17,7 +19,7 @@ from .models import (
     SavedFolder,
     Story,
 )
-from .queries import visible_stories
+from .queries import media_posts, visible_stories
 
 User = get_user_model()
 
@@ -451,3 +453,67 @@ class ContactGroupSerializer(OwnedNameMixin, serializers.ModelSerializer):
         if self.context["request"].user in members:
             raise serializers.ValidationError("Du kannst dich nicht selbst hinzufügen.")
         return members
+
+
+class AlbumSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source="uuid", read_only=True)
+    cover = serializers.FileField(required=False, allow_null=True)
+
+    class Meta:
+        model = Album
+        fields = ["id", "name", "cover", "created_at"]
+
+    def validate_cover(self, upload):
+        if upload is None:
+            return ""
+        try:
+            return images.thumbnail(images.load(upload))
+        except images.InvalidImage as error:
+            raise serializers.ValidationError(str(error))
+
+    def update(self, album, data):
+        if "cover" in data:
+            album.cover.delete(save=False)
+        return super().update(album, data)
+
+    def to_representation(self, album):
+        data = super().to_representation(album)
+        data["cover"] = f"/api/albums/{album.uuid}/cover/" if album.cover else None
+        data["is_own"] = album.owner_id == self.context["request"].user.pk
+        return data
+
+
+class AlbumPostSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source="uuid", read_only=True)
+    author = AuthorSerializer(read_only=True)
+    thumbnail = serializers.SerializerMethodField()
+    video = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Post
+        fields = ["id", "author", "thumbnail", "video"]
+
+    def get_thumbnail(self, obj):
+        return thumbnail_url(obj)
+
+    def get_video(self, obj):
+        return obj.video_status == Post.VideoStatus.READY
+
+
+class AlbumEntrySerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source="uuid", read_only=True)
+    post = serializers.SlugRelatedField(slug_field="uuid", queryset=Post.objects.none())
+
+    class Meta:
+        model = AlbumEntry
+        fields = ["id", "post", "date", "title"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = self.context["request"].user
+        self.fields["post"].queryset = media_posts(Post.objects.filter(author=user))
+
+    def to_representation(self, entry):
+        data = super().to_representation(entry)
+        data["post"] = AlbumPostSerializer(entry.post, context=self.context).data
+        return data
