@@ -1,12 +1,17 @@
+import base64
 import hashlib
 import hmac
 import json
 import time
 from unittest import mock
 
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 
+from .consent import attested_status, sign, status_of
 from .models import UserConsent, UserProfile
 
 User = get_user_model()
@@ -146,10 +151,68 @@ class ConsentTests(TestCase):
         )
 
     def test_accept_consent(self):
-        response = self.client.post("/api/auth/consent/terms/")
+        with mock.patch("accounts.views.push_to_govex"):
+            response = self.client.post("/api/auth/consent/terms/")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(UserConsent.objects.get(user=self.user).terms)
 
     def test_unknown_consent_field(self):
         response = self.client.post("/api/auth/consent/cookies/")
         self.assertEqual(response.status_code, 404)
+
+
+class ConsentPushTests(TestCase):
+    def setUp(self):
+        self.user = govex_user("jonas", "s1")
+
+    def test_accepting_consent_pushes_status_to_govex(self):
+        self.client.force_login(self.user)
+        with mock.patch("accounts.views.push_to_govex") as push:
+            self.client.post("/api/auth/consent/terms/")
+        push.assert_called_once_with("s1")
+
+    def test_status_of_reports_own_consent(self):
+        UserConsent.objects.create(user=self.user, privacy=True)
+        self.assertEqual(
+            status_of("s1"), {"consent": {"privacy": True, "terms": False, "disclaimer": False}}
+        )
+
+    def test_signed_status_names_swissfy_and_the_account(self):
+        key = ec.generate_private_key(ec.SECP256R1())
+        pem = key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        ).decode()
+        with override_settings(CONSENT_PRIVATE_KEY=pem):
+            token = sign({"iss": "swissfy", "sub": "s1", **status_of("s1")})
+        header, body, signature = token.split(".")
+        raw = base64.urlsafe_b64decode(signature + "=" * (-len(signature) % 4))
+        der = encode_dss_signature(int.from_bytes(raw[:32], "big"), int.from_bytes(raw[32:], "big"))
+        key.public_key().verify(der, f"{header}.{body}".encode(), ec.ECDSA(hashes.SHA256()))
+        self.assertEqual(attested_status(token), status_of("s1"))
+
+
+@override_settings(
+    GOVEX_REDIRECT_URI="http://testserver/api/auth/oidc/callback/",
+    FRONTEND_URL="http://frontend",
+)
+class CallbackConsentPushTests(TestCase):
+    def login(self, userinfo):
+        self.client.get("/api/auth/oidc/login/")
+        state = self.client.session["govex_oauth_state"]
+        with (
+            mock.patch("accounts.oidc.fetch_userinfo", return_value=userinfo),
+            mock.patch("accounts.oidc.push_to_govex") as push,
+        ):
+            self.client.get(f"/api/auth/oidc/callback/?code=abc&state={state}")
+        return push
+
+    def test_pushes_when_govex_is_outdated(self):
+        UserConsent.objects.create(user=govex_user("jonas", "s1"), terms=True)
+        push = self.login({"sub": "s1", "preferred_username": "jonas", "attestations": {}})
+        push.assert_called_once_with("s1")
+
+    def test_skips_push_without_any_consent(self):
+        push = self.login({"sub": "s1", "preferred_username": "jonas"})
+        push.assert_not_called()

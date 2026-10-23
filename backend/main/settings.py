@@ -44,6 +44,12 @@ if not DEBUG and not all(
         "GOVEX_REDIRECT_URI must be set in the environment when DJANGO_DEBUG=false."
     )
 
+CONSENT_PRIVATE_KEY = os.getenv("CONSENT_PRIVATE_KEY", "").replace("\\n", "\n")
+if not DEBUG and not CONSENT_PRIVATE_KEY:
+    raise ImproperlyConfigured(
+        "CONSENT_PRIVATE_KEY must be set in the environment when DJANGO_DEBUG=false."
+    )
+
 CHAT_ENCRYPTION_KEY = os.getenv("CHAT_ENCRYPTION_KEY")
 if not CHAT_ENCRYPTION_KEY:
     if not DEBUG:
