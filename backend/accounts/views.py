@@ -5,10 +5,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import UserConsent
+from .consent import CONSENT_FIELDS, push_to_govex
+from .models import UserConsent, get_or_create_profile
 from .serializers import ConsentSerializer, UserSerializer
-
-CONSENT_FIELDS = ["privacy", "terms", "disclaimer"]
 
 
 class LogoutView(APIView):
@@ -28,6 +27,7 @@ class ConsentAcceptView(APIView):
         consent, _ = UserConsent.objects.get_or_create(user=request.user)
         setattr(consent, field, True)
         consent.save(update_fields=[field])
+        push_to_govex(get_or_create_profile(request.user).govex_sub)
         return Response(ConsentSerializer(consent).data)
 
 

@@ -363,6 +363,7 @@ PRODUCTION_ENV = {
     "GOVEX_CLIENT_ID": "swissfy",
     "GOVEX_CLIENT_SECRET": "secret",
     "GOVEX_REDIRECT_URI": "https://swissfy.example/api/auth/oidc/callback/",
+    "CONSENT_PRIVATE_KEY": "consent-key",
 }
 
 

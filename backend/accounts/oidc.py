@@ -18,6 +18,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from .consent import attested_status, push_to_govex, status_of
 from .models import AVATAR_CHOICES, DEFAULT_ROLE, UserProfile, get_or_create_profile
 
 User = get_user_model()
@@ -184,6 +185,10 @@ def govex_callback(request):
     sync_meta(user, userinfo.get("meta"))
 
     login(request, user)
+    current = status_of(govex_sub)
+    attested = attested_status(userinfo.get("attestations", {}).get("swissfy"))
+    if attested != current and any(current["consent"].values()):
+        push_to_govex(govex_sub)
     return redirect_to_frontend("/")
 
 
