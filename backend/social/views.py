@@ -13,7 +13,7 @@ from accounts.roles import NAME_ORDERING, is_admin, is_moderator, with_role_rank
 from main.pagination import NextPagePagination
 from moderation.sanctions import suspended_users
 from notifications.models import Notification
-from notifications.notify import notify, resolve_friend_request, withdraw
+from notifications.notify import notify, resolve_request, withdraw
 from posts.models import Story, StoryLike, StoryView, story_cutoff
 from posts.views import serve_image
 
@@ -136,11 +136,25 @@ class FollowRequestView(APIView):
         return get_object_or_404(FollowRequest, follower__username=username, following=request.user)
 
     def post(self, request, username):
-        self.get_request(request, username).accept()
+        follow_request = self.get_request(request, username)
+        resolve_request(
+            request.user,
+            Notification.Kind.FOLLOW_REQUEST,
+            follow_request.follower,
+            Resolution.ACCEPTED,
+        )
+        follow_request.accept()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def delete(self, request, username):
-        self.get_request(request, username).delete()
+        follow_request = self.get_request(request, username)
+        resolve_request(
+            request.user,
+            Notification.Kind.FOLLOW_REQUEST,
+            follow_request.follower,
+            Resolution.DECLINED,
+        )
+        follow_request.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -150,13 +164,23 @@ class FriendRequestDecisionView(FollowRequestView):
 
     def post(self, request, username):
         friend_request = self.get_request(request, username)
-        resolve_friend_request(request.user, friend_request.sender, Resolution.ACCEPTED)
+        resolve_request(
+            request.user,
+            Notification.Kind.FRIEND_REQUEST,
+            friend_request.sender,
+            Resolution.ACCEPTED,
+        )
         friend_request.accept()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def delete(self, request, username):
         friend_request = self.get_request(request, username)
-        resolve_friend_request(request.user, friend_request.sender, Resolution.DECLINED)
+        resolve_request(
+            request.user,
+            Notification.Kind.FRIEND_REQUEST,
+            friend_request.sender,
+            Resolution.DECLINED,
+        )
         friend_request.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -173,6 +197,12 @@ class PrivacyView(APIView):
         serializer.save()
         if not requires_follow_request(request.user):
             for follow_request in request.user.received_follow_requests.all():
+                resolve_request(
+                    request.user,
+                    Notification.Kind.FOLLOW_REQUEST,
+                    follow_request.follower,
+                    Resolution.ACCEPTED,
+                )
                 follow_request.accept()
         return Response(serializer.data)
 
@@ -260,7 +290,11 @@ class FollowView(ProfileView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if requires_follow_request(target) and not follows(request.user, target):
-            FollowRequest.objects.get_or_create(follower=request.user, following=target)
+            _, created = FollowRequest.objects.get_or_create(
+                follower=request.user, following=target
+            )
+            if created:
+                notify(target, Notification.Kind.FOLLOW_REQUEST, actor=request.user)
         else:
             _, created = Follow.objects.get_or_create(follower=request.user, following=target)
             if created:
@@ -272,6 +306,7 @@ class FollowView(ProfileView):
         Follow.objects.filter(follower=request.user, following=target).delete()
         withdraw(target, Notification.Kind.FOLLOW, request.user)
         FollowRequest.objects.filter(follower=request.user, following=target).delete()
+        withdraw(target, Notification.Kind.FOLLOW_REQUEST, request.user, resolution="")
         return self.profile_response(request, target)
 
 

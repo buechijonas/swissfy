@@ -18,10 +18,10 @@ def withdraw(recipient, kind, actor, **targets):
     Notification.objects.filter(recipient=recipient, kind=kind, actor=actor, **targets).delete()
 
 
-def resolve_friend_request(recipient, actor, resolution):
-    Notification.objects.filter(
-        recipient=recipient, actor=actor, kind=Kind.FRIEND_REQUEST, resolution=""
-    ).update(resolution=resolution)
+def resolve_request(recipient, kind, actor, resolution):
+    Notification.objects.filter(recipient=recipient, actor=actor, kind=kind, resolution="").update(
+        resolution=resolution
+    )
 
 
 def sync_expired_warnings(user):

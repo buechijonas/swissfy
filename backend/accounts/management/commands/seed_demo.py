@@ -403,6 +403,8 @@ class Command(BaseCommand):
             add(like.post.author_id, Kind.LIKE, self.past(10), like.user_id, post_id=like.post_id)
         for follow in Follow.objects.filter(following__in=everyone):
             add(follow.following_id, Kind.FOLLOW, self.past(30), follow.follower_id)
+        for request in FollowRequest.objects.filter(following__in=everyone):
+            add(request.following_id, Kind.FOLLOW_REQUEST, self.past(5), request.follower_id)
         for request in FriendRequest.objects.filter(receiver__in=everyone):
             add(request.receiver_id, Kind.FRIEND_REQUEST, self.past(5), request.sender_id)
         for warning in Warning.objects.filter(user__in=users):
