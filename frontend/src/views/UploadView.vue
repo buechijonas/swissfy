@@ -66,7 +66,7 @@
         <ImageDropzone
           v-else-if="!images.length"
           class="h-56"
-          accept="image/*,video/*"
+          accept="image/*,video/*,video/mp4,video/quicktime,video/x-matroska,.mov,.mp4,.mkv"
           label="Bilder oder ein Video hierher ziehen oder klicken"
           multiple
           @select="addMedia"
@@ -287,7 +287,9 @@ export default {
       }
     },
     addMedia(files) {
-      const video = files.find((file) => file.type.startsWith('video/'))
+      const video = files.find(
+        (file) => file.type.startsWith('video/') || /\.(mov|mp4|mkv)$/i.test(file.name),
+      )
       return video ? this.setVideo(video) : this.addImages(files)
     },
     async setVideo(file) {
