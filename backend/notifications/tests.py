@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
+from accounts.models import UserProfile, get_or_create_profile
 from accounts.roles import Role, set_role
 from moderation.models import Report, Warning
 from posts.models import Post
@@ -61,11 +62,11 @@ class NotificationTests(TestCase):
         self.client.force_login(self.jonas)
         self.client.post("/api/social/profiles/anna/friend-request/")
 
-        self.assertEqual(self.inbox()[0]["friend_request"], "pending")
+        self.assertEqual(self.inbox()[0]["request"], "pending")
         self.client.post("/api/social/profiles/me/friend-requests/jonas/")
         self.assertTrue(Friendship.objects.filter(user=self.anna, friend=self.jonas).exists())
         self.assertFalse(FriendRequest.objects.exists())
-        self.assertEqual(self.inbox()[0]["friend_request"], "accepted")
+        self.assertEqual(self.inbox()[0]["request"], "accepted")
 
     def test_warning_and_suspension_hide_moderator(self):
         mod = User.objects.create(username="mod")
@@ -102,5 +103,41 @@ class NotificationTests(TestCase):
         self.client.force_login(self.jonas)
         self.client.post("/api/social/profiles/anna/friend-request/")
 
-        states = [item["friend_request"] for item in self.inbox()]
+        states = [item["request"] for item in self.inbox()]
         self.assertEqual(states, ["pending", "declined"])
+
+    def make_private(self):
+        profile = get_or_create_profile(self.anna)
+        profile.profile_visibility = UserProfile.Visibility.FRIENDS
+        profile.save()
+
+    def test_follow_request_can_be_answered(self):
+        self.make_private()
+        self.client.force_login(self.jonas)
+        self.client.post("/api/social/profiles/anna/follow/")
+
+        item = self.inbox()[0]
+        self.assertEqual(item["message"], "@jonas möchte dir folgen.")
+        self.assertEqual(item["request"], "pending")
+        self.client.post("/api/social/profiles/me/follow-requests/jonas/")
+        self.assertTrue(Follow.objects.filter(follower=self.jonas, following=self.anna).exists())
+        self.assertEqual(self.inbox()[0]["request"], "accepted")
+
+    def test_withdrawn_follow_request_removes_notification(self):
+        self.make_private()
+        self.client.force_login(self.jonas)
+        self.client.post("/api/social/profiles/anna/follow/")
+        self.client.delete("/api/social/profiles/anna/follow/")
+        self.assertEqual(self.inbox(), [])
+
+    def test_going_public_accepts_follow_requests(self):
+        self.make_private()
+        self.client.force_login(self.jonas)
+        self.client.post("/api/social/profiles/anna/follow/")
+        self.client.force_login(self.anna)
+        self.client.patch(
+            "/api/social/profiles/me/privacy/",
+            {"profile_visibility": "public"},
+            content_type="application/json",
+        )
+        self.assertEqual(self.inbox()[0]["request"], "accepted")

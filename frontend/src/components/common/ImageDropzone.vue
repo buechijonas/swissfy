@@ -30,7 +30,9 @@ export default {
   methods: {
     emitFiles(files) {
       const types = this.accept.split(',').map((type) => type.trim().replace('*', ''))
-      const accepted = files.filter((file) => types.some((type) => file.type.startsWith(type)))
+      const matches = (file, type) =>
+        type.startsWith('.') ? file.name.toLowerCase().endsWith(type) : file.type.startsWith(type)
+      const accepted = files.filter((file) => types.some((type) => matches(file, type)))
       if (accepted.length) this.$emit('select', this.multiple ? accepted : accepted.slice(0, 1))
     },
     onChange(event) {

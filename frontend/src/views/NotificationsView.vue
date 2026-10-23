@@ -34,7 +34,7 @@
             <span class="text-xs text-swissfy-muted">{{
               formatRelativeTime(item.created_at)
             }}</span>
-            <div v-if="item.friend_request === 'pending'" class="mt-1 flex gap-2">
+            <div v-if="item.request === 'pending'" class="mt-1 flex gap-2">
               <BaseButton
                 size="sm"
                 variant="primary"
@@ -49,8 +49,8 @@
                 Ablehnen
               </BaseButton>
             </div>
-            <span v-else-if="item.friend_request" class="text-xs text-swissfy-muted">
-              {{ item.friend_request === 'accepted' ? 'Angenommen' : 'Abgelehnt' }}
+            <span v-else-if="item.request" class="text-xs text-swissfy-muted">
+              {{ item.request === 'accepted' ? 'Angenommen' : 'Abgelehnt' }}
             </span>
           </div>
           <RouterLink
@@ -94,6 +94,11 @@ const KIND_ICONS = {
   warning: 'shield-exclamation',
   warning_expired: 'check',
   suspension: 'lock',
+}
+
+const REQUEST_ENDPOINTS = {
+  follow_request: 'follow-requests',
+  friend_request: 'friend-requests',
 }
 
 const KIND_COLORS = {
@@ -160,7 +165,7 @@ export default {
       this.error = null
       try {
         const response = await apiFetch(
-          `/api/social/profiles/me/friend-requests/${encodeURIComponent(item.actor.username)}/`,
+          `/api/social/profiles/me/${REQUEST_ENDPOINTS[item.kind]}/${encodeURIComponent(item.actor.username)}/`,
           { method },
         )
         if (!response.ok) {
@@ -168,7 +173,7 @@ export default {
           this.error = extractErrorMessage(data, 'Aktion fehlgeschlagen.')
           return
         }
-        item.friend_request = state
+        item.request = state
       } finally {
         this.busy = false
       }

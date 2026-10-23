@@ -19,6 +19,7 @@ class Notification(models.Model):
         COMMENT = "comment", "Kommentar"
         LIKE = "like", "Gefällt mir"
         FOLLOW = "follow", "Neuer Follower"
+        FOLLOW_REQUEST = "follow_request", "Followeranfrage"
         FRIEND_REQUEST = "friend_request", "Freundschaftsanfrage"
 
     recipient = models.ForeignKey(

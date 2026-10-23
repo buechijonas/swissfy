@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from moderation.sanctions import SUSPENSION_STEPS
 from posts.serializers import AuthorSerializer
-from social.models import FriendRequest, Friendship
+from social.models import Follow, FollowRequest, FriendRequest, Friendship
 
 from .models import Notification
 
@@ -25,11 +25,11 @@ class NotificationSerializer(serializers.ModelSerializer):
     message = serializers.SerializerMethodField()
     link = serializers.SerializerMethodField()
     read = serializers.SerializerMethodField()
-    friend_request = serializers.SerializerMethodField()
+    request = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
-        fields = ["id", "kind", "actor", "message", "link", "created_at", "read", "friend_request"]
+        fields = ["id", "kind", "actor", "message", "link", "created_at", "read", "request"]
 
     def get_read(self, obj):
         return obj.read_at is not None
@@ -53,6 +53,8 @@ class NotificationSerializer(serializers.ModelSerializer):
                 return f"{name} gefällt dein Feed."
             case Kind.FOLLOW:
                 return f"{name} folgt dir jetzt."
+            case Kind.FOLLOW_REQUEST:
+                return f"{name} möchte dir folgen."
             case Kind.FRIEND_REQUEST:
                 return f"{name} möchte mit dir befreundet sein."
         return ""
@@ -77,13 +79,20 @@ class NotificationSerializer(serializers.ModelSerializer):
                 return f"/posts/{obj.post.uuid}"
         return f"/profile/{obj.actor.username}" if obj.actor else None
 
-    def get_friend_request(self, obj):
-        if obj.kind != Kind.FRIEND_REQUEST:
-            return None
+    def get_request(self, obj):
+        match obj.kind:
+            case Kind.FOLLOW_REQUEST:
+                pending = FollowRequest.objects.filter(follower=obj.actor, following=obj.recipient)
+                accepted = Follow.objects.filter(follower=obj.actor, following=obj.recipient)
+            case Kind.FRIEND_REQUEST:
+                pending = FriendRequest.objects.filter(sender=obj.actor, receiver=obj.recipient)
+                accepted = Friendship.objects.filter(user=obj.recipient, friend=obj.actor)
+            case _:
+                return None
         if obj.resolution:
             return obj.resolution
-        if FriendRequest.objects.filter(sender=obj.actor, receiver=obj.recipient).exists():
+        if pending.exists():
             return "pending"
-        if Friendship.objects.filter(user=obj.recipient, friend=obj.actor).exists():
+        if accepted.exists():
             return Notification.Resolution.ACCEPTED
         return Notification.Resolution.DECLINED
