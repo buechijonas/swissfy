@@ -12,5 +12,6 @@ urlpatterns = [
     path("api/", include("posts.urls")),
     path("api/", include("moderation.urls")),
     path("api/administration/", include("accounts.administration_urls")),
+    path("api/internal/", include("accounts.internal_urls")),
     path("api/notifications/", include("notifications.urls")),
 ]
