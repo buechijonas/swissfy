@@ -2,9 +2,9 @@
 # Deploys the latest images with near-zero downtime for the backend
 # service: starts a second backend container on the new image, waits
 # for it to report healthy via its Docker healthcheck, then removes
-# the old one. origin/anubis/edge are recreated normally afterwards -
-# they're small, fast-starting Caddy/Go binaries, so their restart is
-# effectively instant.
+# the old one. origin/anubis/edge and the video-worker/chat-cleanup
+# workers are recreated normally afterwards - the proxies are small,
+# fast-starting Caddy/Go binaries, and the workers serve no requests.
 #
 # Usage: ./deploy (run from the same directory as compose.prod.yml,
 # e.g. /opt/swissfy on the server)
@@ -60,8 +60,8 @@ echo "==> Removing the old backend (${old_id:0:12})"
 docker stop "$old_id" >/dev/null
 docker rm "$old_id" >/dev/null
 
-echo "==> Recreating origin, anubis and edge with any new images"
-"${COMPOSE[@]}" up -d --remove-orphans origin anubis edge
+echo "==> Recreating origin, anubis, edge and the workers with any new images"
+"${COMPOSE[@]}" up -d --remove-orphans origin anubis edge video-worker chat-cleanup
 
 echo "==> Done."
 "${COMPOSE[@]}" ps
