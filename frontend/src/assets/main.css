@@ -198,6 +198,50 @@
     transform 0.2s ease;
 }
 
+[data-design='glass'] .app-switcher {
+  flex-wrap: nowrap;
+  gap: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.3rem;
+  border-radius: 9999px;
+  background-color: var(--glass-fill);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+  scrollbar-width: none;
+}
+
+[data-design='glass'] .app-switcher > .btn {
+  border-radius: 9999px;
+  border-color: transparent;
+  background-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+[data-design='glass'] .app-switcher > .app-bubble {
+  background-color: color-mix(in oklab, var(--color-primary) 80%, transparent);
+}
+
+[data-design='glass'] .app-switcher.is-vertical {
+  border-radius: 1.3rem;
+}
+
+[data-design='glass'] .app-switcher.is-vertical > .app-bubble {
+  inset-block: auto;
+  inset-inline: 0.3rem;
+  transition:
+    top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.2s ease;
+}
+
+@media (width < 40rem) {
+  [data-design='glass'] .app-switcher {
+    margin-inline: 0.5rem;
+  }
+}
+
 [data-design='glass'] .is-dragging .app-bubble {
   transform: scale(calc(1.12 * var(--stretch)), calc(1.12 / var(--stretch)));
   transition:

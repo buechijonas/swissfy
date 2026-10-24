@@ -200,19 +200,13 @@
           v-if="activeTab === 'tiles' && showMediaSwitcher"
           class="flex max-sm:-mx-6 lg:mt-2 lg:justify-end"
         >
-          <div class="join w-full lg:w-auto">
-            <BaseButton
-              v-for="(option, key) in MEDIA"
-              :key="key"
-              class="join-item max-lg:flex-1 max-lg:rounded-none"
-              :variant="media === key ? 'primary' : 'neutral'"
-              :aria-pressed="media === key"
-              @click="$router.replace({ query: { ...$route.query, media: key } })"
-            >
-              <AppIcon :name="option.icon" />
-              {{ option.label }}
-            </BaseButton>
-          </div>
+          <BaseSwitcher
+            class="join w-full lg:w-auto"
+            item-class="join-item max-lg:flex-1 max-lg:rounded-none"
+            :options="mediaOptions"
+            :active="media"
+            @select="$router.replace({ query: { ...$route.query, media: $event } })"
+          />
         </div>
         <PostList
           v-if="postList"
@@ -250,6 +244,7 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
@@ -304,6 +299,7 @@ export default {
     BaseButton,
     BaseCard,
     BaseFooter,
+    BaseSwitcher,
     BaseTabs,
     CipherText,
     PostList,
@@ -316,7 +312,6 @@ export default {
   },
   data() {
     return {
-      MEDIA,
       profile: null,
       loading: true,
       error: null,
@@ -345,6 +340,9 @@ export default {
     },
     availableMedia() {
       return Object.keys(MEDIA).filter((key) => this.profile.media?.[MEDIA[key].flag])
+    },
+    mediaOptions() {
+      return Object.entries(MEDIA).map(([value, { label, icon }]) => ({ value, label, icon }))
     },
     showMediaSwitcher() {
       return this.availableMedia.length > 1
