@@ -1,5 +1,7 @@
+import { contrastMode } from '@/lib/contrast.js'
+
 export function wobble(el) {
-  if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  if (!el || contrastMode.value || matchMedia('(prefers-reduced-motion: reduce)').matches) return
   el.animate(
     [
       { transform: 'scale(1)' },

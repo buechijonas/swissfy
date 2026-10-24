@@ -888,3 +888,79 @@
 [data-contrast='on'] .chat-bubble-primary {
   border-color: var(--swissfy-contrast-primary-border);
 }
+
+[data-design='glass'][data-contrast='on'] {
+  --glass-fill: light-dark(rgb(244 249 255 / 0.86), rgb(16 22 32 / 0.86));
+  --glass-shadow:
+    inset 0 1.5px 0 light-dark(rgb(255 255 255 / 1), rgb(225 242 255 / 0.4)),
+    inset 0 0 14px light-dark(rgb(170 210 245 / 0.55), rgb(150 200 255 / 0.16)),
+    0 2px 6px light-dark(rgb(10 40 70 / 0.16), rgb(0 0 0 / 0.55)),
+    0 12px 32px light-dark(rgb(10 40 70 / 0.14), rgb(0 0 0 / 0.5));
+  --glass-blur: blur(30px) saturate(105%);
+}
+
+[data-design='glass'][data-contrast='on'] :is(.btn, .app-nav) {
+  border-color: transparent;
+}
+
+:root[data-design='glass'][data-contrast='on'] {
+  background:
+    linear-gradient(
+      160deg,
+      light-dark(rgb(225 240 252 / 0.9), rgb(20 34 50 / 0.9)),
+      transparent 60%
+    ),
+    var(--color-base-200);
+  background-attachment: fixed;
+}
+
+[data-design='glass'][data-contrast='on'] .app-footer-bar {
+  background-color: var(--glass-fill);
+  backdrop-filter: var(--glass-blur);
+}
+
+[data-design='glass'][data-contrast='on'] .app-bubble {
+  background-color: light-dark(rgb(255 255 255 / 0.95), rgb(200 230 255 / 0.2));
+  box-shadow:
+    inset 0 1.5px 0 light-dark(rgb(255 255 255 / 1), rgb(225 242 255 / 0.5)),
+    inset 0 0 10px light-dark(rgb(150 195 240 / 0.6), rgb(150 200 255 / 0.25)),
+    0 2px 6px light-dark(rgb(10 40 70 / 0.22), rgb(0 0 0 / 0.5));
+  transition:
+    left 0.2s ease-out,
+    width 0.2s ease-out,
+    top 0.2s ease-out,
+    height 0.2s ease-out;
+}
+
+[data-design='glass'][data-contrast='on'] .app-switcher > .app-bubble {
+  background-color: var(--color-primary);
+  box-shadow:
+    inset 0 1.5px 0 rgb(255 255 255 / 0.45),
+    inset 0 0 10px rgb(255 255 255 / 0.25),
+    0 2px 6px light-dark(rgb(10 40 70 / 0.25), rgb(0 0 0 / 0.5));
+}
+
+[data-design='glass'][data-contrast='on'] .is-dragging .app-bubble {
+  transform: none;
+  transition: width 0.15s ease-out;
+}
+
+[data-design='glass'][data-contrast='on'] .liquid-enter-active {
+  animation: icy-in 0.18s ease-out;
+}
+
+[data-design='glass'][data-contrast='on'] .liquid-leave-active {
+  animation: icy-out 0.12s ease-in;
+}
+
+@keyframes icy-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes icy-out {
+  to {
+    opacity: 0;
+  }
+}
