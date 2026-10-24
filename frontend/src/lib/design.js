@@ -1,7 +1,7 @@
 import { ref, watch } from 'vue'
 
 const STORAGE_KEY = 'design'
-const VALID_DESIGNS = ['default', 'glass']
+const VALID_DESIGNS = ['default', 'glass', 'cyberpunk']
 
 function readStoredDesign() {
   try {

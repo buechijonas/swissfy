@@ -246,6 +246,471 @@
   }
 }
 
+[data-design='cyberpunk'] {
+  --cyber-accent: light-dark(#0891b2, #22d3ee);
+  --cyber-line: color-mix(in oklab, var(--color-primary) 60%, transparent);
+  --cyber-glow-color: light-dark(
+    color-mix(in oklab, var(--color-primary) 20%, transparent),
+    color-mix(in oklab, var(--color-primary) 55%, transparent)
+  );
+  --cyber-glow: 0 0 14px var(--cyber-glow-color);
+  --cyber-split:
+    -1px 0 color-mix(in oklab, var(--cyber-accent) 70%, transparent),
+    1px 0 color-mix(in oklab, var(--color-primary) 70%, transparent);
+  --cyber-grid: light-dark(
+    color-mix(in oklab, var(--color-primary) 30%, transparent),
+    color-mix(in oklab, var(--color-primary) 55%, transparent)
+  );
+  --cyber-font: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --cyber-cut: polygon(
+    0 0,
+    calc(100% - 0.6rem) 0,
+    100% 0.6rem,
+    100% 100%,
+    0.6rem 100%,
+    0 calc(100% - 0.6rem)
+  );
+  --color-swissfy-muted: light-dark(#3f6170, #7fd3e0);
+  --color-swissfy-border: var(--cyber-line);
+  --radius-box: 0;
+  --radius-field: 0;
+  --radius-selector: 0;
+}
+
+:root[data-design='cyberpunk'] {
+  background:
+    radial-gradient(
+      ellipse at 50% 110%,
+      color-mix(in oklab, var(--color-primary) 30%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 100% 0%,
+      color-mix(in oklab, var(--cyber-accent) 14%, transparent),
+      transparent 50%
+    ),
+    light-dark(#eceef2, #05060a);
+  background-attachment: fixed;
+}
+
+:root[data-design='cyberpunk']:not([data-dyslexia='on']) body {
+  font-family: var(--cyber-font);
+}
+
+[data-design='cyberpunk'] ::selection {
+  background-color: var(--color-primary);
+  color: var(--color-primary-content);
+}
+
+[data-design='cyberpunk'] body::before {
+  content: '';
+  position: fixed;
+  inset-inline: -50%;
+  bottom: 0;
+  z-index: -1;
+  height: 55vh;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--cyber-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cyber-grid) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+  mask-image: linear-gradient(to top, black 30%, transparent 90%);
+  transform: perspective(60rem) rotateX(65deg);
+  transform-origin: bottom;
+  animation: cyber-grid 3s linear infinite;
+}
+
+[data-design='cyberpunk'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    light-dark(rgb(0 0 0 / 0.035), rgb(255 255 255 / 0.035)) 0 1px,
+    transparent 1px 3px
+  );
+  animation: cyber-flicker 6s steps(1) infinite;
+}
+
+:root[data-design='cyberpunk']::after {
+  content: '';
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 101;
+  height: 14vh;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    light-dark(rgb(0 0 0 / 0.04), rgb(34 211 238 / 0.06)),
+    transparent
+  );
+  animation: cyber-scan 7s linear infinite;
+}
+
+[data-design='cyberpunk'] .app-content {
+  background-color: transparent;
+}
+
+[data-design='cyberpunk'] :is(.app-surface, .app-nav, .app-footer:not(.app-footer-dark)) {
+  background-color: light-dark(rgb(255 255 255 / 0.88), rgb(10 12 18 / 0.9));
+  border-color: var(--cyber-line);
+}
+
+[data-design='cyberpunk'] .app-surface {
+  position: relative;
+  box-shadow:
+    var(--cyber-glow),
+    inset 0 0 24px color-mix(in oklab, var(--cyber-accent) 7%, transparent);
+  animation: cyber-boot 0.45s ease-out both;
+}
+
+[data-design='cyberpunk'] .app-surface::before,
+[data-design='cyberpunk'] .app-surface::after {
+  content: '';
+  position: absolute;
+  width: 1.25rem;
+  height: 1.25rem;
+  pointer-events: none;
+  border: 0 solid var(--color-primary);
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+[data-design='cyberpunk'] .app-surface::before {
+  top: -2px;
+  left: -2px;
+  border-top-width: 3px;
+  border-left-width: 3px;
+  color: var(--color-primary);
+}
+
+[data-design='cyberpunk'] .app-surface::after {
+  right: -2px;
+  bottom: -2px;
+  border-right-width: 3px;
+  border-bottom-width: 3px;
+  border-color: var(--cyber-accent);
+  color: var(--cyber-accent);
+}
+
+[data-design='cyberpunk'] .app-topbar {
+  box-shadow:
+    0 2px 0 var(--cyber-accent),
+    0 6px 24px color-mix(in oklab, var(--color-primary) 60%, transparent);
+}
+
+[data-design='cyberpunk'] .app-topbar span {
+  animation: cyber-neon 5s steps(1) infinite;
+}
+
+[data-design='cyberpunk'] .modal-box {
+  background-color: var(--color-base-100);
+  border: 1px solid var(--color-primary);
+  box-shadow:
+    var(--cyber-glow),
+    0 0 0 4px color-mix(in oklab, var(--cyber-accent) 25%, transparent);
+  animation: cyber-boot 0.3s ease-out both;
+}
+
+[data-design='cyberpunk'] :is(h1, h2, h3, .tab, .btn, .app-topbar) {
+  letter-spacing: 0.06em;
+}
+
+[data-design='cyberpunk'] :is(h2, h3, .tab, .btn) {
+  text-transform: uppercase;
+}
+
+[data-design='cyberpunk'] :is(h2, h3) {
+  text-shadow:
+    var(--cyber-split),
+    0 0 12px var(--cyber-glow-color);
+  animation: cyber-glitch-loop 6s infinite;
+}
+
+[data-design='cyberpunk'] h3::before {
+  content: '// ';
+  color: var(--cyber-accent);
+}
+
+[data-design='cyberpunk'] .tab-active {
+  color: var(--color-primary);
+  text-shadow: 0 0 8px var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  box-shadow: 0 6px 10px -6px var(--color-primary);
+}
+
+[data-design='cyberpunk'] .btn:not(.btn-circle, .btn-ghost) {
+  clip-path: var(--cyber-cut);
+}
+
+[data-design='cyberpunk'] .btn:not(.btn-primary, .btn-error, .btn-ghost, .btn-outline) {
+  background-color: color-mix(in oklab, var(--cyber-accent) 14%, var(--color-base-100));
+  border-color: transparent;
+  color: var(--color-base-content);
+}
+
+[data-design='cyberpunk'] .btn:hover {
+  animation: cyber-glitch 0.35s steps(3) 1;
+}
+
+[data-design='cyberpunk'] .btn:active {
+  filter: brightness(1.5) saturate(1.4);
+}
+
+[data-design='cyberpunk'] :is(.input, .select, .textarea) {
+  border-color: var(--cyber-line);
+  caret-color: var(--color-primary);
+}
+
+[data-design='cyberpunk'] :is(.input, .select, .textarea):focus-within {
+  border-color: var(--cyber-accent);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--cyber-accent) 45%, transparent);
+}
+
+[data-design='cyberpunk'] .app-footer {
+  border-top: 1px solid var(--color-primary);
+  box-shadow: 0 -6px 24px color-mix(in oklab, var(--color-primary) 40%, transparent);
+}
+
+[data-design='cyberpunk'] .app-footer .border-b-current {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+  filter: drop-shadow(0 0 6px var(--color-primary));
+}
+
+[data-design='cyberpunk'] .app-surface :is(img, video):not(.rounded-full) {
+  animation: cyber-media-glitch 11s infinite;
+}
+
+[data-design='cyberpunk'] .app-surface:nth-child(3n + 2) :is(img, video):not(.rounded-full) {
+  animation-delay: -4s;
+}
+
+[data-design='cyberpunk'] .app-surface:nth-child(3n) :is(img, video):not(.rounded-full) {
+  animation-delay: -7.5s;
+}
+
+[data-design='cyberpunk'] .app-floating {
+  animation: cyber-pulse 2.4s ease-in-out infinite;
+}
+
+[data-design='cyberpunk'] .liquid-enter-active {
+  animation: cyber-glitch-in 0.28s steps(4) both;
+}
+
+[data-design='cyberpunk'] .liquid-leave-active {
+  animation: cyber-glitch-out 0.22s steps(4) both;
+}
+
+@keyframes cyber-glitch-in {
+  0% {
+    opacity: 0;
+    clip-path: inset(45% 0 45% 0);
+    filter: hue-rotate(90deg);
+  }
+  35% {
+    opacity: 1;
+    clip-path: inset(10% 0 60% 0);
+    transform: translateX(-6px);
+  }
+  70% {
+    clip-path: inset(55% 0 0 0);
+    transform: translateX(5px);
+    filter: none;
+  }
+  100% {
+    clip-path: none;
+  }
+}
+
+@keyframes cyber-glitch-out {
+  30% {
+    clip-path: inset(0 0 55% 0);
+    transform: translateX(6px);
+    filter: hue-rotate(-90deg);
+  }
+  65% {
+    opacity: 1;
+    clip-path: inset(60% 0 15% 0);
+    transform: translateX(-5px);
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(50% 0 50% 0);
+  }
+}
+
+@keyframes cyber-grid {
+  to {
+    transform: perspective(60rem) rotateX(65deg) translateY(3rem);
+  }
+}
+
+@keyframes cyber-scan {
+  from {
+    transform: translateY(-15vh);
+  }
+  to {
+    transform: translateY(110vh);
+  }
+}
+
+@keyframes cyber-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 0.6;
+  }
+  49% {
+    opacity: 1;
+  }
+  83% {
+    opacity: 0.75;
+  }
+  84% {
+    opacity: 1;
+  }
+}
+
+@keyframes cyber-neon {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  62% {
+    opacity: 0.35;
+  }
+  63% {
+    opacity: 1;
+  }
+  65% {
+    opacity: 0.5;
+  }
+  66% {
+    opacity: 1;
+  }
+}
+
+@keyframes cyber-boot {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    filter: brightness(2);
+  }
+  60% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    filter: brightness(1.4);
+  }
+  100% {
+    filter: none;
+  }
+}
+
+@keyframes cyber-glitch-loop {
+  0%,
+  90%,
+  100% {
+    transform: none;
+    clip-path: none;
+  }
+  91% {
+    transform: translateX(-3px) skewX(-10deg);
+    clip-path: inset(15% 0 45% 0);
+    text-shadow:
+      -3px 0 var(--cyber-accent),
+      3px 0 var(--color-primary);
+  }
+  93% {
+    transform: translateX(3px);
+    clip-path: inset(55% 0 5% 0);
+  }
+  95% {
+    transform: translateX(-1px);
+    clip-path: none;
+  }
+}
+
+@keyframes cyber-glitch {
+  0% {
+    transform: translate(0);
+    text-shadow:
+      -3px 0 var(--cyber-accent),
+      3px 0 var(--color-primary);
+  }
+  33% {
+    transform: translate(-3px, 1px) skewX(-8deg);
+  }
+  66% {
+    transform: translate(2px, -1px) skewX(6deg);
+    text-shadow:
+      3px 0 var(--cyber-accent),
+      -3px 0 var(--color-primary);
+  }
+  100% {
+    transform: translate(0);
+    text-shadow: none;
+  }
+}
+
+@keyframes cyber-media-glitch {
+  0%,
+  95%,
+  100% {
+    transform: none;
+    clip-path: none;
+    filter: none;
+  }
+  95.5% {
+    transform: translateX(-6px);
+    clip-path: inset(20% 0 55% 0);
+    filter: hue-rotate(90deg) saturate(2);
+  }
+  96% {
+    transform: translateX(5px);
+    clip-path: inset(60% 0 10% 0);
+    filter: hue-rotate(-60deg) contrast(1.5);
+  }
+  96.5% {
+    transform: translateX(-2px);
+    clip-path: inset(5% 0 80% 0);
+    filter: invert(0.15);
+  }
+  97% {
+    transform: none;
+    clip-path: none;
+    filter: none;
+  }
+}
+
+@keyframes cyber-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px var(--cyber-accent),
+      0 0 10px color-mix(in oklab, var(--color-primary) 60%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--cyber-accent),
+      0 0 28px var(--color-primary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-design='cyberpunk'] *,
+  [data-design='cyberpunk'] ::before,
+  [data-design='cyberpunk'] ::after,
+  :root[data-design='cyberpunk']::after {
+    animation: none !important;
+  }
+}
+
 @font-face {
   font-family: 'OpenDyslexic';
   src: url('./fonts/OpenDyslexic-Regular.otf') format('opentype');
