@@ -352,6 +352,7 @@ export default {
       designOptions: [
         { value: 'default', icon: 'grid', label: 'Standard' },
         { value: 'glass', icon: 'droplet', label: 'Glassmorphism' },
+        { value: 'cyberpunk', icon: 'chip', label: 'Cyberpunk' },
       ],
       dyslexiaOptions: [
         { value: true, label: 'An', icon: 'check' },
