@@ -1,16 +1,18 @@
 <template>
-  <BaseButton
-    v-if="action"
-    variant="primary"
-    shape="circle"
-    :title="action.label"
-    :aria-busy="action.loading"
-    class="fixed bottom-[calc(var(--footer-height)+1.5rem)] right-6 z-10 size-14 lg:hidden"
-    @click="!action.loading && action.onClick()"
-  >
-    <span v-if="action.loading" class="loading loading-spinner"></span>
-    <AppIcon v-else :name="action.icon" :alt="action.label" class="size-6!" />
-  </BaseButton>
+  <Transition name="liquid">
+    <BaseButton
+      v-if="action"
+      variant="primary"
+      shape="circle"
+      :title="action.label"
+      :aria-busy="action.loading"
+      class="app-floating fixed bottom-[calc(var(--footer-height)+1.5rem)] right-6 z-10 size-14 lg:hidden"
+      @click="!action.loading && action.onClick()"
+    >
+      <span v-if="action.loading" class="loading loading-spinner"></span>
+      <AppIcon v-else :name="action.icon" :alt="action.label" class="size-6!" />
+    </BaseButton>
+  </Transition>
 </template>
 
 <script>

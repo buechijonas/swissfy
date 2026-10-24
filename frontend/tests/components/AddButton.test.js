@@ -13,7 +13,7 @@ describe('AddButton', () => {
     const floating = mount(FloatingAddButton)
     const home = mount(AddButton, { props: { label: 'Posten' } })
     await floating.vm.$nextTick()
-    const element = floating.element
+    const element = floating.find('button').element
 
     home.unmount()
     const onClick = vi.fn()
@@ -22,15 +22,15 @@ describe('AddButton', () => {
       attrs: { onClick },
     })
     await floating.vm.$nextTick()
-    expect(floating.element).toBe(element)
-    expect(floating.attributes('title')).toBe('Zur Timeline')
+    expect(floating.find('button').element).toBe(element)
+    expect(floating.find('button').attributes('title')).toBe('Zur Timeline')
     expect(floating.find('.loading').exists()).toBe(true)
-    await floating.trigger('click')
+    await floating.find('button').trigger('click')
     expect(onClick).not.toHaveBeenCalled()
 
     await album.setProps({ loading: false })
     expect(floating.find('.loading').exists()).toBe(false)
-    await floating.trigger('click')
+    await floating.find('button').trigger('click')
     expect(onClick).toHaveBeenCalledOnce()
 
     album.unmount()

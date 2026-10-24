@@ -8,6 +8,7 @@
     @click.capture="suppressClick"
   >
     <div
+      v-show="offset"
       class="absolute inset-0 flex items-center justify-end gap-2 px-6 bg-primary text-primary-content font-bold"
       :class="{ 'opacity-60': !armed }"
     >
@@ -15,8 +16,8 @@
       <span>{{ label }}</span>
     </div>
     <div
-      class="relative bg-base-100"
-      :class="{ 'transition-transform': direction !== 'horizontal' }"
+      class="app-swipe-row relative bg-base-100"
+      :class="{ 'transition-transform': direction !== 'horizontal', 'is-swiping': offset }"
       :style="{ transform: `translateX(${offset}px)` }"
     >
       <slot />

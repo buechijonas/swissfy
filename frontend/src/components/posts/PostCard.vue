@@ -84,7 +84,7 @@
           class="post-video block bg-black object-contain"
           :class="
             reel
-              ? 'h-[calc(100dvh-var(--mobile-chrome-height))] w-auto max-w-full lg:h-[calc(100dvh-48px)]'
+              ? 'h-[calc(100dvh-var(--reel-chrome-height))] w-auto max-w-full lg:h-[calc(100dvh-48px)]'
               : 'w-full'
           "
           :style="{ aspectRatio: detail ? post.aspect_ratio : post.list_aspect_ratio }"
@@ -112,15 +112,17 @@
           @click.stop="tap(togglePlay)"
         ></div>
         <HeartBurst ref="heart" />
-        <button
-          v-if="!playing"
-          type="button"
-          class="absolute top-1/2 left-1/2 flex size-18 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-content shadow-lg transition-transform hover:scale-105"
-          title="Abspielen"
-          @click="togglePlay"
-        >
-          <AppIcon name="play" alt="Abspielen" class="ml-1 size-8!" />
-        </button>
+        <Transition name="liquid">
+          <button
+            v-if="!playing"
+            type="button"
+            class="app-floating absolute top-1/2 left-1/2 flex size-18 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-content shadow-lg transition-transform hover:scale-105"
+            title="Abspielen"
+            @click="togglePlay"
+          >
+            <AppIcon name="play" alt="Abspielen" class="ml-1 size-8!" />
+          </button>
+        </Transition>
       </template>
     </div>
     <p v-if="post.video && post.hidden" class="px-4 pt-3 text-xs font-bold text-error">
