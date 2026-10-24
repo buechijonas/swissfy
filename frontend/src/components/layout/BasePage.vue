@@ -1,6 +1,6 @@
 <template>
   <div class="relative grid min-h-[100dvh] grid-cols-[8px_auto_1fr]">
-    <div class="app-nav-accent absolute top-0 left-0 z-20 h-full w-2 bg-primary" />
+    <div class="app-nav-accent absolute top-0 left-0 z-50 h-full w-2 bg-primary" />
     <BaseNavigation :active-navigation="activeNavigation" />
     <div class="app-content col-start-3 row-start-1 flex min-w-0 flex-col bg-base-200">
       <BaseHeader />

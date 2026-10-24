@@ -6,7 +6,7 @@
     <input id="my-drawer-3" v-model="isNavDrawerOpen" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content"></div>
     <div
-      class="app-nav drawer-side flex flex-col overflow-y-auto bg-base-100 top-12 h-[calc(100dvh-48px)]"
+      class="app-nav drawer-side z-40 flex flex-col overflow-y-auto bg-base-100 top-12 h-[calc(100dvh-48px)]"
     >
       <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
       <ul class="menu w-full lg:w-80 p-4 gap-2">
