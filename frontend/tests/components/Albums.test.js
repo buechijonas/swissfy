@@ -5,7 +5,7 @@ import AlbumTimeline from '@/components/albums/AlbumTimeline.vue'
 import ProfileAlbums from '@/components/albums/ProfileAlbums.vue'
 
 const albums = [
-  { id: 'a1', name: 'Ferien', cover: '/api/albums/a1/cover/' },
+  { id: 'a1', name: 'Ferien', cover: '/api/posts/p1/thumbnail/' },
   { id: 'a2', name: 'Familie', cover: null },
 ]
 

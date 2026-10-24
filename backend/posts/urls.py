@@ -51,7 +51,6 @@ urlpatterns = [
     path("albums/", views.AlbumListView.as_view(), name="albums"),
     path("albums/order/", views.AlbumOrderView.as_view(), name="album-order"),
     path("albums/<uuid:uuid>/", views.AlbumDetailView.as_view(), name="album"),
-    path("albums/<uuid:uuid>/cover/", views.AlbumCoverView.as_view(), name="album-cover"),
     path(
         "albums/<uuid:uuid>/entries/",
         views.AlbumEntryListView.as_view(),

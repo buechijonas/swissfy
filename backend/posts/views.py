@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import generics, status
-from rest_framework.exceptions import NotFound, PermissionDenied, Throttled, ValidationError
+from rest_framework.exceptions import PermissionDenied, Throttled, ValidationError
 from rest_framework.pagination import CursorPagination
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
@@ -721,13 +721,12 @@ class UserAlbumListView(APIView):
         owner = get_object_or_404(User.objects.select_related("profile"), username=username)
         if not can_view_profile(request.user, owner):
             raise PermissionDenied("Diese Alben sind nicht sichtbar.")
-        serializer = AlbumSerializer(owner.albums.all(), many=True, context={"request": request})
+        albums = owner.albums.select_related("cover__post")
+        serializer = AlbumSerializer(albums, many=True, context={"request": request})
         return Response(serializer.data)
 
 
 class AlbumListView(APIView):
-    parser_classes = [MultiPartParser, JSONParser]
-
     def post(self, request):
         ensure_not_suspended(request.user)
         serializer = AlbumSerializer(data=request.data, context={"request": request})
@@ -743,14 +742,14 @@ class AlbumOrderView(APIView):
         albums = apply_order(request.user.albums.all(), request.data.get("albums"), "albums")
         Album.objects.bulk_update(albums, ["position"])
         serializer = AlbumSerializer(
-            request.user.albums.all(), many=True, context={"request": request}
+            request.user.albums.select_related("cover__post"),
+            many=True,
+            context={"request": request},
         )
         return Response(serializer.data)
 
 
 class AlbumDetailView(APIView):
-    parser_classes = [MultiPartParser, JSONParser]
-
     def get(self, request, uuid):
         return album_response(request, viewable_album(request, uuid))
 
@@ -765,14 +764,6 @@ class AlbumDetailView(APIView):
     def delete(self, request, uuid):
         get_object_or_404(Album, uuid=uuid, owner=request.user).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class AlbumCoverView(APIView):
-    def get(self, request, uuid):
-        album = viewable_album(request, uuid)
-        if not album.cover:
-            raise NotFound()
-        return serve_image(album.cover)
 
 
 def own_album(request, uuid):
@@ -817,4 +808,5 @@ class AlbumEntryDetailView(APIView):
     def delete(self, request, uuid):
         entry = self.get_entry(request, uuid)
         entry.delete()
+        entry.album.refresh_from_db()
         return album_response(request, entry.album)

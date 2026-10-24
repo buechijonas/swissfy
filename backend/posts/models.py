@@ -245,7 +245,9 @@ class Album(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="albums"
     )
     name = models.CharField(max_length=NAME_LENGTH)
-    cover = models.FileField(upload_to="albums/", blank=True)
+    cover = models.ForeignKey(
+        "AlbumEntry", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
     position = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -269,8 +271,3 @@ class AlbumEntry(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["album", "post"], name="unique_album_post"),
         ]
-
-
-@receiver(post_delete, sender=Album)
-def delete_album_cover(sender, instance, **kwargs):
-    instance.cover.delete(save=False)

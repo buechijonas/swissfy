@@ -9,7 +9,6 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.utils import timezone
 from PIL import Image
 
@@ -821,6 +820,9 @@ class AlbumTests(TestCase):
     def albums(self):
         return [a["name"] for a in self.client.get("/api/posts/users/anna/albums/").json()]
 
+    def covers(self):
+        return [a["cover"] for a in self.client.get("/api/posts/users/anna/albums/").json()]
+
     def send(self, method, url, data=None):
         return getattr(self.client, method)(url, data, content_type="application/json")
 
@@ -834,10 +836,10 @@ class AlbumTests(TestCase):
         return [entry["post"]["id"] for entry in self.detail(album)["entries"]]
 
     def test_existing_posts_are_added_with_optional_dates(self):
-        album = self.album(cover=image_upload())
+        album = self.album()
         self.assertTrue(album["is_own"])
         self.assertEqual(album["entries"], [])
-        self.assertEqual(self.client.get(album["cover"])["Content-Type"], "image/webp")
+        self.assertIsNone(album["cover"])
 
         beach, city = self.feed(), self.feed()
         response = self.add(
@@ -928,15 +930,35 @@ class AlbumTests(TestCase):
         self.assertEqual(self.client.get("/api/posts/users/anna/albums/").status_code, 403)
         self.assertEqual(self.client.get(f"/api/albums/{album['id']}/").status_code, 403)
 
-    def test_cover_can_be_replaced_and_removed(self):
-        album = self.album(cover=image_upload())
-        old = Album.objects.get().cover.name
+    def test_cover_is_chosen_from_album_entries(self):
+        album = self.album()
+        first, second = self.add(album, {"post": self.feed()}, {"post": self.feed()}).json()[
+            "entries"
+        ]
         url = f"/api/albums/{album['id']}/"
-        response = self.client.patch(
-            url,
-            encode_multipart(BOUNDARY, {"cover": image_upload()}),
-            content_type=MULTIPART_CONTENT,
-        )
-        self.assertIsNotNone(response.json()["cover"])
-        self.assertNotEqual(Album.objects.get().cover.name, old)
+
+        cover = self.send("patch", url, {"cover": second["id"]}).json()["cover"]
+        self.assertEqual(cover, second["post"]["thumbnail"])
+        self.assertEqual(self.client.get(cover).status_code, 200)
+        self.assertEqual(self.covers(), [cover])
+
         self.assertIsNone(self.send("patch", url, {"cover": None}).json()["cover"])
+        self.send("patch", url, {"cover": first["id"]})
+        self.client.delete(f"/api/album-entries/{first['id']}/")
+        self.assertIsNone(self.detail(album)["cover"])
+
+    def test_cover_must_belong_to_the_album(self):
+        album, other = self.album(), self.album("Familie")
+        entry = self.add(other, {"post": self.feed()}).json()["entries"][0]
+        url = f"/api/albums/{album['id']}/"
+        self.assertEqual(self.send("patch", url, {"cover": entry["id"]}).status_code, 400)
+        response = self.client.post("/api/albums/", {"name": "Neu", "cover": entry["id"]})
+        self.assertEqual(response.status_code, 400)
+
+    def test_hidden_cover_post_is_not_shown_to_others(self):
+        album = self.album()
+        entry = self.add(album, {"post": self.feed(visibility="friends")}).json()["entries"][0]
+        self.send("patch", f"/api/albums/{album['id']}/", {"cover": entry["id"]})
+
+        self.client.force_login(self.jonas)
+        self.assertIsNone(self.detail(album)["cover"])
