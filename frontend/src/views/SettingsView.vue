@@ -237,6 +237,28 @@
           </div>
 
           <div class="mb-10">
+            <h3 class="text-xl my-4">Design</h3>
+            <BaseCard
+              class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
+            >
+              <p class="text-swissfy-muted min-w-0">Stil der Oberfläche.</p>
+              <div class="flex flex-wrap justify-center gap-2">
+                <BaseButton
+                  v-for="option in designOptions"
+                  :key="option.value"
+                  type="button"
+                  size="sm"
+                  :variant="design === option.value ? 'primary' : 'neutral'"
+                  @click="design = option.value"
+                >
+                  <AppIcon :name="option.icon" />
+                  {{ option.label }}
+                </BaseButton>
+              </div>
+            </BaseCard>
+          </div>
+
+          <div class="mb-10">
             <h3 class="text-xl my-4">Barrierefreiheit</h3>
             <BaseCard
               class="p-6 flex flex-col items-center text-center gap-4 mb-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
@@ -295,6 +317,7 @@ import GroupManager from '@/components/posts/GroupManager.vue'
 import ProfilePictures from '@/components/settings/ProfilePictures.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { themeMode } from '@/lib/theme.js'
+import { design } from '@/lib/design.js'
 import { dyslexiaFont } from '@/lib/dyslexia.js'
 import { contrastMode } from '@/lib/contrast.js'
 import { videoAutoplay, videoLoop } from '@/lib/wellbeing.js'
@@ -325,6 +348,10 @@ export default {
         { value: 'auto', icon: 'laptop', label: 'Auto' },
         { value: 'light', icon: 'brightness', label: 'Hell' },
         { value: 'dark', icon: 'moon-stars', label: 'Dunkel' },
+      ],
+      designOptions: [
+        { value: 'default', icon: 'grid', label: 'Standard' },
+        { value: 'glass', icon: 'droplet', label: 'Glassmorphism' },
       ],
       dyslexiaOptions: [
         { value: true, label: 'An', icon: 'check' },
@@ -424,6 +451,14 @@ export default {
       },
       set(value) {
         themeMode.value = value
+      },
+    },
+    design: {
+      get() {
+        return design.value
+      },
+      set(value) {
+        design.value = value
       },
     },
     dyslexiaFont: {

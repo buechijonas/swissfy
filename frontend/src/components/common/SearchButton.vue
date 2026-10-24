@@ -4,7 +4,7 @@
       variant="primary"
       shape="circle"
       title="Suchen"
-      class="fixed bottom-[calc(var(--footer-height)+1.5rem)] right-6 z-10 size-14 lg:hidden"
+      class="app-floating fixed bottom-[calc(var(--footer-height)+1.5rem)] right-6 z-10 size-14 lg:hidden"
       @click="$emit('click')"
     >
       <AppIcon name="search" alt="Suchen" class="size-6!" />

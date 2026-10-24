@@ -29,6 +29,7 @@
 :root {
   --footer-height: calc(3.5rem + env(safe-area-inset-bottom));
   --mobile-chrome-height: calc(3rem + var(--footer-height));
+  --reel-chrome-height: var(--mobile-chrome-height);
 }
 
 [data-theme='dark'] {
@@ -46,6 +47,202 @@
     --color-swissfy-border: #3a3f4a;
     --color-swissfy-highlight: #451a1a;
     --color-swissfy-repost: #3ccf9f;
+  }
+}
+
+[data-design='glass'] {
+  --glass-fill: light-dark(rgb(255 255 255 / 0.45), rgb(30 34 42 / 0.45));
+  --glass-shadow:
+    inset 0 0 0 1px light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.08)),
+    inset 0 1px 0 light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.16)),
+    0 1px 2px light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.3)),
+    0 10px 30px light-dark(rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.35));
+  --glass-blur: blur(16px) saturate(160%);
+  --color-swissfy-muted: light-dark(#4f5b69, #c3ccd6);
+  --radius-box: 1.75rem;
+  --footer-height: calc(4.5rem + env(safe-area-inset-bottom));
+  --mobile-chrome-height: 3rem;
+  --reel-chrome-height: calc(3rem + var(--footer-height));
+}
+
+:root[data-design='glass'] {
+  background:
+    radial-gradient(
+      circle at 15% 0%,
+      color-mix(in oklab, var(--color-primary) 12%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 85% 100%,
+      light-dark(rgb(90 130 255 / 0.12), rgb(90 130 255 / 0.1)),
+      transparent 50%
+    ),
+    var(--color-base-200);
+  background-attachment: fixed;
+}
+
+[data-design='glass'] .app-content {
+  background-color: transparent;
+}
+
+[data-design='glass']
+  :is(
+    .app-surface,
+    .app-nav,
+    .modal-box,
+    .btn:not(.btn-primary, .btn-error, .btn-ghost, .btn-outline)
+  ) {
+  background-color: var(--glass-fill);
+  border-color: transparent;
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+}
+
+[data-design='glass'] .app-surface {
+  border-radius: var(--radius-box);
+}
+
+[data-design='glass'] .btn:not(.btn-circle) {
+  border-radius: 1.25rem;
+}
+
+[data-design='glass'] .app-floating {
+  background-color: color-mix(in oklab, var(--color-primary) 68%, transparent);
+  border-color: transparent;
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+}
+
+[data-design='glass'] .app-swipe-row:not(.is-swiping) {
+  background-color: transparent;
+}
+
+[data-design='glass'] .app-surface.border-t-0 {
+  margin-top: 0.75rem;
+}
+
+[data-design='glass'] .tabs {
+  margin-block: 0.75rem;
+}
+
+@media (width < 40rem) {
+  [data-design='glass'] .app-surface[class*='max-sm:-mx-6'] {
+    margin-inline: -1rem;
+  }
+
+  [data-design='glass'] .app-surface:is(:first-child, .hidden + *) {
+    margin-top: 0.75rem;
+  }
+}
+
+@media (width < 64rem) {
+  [data-design='glass'] [class*='100dvh-var(--mobile-chrome-height)'] {
+    padding-bottom: calc(var(--footer-height) + 1rem);
+  }
+}
+
+[data-design='glass'] .app-footer {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 0 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  border: 0;
+  pointer-events: none;
+}
+
+[data-design='glass'] .app-footer:not(.app-footer-dark) {
+  background-color: transparent;
+}
+
+[data-design='glass'] .app-footer-bar {
+  height: 3.75rem;
+  padding: 0.3rem;
+  border-radius: 9999px;
+  color: var(--color-base-content);
+  background-color: color-mix(in oklab, var(--color-base-100) 70%, transparent);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(24px) saturate(180%);
+  touch-action: none;
+  pointer-events: auto;
+}
+
+[data-design='glass'] .app-footer-bar > a {
+  flex: 1;
+  justify-content: center;
+  border-color: transparent;
+}
+
+.app-footer-bubble {
+  display: none;
+}
+
+[data-design='glass'] .app-footer-bubble {
+  position: absolute;
+  inset-block: 0.3rem;
+  display: block;
+  border-radius: 9999px;
+  background-color: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.14));
+  box-shadow: var(--glass-shadow);
+  transition:
+    left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.2s ease;
+}
+
+[data-design='glass'] .is-dragging .app-footer-bubble {
+  transform: scale(calc(1.12 * var(--stretch)), calc(1.12 / var(--stretch)));
+  transition: transform 0.12s ease-out;
+}
+
+.liquid-leave-active {
+  transition: none;
+}
+
+[data-design='glass'] .liquid-enter-active {
+  animation: liquid-in 0.32s ease-out;
+}
+
+[data-design='glass'] .liquid-leave-active {
+  animation: liquid-out 0.18s ease-in;
+}
+
+@keyframes liquid-in {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(0.3);
+  }
+  55% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1.12, 0.9);
+  }
+  75% {
+    transform: scale(0.95, 1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes liquid-out {
+  35% {
+    transform: scale(1.1, 0.9);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-design='glass'] .app-footer-bubble {
+    transition: none;
+  }
+
+  [data-design='glass'] :is(.liquid-enter-active, .liquid-leave-active) {
+    animation: none;
   }
 }
 
