@@ -8,20 +8,37 @@
         placeholder="Name"
         @keyup.enter="save"
       />
-      <div v-if="preview" class="relative mx-auto w-40">
-        <img :src="preview" alt="Titelbild" class="aspect-square w-full rounded-box object-cover" />
-        <BaseButton
-          variant="error"
-          shape="circle"
-          size="sm"
-          class="absolute top-2 right-2"
-          title="Titelbild entfernen"
-          @click="removeCover"
-        >
-          <AppIcon name="trash" alt="Titelbild entfernen" />
-        </BaseButton>
+      <div v-if="album?.entries.length" class="flex min-h-0 flex-col gap-2">
+        <span class="text-sm text-swissfy-muted">Titelbild (optional)</span>
+        <div class="grid max-h-72 grid-cols-3 gap-2 overflow-y-auto">
+          <button
+            v-for="entry in album.entries"
+            :key="entry.id"
+            type="button"
+            class="relative"
+            data-cover
+            :aria-pressed="cover === entry.id"
+            @click="toggleCover(entry)"
+          >
+            <img
+              :src="entry.post.thumbnail"
+              alt=""
+              loading="lazy"
+              class="aspect-square w-full rounded-box object-cover bg-base-200"
+              :class="{ 'opacity-60': cover === entry.id }"
+            />
+            <span
+              class="absolute top-1 right-1 flex size-6 items-center justify-center rounded-full border-2 border-white"
+              :class="cover === entry.id ? 'bg-primary text-primary-content' : 'bg-black/30'"
+            >
+              <AppIcon v-if="cover === entry.id" name="check" size="sm" alt="Titelbild" />
+            </span>
+          </button>
+        </div>
       </div>
-      <ImageDropzone v-else class="h-40" label="Titelbild wählen" @select="selectCover" />
+      <p v-else-if="album" class="text-sm text-swissfy-muted">
+        Füge Posts zur Timeline hinzu, um eines davon als Titelbild zu wählen.
+      </p>
       <p v-if="error" class="text-error text-sm">{{ error }}</p>
     </div>
     <template #actions>
@@ -57,19 +74,17 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
-import ImageDropzone from '@/components/common/ImageDropzone.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 
 export default {
   name: 'AlbumDialog',
-  components: { AppIcon, BaseButton, BaseDialog, ImageDropzone },
+  components: { AppIcon, BaseButton, BaseDialog },
   emits: ['saved', 'delete'],
   data() {
     return {
       album: null,
       name: '',
-      cover: undefined,
-      preview: null,
+      cover: null,
       error: null,
       busy: false,
     }
@@ -78,8 +93,7 @@ export default {
     open(album = null) {
       this.album = album
       this.name = album?.name ?? ''
-      this.cover = undefined
-      this.preview = album?.cover ?? null
+      this.cover = album?.entries.find((entry) => entry.post.thumbnail === album.cover)?.id ?? null
       this.error = null
       this.$refs.dialog.open()
     },
@@ -87,20 +101,12 @@ export default {
       this.$refs.dialog.close()
       this.$emit('delete')
     },
-    selectCover([file]) {
-      this.cover = file
-      this.preview = URL.createObjectURL(file)
-    },
-    removeCover() {
-      this.cover = null
-      this.preview = null
+    toggleCover(entry) {
+      this.cover = this.cover === entry.id ? null : entry.id
     },
     body() {
-      if (this.cover === null) return JSON.stringify({ name: this.name.trim(), cover: null })
-      const form = new FormData()
-      form.append('name', this.name.trim())
-      if (this.cover) form.append('cover', this.cover)
-      return form
+      const name = this.name.trim()
+      return JSON.stringify(this.album ? { name, cover: this.cover } : { name })
     },
     async save() {
       if (!this.name.trim() || this.busy) return

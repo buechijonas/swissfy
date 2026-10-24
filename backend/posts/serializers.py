@@ -19,7 +19,7 @@ from .models import (
     SavedFolder,
     Story,
 )
-from .queries import media_posts, visible_stories
+from .queries import media_posts, visible_posts, visible_stories
 
 User = get_user_model()
 
@@ -457,30 +457,32 @@ class ContactGroupSerializer(OwnedNameMixin, serializers.ModelSerializer):
 
 class AlbumSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid", read_only=True)
-    cover = serializers.FileField(required=False, allow_null=True)
+    cover = serializers.SlugRelatedField(
+        slug_field="uuid", queryset=AlbumEntry.objects.none(), required=False, allow_null=True
+    )
 
     class Meta:
         model = Album
         fields = ["id", "name", "cover", "created_at"]
 
-    def validate_cover(self, upload):
-        if upload is None:
-            return ""
-        try:
-            return images.thumbnail(images.load(upload))
-        except images.InvalidImage as error:
-            raise serializers.ValidationError(str(error))
-
-    def update(self, album, data):
-        if "cover" in data:
-            album.cover.delete(save=False)
-        return super().update(album, data)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if isinstance(self.instance, Album):
+            self.fields["cover"].queryset = self.instance.entries.all()
 
     def to_representation(self, album):
         data = super().to_representation(album)
-        data["cover"] = f"/api/albums/{album.uuid}/cover/" if album.cover else None
+        data["cover"] = self.cover_url(album.cover)
         data["is_own"] = album.owner_id == self.context["request"].user.pk
         return data
+
+    def cover_url(self, entry):
+        if entry is None:
+            return None
+        viewer = self.context["request"].user
+        if not visible_posts(viewer).filter(pk=entry.post_id).exists():
+            return None
+        return thumbnail_url(entry.post)
 
 
 class AlbumPostSerializer(serializers.ModelSerializer):
