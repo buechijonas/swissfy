@@ -173,11 +173,19 @@
   border-color: transparent;
 }
 
-.app-footer-bubble {
+[data-design='glass'] .tabs > .tab {
+  border-color: transparent;
+}
+
+[data-design='glass'] :is(.app-tabs:not(.is-scrollable), .app-tabs > .tab-active) {
+  touch-action: none;
+}
+
+.app-bubble {
   display: none;
 }
 
-[data-design='glass'] .app-footer-bubble {
+[data-design='glass'] .app-bubble {
   position: absolute;
   inset-block: 0.3rem;
   display: block;
@@ -186,12 +194,15 @@
   box-shadow: var(--glass-shadow);
   transition:
     left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
     transform 0.2s ease;
 }
 
-[data-design='glass'] .is-dragging .app-footer-bubble {
+[data-design='glass'] .is-dragging .app-bubble {
   transform: scale(calc(1.12 * var(--stretch)), calc(1.12 / var(--stretch)));
-  transition: transform 0.12s ease-out;
+  transition:
+    width 0.2s ease,
+    transform 0.12s ease-out;
 }
 
 .liquid-leave-active {
@@ -237,7 +248,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-design='glass'] .app-footer-bubble {
+  [data-design='glass'] .app-bubble {
     transition: none;
   }
 
