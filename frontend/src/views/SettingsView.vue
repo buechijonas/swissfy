@@ -66,20 +66,15 @@
                 Profilbilder sind davon nicht betroffen, ihre Sichtbarkeit legst du oben fest.
               </p>
             </div>
-            <div v-if="privacy" class="flex flex-wrap justify-center gap-2">
-              <BaseButton
-                v-for="option in visibilityOptions"
-                :key="option.value"
-                type="button"
-                size="sm"
-                :variant="privacy.profile_visibility === option.value ? 'primary' : 'neutral'"
-                :disabled="savingPrivacy"
-                @click="savePrivacy('profile_visibility', option.value)"
-              >
-                <AppIcon :name="option.icon" />
-                {{ option.label }}
-              </BaseButton>
-            </div>
+            <BaseSwitcher
+              v-if="privacy"
+              class="flex-wrap justify-center gap-2"
+              size="sm"
+              :options="visibilityOptions"
+              :active="privacy.profile_visibility"
+              :disabled="savingPrivacy"
+              @select="savePrivacy('profile_visibility', $event)"
+            />
             <div v-else-if="!privacyError" class="skeleton h-8 w-56"></div>
           </BaseCard>
           <BaseCard
@@ -91,20 +86,15 @@
               <p>{{ toggle.label }}</p>
               <p class="text-swissfy-muted text-sm">{{ toggle.hint }}</p>
             </div>
-            <div v-if="privacy" class="flex flex-wrap justify-center gap-2 shrink-0">
-              <BaseButton
-                v-for="option in onOffOptions"
-                :key="option.label"
-                type="button"
-                size="sm"
-                :variant="privacy[toggle.field] === option.value ? 'primary' : 'neutral'"
-                :disabled="savingPrivacy"
-                @click="savePrivacy(toggle.field, option.value)"
-              >
-                <AppIcon :name="option.icon" />
-                {{ option.label }}
-              </BaseButton>
-            </div>
+            <BaseSwitcher
+              v-if="privacy"
+              class="flex-wrap justify-center gap-2 shrink-0"
+              size="sm"
+              :options="onOffOptions"
+              :active="privacy[toggle.field]"
+              :disabled="savingPrivacy"
+              @select="savePrivacy(toggle.field, $event)"
+            />
             <div v-else-if="!privacyError" class="skeleton h-8 w-28"></div>
           </BaseCard>
           <p v-if="privacyError" class="text-error text-sm mt-4 text-center">{{ privacyError }}</p>
@@ -119,20 +109,15 @@
                   {{ chatProtectionHints[chatProtection] }}
                 </p>
               </div>
-              <div v-if="chatProtection" class="flex flex-wrap justify-center gap-2 shrink-0">
-                <BaseButton
-                  v-for="option in chatProtectionOptions"
-                  :key="option.value"
-                  type="button"
-                  size="sm"
-                  :variant="chatProtection === option.value ? 'primary' : 'neutral'"
-                  :disabled="savingChat"
-                  @click="selectChatProtection(option.value)"
-                >
-                  <AppIcon :name="option.icon" />
-                  {{ option.label }}
-                </BaseButton>
-              </div>
+              <BaseSwitcher
+                v-if="chatProtection"
+                class="flex-wrap justify-center gap-2 shrink-0"
+                size="sm"
+                :options="chatProtectionOptions"
+                :active="chatProtection"
+                :disabled="savingChat"
+                @select="selectChatProtection($event)"
+              />
               <div v-else-if="!chatError" class="skeleton h-8 w-56"></div>
             </div>
             <form v-if="pinSetup" class="flex flex-col gap-2" @submit.prevent="savePin">
@@ -194,19 +179,13 @@
               <p>{{ toggle.label }}</p>
               <p class="text-swissfy-muted text-sm">{{ toggle.hint }}</p>
             </div>
-            <div class="flex flex-wrap justify-center gap-2 shrink-0">
-              <BaseButton
-                v-for="option in onOffOptions"
-                :key="option.label"
-                type="button"
-                size="sm"
-                :variant="toggle.setting.value === option.value ? 'primary' : 'neutral'"
-                @click="toggle.setting.value = option.value"
-              >
-                <AppIcon :name="option.icon" />
-                {{ option.label }}
-              </BaseButton>
-            </div>
+            <BaseSwitcher
+              class="flex-wrap justify-center gap-2 shrink-0"
+              size="sm"
+              :options="onOffOptions"
+              :active="toggle.setting.value"
+              @select="toggle.setting.value = $event"
+            />
           </BaseCard>
         </div>
 
@@ -220,19 +199,13 @@
               }"
             >
               <p class="text-swissfy-muted min-w-0">Erscheinungsbild der Oberfläche.</p>
-              <div class="flex flex-wrap justify-center gap-2">
-                <BaseButton
-                  v-for="option in themeOptions"
-                  :key="option.value"
-                  type="button"
-                  size="sm"
-                  :variant="themeMode === option.value ? 'primary' : 'neutral'"
-                  @click="themeMode = option.value"
-                >
-                  <AppIcon :name="option.icon" />
-                  {{ option.label }}
-                </BaseButton>
-              </div>
+              <BaseSwitcher
+                class="flex-wrap justify-center gap-2"
+                size="sm"
+                :options="themeOptions"
+                :active="themeMode"
+                @select="themeMode = $event"
+              />
             </BaseCard>
           </div>
 
@@ -242,19 +215,14 @@
               class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
             >
               <p class="text-swissfy-muted min-w-0">Stil der Oberfläche.</p>
-              <div class="flex flex-wrap justify-center gap-2">
-                <BaseButton
-                  v-for="option in designOptions"
-                  :key="option.value"
-                  type="button"
-                  size="sm"
-                  :variant="design === option.value ? 'primary' : 'neutral'"
-                  @click="design = option.value"
-                >
-                  <AppIcon :name="option.icon" />
-                  {{ option.label }}
-                </BaseButton>
-              </div>
+              <BaseSwitcher
+                class="gap-2"
+                size="sm"
+                vertical
+                :options="designOptions"
+                :active="design"
+                @select="design = $event"
+              />
             </BaseCard>
           </div>
 
@@ -264,37 +232,25 @@
               class="p-6 flex flex-col items-center text-center gap-4 mb-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
             >
               <p class="text-swissfy-muted min-w-0">Legasthenie</p>
-              <div class="flex flex-wrap justify-center gap-2">
-                <BaseButton
-                  v-for="option in dyslexiaOptions"
-                  :key="option.value"
-                  type="button"
-                  size="sm"
-                  :variant="dyslexiaFont === option.value ? 'primary' : 'neutral'"
-                  @click="dyslexiaFont = option.value"
-                >
-                  <AppIcon :name="option.icon" />
-                  {{ option.label }}
-                </BaseButton>
-              </div>
+              <BaseSwitcher
+                class="flex-wrap justify-center gap-2"
+                size="sm"
+                :options="dyslexiaOptions"
+                :active="dyslexiaFont"
+                @select="dyslexiaFont = $event"
+              />
             </BaseCard>
             <BaseCard
               class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
             >
               <p class="text-swissfy-muted min-w-0">Kontrastmodus</p>
-              <div class="flex flex-wrap justify-center gap-2">
-                <BaseButton
-                  v-for="option in contrastOptions"
-                  :key="option.value"
-                  type="button"
-                  size="sm"
-                  :variant="contrastMode === option.value ? 'primary' : 'neutral'"
-                  @click="contrastMode = option.value"
-                >
-                  <AppIcon :name="option.icon" />
-                  {{ option.label }}
-                </BaseButton>
-              </div>
+              <BaseSwitcher
+                class="flex-wrap justify-center gap-2"
+                size="sm"
+                :options="contrastOptions"
+                :active="contrastMode"
+                @select="contrastMode = $event"
+              />
             </BaseCard>
           </div>
         </template>
@@ -311,6 +267,7 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import GroupManager from '@/components/posts/GroupManager.vue'
@@ -335,6 +292,7 @@ export default {
     BaseCard,
     BaseFooter,
     BaseButton,
+    BaseSwitcher,
     BaseTabs,
     AppIcon,
     GroupManager,

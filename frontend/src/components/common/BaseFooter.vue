@@ -20,7 +20,7 @@
       <span
         v-if="bubble"
         ref="bubble"
-        class="app-footer-bubble"
+        class="app-bubble"
         :style="{ left: `${bubble.left}px`, width: `${bubble.width}px`, '--stretch': stretch }"
       />
       <RouterLink
@@ -56,6 +56,7 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import { canAccess, navigationItems } from '@/data/navigation.js'
 import { avatarSrc } from '@/lib/avatar.js'
+import { wobble } from '@/lib/bubble.js'
 import { design } from '@/lib/design.js'
 import { useAuthStore } from '@/stores/auth.js'
 
@@ -111,17 +112,7 @@ export default {
       this.bubble = link && { left: link.offsetLeft, width: link.offsetWidth }
     },
     wobble() {
-      if (!this.$refs.bubble || matchMedia('(prefers-reduced-motion: reduce)').matches) return
-      this.$refs.bubble.animate(
-        [
-          { transform: 'scale(1)' },
-          { transform: 'scale(1.25, 0.82)' },
-          { transform: 'scale(0.92, 1.08)' },
-          { transform: 'scale(1.04, 0.97)' },
-          { transform: 'scale(1)' },
-        ],
-        { duration: 650, easing: 'ease-out' },
-      )
+      wobble(this.$refs.bubble)
     },
     grab(event) {
       if (design.value !== 'glass') return
