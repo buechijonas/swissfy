@@ -55,6 +55,7 @@
 
         <div v-else-if="activeTab === 'profile'" class="mb-10">
           <ProfilePictures />
+          <ProfileAbout />
           <h3 class="text-xl mt-10 mb-4">Datenschutz</h3>
           <BaseCard
             class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
@@ -271,6 +272,7 @@ import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import GroupManager from '@/components/posts/GroupManager.vue'
+import ProfileAbout from '@/components/settings/ProfileAbout.vue'
 import ProfilePictures from '@/components/settings/ProfilePictures.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { themeMode } from '@/lib/theme.js'
@@ -296,6 +298,7 @@ export default {
     BaseTabs,
     AppIcon,
     GroupManager,
+    ProfileAbout,
     ProfilePictures,
   },
   data() {

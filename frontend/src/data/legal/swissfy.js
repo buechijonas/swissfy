@@ -24,6 +24,12 @@ export default {
           'Diese Webapplikation steht unter dem Einfluss von der Organisation Kiidle. Der Hinweis ist hier aufgrund der geltenden Impressumspflicht der Europäischen Union und der Schweiz enthalten.',
         ],
       },
+      {
+        title: 'Datenquellen',
+        lines: [
+          'Angaben und Cover zu Filmen und Serien stammen von IMDb (imdb.com), zu Spielen von Steam (store.steampowered.com). Swissfy steht in keiner Verbindung zu IMDb oder Valve.',
+        ],
+      },
     ],
   },
   privacy: {
@@ -52,7 +58,7 @@ export default {
       },
       {
         title: '6. Weitergabe an Dritte',
-        text: 'Es erfolgt keine Weitergabe personenbezogener Daten an Dritter.',
+        text: 'Es erfolgt keine Weitergabe personenbezogener Daten an Dritter. Suchbegriffe für Lieblingsfilme, -serien und -spiele werden ohne Bezug zu Ihrer Person über unseren Server an IMDb bzw. Steam gesendet. Auch die Cover werden über unseren Server geladen, sodass Ihre IP-Adresse nicht an diese Dienste übermittelt wird.',
       },
       {
         title: '7. Rechte der betroffenen Personen',

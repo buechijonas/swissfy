@@ -173,12 +173,31 @@
 
       <template v-if="!loading && !error && tabs.length">
         <BaseTabs class="border-t-0" :tabs="tabs" :active="activeTab" />
-        <BaseCard v-if="activeTab === 'about'" class="p-6 border-t-0">
+        <BaseCard v-if="activeTab === 'about'" class="p-6 border-t-0 flex flex-col gap-6">
+          <p v-if="profile.biography" class="whitespace-pre-line break-words">
+            {{ profile.biography }}
+          </p>
           <dl v-if="profile.birthdate" class="flex justify-between gap-4">
             <dt class="text-swissfy-muted">Geburtsdatum</dt>
             <dd>{{ formatDate(profile.birthdate) }}</dd>
           </dl>
-          <p v-else class="text-swissfy-muted">Keine Angaben.</p>
+          <section v-for="favorite in favorites" :key="favorite.kind">
+            <h4 class="text-swissfy-muted mb-2">{{ favorite.label }}</h4>
+            <ul class="grid grid-cols-3 gap-4">
+              <li v-for="item in profile[favorite.field]" :key="item.id" class="min-w-0">
+                <FavoriteCover :item="item" :icon="favorite.icon" />
+                <p class="text-sm truncate mt-2" :title="item.title">{{ item.title }}</p>
+                <p v-if="item.year" class="text-xs text-swissfy-muted">{{ item.year }}</p>
+              </li>
+            </ul>
+          </section>
+          <LibraryCredits v-if="favorites.length" />
+          <p
+            v-if="!profile.biography && !profile.birthdate && !favorites.length"
+            class="text-swissfy-muted"
+          >
+            Keine Angaben.
+          </p>
         </BaseCard>
         <ProfileAchievements
           v-else-if="activeTab === 'achievements'"
@@ -254,6 +273,9 @@ import CreateDialog from '@/components/posts/CreateDialog.vue'
 import PostList from '@/components/posts/PostList.vue'
 import StoryViewer from '@/components/posts/StoryViewer.vue'
 import ProfileStatus from '@/components/moderation/ProfileStatus.vue'
+import FavoriteCover from '@/components/settings/FavoriteCover.vue'
+import LibraryCredits from '@/components/settings/LibraryCredits.vue'
+import { favoriteKinds } from '@/data/favorites.js'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -302,6 +324,8 @@ export default {
     BaseSwitcher,
     BaseTabs,
     CipherText,
+    FavoriteCover,
+    LibraryCredits,
     PostList,
     ProfileAchievements,
     ProfileAlbums,
@@ -337,6 +361,9 @@ export default {
     },
     timeline() {
       return this.activeTab === 'activities'
+    },
+    favorites() {
+      return favoriteKinds.filter((favorite) => this.profile[favorite.field]?.length)
     },
     availableMedia() {
       return Object.keys(MEDIA).filter((key) => this.profile.media?.[MEDIA[key].flag])

@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, Subquery, Value, When
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
@@ -17,9 +17,11 @@ from notifications.notify import notify, resolve_request, withdraw
 from posts.models import Story, StoryLike, StoryView, story_cutoff
 from posts.views import serve_image
 
+from . import library
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 from .pictures import KINDS, picture_file, sees_private, viewer_relations
 from .serializers import (
+    AboutSerializer,
     PictureSettingsSerializer,
     PrivacySerializer,
     ProfileListSerializer,
@@ -27,6 +29,7 @@ from .serializers import (
     StoryViewerSerializer,
     are_friends,
     can_view_profile,
+    favorites_data,
     follows,
     requires_follow_request,
 )
@@ -205,6 +208,39 @@ class PrivacyView(APIView):
                 )
                 follow_request.accept()
         return Response(serializer.data)
+
+
+class AboutView(APIView):
+    def get(self, request):
+        return Response(AboutSerializer(get_or_create_profile(request.user)).data)
+
+    def patch(self, request):
+        serializer = AboutSerializer(
+            get_or_create_profile(request.user), data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        return Response(AboutSerializer(serializer.save()).data)
+
+
+class LibrarySearchView(APIView):
+    def get(self, request, kind):
+        if kind not in library.KINDS:
+            raise Http404
+        query = request.query_params.get("q", "").strip()
+        if not query:
+            return Response({"results": []})
+        return Response({"results": favorites_data(library.search(kind, query))})
+
+
+class CoverView(APIView):
+    def get(self, request, path):
+        cover = library.fetch_cover(path)
+        if not cover:
+            raise Http404
+        content, content_type = cover
+        response = HttpResponse(content, content_type=content_type)
+        response["Cache-Control"] = "private, max-age=31536000, immutable"
+        return response
 
 
 def picture_settings_response(request, profile):

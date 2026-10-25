@@ -121,6 +121,9 @@ class UserProfile(models.Model):
     relationship = models.CharField(
         "Beziehungsstatus", max_length=20, choices=Relationship.choices, blank=True
     )
+    favorite_movies = models.JSONField("Lieblingsfilme", default=list, blank=True)
+    favorite_series = models.JSONField("Lieblingsserien", default=list, blank=True)
+    favorite_games = models.JSONField("Lieblingsspiele", default=list, blank=True)
 
     profile_visibility = models.CharField(
         "Profil sichtbar für", max_length=20, choices=Visibility.choices, default=Visibility.PUBLIC
