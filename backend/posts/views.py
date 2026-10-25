@@ -297,6 +297,10 @@ class ActivityView(APIView):
                 comments.filter(reported_comments()) if is_moderator(viewer) else comments.none()
             )
         comments = comment_details(comments, viewer)
+        if request.query_params.get("comments"):
+            posts = posts.none()
+        else:
+            comments = comments.none()
         before = parse_datetime(request.query_params.get("before", ""))
         if before:
             posts = posts.filter(created_at__lt=before)

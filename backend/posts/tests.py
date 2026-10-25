@@ -430,7 +430,7 @@ class PostTests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(self.client.get(f"/api/comments/{comment.uuid}/").status_code, 404)
 
-    def test_activities_include_visible_comments(self):
+    def test_activities_separate_posts_and_visible_comments(self):
         own = self.post().json()["id"]
         hidden = Post.objects.create(author=self.eve, text="geheim", visibility="friends")
         public = Post.objects.create(author=self.eve, text="offen")
@@ -439,20 +439,27 @@ class PostTests(TestCase):
 
         self.as_user(self.jonas)
         data = self.client.get("/api/posts/users/anna/activities/").json()
+        self.assertEqual([(item["type"], item["id"]) for item in data["results"]], [("post", own)])
+        self.assertIsNone(data["next"])
+
+        data = self.client.get("/api/posts/users/anna/activities/?comments=1").json()
         self.assertEqual(
             [(item["type"], item["id"]) for item in data["results"]],
-            [("comment", str(comment.uuid)), ("post", own)],
+            [("comment", str(comment.uuid))],
         )
         self.assertEqual(data["results"][0]["post"]["id"], str(public.uuid))
         self.assertIsNone(data["next"])
 
     def test_activities_pages(self):
-        posts = Post.objects.bulk_create(Post(author=self.anna, text=str(i)) for i in range(20))
-        for post in posts[:10]:
+        posts = Post.objects.bulk_create(Post(author=self.anna, text=str(i)) for i in range(30))
+        for post in posts:
             Comment.objects.create(post=post, author=self.anna, text="x")
-        first = self.client.get("/api/posts/users/anna/activities/").json()
-        second = self.client.get(f"/api/posts/users/anna/activities/{first['next']}").json()
+        url = "/api/posts/users/anna/activities/?comments=1"
+        first = self.client.get(url).json()
+        second = self.client.get(f"{url}&{first['next'][1:]}").json()
         self.assertEqual((len(first["results"]), len(second["results"])), (25, 5))
+        types = {item["type"] for item in first["results"] + second["results"]}
+        self.assertEqual(types, {"comment"})
 
     def test_saved_posts_and_folders(self):
         first, second = self.post().json()["id"], self.post().json()["id"]

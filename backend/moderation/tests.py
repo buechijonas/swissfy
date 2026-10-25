@@ -396,13 +396,17 @@ class ModeratorReportedContentTests(TestCase):
         self.assertEqual([post["text"] for post in tiles], ["gemeldet"])
         activities = self.client.get("/api/posts/users/anna/activities/").json()["results"]
         self.assertEqual(
-            [(item["type"], item["text"]) for item in activities],
-            [("comment", "frech"), ("post", "gemeldet")],
+            [(item["type"], item["text"]) for item in activities], [("post", "gemeldet")]
+        )
+        comments = "/api/posts/users/anna/activities/?comments=1"
+        activities = self.client.get(comments).json()["results"]
+        self.assertEqual(
+            [(item["type"], item["text"]) for item in activities], [("comment", "frech")]
         )
 
         public = Post.objects.create(author=reporter, text="offen")
         Comment.objects.create(post=public, author=anna, text="harmlos")
-        activities = self.client.get("/api/posts/users/anna/activities/").json()["results"]
+        activities = self.client.get(comments).json()["results"]
         self.assertNotIn("harmlos", [item["text"] for item in activities])
 
         self.client.force_login(reporter)

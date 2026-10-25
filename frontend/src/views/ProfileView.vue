@@ -196,26 +196,19 @@
           :key="`${profile.username}-status`"
           :username="profile.username"
         />
-        <div
-          v-if="activeTab === 'tiles' && showMediaSwitcher"
-          class="flex max-sm:-mx-6 lg:mt-2 lg:justify-end"
-        >
+        <div v-if="switcher" class="flex max-sm:-mx-6 lg:mt-2 lg:justify-end">
           <BaseSwitcher
             class="join w-full lg:w-auto"
             item-class="join-item max-lg:flex-1 max-lg:rounded-none"
-            :options="mediaOptions"
-            :active="media"
-            @select="$router.replace({ query: { ...$route.query, media: $event } })"
+            :options="switcher.options"
+            :active="switcher.active"
+            @select="$router.replace({ query: { ...$route.query, [switcher.param]: $event } })"
           />
         </div>
         <PostList
           v-if="postList"
-          :key="`${profile.username}-${activeTab}-${media}`"
-          :class="
-            activeTab === 'tiles' && showMediaSwitcher
-              ? 'lg:mt-2'
-              : ['mt-4', { 'max-sm:mt-0': timeline }]
-          "
+          :key="`${profile.username}-${activeTab}-${switcher?.active}`"
+          :class="switcher ? 'lg:mt-2' : 'mt-4'"
           :url="postsUrl"
           :grid="!timeline"
           :edge-to-edge="timeline"
@@ -283,9 +276,22 @@ const MEDIA = {
     emptyText: 'Noch keine Seeds.',
   },
 }
-const POST_LISTS = {
-  activities: { query: 'activities/', emptyText: 'Noch keine Feeds.' },
+const ACTIVITIES = {
+  feeds: {
+    label: 'Feeds',
+    icon: 'list-timeline',
+    query: 'activities/',
+    emptyText: 'Noch keine Feeds.',
+  },
+  comments: {
+    label: 'Kommentare',
+    icon: 'comments',
+    query: 'activities/?comments=1',
+    emptyText: 'Noch keine Kommentare.',
+  },
 }
+const toOptions = (entries) =>
+  Object.entries(entries).map(([value, { label, icon }]) => ({ value, label, icon }))
 const MODERATION_TABS = TABS.filter((tab) => ['tiles', 'activities', 'status'].includes(tab.key))
 
 export default {
@@ -341,19 +347,27 @@ export default {
     availableMedia() {
       return Object.keys(MEDIA).filter((key) => this.profile.media?.[MEDIA[key].flag])
     },
-    mediaOptions() {
-      return Object.entries(MEDIA).map(([value, { label, icon }]) => ({ value, label, icon }))
-    },
-    showMediaSwitcher() {
-      return this.availableMedia.length > 1
-    },
     media() {
       const requested = this.$route.query.media
       if (this.availableMedia.includes(requested)) return requested
       return this.availableMedia[0] ?? 'pictures'
     },
+    activity() {
+      const requested = this.$route.query.activity
+      return Object.hasOwn(ACTIVITIES, requested) ? requested : 'feeds'
+    },
+    switcher() {
+      if (this.timeline) {
+        return { param: 'activity', options: toOptions(ACTIVITIES), active: this.activity }
+      }
+      if (this.activeTab === 'tiles' && this.availableMedia.length > 1) {
+        return { param: 'media', options: toOptions(MEDIA), active: this.media }
+      }
+      return null
+    },
     postList() {
-      return this.activeTab === 'tiles' ? MEDIA[this.media] : POST_LISTS[this.activeTab]
+      if (this.timeline) return ACTIVITIES[this.activity]
+      return this.activeTab === 'tiles' ? MEDIA[this.media] : null
     },
     breadcrumbs() {
       return this.username

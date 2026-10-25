@@ -125,6 +125,7 @@ class PrivateContentTests(SecurityTestCase):
             "/api/posts/users/anna/",
             "/api/posts/reels/",
             "/api/posts/users/anna/activities/",
+            "/api/posts/users/anna/activities/?comments=1",
             "/api/posts/saved/",
         ]:
             with self.subTest(url=url):
@@ -146,7 +147,8 @@ class PrivateContentTests(SecurityTestCase):
         )
         self.assertEqual(response.status_code, 404)
         self.assertNotIn(
-            "geheim", self.client.get("/api/posts/users/anna/activities/").content.decode()
+            "geheim",
+            self.client.get("/api/posts/users/anna/activities/?comments=1").content.decode(),
         )
 
     def test_audience_is_hidden_from_other_viewers(self):
