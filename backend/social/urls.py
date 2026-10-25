@@ -10,6 +10,9 @@ urlpatterns = [
     path("profiles/me/", views.ProfileView.as_view(), name="profile-me"),
     path("profiles/me/privacy/", views.PrivacyView.as_view(), name="profile-privacy"),
     path("profiles/me/pictures/", views.PictureSettingsView.as_view(), name="profile-pictures"),
+    path("profiles/me/about/", views.AboutView.as_view(), name="profile-about"),
+    path("library/<str:kind>/", views.LibrarySearchView.as_view(), name="library-search"),
+    path("covers/<path:path>", views.CoverView.as_view(), name="cover"),
     path(
         "profiles/me/pictures/<str:kind>/",
         views.OwnPictureView.as_view(),

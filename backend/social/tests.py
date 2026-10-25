@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 from datetime import date
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -12,6 +13,7 @@ from chats.models import ChatRequest
 from posts.models import ContactGroup, Post
 from posts.tests import image_upload
 
+from . import library
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 
 User = get_user_model()
@@ -498,3 +500,170 @@ class ProfileMediaTests(TestCase):
     def test_media_respects_visibility(self):
         Post.objects.create(author=self.jonas, thumbnail="t.webp", visibility="friends")
         self.assertEqual(self.media(), {"pictures": False, "reels": False})
+
+
+def movie(id):
+    return {"id": id, "title": f"Film {id}", "year": "2001", "cover": f"imdb/{id}"}
+
+
+def suggestion(id, qid, image="MV5Bposter@"):
+    return {
+        "id": id,
+        "qid": qid,
+        "l": f"Titel {id}",
+        "y": 2017,
+        "i": {"imageUrl": f"https://m.media-amazon.com/images/M/{image}._V1_.jpg"},
+    }
+
+
+class AboutTests(TestCase):
+    URL = "/api/social/profiles/me/about/"
+
+    def setUp(self):
+        self.jonas = User.objects.create(username="jonas")
+        self.anna = User.objects.create(username="anna")
+        self.client.force_login(self.jonas)
+
+    def patch(self, data):
+        return self.client.patch(self.URL, data, content_type="application/json")
+
+    def test_saves_biography_and_favorites(self):
+        with mock.patch("social.library.details", side_effect=lambda kind, id: movie(id)):
+            response = self.patch({"biography": "Hallo", "favorite_movies": ["tt1", "tt2", "tt2"]})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["biography"], "Hallo")
+        self.assertEqual(
+            response.json()["favorite_movies"],
+            [
+                {
+                    "id": "tt1",
+                    "title": "Film tt1",
+                    "year": "2001",
+                    "cover": "/api/social/covers/imdb/tt1",
+                },
+                {
+                    "id": "tt2",
+                    "title": "Film tt2",
+                    "year": "2001",
+                    "cover": "/api/social/covers/imdb/tt2",
+                },
+            ],
+        )
+        self.assertEqual(
+            get_or_create_profile(self.jonas).favorite_movies, [movie("tt1"), movie("tt2")]
+        )
+
+        with mock.patch("social.library.details") as details:
+            self.patch({"favorite_movies": ["tt2"]})
+        details.assert_not_called()
+        self.assertEqual(get_or_create_profile(self.jonas).favorite_movies, [movie("tt2")])
+
+    def test_limits_favorites(self):
+        response = self.patch({"favorite_games": ["tt1", "tt2", "tt3", "tt4"]})
+        self.assertEqual(response.status_code, 400)
+
+    def test_rejects_unknown_or_wrong_kind(self):
+        with mock.patch(
+            "social.library.imdb_suggestions", return_value=[suggestion("tt1", "movie")]
+        ):
+            self.assertEqual(self.patch({"favorite_games": ["tt1"]}).status_code, 400)
+            self.assertEqual(self.patch({"favorite_movies": ["../x"]}).status_code, 400)
+            self.assertEqual(self.patch({"favorite_movies": ["tt1"]}).status_code, 200)
+
+    def test_library_unavailable(self):
+        with mock.patch(
+            "social.library.requests.get", side_effect=library.requests.ConnectionError
+        ):
+            response = self.patch({"favorite_series": ["tt1"]})
+        self.assertEqual(response.status_code, 503)
+
+    def test_profile_shows_about_only_when_visible(self):
+        UserProfile.objects.create(user=self.anna, biography="Hi", favorite_games=[movie("tt5")])
+        data = self.client.get("/api/social/profiles/anna/").json()
+        self.assertEqual(data["biography"], "Hi")
+        self.assertEqual(data["favorite_games"][0]["cover"], "/api/social/covers/imdb/tt5")
+
+        UserProfile.objects.filter(user=self.anna).update(profile_visibility="friends")
+        data = self.client.get("/api/social/profiles/anna/").json()
+        self.assertNotIn("biography", data)
+        self.assertNotIn("favorite_games", data)
+
+    def test_search_filters_by_kind(self):
+        results = [
+            suggestion("tt7", "tvSeries"),
+            suggestion("tt8", "movie"),
+            {"id": "nm1", "l": "Person"},
+            suggestion("tt9", "tvMiniSeries", image="evil/../x"),
+        ]
+        response = mock.Mock(json=lambda: {"d": results})
+        with mock.patch("social.library.requests.get", return_value=response) as get:
+            data = self.client.get("/api/social/library/series/?q=Dark Matter").json()
+        self.assertEqual(
+            get.call_args.args[0], "https://v3.sg.media-imdb.com/suggestion/x/dark%20matter.json"
+        )
+        self.assertEqual(
+            data["results"],
+            [
+                {
+                    "id": "tt7",
+                    "title": "Titel tt7",
+                    "year": "2017",
+                    "cover": "/api/social/covers/imdb/MV5Bposter@",
+                },
+                {"id": "tt9", "title": "Titel tt9", "year": "2017", "cover": None},
+            ],
+        )
+        self.assertEqual(self.client.get("/api/social/library/books/?q=x").status_code, 404)
+
+    def test_game_search_and_details_from_steam(self):
+        search = mock.Mock(json=lambda: {"items": [{"id": 620, "name": "Portal 2"}]})
+        with mock.patch("social.library.requests.get", return_value=search) as get:
+            data = self.client.get("/api/social/library/games/?q=portal").json()
+        self.assertEqual(get.call_args.kwargs["params"]["term"], "portal")
+        self.assertEqual(
+            data["results"],
+            [
+                {
+                    "id": "620",
+                    "title": "Portal 2",
+                    "year": "",
+                    "cover": "/api/social/covers/steam/620",
+                }
+            ],
+        )
+
+        app = {"success": True, "data": {"type": "game", "name": "Portal 2"}}
+        app["data"]["release_date"] = {"date": "18. Apr. 2011"}
+        with mock.patch("social.library.fetch", return_value={"620": app}):
+            self.assertEqual(self.patch({"favorite_games": ["620"]}).status_code, 200)
+        self.assertEqual(
+            get_or_create_profile(self.jonas).favorite_games,
+            [{"id": "620", "title": "Portal 2", "year": "2011", "cover": "steam/620"}],
+        )
+
+        app["data"]["type"] = "dlc"
+        with mock.patch("social.library.fetch", return_value={"621": app}):
+            self.assertEqual(self.patch({"favorite_games": ["621"]}).status_code, 400)
+
+    def test_cover_only_from_known_sources(self):
+        for path in ["imdb/../x", "evil/x", "imdb/a.jpg", "imdb/a/b", "steam/abc", "steam/1/x"]:
+            with self.subTest(path=path):
+                self.assertEqual(library.cover_urls(path), [])
+                self.assertEqual(self.client.get(f"/api/social/covers/{path}").status_code, 404)
+
+    def test_steam_cover_falls_back_to_header(self):
+        missing = mock.Mock(raise_for_status=mock.Mock(side_effect=library.requests.HTTPError))
+        found = mock.Mock(content=b"img", headers={"Content-Type": "image/jpeg"})
+        with mock.patch("social.library.requests.get", side_effect=[missing, found]) as get:
+            served = self.client.get("/api/social/covers/steam/620")
+        self.assertTrue(get.call_args.args[0].endswith("/apps/620/header.jpg"))
+        self.assertEqual(served.content, b"img")
+
+    def test_cover_proxy(self):
+        response = mock.Mock(content=b"img", headers={"Content-Type": "image/jpeg"})
+        with mock.patch("social.library.requests.get", return_value=response) as get:
+            served = self.client.get("/api/social/covers/imdb/MV5Bposter@")
+        get.assert_called_once_with(
+            "https://m.media-amazon.com/images/M/MV5Bposter@._V1_UX342_.jpg", timeout=10
+        )
+        self.assertEqual((served.status_code, served.content), (200, b"img"))

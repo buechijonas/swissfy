@@ -7,15 +7,10 @@ from chats.models import ChatRequest
 from main.numbers import compact_number
 from posts import images
 from posts.models import ContactGroup
-from posts.queries import (
-    image_posts,
-    story_details,
-    video_posts,
-    visible_posts,
-    visible_stories,
-)
+from posts.queries import image_posts, story_details, video_posts, visible_posts, visible_stories
 from posts.serializers import StorySerializer
 
+from . import library
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 from .pictures import KINDS, PictureField, file_url, picture_file
 
@@ -208,7 +203,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         if not data["can_view"]:
             for field in HIDDEN_PROFILE_FIELDS:
                 del data[field]
-        elif data["is_self"] or profile.show_birthdate:
+            return data
+        data.update(about_data(profile))
+        if data["is_self"] or profile.show_birthdate:
             data["birthdate"] = profile.birthdate
         return data
 
@@ -217,6 +214,51 @@ class PrivacySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ["profile_visibility", "read_receipts", "chat_requests", "show_birthdate"]
+
+
+FAVORITE_FIELDS = {f"favorite_{kind}": kind for kind in library.KINDS}
+
+
+def favorites_data(items):
+    return [
+        {**item, "cover": f"/api/social/covers/{item['cover']}" if item["cover"] else None}
+        for item in items
+    ]
+
+
+def about_data(profile):
+    return {
+        "biography": profile.biography,
+        **{field: favorites_data(getattr(profile, field)) for field in FAVORITE_FIELDS},
+    }
+
+
+class AboutSerializer(serializers.ModelSerializer):
+    favorite_movies = serializers.ListField(
+        child=serializers.CharField(), max_length=library.MAX_FAVORITES, required=False
+    )
+    favorite_series = serializers.ListField(
+        child=serializers.CharField(), max_length=library.MAX_FAVORITES, required=False
+    )
+    favorite_games = serializers.ListField(
+        child=serializers.CharField(), max_length=library.MAX_FAVORITES, required=False
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = ["biography", *FAVORITE_FIELDS]
+
+    def validate(self, data):
+        for field, kind in FAVORITE_FIELDS.items():
+            if field not in data:
+                continue
+            known = {item["id"]: item for item in getattr(self.instance, field)}
+            ids = list(dict.fromkeys(data[field]))
+            data[field] = [known.get(id) or library.details(kind, id) for id in ids]
+        return data
+
+    def to_representation(self, profile):
+        return about_data(profile)
 
 
 class PictureSettingsSerializer(serializers.ModelSerializer):
