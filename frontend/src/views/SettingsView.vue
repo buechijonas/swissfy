@@ -20,9 +20,12 @@
               v-if="authStore.isAuthenticated"
               class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
-              <p class="text-swissfy-muted min-w-0">
-                Profil, Profilbild, Passwort und Sicherheit verwaltest du im govex Account Center.
-              </p>
+              <div class="min-w-0">
+                <p>govex Account Center</p>
+                <p class="text-swissfy-muted text-sm mt-1">
+                  Profil, Profilbild, Passwort und Sicherheit verwaltest du im govex Account Center.
+                </p>
+              </div>
               <BaseButton class="shrink-0" @click="authStore.openGovexAccount()">
                 <AppIcon name="share-square" />
                 Zum Account Center
@@ -32,12 +35,39 @@
               v-else
               class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
-              <p class="text-swissfy-muted min-w-0">Melde dich mit deinem govex Konto an.</p>
+              <div class="min-w-0">
+                <p>govex Konto</p>
+                <p class="text-swissfy-muted text-sm mt-1">Melde dich mit deinem govex Konto an.</p>
+              </div>
               <BaseButton class="shrink-0" @click="authStore.startGovexLogin()">
                 <AppIcon name="enter" />
                 Anmelden
               </BaseButton>
             </BaseCard>
+            <BaseCard
+              v-if="authStore.isAuthenticated"
+              class="p-6 mt-4 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
+            >
+              <div class="min-w-0">
+                <p>Persistente Anmeldung</p>
+                <p class="text-swissfy-muted text-sm mt-1">
+                  Wenn an, bleibst du auf diesem Gerät angemeldet, auch wenn Cookies oder der Cache
+                  gelöscht werden. Erst wenn alle Websitedaten gelöscht sind, musst du dich neu
+                  anmelden.
+                </p>
+              </div>
+              <BaseSwitcher
+                class="flex-wrap justify-center gap-2 shrink-0"
+                size="sm"
+                :options="onOffOptions"
+                :active="persistentLogin"
+                :disabled="savingPersistentLogin"
+                @select="savePersistentLogin($event)"
+              />
+            </BaseCard>
+            <p v-if="persistentLoginError" class="text-error text-sm mt-4 text-center">
+              {{ persistentLoginError }}
+            </p>
           </div>
 
           <div class="mb-10">
@@ -56,15 +86,19 @@
         <div v-else-if="activeTab === 'profile'" class="mb-10">
           <ProfilePictures />
           <ProfileAbout />
-          <h3 class="text-xl mt-10 mb-4">Datenschutz</h3>
+        </div>
+
+        <div v-else-if="activeTab === 'privacy'" class="mb-10">
+          <h3 class="text-xl my-4">Datenschutz</h3>
           <BaseCard
             class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
           >
             <div class="min-w-0">
               <p>Profil sichtbar für</p>
-              <p class="text-swissfy-muted text-sm">
+              <p class="text-swissfy-muted text-sm mt-1">
                 Gilt auch für deinen Vor- und Nachnamen sowie deine Feeds und Seeds. Deine
-                Profilbilder sind davon nicht betroffen, ihre Sichtbarkeit legst du oben fest.
+                Profilbilder sind davon nicht betroffen, ihre Sichtbarkeit legst du unter «Profil»
+                fest.
               </p>
             </div>
             <BaseSwitcher
@@ -85,7 +119,7 @@
           >
             <div class="min-w-0">
               <p>{{ toggle.label }}</p>
-              <p class="text-swissfy-muted text-sm">{{ toggle.hint }}</p>
+              <p class="text-swissfy-muted text-sm mt-1">{{ toggle.hint }}</p>
             </div>
             <BaseSwitcher
               v-if="privacy"
@@ -106,7 +140,7 @@
             >
               <div class="min-w-0">
                 <p>Chat-Verschlüsselung</p>
-                <p v-if="chatProtection" class="text-swissfy-muted text-sm">
+                <p v-if="chatProtection" class="text-swissfy-muted text-sm mt-1">
                   {{ chatProtectionHints[chatProtection] }}
                 </p>
               </div>
@@ -178,7 +212,7 @@
           >
             <div class="min-w-0">
               <p>{{ toggle.label }}</p>
-              <p class="text-swissfy-muted text-sm">{{ toggle.hint }}</p>
+              <p class="text-swissfy-muted text-sm mt-1">{{ toggle.hint }}</p>
             </div>
             <BaseSwitcher
               class="flex-wrap justify-center gap-2 shrink-0"
@@ -283,6 +317,7 @@ import { videoAutoplay, videoLoop } from '@/lib/wellbeing.js'
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { footerLinks } from '@/data/footer.js'
 import { fetchProtection, setProtection } from '@/lib/chatKeys.js'
+import { persistentLogin } from '@/lib/persistentLogin.js'
 
 const PRIVACY_URL = '/api/social/profiles/me/privacy/'
 
@@ -334,6 +369,8 @@ export default {
           'Ende-zu-Ende verschlüsselt. Nur dieses Gerät kann deine Chats lesen, neue Geräte sehen nur neue Nachrichten.',
         pin: 'Ende-zu-Ende verschlüsselt. Auf neuen Geräten entsperrst du deine Chats mit deiner PIN.',
       },
+      savingPersistentLogin: false,
+      persistentLoginError: null,
       chatProtection: null,
       savingChat: false,
       chatError: null,
@@ -392,6 +429,7 @@ export default {
         { key: 'general', label: 'Allgemein' },
         ...(this.authStore.isAuthenticated
           ? [
+              { key: 'privacy', label: 'Datenschutz' },
               { key: 'profile', label: 'Profil' },
               { key: 'groups', label: 'Gruppen' },
             ]
@@ -399,6 +437,9 @@ export default {
         { key: 'display', label: 'Darstellung' },
         { key: 'wellbeing', label: 'Wohlbefinden' },
       ]
+    },
+    persistentLogin() {
+      return persistentLogin.value
     },
     pinValid() {
       return this.newPin.length >= 6 && this.newPin === this.newPinRepeat
@@ -444,13 +485,24 @@ export default {
     activeTab: {
       immediate: true,
       handler(tab) {
-        if (tab !== 'profile') return
+        if (tab !== 'privacy') return
         if (!this.privacy) this.loadPrivacy()
         if (!this.chatProtection) this.loadChatProtection()
       },
     },
   },
   methods: {
+    async savePersistentLogin(enabled) {
+      this.savingPersistentLogin = true
+      this.persistentLoginError = null
+      try {
+        await this.authStore.setPersistentLogin(enabled)
+      } catch (error) {
+        this.persistentLoginError = error.message
+      } finally {
+        this.savingPersistentLogin = false
+      }
+    },
     async loadChatProtection() {
       this.chatError = null
       try {

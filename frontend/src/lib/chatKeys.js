@@ -1,35 +1,18 @@
 import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 import { generateKeyPair, unwrapWithPin, wrapWithPin } from '@/lib/chatCrypto.js'
+import { keyValueStore } from '@/lib/indexedDb.js'
 
-const DB_NAME = 'swissfy-chat'
-const STORE = 'keys'
 const PROTECTION_URL = '/api/chats/protection/'
 
-function openDb() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME)
-    request.onupgradeneeded = () => request.result.createObjectStore(STORE)
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-  })
-}
-
-async function withStore(mode, action) {
-  const db = await openDb()
-  return new Promise((resolve, reject) => {
-    const request = action(db.transaction(STORE, mode).objectStore(STORE))
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-  })
-}
+const keyStore = keyValueStore('swissfy-chat', 'keys')
 
 export async function localKeys(userId) {
-  return (await withStore('readonly', (store) => store.get(userId))) ?? []
+  return (await keyStore.get(userId)) ?? []
 }
 
 async function addLocalKey(userId, key) {
   const keys = await localKeys(userId)
-  await withStore('readwrite', (store) => store.put([...keys, key], userId))
+  await keyStore.put(userId, [...keys, key])
 }
 
 async function apiJson(url, options, fallback) {

@@ -9,6 +9,8 @@ urlpatterns = [
     path("oidc/account-deleted/", oidc.govex_account_deleted, name="govex-account-deleted"),
     path("oidc/account-updated/", oidc.govex_account_updated, name="govex-account-updated"),
     path("logout/", views.LogoutView.as_view(), name="logout"),
+    path("device/", views.DeviceTokenView.as_view(), name="device-token"),
+    path("device/restore/", views.DeviceRestoreView.as_view(), name="device-restore"),
     path("me/", views.MeView.as_view(), name="me"),
     path("consent/<str:field>/", views.ConsentAcceptView.as_view(), name="consent-accept"),
 ]

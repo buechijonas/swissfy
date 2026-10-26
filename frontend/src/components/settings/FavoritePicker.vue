@@ -6,7 +6,7 @@
       >
         <div class="min-w-0">
           <p>{{ label }}</p>
-          <p class="text-swissfy-muted text-sm">Wähle bis zu {{ max }}.</p>
+          <p class="text-swissfy-muted text-sm mt-1">Wähle bis zu {{ max }}.</p>
         </div>
         <BaseButton
           class="shrink-0"

@@ -22,7 +22,7 @@
       </div>
       <div class="min-w-0 flex-1">
         <p>{{ card.label }}</p>
-        <p class="text-swissfy-muted text-sm">{{ card.hint }}</p>
+        <p class="text-swissfy-muted text-sm mt-1">{{ card.hint }}</p>
       </div>
       <div v-if="settings" class="flex flex-wrap justify-center gap-2 shrink-0">
         <BaseButton size="sm" variant="primary" :disabled="busy" @click="choose(card.kind)">

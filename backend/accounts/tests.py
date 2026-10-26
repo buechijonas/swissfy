@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import time
+from datetime import timedelta
 from unittest import mock
 
 from cryptography.hazmat.primitives import hashes, serialization
@@ -10,9 +11,10 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from .consent import attested_status, sign, status_of
-from .models import UserConsent, UserProfile
+from .models import DeviceToken, UserConsent, UserProfile
 
 User = get_user_model()
 
@@ -159,6 +161,63 @@ class ConsentTests(TestCase):
     def test_unknown_consent_field(self):
         response = self.client.post("/api/auth/consent/cookies/")
         self.assertEqual(response.status_code, 404)
+
+
+class DeviceTokenTests(TestCase):
+    def setUp(self):
+        self.user = govex_user("jonas", "s1")
+        self.client.force_login(self.user)
+
+    def issue(self, token=None):
+        return self.client.post(
+            "/api/auth/device/", {"token": token}, content_type="application/json"
+        ).json()["token"]
+
+    def restore(self, token):
+        return self.client.post(
+            "/api/auth/device/restore/", {"token": token}, content_type="application/json"
+        )
+
+    def test_issues_and_keeps_token(self):
+        token = self.issue()
+        self.assertEqual(self.issue(token), token)
+        self.assertEqual(DeviceToken.objects.count(), 1)
+        self.assertNotEqual(DeviceToken.objects.get().token_hash, token)
+
+    def test_replaces_foreign_token(self):
+        other = govex_user("anna", "s2")
+        self.client.force_login(other)
+        foreign = self.issue()
+        self.client.force_login(self.user)
+        self.assertNotEqual(self.issue(foreign), foreign)
+
+    def test_restores_session_after_cookies_are_gone(self):
+        token = self.issue()
+        self.client.cookies.clear()
+        response = self.restore(token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["user"]["username"], "jonas")
+        self.assertEqual(self.client.get("/api/auth/me/").json()["user"]["username"], "jonas")
+
+    def test_rejects_unknown_or_stale_token(self):
+        token = self.issue()
+        self.client.cookies.clear()
+        self.assertEqual(self.restore("forged").status_code, 401)
+        DeviceToken.objects.update(last_used_at=timezone.now() - timedelta(days=400))
+        self.assertEqual(self.restore(token).status_code, 401)
+
+    def test_forgetting_device_revokes_token(self):
+        token = self.issue()
+        self.assertEqual(self.client.delete("/api/auth/device/").status_code, 204)
+        self.assertFalse(DeviceToken.objects.exists())
+        self.client.cookies.clear()
+        self.assertEqual(self.restore(token).status_code, 401)
+
+    def test_logout_revokes_device(self):
+        token = self.issue()
+        self.client.post("/api/auth/logout/")
+        self.assertFalse(DeviceToken.objects.exists())
+        self.assertEqual(self.restore(token).status_code, 401)
 
 
 class ConsentPushTests(TestCase):
