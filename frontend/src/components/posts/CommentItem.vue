@@ -114,7 +114,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import { apiFetch } from '@/lib/api.js'
+import commentsApi from '@/api/comments.js'
 import { commentLink } from '@/lib/comments.js'
 import { formatRelativeTime } from '@/lib/time.js'
 
@@ -167,12 +167,10 @@ export default {
     async vote(value) {
       this.voting = true
       try {
-        const response = await apiFetch(`/api/comments/${this.comment.id}/vote/`, {
-          method: 'PUT',
-          body: JSON.stringify({ value: this.myVote === value ? 0 : value }),
-        })
-        if (!response.ok) return
-        const data = await response.json()
+        const data = await commentsApi
+          .vote(this.comment.id, this.myVote === value ? 0 : value)
+          .catch(() => null)
+        if (!data) return
         this.score = data.score
         this.myVote = data.my_vote
       } finally {
@@ -182,10 +180,10 @@ export default {
     async report() {
       this.reporting = true
       try {
-        const response = await apiFetch(`/api/comments/${this.comment.id}/report/`, {
-          method: 'POST',
-        })
-        if (response.ok) this.reported = true
+        await commentsApi.report(this.comment.id)
+        this.reported = true
+      } catch {
+        this.reported = false
       } finally {
         this.reporting = false
       }

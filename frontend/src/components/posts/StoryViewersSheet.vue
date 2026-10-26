@@ -9,7 +9,7 @@
       <UserList
         v-if="storyId"
         :key="storyId"
-        :url="`/api/stories/${storyId}/viewers/`"
+        :url="viewersUrl"
         empty-text="Noch niemand hat deine Story gesehen."
         :link-to="(user) => `/profile/${encodeURIComponent(user.username)}`"
       >
@@ -30,12 +30,18 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import UserList from '@/components/common/UserList.vue'
+import storiesApi from '@/api/stories.js'
 
 export default {
   name: 'StoryViewersSheet',
   components: { AppIcon, BaseDialog, UserList },
   data() {
     return { storyId: null }
+  },
+  computed: {
+    viewersUrl() {
+      return storiesApi.viewersUrl(this.storyId)
+    },
   },
   methods: {
     open(storyId) {

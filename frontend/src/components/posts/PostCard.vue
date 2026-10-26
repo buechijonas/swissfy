@@ -314,9 +314,9 @@ import FolderDialog from '@/components/posts/FolderDialog.vue'
 import PostEditDialog from '@/components/posts/PostEditDialog.vue'
 import HeartBurst from '@/components/posts/HeartBurst.vue'
 import PostText from '@/components/posts/PostText.vue'
-import { apiFetch } from '@/lib/api.js'
+import postsApi from '@/api/posts.js'
 import { formatRelativeTime } from '@/lib/time.js'
-import { videoAutoplay, videoLoop } from '@/lib/wellbeing.js'
+import { videoAutoplay, videoLoop } from '@/lib/preferences.js'
 
 const DOUBLE_TAP_MS = 250
 
@@ -400,9 +400,6 @@ export default {
     hasMenu() {
       return (this.post.is_own && !this.moderation) || this.post.can_report
     },
-    apiBase() {
-      return `/api/posts/${this.post.id}`
-    },
   },
   methods: {
     formatRelativeTime,
@@ -459,50 +456,48 @@ export default {
       const { slides } = this.$refs
       slides.scrollTo({ left: index * slides.clientWidth, behavior: 'smooth' })
     },
-    async request(path, method, body) {
+    async run(action) {
       this.busy = true
       this.error = null
       try {
-        const response = await apiFetch(`${this.apiBase}/${path}`, {
-          method,
-          body: body && JSON.stringify(body),
-        })
-        if (!response.ok) throw new Error()
-        return response
+        await action()
       } catch {
         this.error = 'Aktion fehlgeschlagen.'
-        return null
       } finally {
         this.busy = false
       }
     },
-    async toggleLike() {
-      const response = await this.request('like/', this.liked ? 'DELETE' : 'POST')
-      if (!response) return
-      const data = await response.json()
-      this.liked = data.liked
-      this.likeCount = data.like_count
+    toggleLike() {
+      return this.run(async () => {
+        const id = this.post.id
+        const data = this.liked ? await postsApi.unlike(id) : await postsApi.like(id)
+        this.liked = data.liked
+        this.likeCount = data.like_count
+      })
     },
-    async toggleRepost() {
-      const response = await this.request('repost/', this.reposted ? 'DELETE' : 'POST')
-      if (!response) return
-      const data = await response.json()
-      this.reposted = data.reposted
-      this.reposter = data.reposter
+    toggleRepost() {
+      return this.run(async () => {
+        const id = this.post.id
+        const data = this.reposted ? await postsApi.unrepost(id) : await postsApi.repost(id)
+        this.reposted = data.reposted
+        this.reposter = data.reposter
+      })
     },
-    async save(folder) {
-      if (await this.request('save/', 'PUT', { folder })) {
+    save(folder) {
+      return this.run(async () => {
+        await postsApi.save(this.post.id, folder)
         this.saved = true
         this.folder = folder
         this.$emit('saved-change', { saved: true, folder })
-      }
+      })
     },
-    async unsave() {
-      if (await this.request('save/', 'DELETE')) {
+    unsave() {
+      return this.run(async () => {
+        await postsApi.unsave(this.post.id)
         this.saved = false
         this.folder = null
         this.$emit('saved-change', { saved: false, folder: null })
-      }
+      })
     },
     editFromMenu() {
       this.$refs.menu.close()
@@ -512,8 +507,11 @@ export default {
       await this.report()
       this.$refs.menu.close()
     },
-    async report() {
-      if (await this.request('report/', 'POST')) this.reported = true
+    report() {
+      return this.run(async () => {
+        await postsApi.report(this.post.id)
+        this.reported = true
+      })
     },
   },
 }

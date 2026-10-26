@@ -1,8 +1,6 @@
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import chatsApi from '@/api/chats.js'
 import { generateKeyPair, unwrapWithPin, wrapWithPin } from '@/lib/chatCrypto.js'
 import { keyValueStore } from '@/lib/indexedDb.js'
-
-const PROTECTION_URL = '/api/chats/protection/'
 
 const keyStore = keyValueStore('swissfy-chat', 'keys')
 
@@ -15,15 +13,14 @@ async function addLocalKey(userId, key) {
   await keyStore.put(userId, [...keys, key])
 }
 
-async function apiJson(url, options, fallback) {
-  const response = await apiFetch(url, options)
-  const data = await response.json().catch(() => null)
-  if (!response.ok) throw new Error(extractErrorMessage(data, fallback))
-  return data
+function failWith(fallback) {
+  return (error) => {
+    throw new Error(error.detail ?? fallback)
+  }
 }
 
 export function fetchProtection() {
-  return apiJson(PROTECTION_URL, {}, 'Chat-Einstellungen konnten nicht geladen werden.')
+  return chatsApi.protection().catch(failWith('Chat-Einstellungen konnten nicht geladen werden.'))
 }
 
 export async function prepareChatKeys(userId) {
@@ -33,11 +30,9 @@ export async function prepareChatKeys(userId) {
 
   if (protection.mode === 'device' && !hasActiveKey) {
     const { publicKey, privateKey } = await generateKeyPair({ extractable: false })
-    const key = await apiJson(
-      '/api/chats/keys/',
-      { method: 'POST', body: JSON.stringify({ public_key: publicKey }) },
-      'Schlüssel konnte nicht erstellt werden.',
-    )
+    const key = await chatsApi
+      .createKey(publicKey)
+      .catch(failWith('Schlüssel konnte nicht erstellt werden.'))
     await addLocalKey(userId, { id: key.id, ...privateKey })
   }
 
@@ -66,11 +61,9 @@ export async function setProtection(userId, mode, pin) {
       ...(mode === 'pin' ? await wrapWithPin(privateKey, pin) : {}),
     }
   }
-  const protection = await apiJson(
-    PROTECTION_URL,
-    { method: 'PUT', body: JSON.stringify({ mode, ...(key ? { key } : {}) }) },
-    'Speichern fehlgeschlagen.',
-  )
+  const protection = await chatsApi
+    .setProtection({ mode, ...(key ? { key } : {}) })
+    .catch(failWith('Speichern fehlgeschlagen.'))
   if (privateKey) {
     const local = mode === 'pin' ? await unwrapWithPin(protection.pin_key, pin) : privateKey
     await addLocalKey(userId, { id: protection.keys[0].id, ...local })

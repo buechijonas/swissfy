@@ -8,7 +8,7 @@
     <div class="-mx-6 min-h-0 flex-1 overflow-y-auto px-6 pb-6">
       <CommentSection
         v-if="opened"
-        :url="`/api/posts/${postId}/comments/`"
+        :url="commentsUrl"
         @created="$emit('created')"
         @deleted="$emit('deleted', $event)"
       />
@@ -19,6 +19,7 @@
 <script>
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import CommentSection from '@/components/posts/CommentSection.vue'
+import postsApi from '@/api/posts.js'
 
 export default {
   name: 'CommentSheet',
@@ -29,6 +30,11 @@ export default {
   emits: ['created', 'deleted'],
   data() {
     return { opened: false }
+  },
+  computed: {
+    commentsUrl() {
+      return postsApi.commentsUrl(this.postId)
+    },
   },
   methods: {
     open() {

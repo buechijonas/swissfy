@@ -53,7 +53,7 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import PostList from '@/components/posts/PostList.vue'
-import { apiFetch } from '@/lib/api.js'
+import postsApi from '@/api/posts.js'
 
 const TABS = [
   { key: 'posts', label: 'Feeds', icon: 'list-timeline' },
@@ -75,9 +75,6 @@ export default {
     name() {
       return this.$route.params.name
     },
-    apiBase() {
-      return `/api/posts/hashtags/${encodeURIComponent(this.name)}`
-    },
     breadcrumbs() {
       return [{ label: `#${this.name}`, to: this.$route.path }]
     },
@@ -85,7 +82,7 @@ export default {
       return TABS.some((tab) => tab.key === this.$route.query.tab) ? this.$route.query.tab : 'posts'
     },
     postsUrl() {
-      return `${this.apiBase}/posts/${this.activeTab === 'reels' ? '?videos=1' : ''}`
+      return postsApi.hashtagPostsUrl(this.name, this.activeTab === 'reels' ? { videos: 1 } : null)
     },
   },
   watch: {
@@ -94,12 +91,11 @@ export default {
       async handler() {
         this.hashtag = null
         this.error = null
-        const response = await apiFetch(`${this.apiBase}/`)
-        if (response.ok) {
-          this.hashtag = await response.json()
-        } else {
+        try {
+          this.hashtag = await postsApi.hashtag(this.name)
+        } catch (error) {
           this.error =
-            response.status === 404
+            error.status === 404
               ? 'Zu diesem Hashtag gibt es noch keine Feeds.'
               : 'Hashtag konnte nicht geladen werden.'
         }
@@ -110,10 +106,8 @@ export default {
     async toggleFollow() {
       this.busy = true
       try {
-        const response = await apiFetch(`${this.apiBase}/follow/`, {
-          method: this.hashtag.following ? 'DELETE' : 'PUT',
-        })
-        if (response.ok) this.hashtag = await response.json()
+        const follow = this.hashtag.following ? postsApi.unfollowHashtag : postsApi.followHashtag
+        this.hashtag = await follow(this.name).catch(() => this.hashtag)
       } finally {
         this.busy = false
       }

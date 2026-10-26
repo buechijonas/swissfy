@@ -15,7 +15,7 @@ from moderation.sanctions import suspended_users
 from notifications.models import Notification
 from notifications.notify import notify, resolve_request, withdraw
 from posts.models import Story, StoryLike, StoryView, story_cutoff
-from posts.views import serve_image
+from posts.views.media import serve_image
 
 from . import library
 from .models import Follow, FollowRequest, FriendRequest, Friendship

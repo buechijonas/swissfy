@@ -22,6 +22,7 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import SearchField from '@/components/common/SearchField.vue'
 import UserList from '@/components/common/UserList.vue'
+import profilesApi from '@/api/profiles.js'
 import { CONNECTIONS } from '@/data/connections.js'
 import { searchQuery } from '@/lib/search.js'
 import { pageTitle } from '@/lib/title.js'
@@ -37,7 +38,7 @@ export default {
       return CONNECTIONS[this.$route.params.connection]
     },
     url() {
-      return `/api/social/profiles/${encodeURIComponent(this.username)}/${this.$route.params.connection}/`
+      return profilesApi.connectionsUrl(this.username, this.$route.params.connection)
     },
     query() {
       return searchQuery(this.$route)

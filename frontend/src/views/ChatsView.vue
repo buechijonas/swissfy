@@ -100,7 +100,7 @@ import BaseTabs from '@/components/common/BaseTabs.vue'
 import MessageStatus from '@/components/common/MessageStatus.vue'
 import SwipeRow from '@/components/common/SwipeRow.vue'
 import UserRow from '@/components/common/UserRow.vue'
-import { apiFetch } from '@/lib/api.js'
+import chatsApi from '@/api/chats.js'
 import { decryptMessage } from '@/lib/chatCrypto.js'
 import { localKeys } from '@/lib/chatKeys.js'
 import { formatRelativeTime } from '@/lib/time.js'
@@ -189,12 +189,11 @@ export default {
   methods: {
     formatRelativeTime,
     async load() {
-      const [requests, conversations] = await Promise.all([
-        apiFetch('/api/chats/requests/'),
-        apiFetch('/api/chats/conversations/'),
+      const [requests, list] = await Promise.all([
+        chatsApi.requests().catch(() => null),
+        chatsApi.conversations().catch(() => []),
       ])
-      if (requests.ok) this.requests = await requests.json()
-      const list = conversations.ok ? await conversations.json() : []
+      if (requests) this.requests = requests
       const previews = {}
       await Promise.all(
         list
@@ -222,10 +221,9 @@ export default {
       const archived = !user.archived
       user.archived = archived
       this.syncUnread()
-      const response = await apiFetch(`/api/chats/${encodeURIComponent(user.username)}/archive/`, {
-        method: archived ? 'POST' : 'DELETE',
-      })
-      if (!response.ok) {
+      try {
+        await (archived ? chatsApi.archive(user.username) : chatsApi.unarchive(user.username))
+      } catch {
         user.archived = !archived
         this.syncUnread()
       }

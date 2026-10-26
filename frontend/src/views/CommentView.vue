@@ -46,7 +46,12 @@
             />
           </template>
           <template v-if="moderation" #composer>
-            <ModerationPanel :key="comment.id" :url="apiBase + '/'" :details="comment" />
+            <ModerationPanel
+              :key="comment.id"
+              kind="comments"
+              :target-id="comment.id"
+              :details="comment"
+            />
           </template>
         </CommentSection>
         <p v-if="deleteError" class="text-error text-sm mt-2">{{ deleteError }}</p>
@@ -69,7 +74,8 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import ModerationPanel from '@/components/moderation/ModerationPanel.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
 import CommentSection from '@/components/posts/CommentSection.vue'
-import { apiFetch } from '@/lib/api.js'
+import commentsApi from '@/api/comments.js'
+import moderationApi from '@/api/moderation.js'
 import { commentLink } from '@/lib/comments.js'
 
 export default {
@@ -95,12 +101,13 @@ export default {
     }
   },
   computed: {
-    apiBase() {
-      const base = this.moderation ? '/api/moderation/comments' : '/api/comments'
-      return `${base}/${this.$route.params.id}`
+    id() {
+      return this.$route.params.id
     },
     repliesUrl() {
-      return `${this.apiBase}/replies/`
+      return this.moderation
+        ? moderationApi.childrenUrl('comments', this.id)
+        : commentsApi.repliesUrl(this.id)
     },
     postLink() {
       if (!this.comment) return null
@@ -128,17 +135,14 @@ export default {
       this.error = null
       this.comment = null
       try {
-        const response = await apiFetch(`${this.apiBase}/`)
-        if (!response.ok) {
-          this.error =
-            response.status === 404
-              ? 'Kommentar nicht gefunden.'
-              : 'Kommentar konnte nicht geladen werden.'
-          return
-        }
-        this.comment = await response.json()
-      } catch {
-        this.error = 'Kommentar konnte nicht geladen werden.'
+        this.comment = this.moderation
+          ? await moderationApi.get('comments', this.id)
+          : await commentsApi.get(this.id)
+      } catch (error) {
+        this.error =
+          error.status === 404
+            ? 'Kommentar nicht gefunden.'
+            : 'Kommentar konnte nicht geladen werden.'
       }
     },
     confirmRemove(comment) {
@@ -147,12 +151,12 @@ export default {
     },
     async remove(comment) {
       this.deleteError = null
-      const response = await apiFetch(`/api/comments/${comment.id}/`, { method: 'DELETE' })
-      if (!response.ok) {
+      const data = await commentsApi.remove(comment.id).catch(() => null)
+      if (!data) {
         this.deleteError = 'Kommentar konnte nicht gelöscht werden.'
         return
       }
-      const { parent } = await response.json()
+      const { parent } = data
       this.$router.replace(parent ? commentLink(parent) : this.postLink)
     },
   },

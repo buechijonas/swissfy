@@ -81,7 +81,7 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import CommentForm from '@/components/posts/CommentForm.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import commentsApi from '@/api/comments.js'
 import { commentLink } from '@/lib/comments.js'
 
 export default {
@@ -118,10 +118,8 @@ export default {
   methods: {
     commentLink,
     async load() {
-      const query = this.cursor ? `?cursor=${encodeURIComponent(this.cursor)}` : ''
-      const response = await apiFetch(`${this.url}${query}`)
-      if (!response.ok) return
-      const data = await response.json()
+      const data = await commentsApi.list(this.url, this.cursor).catch(() => null)
+      if (!data) return
       const known = new Set(this.comments.map((comment) => comment.id))
       this.comments.push(...data.results.filter((comment) => !known.has(comment.id)))
       this.cursor = data.next && new URL(data.next).searchParams.get('cursor')
@@ -130,18 +128,12 @@ export default {
       this.sending = true
       this.error = null
       try {
-        const response = await apiFetch(this.url, {
-          method: 'POST',
-          body: JSON.stringify({ text: this.draft.trim() }),
-        })
-        const data = await response.json().catch(() => null)
-        if (!response.ok) {
-          this.error = extractErrorMessage(data, 'Kommentar konnte nicht gesendet werden.')
-          return
-        }
-        this.comments.unshift(data)
-        this.$emit('created', data)
+        const comment = await commentsApi.create(this.url, this.draft.trim())
+        this.comments.unshift(comment)
+        this.$emit('created', comment)
         this.draft = ''
+      } catch (error) {
+        this.error = error.detail ?? 'Kommentar konnte nicht gesendet werden.'
       } finally {
         this.sending = false
       }
@@ -151,12 +143,11 @@ export default {
       this.$refs.confirm.open()
     },
     async remove(comment) {
-      const response = await apiFetch(`/api/comments/${comment.id}/`, { method: 'DELETE' })
-      if (!response.ok) {
+      const data = await commentsApi.remove(comment.id).catch(() => null)
+      if (!data) {
         this.error = 'Kommentar konnte nicht gelöscht werden.'
         return
       }
-      const data = await response.json()
       this.comments = this.comments
         .filter((item) => item.id !== comment.id)
         .map((item) => (item.id === data.parent?.id ? data.parent : item))

@@ -47,9 +47,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import FavoritePicker from '@/components/settings/FavoritePicker.vue'
 import { favoriteKinds } from '@/data/favorites.js'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
-
-const URL = '/api/social/profiles/me/about/'
+import profilesApi from '@/api/profiles.js'
 
 export default {
   name: 'ProfileAbout',
@@ -69,11 +67,10 @@ export default {
   },
   methods: {
     async load() {
-      const response = await apiFetch(URL).catch(() => null)
-      if (response?.ok) {
-        this.about = await response.json()
+      try {
+        this.about = await profilesApi.about()
         this.biography = this.about.biography
-      } else {
+      } catch {
         this.error = 'Infos konnten nicht geladen werden.'
       }
     },
@@ -81,15 +78,9 @@ export default {
       this.busy = true
       this.error = null
       try {
-        const response = await apiFetch(URL, { method: 'PATCH', body: JSON.stringify(changes) })
-        const data = await response.json().catch(() => null)
-        if (response.ok) {
-          this.about = data
-        } else {
-          this.error = extractErrorMessage(data, 'Speichern fehlgeschlagen.')
-        }
-      } catch {
-        this.error = 'Speichern fehlgeschlagen.'
+        this.about = await profilesApi.updateAbout(changes)
+      } catch (error) {
+        this.error = error.detail ?? 'Speichern fehlgeschlagen.'
       } finally {
         this.busy = false
       }

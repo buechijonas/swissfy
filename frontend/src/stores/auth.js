@@ -1,8 +1,8 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import authApi from '@/api/auth.js'
 import { clearDeviceToken, readDeviceToken, writeDeviceToken } from '@/lib/deviceToken.js'
-import { persistentLogin } from '@/lib/persistentLogin.js'
+import { persistentLogin } from '@/lib/preferences.js'
 import { useChatsStore } from '@/stores/chats.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
 import { useFoldersStore, useGroupsStore } from '@/stores/posts.js'
@@ -13,34 +13,31 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => user.value !== null)
 
   async function loadMe() {
-    const response = await apiFetch('/api/auth/me/')
-    const data = response.ok ? await response.json() : null
+    const data = await authApi.me().catch(() => null)
     return data?.user ?? null
   }
 
   async function restoreSession(token) {
-    const response = await apiFetch('/api/auth/device/restore/', {
-      method: 'POST',
-      body: JSON.stringify({ token }),
-    })
-    if (response.status === 401) await clearDeviceToken()
-    const data = response.ok ? await response.json() : null
-    return data?.user ?? null
+    try {
+      return (await authApi.restoreDevice(token)).user
+    } catch (error) {
+      if (error.status === 401) await clearDeviceToken()
+      return null
+    }
   }
 
   async function syncDeviceToken(token) {
-    const response = await apiFetch('/api/auth/device/', {
-      method: 'POST',
-      body: JSON.stringify({ token }),
+    const data = await authApi.syncDevice(token).catch(() => {
+      throw new Error('Speichern fehlgeschlagen.')
     })
-    if (!response.ok) throw new Error('Speichern fehlgeschlagen.')
-    await writeDeviceToken((await response.json()).token)
+    await writeDeviceToken(data.token)
     navigator.storage?.persist?.().catch(() => {})
   }
 
   async function forgetDevice() {
-    const response = await apiFetch('/api/auth/device/', { method: 'DELETE' })
-    if (!response.ok) throw new Error('Speichern fehlgeschlagen.')
+    await authApi.forgetDevice().catch(() => {
+      throw new Error('Speichern fehlgeschlagen.')
+    })
     await clearDeviceToken()
   }
 
@@ -64,19 +61,17 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function startGovexLogin() {
-    window.location.href = '/api/auth/oidc/login/'
+    window.location.href = authApi.loginUrl()
   }
 
   function openGovexAccount() {
-    window.location.href = '/api/auth/oidc/account/'
+    window.location.href = authApi.accountUrl()
   }
 
   async function logout() {
-    const response = await apiFetch('/api/auth/logout/', { method: 'POST' })
-    if (!response.ok) {
-      const data = await response.json().catch(() => null)
-      throw new Error(extractErrorMessage(data, 'Abmelden fehlgeschlagen.'))
-    }
+    await authApi.logout().catch((error) => {
+      throw new Error(error.detail ?? 'Abmelden fehlgeschlagen.')
+    })
     await clearDeviceToken()
     user.value = null
     useChatsStore().reset()
@@ -86,12 +81,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function acceptConsent(field) {
-    const response = await apiFetch(`/api/auth/consent/${field}/`, { method: 'POST' })
-    const data = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(extractErrorMessage(data, 'Zustimmung fehlgeschlagen.'))
-    }
-    user.value = { ...user.value, consent: data }
+    const consent = await authApi.acceptConsent(field).catch((error) => {
+      throw new Error(error.detail ?? 'Zustimmung fehlgeschlagen.')
+    })
+    user.value = { ...user.value, consent }
   }
 
   return {

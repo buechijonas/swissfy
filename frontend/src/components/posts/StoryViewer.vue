@@ -117,7 +117,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import HeartBurst from '@/components/posts/HeartBurst.vue'
 import StoryViewersSheet from '@/components/posts/StoryViewersSheet.vue'
-import { apiFetch } from '@/lib/api.js'
+import storiesApi from '@/api/stories.js'
 import { formatRelativeTime } from '@/lib/time.js'
 
 const DURATION_MS = 5000
@@ -162,9 +162,7 @@ export default {
     current(story) {
       if (story && !story.seen) {
         story.seen = true
-        this.pendingViews.push(
-          apiFetch(`/api/stories/${story.id}/view/`, { method: 'POST' }).catch(() => {}),
-        )
+        this.pendingViews.push(storiesApi.view(story.id).catch(() => {}))
       }
     },
     $route() {
@@ -237,24 +235,25 @@ export default {
       if (event.key === 'Escape') this.close()
       if (event.key === 'ArrowRight') this.next()
     },
-    async request(path, method) {
+    async run(action) {
       this.busy = true
       this.error = null
       try {
-        const response = await apiFetch(`/api/stories/${this.current.id}/${path}`, { method })
-        if (!response.ok) throw new Error()
-        return response
+        await action()
       } catch {
         this.error = 'Aktion fehlgeschlagen.'
-        return null
       } finally {
         this.busy = false
       }
     },
-    async toggleLike() {
+    toggleLike() {
       const story = this.current
-      const response = await this.request('like/', story.liked ? 'DELETE' : 'POST')
-      if (response) Object.assign(story, await response.json())
+      return this.run(async () => {
+        const data = story.liked
+          ? await storiesApi.unlike(story.id)
+          : await storiesApi.like(story.id)
+        Object.assign(story, data)
+      })
     },
     openViewers() {
       this.sheetOpen = true
@@ -269,12 +268,14 @@ export default {
       this.$refs.menu.close()
       this.$refs.confirm.open()
     },
-    async remove() {
-      if (!(await this.request('', 'DELETE'))) return
-      this.items.splice(this.index, 1)
-      this.$emit('deleted')
-      if (this.index >= this.items.length) this.close()
-      else this.start()
+    remove() {
+      return this.run(async () => {
+        await storiesApi.remove(this.current.id)
+        this.items.splice(this.index, 1)
+        this.$emit('deleted')
+        if (this.index >= this.items.length) this.close()
+        else this.start()
+      })
     },
   },
 }

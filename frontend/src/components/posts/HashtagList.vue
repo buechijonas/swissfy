@@ -23,7 +23,7 @@
 <script>
 import { RouterLink } from 'vue-router'
 import BaseCard from '@/components/common/BaseCard.vue'
-import { apiFetch } from '@/lib/api.js'
+import postsApi from '@/api/posts.js'
 import { hashtagLink } from '@/lib/hashtags.js'
 
 export default {
@@ -43,9 +43,7 @@ export default {
           this.hashtags = []
           return
         }
-        const params = new URLSearchParams({ q: query })
-        const response = await apiFetch(`/api/posts/hashtags/?${params}`)
-        const hashtags = response.ok ? await response.json() : []
+        const hashtags = await postsApi.searchHashtags(query).catch(() => [])
         if (query === this.query) this.hashtags = hashtags
       },
     },

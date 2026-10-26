@@ -94,7 +94,9 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import albumsApi from '@/api/albums.js'
+import api, { nextPage } from '@/api/client.js'
+import postsApi from '@/api/posts.js'
 
 export default {
   name: 'AddPostsDialog',
@@ -126,7 +128,7 @@ export default {
       this.selected = []
       this.posts = []
       this.error = null
-      this.next = `/api/posts/users/${encodeURIComponent(this.album.owner)}/?media=1`
+      this.next = postsApi.userPostsUrl(this.album.owner, { media: 1 })
       this.loadPosts()
       this.$refs.dialog.open()
     },
@@ -134,15 +136,11 @@ export default {
       if (this.loading || !this.next) return
       this.loading = true
       try {
-        const response = await apiFetch(this.next)
-        if (!response.ok) {
-          this.error = 'Posts konnten nicht geladen werden.'
-          return
-        }
-        const data = await response.json()
+        const data = await api.get(this.next)
         this.posts.push(...data.results)
-        const next = data.next && new URL(data.next, window.location.origin)
-        this.next = next ? next.pathname + next.search : null
+        this.next = nextPage(data.next)
+      } catch {
+        this.error = 'Posts konnten nicht geladen werden.'
       } finally {
         this.loading = false
       }
@@ -164,17 +162,11 @@ export default {
           date: item.date || null,
           title: item.title.trim(),
         }))
-        const response = await apiFetch(`/api/albums/${this.album.id}/entries/`, {
-          method: 'POST',
-          body: JSON.stringify({ entries }),
-        })
-        const data = await response.json().catch(() => null)
-        if (!response.ok) {
-          this.error = extractErrorMessage(data, 'Posts konnten nicht hinzugefügt werden.')
-          return
-        }
+        const album = await albumsApi.addEntries(this.album.id, entries)
         this.$refs.dialog.close()
-        this.$emit('saved', data)
+        this.$emit('saved', album)
+      } catch (error) {
+        this.error = error.detail ?? 'Posts konnten nicht hinzugefügt werden.'
       } finally {
         this.busy = false
       }

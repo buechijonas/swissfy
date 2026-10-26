@@ -270,7 +270,8 @@ import FavoriteCover from '@/components/settings/FavoriteCover.vue'
 import LibraryCredits from '@/components/settings/LibraryCredits.vue'
 import { favoriteKinds } from '@/data/favorites.js'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import postsApi from '@/api/posts.js'
+import profilesApi from '@/api/profiles.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { formatDate } from '@/lib/time.js'
 
@@ -401,12 +402,8 @@ export default {
         ? [{ label: this.username, to: `/profile/${this.username}` }]
         : [{ label: 'Profil', to: '/profile' }]
     },
-    apiUrl() {
-      return `/api/social/profiles/${this.username ? encodeURIComponent(this.username) : 'me'}/`
-    },
     postsUrl() {
-      const base = `/api/posts/users/${encodeURIComponent(this.profile.username)}/`
-      return `${base}${this.postList.query}`
+      return `${postsApi.userPostsUrl(this.profile.username)}${this.postList.query}`
     },
     followLabel() {
       const p = this.profile
@@ -444,40 +441,43 @@ export default {
       this.loading = true
       this.error = null
       this.actionError = null
-      const response = await apiFetch(this.apiUrl)
-      if (response.ok) {
-        this.profile = await response.json()
-      } else {
+      try {
+        this.profile = await profilesApi.get(this.username)
+      } catch (error) {
         this.error =
-          response.status === 404 ? 'Profil nicht gefunden.' : 'Profil konnte nicht geladen werden.'
+          error.status === 404 ? 'Profil nicht gefunden.' : 'Profil konnte nicht geladen werden.'
+      } finally {
+        this.loading = false
       }
-      this.loading = false
     },
-    async runAction(path, method, fallback) {
+    async runAction(action, fallback) {
       this.busy = true
       this.actionError = null
       try {
-        const response = await apiFetch(`${this.apiUrl}${path}`, { method })
-        const data = await response.json().catch(() => null)
-        if (response.ok) {
-          this.profile = data
-        } else {
-          this.actionError = extractErrorMessage(data, fallback)
-        }
+        this.profile = await action()
+      } catch (error) {
+        this.actionError = error.detail ?? fallback
       } finally {
         this.busy = false
       }
     },
     toggleFollow() {
-      const method = this.profile.is_following || this.profile.follow_requested ? 'DELETE' : 'POST'
-      return this.runAction('follow/', method, 'Aktion fehlgeschlagen.')
+      const { username, is_following, follow_requested } = this.profile
+      const leave = is_following || follow_requested
+      return this.runAction(
+        () => (leave ? profilesApi.unfollow(username) : profilesApi.follow(username)),
+        'Aktion fehlgeschlagen.',
+      )
     },
     sendFriendRequest() {
-      return this.runAction('friend-request/', 'POST', 'Anfrage fehlgeschlagen.')
+      return this.runAction(
+        () => profilesApi.requestFriendship(this.profile.username),
+        'Anfrage fehlgeschlagen.',
+      )
     },
     async refreshProfile() {
-      const response = await apiFetch(this.apiUrl).catch(() => null)
-      if (response?.ok) this.profile = await response.json()
+      const profile = await profilesApi.get(this.username).catch(() => null)
+      if (profile) this.profile = profile
     },
   },
 }

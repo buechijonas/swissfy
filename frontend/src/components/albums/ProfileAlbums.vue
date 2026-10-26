@@ -69,7 +69,7 @@ import { RouterLink } from 'vue-router'
 import AlbumDialog from '@/components/albums/AlbumDialog.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
-import { apiFetch } from '@/lib/api.js'
+import albumsApi from '@/api/albums.js'
 import { itemAt, moveItem, sameOrder } from '@/lib/sortable.js'
 
 export default {
@@ -94,12 +94,9 @@ export default {
     },
   },
   async created() {
-    const response = await apiFetch(
-      `/api/posts/users/${encodeURIComponent(this.username)}/albums/`,
-    ).catch(() => null)
-    if (response?.ok) {
-      this.albums = await response.json()
-    } else {
+    try {
+      this.albums = await albumsApi.ofUser(this.username)
+    } catch {
       this.error = 'Alben konnten nicht geladen werden.'
     }
   },
@@ -125,13 +122,9 @@ export default {
         return
       }
       this.orderError = null
-      const response = await apiFetch('/api/albums/order/', {
-        method: 'PUT',
-        body: JSON.stringify({ albums: order.map((album) => album.id) }),
-      }).catch(() => null)
-      if (response?.ok) {
-        this.albums = await response.json()
-      } else {
+      try {
+        this.albums = await albumsApi.reorder(order.map((album) => album.id))
+      } catch {
         this.orderError = 'Reihenfolge konnte nicht gespeichert werden.'
       }
       this.order = null

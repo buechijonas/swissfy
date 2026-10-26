@@ -1,14 +1,13 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { apiFetch } from '@/lib/api.js'
+import chatsApi from '@/api/chats.js'
 
 export const useChatsStore = defineStore('chats', () => {
   const unread = ref([])
   const conversations = new Map()
 
   async function sync() {
-    const response = await apiFetch('/api/chats/delivered/', { method: 'POST' })
-    if (response.ok) unread.value = (await response.json()).unread
+    unread.value = (await chatsApi.markDelivered()).unread
   }
 
   function markRead(username) {

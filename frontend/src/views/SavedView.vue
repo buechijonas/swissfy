@@ -81,6 +81,7 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import PostList from '@/components/posts/PostList.vue'
+import postsApi from '@/api/posts.js'
 import { useFoldersStore } from '@/stores/posts.js'
 
 export default {
@@ -126,8 +127,7 @@ export default {
       return this.foldersStore.items?.find((folder) => String(folder.id) === this.activeFolder)
     },
     listUrl() {
-      const query = this.activeFolder ? `?folder=${this.activeFolder}` : ''
-      return `/api/posts/saved/${query}`
+      return postsApi.savedUrl(this.activeFolder)
     },
   },
   created() {

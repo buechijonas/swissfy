@@ -126,7 +126,7 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
-import { apiFetch } from '@/lib/api.js'
+import profilesApi from '@/api/profiles.js'
 import { formatDate } from '@/lib/time.js'
 
 const VIEWS = [
@@ -216,11 +216,7 @@ export default {
   },
   async created() {
     try {
-      const response = await apiFetch(
-        `/api/social/profiles/${encodeURIComponent(this.username)}/achievements/`,
-      )
-      if (!response.ok) throw new Error()
-      this.achievements = await response.json()
+      this.achievements = await profilesApi.achievements(this.username)
     } catch {
       this.error = 'Erfolge konnten nicht geladen werden.'
     }

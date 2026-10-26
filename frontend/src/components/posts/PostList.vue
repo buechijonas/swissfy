@@ -45,7 +45,7 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import CommentActivity from '@/components/posts/CommentActivity.vue'
 import PostCard from '@/components/posts/PostCard.vue'
 import PostTile from '@/components/posts/PostTile.vue'
-import { apiFetch } from '@/lib/api.js'
+import api from '@/api/client.js'
 
 function itemKey(item) {
   return `${item.type ?? 'post'}-${item.id}`
@@ -89,16 +89,13 @@ export default {
       try {
         const url = new URL(this.url, window.location.origin)
         for (const [key, value] of this.nextQuery ?? []) url.searchParams.set(key, value)
-        const response = await apiFetch(url.pathname + url.search)
-        if (!response.ok) {
-          this.error = 'Feeds konnten nicht geladen werden.'
-          return
-        }
-        const data = await response.json()
+        const data = await api.get(url.pathname + url.search)
         const known = new Set(this.posts.map(itemKey))
         this.posts.push(...data.results.filter((item) => !known.has(itemKey(item))))
         this.nextQuery = data.next && new URL(data.next, window.location.origin).searchParams
         this.hasMore = Boolean(this.nextQuery)
+      } catch {
+        this.error = 'Feeds konnten nicht geladen werden.'
       } finally {
         this.loading = false
       }

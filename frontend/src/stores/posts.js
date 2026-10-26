@@ -1,39 +1,38 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import { foldersApi, groupsApi } from '@/api/collections.js'
 
-function ownedCollection(url) {
+function ownedCollection(collection) {
   const items = ref(null)
 
   async function load() {
     if (items.value) return items.value
-    const response = await apiFetch(url)
-    if (!response.ok) throw new Error('Laden fehlgeschlagen.')
-    items.value = await response.json()
+    items.value = await collection.list().catch(() => {
+      throw new Error('Laden fehlgeschlagen.')
+    })
     return items.value
   }
 
-  async function send(path, method, body) {
-    const response = await apiFetch(`${url}${path}`, { method, body: JSON.stringify(body) })
-    const data = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(extractErrorMessage(data, 'Speichern fehlgeschlagen.'))
-    return data
+  function send(request) {
+    return request.catch((error) => {
+      throw new Error(error.detail ?? 'Speichern fehlgeschlagen.')
+    })
   }
 
   async function create(body) {
-    const item = await send('', 'POST', body)
+    const item = await send(collection.create(body))
     items.value = [...(items.value ?? []), item].sort((a, b) => a.name.localeCompare(b.name))
     return item
   }
 
   async function update(id, body) {
-    const item = await send(`${id}/`, 'PATCH', body)
+    const item = await send(collection.update(id, body))
     items.value = items.value.map((existing) => (existing.id === id ? item : existing))
     return item
   }
 
   async function remove(id) {
-    await send(`${id}/`, 'DELETE')
+    await send(collection.remove(id))
     items.value = items.value.filter((item) => item.id !== id)
   }
 
@@ -44,6 +43,6 @@ function ownedCollection(url) {
   return { items, load, create, update, remove, reset }
 }
 
-export const useFoldersStore = defineStore('folders', () => ownedCollection('/api/posts/folders/'))
+export const useFoldersStore = defineStore('folders', () => ownedCollection(foldersApi))
 
-export const useGroupsStore = defineStore('groups', () => ownedCollection('/api/posts/groups/'))
+export const useGroupsStore = defineStore('groups', () => ownedCollection(groupsApi))

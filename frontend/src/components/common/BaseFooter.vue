@@ -57,7 +57,7 @@ import UserAvatar from '@/components/common/UserAvatar.vue'
 import { canAccess, navigationItems } from '@/data/navigation.js'
 import { avatarSrc } from '@/lib/avatar.js'
 import { wobble } from '@/lib/bubble.js'
-import { design } from '@/lib/design.js'
+import { design } from '@/lib/preferences.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {

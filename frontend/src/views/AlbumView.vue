@@ -94,7 +94,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
-import { apiFetch } from '@/lib/api.js'
+import albumsApi from '@/api/albums.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
@@ -151,20 +151,19 @@ export default {
   methods: {
     async load() {
       this.error = null
-      const response = await apiFetch(`/api/albums/${this.$route.params.id}/`).catch(() => null)
-      if (response?.ok) {
-        this.album = await response.json()
-      } else {
+      try {
+        this.album = await albumsApi.get(this.$route.params.id)
+      } catch (error) {
         this.album = null
         this.error =
-          response?.status === 404 ? 'Album nicht gefunden.' : 'Album konnte nicht geladen werden.'
+          error.status === 404 ? 'Album nicht gefunden.' : 'Album konnte nicht geladen werden.'
       }
     },
     async deleteAlbum() {
-      const response = await apiFetch(`/api/albums/${this.album.id}/`, { method: 'DELETE' })
-      if (response.ok) {
+      try {
+        await albumsApi.remove(this.album.id)
         this.$router.replace(`${this.profileLink}?tab=albums`)
-      } else {
+      } catch {
         this.actionError = 'Album konnte nicht gelöscht werden.'
       }
     },

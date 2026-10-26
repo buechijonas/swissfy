@@ -33,7 +33,8 @@
 <script>
 import BaseCard from '@/components/common/BaseCard.vue'
 import UserRow from '@/components/common/UserRow.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import api from '@/api/client.js'
+import profilesApi from '@/api/profiles.js'
 
 export default {
   name: 'UserList',
@@ -41,7 +42,7 @@ export default {
   props: {
     linkTo: { type: Function, required: true },
     query: { type: String, default: '' },
-    url: { type: String, default: '/api/social/profiles/' },
+    url: { type: String, default: profilesApi.listUrl() },
     emptyText: { type: String, default: 'Noch keine anderen User.' },
   },
   data() {
@@ -74,18 +75,14 @@ export default {
       this.loading = true
       const query = this.query
       try {
-        const params = new URLSearchParams({ page: this.page + 1 })
-        if (query) params.set('q', query)
-        const response = await apiFetch(`${this.url}?${params}`)
-        const data = await response.json().catch(() => null)
+        const data = await api.get(this.url, { page: this.page + 1, ...(query && { q: query }) })
         if (query !== this.query) return
-        if (!response.ok) {
-          this.error = extractErrorMessage(data, 'User konnten nicht geladen werden.')
-          return
-        }
         this.users.push(...data.results)
         this.page += 1
         this.hasMore = data.next !== null
+      } catch (error) {
+        if (query !== this.query) return
+        this.error = error.detail ?? 'User konnten nicht geladen werden.'
       } finally {
         this.loading = false
         if (query !== this.query) this.loadMore()

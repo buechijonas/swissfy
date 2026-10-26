@@ -74,7 +74,7 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import albumsApi from '@/api/albums.js'
 
 export default {
   name: 'AlbumDialog',
@@ -104,25 +104,19 @@ export default {
     toggleCover(entry) {
       this.cover = this.cover === entry.id ? null : entry.id
     },
-    body() {
-      const name = this.name.trim()
-      return JSON.stringify(this.album ? { name, cover: this.cover } : { name })
-    },
     async save() {
       if (!this.name.trim() || this.busy) return
       this.busy = true
       this.error = null
       try {
-        const url = this.album ? `/api/albums/${this.album.id}/` : '/api/albums/'
-        const method = this.album ? 'PATCH' : 'POST'
-        const response = await apiFetch(url, { method, body: this.body() })
-        const data = await response.json().catch(() => null)
-        if (!response.ok) {
-          this.error = extractErrorMessage(data, 'Album konnte nicht gespeichert werden.')
-          return
-        }
+        const name = this.name.trim()
+        const album = this.album
+          ? await albumsApi.update(this.album.id, { name, cover: this.cover })
+          : await albumsApi.create({ name })
         this.$refs.dialog.close()
-        this.$emit('saved', data)
+        this.$emit('saved', album)
+      } catch (error) {
+        this.error = error.detail ?? 'Album konnte nicht gespeichert werden.'
       } finally {
         this.busy = false
       }

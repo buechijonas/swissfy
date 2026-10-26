@@ -10,7 +10,7 @@
     >
       <div class="mx-auto w-full max-w-150 pt-4 max-sm:pt-0">
         <PostList
-          url="/api/posts/"
+          :url="feedUrl"
           edge-to-edge
           empty-text="Noch keine Feeds. Folge Leuten oder Hashtags, um ihre Feeds hier zu sehen."
         />
@@ -37,6 +37,7 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import CreateDialog from '@/components/posts/CreateDialog.vue'
 import PostList from '@/components/posts/PostList.vue'
+import postsApi from '@/api/posts.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
@@ -45,6 +46,7 @@ export default {
   data() {
     return {
       breadcrumbs: [{ label: 'Home', to: '/' }],
+      feedUrl: postsApi.feedUrl(),
     }
   },
   computed: {
