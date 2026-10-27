@@ -42,6 +42,7 @@ export const navigationItems = [
     icon: 'comments',
     to: '/chats',
     requiresAuth: true,
+    footer: true,
     badge: () => useChatsStore().unread.length,
   },
   { key: 'saved', label: 'Gespeichert', icon: 'bookmark', to: '/saved', requiresAuth: true },
