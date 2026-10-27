@@ -46,6 +46,12 @@ export const navigationItems = [
   },
   { key: 'saved', label: 'Gespeichert', icon: 'bookmark', to: '/saved', requiresAuth: true },
   {
+    key: 'donate',
+    label: 'Spenden',
+    icon: 'hands-heart',
+    href: 'https://buymeacoffee.com/wintersehn',
+  },
+  {
     key: 'profile',
     label: 'Profil',
     avatar: true,
