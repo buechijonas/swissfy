@@ -3,7 +3,7 @@
     <h3 class="text-xl my-4">Datenschutz</h3>
     <SettingCard
       title="Profil sichtbar für"
-      hint="Gilt auch für deinen Vor- und Nachnamen sowie deine Feeds und Seeds. Deine Profilbilder sind davon nicht betroffen, ihre Sichtbarkeit legst du unter «Profil» fest."
+      hint="Gilt auch für deinen Vor- und Nachnamen sowie deine Feeds und Seeds. Deine Profilbilder sind davon nicht betroffen, ihre Sichtbarkeit legst du unter «Profil» fest. Ist dein Profil privater eingestellt als ein Post, gilt für diesen Post die strengere Einstellung deines Profils."
     >
       <BaseSwitcher
         v-if="privacy"

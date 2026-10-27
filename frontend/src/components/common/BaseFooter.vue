@@ -45,6 +45,9 @@
           :alt="item.label"
           class="size-6!"
         />
+        <span v-if="item.badge?.()" class="badge badge-primary badge-xs absolute top-2 right-2">
+          {{ item.badge() }}
+        </span>
       </RouterLink>
     </nav>
   </footer>

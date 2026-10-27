@@ -377,6 +377,7 @@ class ConversationListView(APIView):
             (r.recipient_id if r.sender_id == me.pk else r.sender_id): r.created_at
             for r in chat_requests
         }
+        pending = {r.recipient_id for r in chat_requests if r.status == ChatRequest.Status.PENDING}
         last_message = Message.objects.filter(
             Q(sender=me, recipient=OuterRef("pk")) | Q(sender=OuterRef("pk"), recipient=me),
             created_at__gte=retention_cutoff(),
@@ -404,6 +405,7 @@ class ConversationListView(APIView):
                     "last_message": message and MessageSerializer(message, context=context).data,
                     "unread": bool(message and message.sender_id != me.pk and not message.seen_at),
                     "archived": user.pk in archived,
+                    "pending": user.pk in pending,
                     "activity": message.created_at if message else started[user.pk],
                 }
             )

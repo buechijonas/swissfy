@@ -22,8 +22,11 @@
               'lg:hidden': item.mobileOnly,
             }"
           >
-            <RouterLink
-              :to="item.to"
+            <component
+              :is="item.href ? 'a' : 'RouterLink'"
+              v-bind="
+                item.href ? { href: item.href, target: '_blank', rel: 'noopener' } : { to: item.to }
+              "
               class="nav-item flex items-center gap-3 p-4"
               :class="{
                 'active bg-swissfy-highlight text-primary shadow-none':
@@ -38,10 +41,11 @@
               />
               <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-6! lg:size-5!" />
               <span>{{ item.label }}</span>
+              <span v-if="item.href" class="ml-auto text-xs text-swissfy-muted">Externer Link</span>
               <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
                 {{ item.badge() }}
               </span>
-            </RouterLink>
+            </component>
           </li>
         </template>
       </ul>

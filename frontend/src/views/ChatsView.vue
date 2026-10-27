@@ -1,20 +1,10 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    ref="list"
     class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
-    @touchstart.passive="swipeStart"
-    @touchend="swipeEnd"
-    @wheel.passive="wheel"
-    @scroll.passive="scrolledAt = Date.now()"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
-      <BaseTabs
-        class="mb-4"
-        :class="{ 'hidden lg:flex': !archiveRevealed }"
-        :tabs="tabs"
-        :active="activeTab"
-      />
+      <BaseTabs class="mb-4" :tabs="tabs" :active="activeTab" />
       <BaseCard v-if="requests.length && !archive" class="mb-4">
         <h3 class="px-6 pt-4 pb-2 font-bold">Chat-Anfragen</h3>
         <ul class="divide-y divide-swissfy-border">
@@ -32,15 +22,11 @@
             @action="requestToggle(user)"
           >
             <UserRow :user="user" :to="chatLink(user)">
-              <div
-                v-if="user.last_message"
-                class="contents"
-                :class="user.unread ? 'font-bold text-base-content' : 'text-swissfy-muted'"
-              >
-                <span class="text-xs">
-                  {{ formatRelativeTime(user.last_message.created_at, now) }}
-                </span>
-                <span class="flex items-center gap-1 min-w-0 max-w-full text-sm">
+              <template v-if="user.last_message" #subtitle>
+                <span
+                  class="flex items-center gap-1 min-w-0 text-sm"
+                  :class="user.unread ? 'font-bold text-base-content' : 'text-swissfy-muted'"
+                >
                   <CipherText v-if="previews[user.username] === null" :length="8" />
                   <span v-else class="truncate">{{ previews[user.username] }}</span>
                   <MessageStatus
@@ -48,7 +34,19 @@
                     :status="user.last_message.status"
                   />
                 </span>
-              </div>
+              </template>
+              <template v-else #subtitle>
+                <span class="text-swissfy-muted text-sm truncate">
+                  {{ user.pending ? 'Anfrage gesendet' : 'Noch keine Nachrichten' }}
+                </span>
+              </template>
+              <span
+                v-if="user.last_message"
+                class="text-xs"
+                :class="user.unread ? 'font-bold text-base-content' : 'text-swissfy-muted'"
+              >
+                {{ formatRelativeTime(user.last_message.created_at, now) }}
+              </span>
             </UserRow>
           </SwipeRow>
           <BaseButton
@@ -108,8 +106,6 @@ import { useAuthStore } from '@/stores/auth.js'
 import { useChatsStore } from '@/stores/chats.js'
 
 const REFRESH_INTERVAL = 10000
-const REVEAL_DISTANCE = 60
-const SCROLL_SETTLE = 400
 
 const TABS = [
   { key: 'chats', label: 'Chats' },
@@ -139,7 +135,6 @@ export default {
       previews: {},
       now: Date.now(),
       tabs: TABS,
-      archiveRevealed: false,
       pendingArchive: null,
     }
   },
@@ -166,14 +161,6 @@ export default {
       if (this.archive) return 'Keine archivierten Chats.'
       if (this.conversations.length) return 'Alle Chats sind archiviert.'
       return 'Noch keine Chats. Über ein Profil kannst du eine Chat-Anfrage senden.'
-    },
-  },
-  watch: {
-    archive: {
-      immediate: true,
-      handler(archive) {
-        if (archive) this.archiveRevealed = true
-      },
     },
   },
   async created() {
@@ -226,26 +213,6 @@ export default {
       } catch {
         user.archived = !archived
         this.syncUnread()
-      }
-    },
-    swipeStart(event) {
-      const list = this.$refs.list
-      this.swipe = {
-        x: event.touches[0].clientX,
-        y: event.touches[0].clientY,
-        atTop: list.scrollTop <= 0,
-      }
-    },
-    swipeEnd(event) {
-      const touch = event.changedTouches[0]
-      const dy = touch.clientY - this.swipe.y
-      const dx = Math.abs(touch.clientX - this.swipe.x)
-      if (this.swipe.atTop && dy > REVEAL_DISTANCE && dy > dx) this.archiveRevealed = true
-    },
-    wheel(event) {
-      const settled = Date.now() - (this.scrolledAt ?? 0) > SCROLL_SETTLE
-      if (settled && this.$refs.list.scrollTop <= 0 && event.deltaY < 0) {
-        this.archiveRevealed = true
       }
     },
     chatLink(user) {
