@@ -13,184 +13,13 @@
       <template v-else>
         <BaseTabs :tabs="tabs" :active="activeTab" />
 
-        <template v-if="activeTab === 'general'">
-          <div class="mb-10">
-            <h3 class="text-xl my-4">Konto</h3>
-            <BaseCard
-              v-if="authStore.isAuthenticated"
-              class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-            >
-              <div class="min-w-0">
-                <p>govex Account Center</p>
-                <p class="text-swissfy-muted text-sm mt-1">
-                  Profil, Profilbild, Passwort und Sicherheit verwaltest du im govex Account Center.
-                </p>
-              </div>
-              <BaseButton class="shrink-0" @click="authStore.openGovexAccount()">
-                <AppIcon name="share-square" />
-                Zum Account Center
-              </BaseButton>
-            </BaseCard>
-            <BaseCard
-              v-else
-              class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-            >
-              <div class="min-w-0">
-                <p>govex Konto</p>
-                <p class="text-swissfy-muted text-sm mt-1">Melde dich mit deinem govex Konto an.</p>
-              </div>
-              <BaseButton class="shrink-0" @click="authStore.startGovexLogin()">
-                <AppIcon name="enter" />
-                Anmelden
-              </BaseButton>
-            </BaseCard>
-            <BaseCard
-              v-if="authStore.isAuthenticated"
-              class="p-6 mt-4 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-            >
-              <div class="min-w-0">
-                <p>Persistente Anmeldung</p>
-                <p class="text-swissfy-muted text-sm mt-1">
-                  Wenn an, bleibst du auf diesem Gerät angemeldet, auch wenn Cookies oder der Cache
-                  gelöscht werden. Erst wenn alle Websitedaten gelöscht sind, musst du dich neu
-                  anmelden.
-                </p>
-              </div>
-              <BaseSwitcher
-                class="flex-wrap justify-center gap-2 shrink-0"
-                size="sm"
-                :options="onOffOptions"
-                :active="persistentLogin"
-                :disabled="savingPersistentLogin"
-                @select="savePersistentLogin($event)"
-              />
-            </BaseCard>
-            <p v-if="persistentLoginError" class="text-error text-sm mt-4 text-center">
-              {{ persistentLoginError }}
-            </p>
-          </div>
+        <GeneralSettings v-if="activeTab === 'general'" />
 
-          <div class="mb-10">
-            <h3 class="text-xl my-4">Rechtliches</h3>
-            <div class="flex flex-col gap-4">
-              <RouterLink v-for="link in footerLinks" :key="link.to" :to="link.to">
-                <BaseCard class="p-6 flex items-center gap-4 hover:bg-swissfy-highlight">
-                  <AppIcon :name="link.icon" :alt="link.label" class="size-6!" />
-                  <span>{{ link.label }}</span>
-                </BaseCard>
-              </RouterLink>
-            </div>
-          </div>
-        </template>
+        <PrivacySettings v-else-if="activeTab === 'privacy'" />
 
         <div v-else-if="activeTab === 'profile'" class="mb-10">
           <ProfilePictures />
           <ProfileAbout />
-        </div>
-
-        <div v-else-if="activeTab === 'privacy'" class="mb-10">
-          <h3 class="text-xl my-4">Datenschutz</h3>
-          <BaseCard
-            class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-          >
-            <div class="min-w-0">
-              <p>Profil sichtbar für</p>
-              <p class="text-swissfy-muted text-sm mt-1">
-                Gilt auch für deinen Vor- und Nachnamen sowie deine Feeds und Seeds. Deine
-                Profilbilder sind davon nicht betroffen, ihre Sichtbarkeit legst du unter «Profil»
-                fest.
-              </p>
-            </div>
-            <BaseSwitcher
-              v-if="privacy"
-              class="flex-wrap justify-center gap-2"
-              size="sm"
-              :options="visibilityOptions"
-              :active="privacy.profile_visibility"
-              :disabled="savingPrivacy"
-              @select="savePrivacy('profile_visibility', $event)"
-            />
-            <div v-else-if="!privacyError" class="skeleton h-8 w-56"></div>
-          </BaseCard>
-          <BaseCard
-            v-for="toggle in privacyToggles"
-            :key="toggle.field"
-            class="p-6 mt-4 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-          >
-            <div class="min-w-0">
-              <p>{{ toggle.label }}</p>
-              <p class="text-swissfy-muted text-sm mt-1">{{ toggle.hint }}</p>
-            </div>
-            <BaseSwitcher
-              v-if="privacy"
-              class="flex-wrap justify-center gap-2 shrink-0"
-              size="sm"
-              :options="onOffOptions"
-              :active="privacy[toggle.field]"
-              :disabled="savingPrivacy"
-              @select="savePrivacy(toggle.field, $event)"
-            />
-            <div v-else-if="!privacyError" class="skeleton h-8 w-28"></div>
-          </BaseCard>
-          <p v-if="privacyError" class="text-error text-sm mt-4 text-center">{{ privacyError }}</p>
-
-          <BaseCard class="p-6 mt-4 flex flex-col gap-4">
-            <div
-              class="flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-            >
-              <div class="min-w-0">
-                <p>Chat-Verschlüsselung</p>
-                <p v-if="chatProtection" class="text-swissfy-muted text-sm mt-1">
-                  {{ chatProtectionHints[chatProtection] }}
-                </p>
-              </div>
-              <BaseSwitcher
-                v-if="chatProtection"
-                class="flex-wrap justify-center gap-2 shrink-0"
-                size="sm"
-                :options="chatProtectionOptions"
-                :active="chatProtection"
-                :disabled="savingChat"
-                @select="selectChatProtection($event)"
-              />
-              <div v-else-if="!chatError" class="skeleton h-8 w-56"></div>
-            </div>
-            <form v-if="pinSetup" class="flex flex-col gap-2" @submit.prevent="savePin">
-              <input
-                v-model="newPin"
-                type="password"
-                autocomplete="new-password"
-                class="input w-full"
-                placeholder="Neue Chat-PIN (mindestens 6 Zeichen)"
-              />
-              <input
-                v-model="newPinRepeat"
-                type="password"
-                autocomplete="new-password"
-                class="input w-full"
-                placeholder="Chat-PIN wiederholen"
-              />
-              <p class="text-swissfy-muted text-sm">
-                Ohne PIN kann niemand deine Chats wiederherstellen, auch wir nicht.
-              </p>
-              <div class="flex justify-end gap-2">
-                <BaseButton size="sm" :disabled="savingChat" @click="pinSetup = false">
-                  <AppIcon name="cross" />
-                  Abbrechen
-                </BaseButton>
-                <BaseButton
-                  type="submit"
-                  size="sm"
-                  variant="primary"
-                  :disabled="!pinValid || savingChat"
-                >
-                  <AppIcon name="lock" />
-                  PIN festlegen
-                </BaseButton>
-              </div>
-            </form>
-            <p v-if="chatError" class="text-error text-sm text-center">{{ chatError }}</p>
-          </BaseCard>
         </div>
 
         <div v-else-if="activeTab === 'groups'" class="mb-10">
@@ -198,97 +27,9 @@
           <GroupManager />
         </div>
 
-        <div v-else-if="activeTab === 'wellbeing'" class="mb-10">
-          <h3 class="text-xl my-4">Suchtprävention</h3>
-          <p class="text-swissfy-muted text-sm mb-4">
-            Swissfy verzichtet standardmässig auf Funktionen, die dich länger am Bildschirm halten
-            sollen. Du kannst sie hier bewusst einschalten. Gilt für dieses Gerät.
-          </p>
-          <BaseCard
-            v-for="(toggle, index) in wellbeingToggles"
-            :key="toggle.label"
-            class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-            :class="{ 'mt-4': index }"
-          >
-            <div class="min-w-0">
-              <p>{{ toggle.label }}</p>
-              <p class="text-swissfy-muted text-sm mt-1">{{ toggle.hint }}</p>
-            </div>
-            <BaseSwitcher
-              class="flex-wrap justify-center gap-2 shrink-0"
-              size="sm"
-              :options="onOffOptions"
-              :active="toggle.setting.value"
-              @select="toggle.setting.value = $event"
-            />
-          </BaseCard>
-        </div>
+        <WellbeingSettings v-else-if="activeTab === 'wellbeing'" />
 
-        <template v-else>
-          <div class="mb-10">
-            <h3 class="text-xl my-4">Darstellung</h3>
-            <BaseCard
-              class="p-6 flex flex-col items-center text-center gap-4"
-              :class="{
-                'sm:flex-row sm:items-center sm:text-left sm:justify-between': !dyslexiaFont,
-              }"
-            >
-              <p class="text-swissfy-muted min-w-0">Erscheinungsbild der Oberfläche.</p>
-              <BaseSwitcher
-                class="flex-wrap justify-center gap-2"
-                size="sm"
-                :options="themeOptions"
-                :active="themeMode"
-                @select="themeMode = $event"
-              />
-            </BaseCard>
-          </div>
-
-          <div class="mb-10">
-            <h3 class="text-xl my-4">Design</h3>
-            <BaseCard
-              class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-            >
-              <p class="text-swissfy-muted min-w-0">Stil der Oberfläche.</p>
-              <BaseSwitcher
-                class="gap-2"
-                size="sm"
-                vertical
-                :options="designOptions"
-                :active="design"
-                @select="design = $event"
-              />
-            </BaseCard>
-          </div>
-
-          <div class="mb-10">
-            <h3 class="text-xl my-4">Barrierefreiheit</h3>
-            <BaseCard
-              class="p-6 flex flex-col items-center text-center gap-4 mb-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-            >
-              <p class="text-swissfy-muted min-w-0">Legasthenie</p>
-              <BaseSwitcher
-                class="flex-wrap justify-center gap-2"
-                size="sm"
-                :options="dyslexiaOptions"
-                :active="dyslexiaFont"
-                @select="dyslexiaFont = $event"
-              />
-            </BaseCard>
-            <BaseCard
-              class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-            >
-              <p class="text-swissfy-muted min-w-0">Kontrastmodus</p>
-              <BaseSwitcher
-                class="flex-wrap justify-center gap-2"
-                size="sm"
-                :options="contrastOptions"
-                :active="contrastMode"
-                @select="contrastMode = $event"
-              />
-            </BaseCard>
-          </div>
-        </template>
+        <DisplaySettings v-else />
       </template>
     </div>
   </div>
@@ -296,128 +37,35 @@
 </template>
 
 <script>
-import { markRaw } from 'vue'
-import { RouterLink } from 'vue-router'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
 import GroupManager from '@/components/posts/GroupManager.vue'
+import DisplaySettings from '@/components/settings/DisplaySettings.vue'
+import GeneralSettings from '@/components/settings/GeneralSettings.vue'
+import PrivacySettings from '@/components/settings/PrivacySettings.vue'
 import ProfileAbout from '@/components/settings/ProfileAbout.vue'
 import ProfilePictures from '@/components/settings/ProfilePictures.vue'
+import WellbeingSettings from '@/components/settings/WellbeingSettings.vue'
 import { useAuthStore } from '@/stores/auth.js'
-import { themeMode } from '@/lib/theme.js'
-import { design } from '@/lib/design.js'
-import { dyslexiaFont } from '@/lib/dyslexia.js'
-import { contrastMode } from '@/lib/contrast.js'
-import { videoAutoplay, videoLoop } from '@/lib/wellbeing.js'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
-import { footerLinks } from '@/data/footer.js'
-import { fetchProtection, setProtection } from '@/lib/chatKeys.js'
-import { persistentLogin } from '@/lib/persistentLogin.js'
-
-const PRIVACY_URL = '/api/social/profiles/me/privacy/'
 
 export default {
   name: 'SettingsView',
   components: {
-    RouterLink,
     BaseBreadcrumbs,
-    BaseCard,
     BaseFooter,
-    BaseButton,
-    BaseSwitcher,
     BaseTabs,
-    AppIcon,
+    DisplaySettings,
+    GeneralSettings,
     GroupManager,
+    PrivacySettings,
     ProfileAbout,
     ProfilePictures,
+    WellbeingSettings,
   },
   data() {
     return {
       breadcrumbs: [{ label: 'Einstellungen', to: '/' }],
-      footerLinks,
-      themeOptions: [
-        { value: 'auto', icon: 'laptop', label: 'Auto' },
-        { value: 'light', icon: 'brightness', label: 'Hell' },
-        { value: 'dark', icon: 'moon-stars', label: 'Dunkel' },
-      ],
-      designOptions: [
-        { value: 'default', icon: 'grid', label: 'Standard' },
-        { value: 'glass', icon: 'droplet', label: 'Glassmorphism' },
-        { value: 'cyberpunk', icon: 'chip', label: 'Cyberpunk' },
-      ],
-      dyslexiaOptions: [
-        { value: true, label: 'An', icon: 'check' },
-        { value: false, label: 'Aus', icon: 'cross' },
-      ],
-      contrastOptions: [
-        { value: true, label: 'An', icon: 'check' },
-        { value: false, label: 'Aus', icon: 'cross' },
-      ],
-      chatProtectionOptions: [
-        { value: 'standard', label: 'Standard', icon: 'shield-trust' },
-        { value: 'device', label: 'Nur auf diesem Gerät', icon: 'laptop' },
-        { value: 'pin', label: 'Chat-PIN', icon: 'lock' },
-      ],
-      chatProtectionHints: {
-        standard: 'Verschlüsselt gespeichert. Zugang auf jedem Gerät mit deinem Login.',
-        device:
-          'Ende-zu-Ende verschlüsselt. Nur dieses Gerät kann deine Chats lesen, neue Geräte sehen nur neue Nachrichten.',
-        pin: 'Ende-zu-Ende verschlüsselt. Auf neuen Geräten entsperrst du deine Chats mit deiner PIN.',
-      },
-      savingPersistentLogin: false,
-      persistentLoginError: null,
-      chatProtection: null,
-      savingChat: false,
-      chatError: null,
-      pinSetup: false,
-      newPin: '',
-      newPinRepeat: '',
-      visibilityOptions: [
-        { value: 'public', label: 'Öffentlich', icon: 'globe' },
-        { value: 'followers', label: 'Follower', icon: 'user' },
-        { value: 'friends', label: 'Freunde', icon: 'users' },
-      ],
-      privacy: null,
-      privacyToggles: [
-        {
-          field: 'read_receipts',
-          label: 'Lesebestätigungen',
-          hint: 'Wenn aus, sehen andere nicht, ob du ihre Nachrichten gelesen hast, und du siehst es bei ihnen auch nicht.',
-        },
-        {
-          field: 'chat_requests',
-          label: 'Chat-Anfragen',
-          hint: 'Wenn aus, kann dir niemand eine neue Chat-Anfrage senden. Bestehende Chats bleiben.',
-        },
-        {
-          field: 'show_birthdate',
-          label: 'Geburtsdatum',
-          hint: 'Wenn an, sehen alle, die dein Profil sehen dürfen, dein Geburtsdatum unter «Über mich».',
-        },
-      ],
-      onOffOptions: [
-        { value: true, label: 'An', icon: 'check' },
-        { value: false, label: 'Aus', icon: 'cross' },
-      ],
-      savingPrivacy: false,
-      privacyError: null,
-      wellbeingToggles: markRaw([
-        {
-          setting: videoAutoplay,
-          label: 'Autoplay',
-          hint: 'Wenn an, starten Videos von selbst und ohne Ton, sobald du zu ihnen scrollst.',
-        },
-        {
-          setting: videoLoop,
-          label: 'Wiederholen',
-          hint: 'Wenn an, beginnen Videos am Ende automatisch von vorne.',
-        },
-      ]),
     }
   },
   computed: {
@@ -438,132 +86,9 @@ export default {
         { key: 'wellbeing', label: 'Wohlbefinden' },
       ]
     },
-    persistentLogin() {
-      return persistentLogin.value
-    },
-    pinValid() {
-      return this.newPin.length >= 6 && this.newPin === this.newPinRepeat
-    },
     activeTab() {
       const tab = this.$route.query.tab
       return this.tabs.some((t) => t.key === tab) ? tab : this.tabs[0].key
-    },
-    themeMode: {
-      get() {
-        return themeMode.value
-      },
-      set(value) {
-        themeMode.value = value
-      },
-    },
-    design: {
-      get() {
-        return design.value
-      },
-      set(value) {
-        design.value = value
-      },
-    },
-    dyslexiaFont: {
-      get() {
-        return dyslexiaFont.value
-      },
-      set(value) {
-        dyslexiaFont.value = value
-      },
-    },
-    contrastMode: {
-      get() {
-        return contrastMode.value
-      },
-      set(value) {
-        contrastMode.value = value
-      },
-    },
-  },
-  watch: {
-    activeTab: {
-      immediate: true,
-      handler(tab) {
-        if (tab !== 'privacy') return
-        if (!this.privacy) this.loadPrivacy()
-        if (!this.chatProtection) this.loadChatProtection()
-      },
-    },
-  },
-  methods: {
-    async savePersistentLogin(enabled) {
-      this.savingPersistentLogin = true
-      this.persistentLoginError = null
-      try {
-        await this.authStore.setPersistentLogin(enabled)
-      } catch (error) {
-        this.persistentLoginError = error.message
-      } finally {
-        this.savingPersistentLogin = false
-      }
-    },
-    async loadChatProtection() {
-      this.chatError = null
-      try {
-        this.chatProtection = (await fetchProtection()).mode
-      } catch (error) {
-        this.chatError = error.message
-      }
-    },
-    selectChatProtection(mode) {
-      this.chatError = null
-      if (mode === 'pin') {
-        this.pinSetup = true
-      } else if (mode !== this.chatProtection) {
-        this.pinSetup = false
-        this.saveChatProtection(mode)
-      }
-    },
-    savePin() {
-      return this.saveChatProtection('pin', this.newPin)
-    },
-    async saveChatProtection(mode, pin) {
-      this.savingChat = true
-      this.chatError = null
-      try {
-        this.chatProtection = (await setProtection(this.authStore.user.id, mode, pin)).mode
-        this.pinSetup = false
-        this.newPin = ''
-        this.newPinRepeat = ''
-      } catch (error) {
-        this.chatError = error.message
-      } finally {
-        this.savingChat = false
-      }
-    },
-    async loadPrivacy() {
-      this.privacyError = null
-      const response = await apiFetch(PRIVACY_URL)
-      if (response.ok) {
-        this.privacy = await response.json()
-      } else {
-        this.privacyError = 'Einstellungen konnten nicht geladen werden.'
-      }
-    },
-    async savePrivacy(field, value) {
-      const previous = this.privacy[field]
-      this.privacy[field] = value
-      this.savingPrivacy = true
-      this.privacyError = null
-      try {
-        const response = await apiFetch(PRIVACY_URL, {
-          method: 'PATCH',
-          body: JSON.stringify({ [field]: value }),
-        })
-        if (!response.ok) {
-          const data = await response.json().catch(() => null)
-          this.privacyError = extractErrorMessage(data, 'Speichern fehlgeschlagen.')
-          this.privacy[field] = previous
-        }
-      } finally {
-        this.savingPrivacy = false
-      }
     },
   },
 }

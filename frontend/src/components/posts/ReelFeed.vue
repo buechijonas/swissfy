@@ -26,7 +26,7 @@
 
 <script>
 import PostCard from '@/components/posts/PostCard.vue'
-import { apiFetch } from '@/lib/api.js'
+import api from '@/api/client.js'
 
 export default {
   name: 'ReelFeed',
@@ -65,15 +65,12 @@ export default {
       try {
         const url = new URL(this.url, window.location.origin)
         for (const [key, value] of this.nextQuery ?? []) url.searchParams.set(key, value)
-        const response = await apiFetch(url.pathname + url.search)
-        if (!response.ok) {
-          this.error = 'Seeds konnten nicht geladen werden.'
-          return
-        }
-        const data = await response.json()
+        const data = await api.get(url.pathname + url.search)
         this.posts.push(...data.results)
         this.nextQuery = data.next && new URL(data.next, window.location.origin).searchParams
         this.hasMore = Boolean(this.nextQuery)
+      } catch {
+        this.error = 'Seeds konnten nicht geladen werden.'
       } finally {
         this.loading = false
       }

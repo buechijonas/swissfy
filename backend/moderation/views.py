@@ -14,13 +14,13 @@ from notifications.notify import notify
 from posts.models import Comment, Post
 from posts.queries import comment_details, with_details
 from posts.serializers import CommentSerializer, PostSerializer, PostSummarySerializer
-from posts.views import (
+from posts.views.comments import (
     CommentDetailView,
     CommentListView,
     CommentReplyListView,
     visible_comments,
-    visible_post,
 )
+from posts.views.posts import visible_post
 
 from .models import Reason, Report, Suspension, Warning
 from .sanctions import suspend_if_needed

@@ -1,18 +1,17 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { apiFetch } from '@/lib/api.js'
+import notificationsApi from '@/api/notifications.js'
 
 export const useNotificationsStore = defineStore('notifications', () => {
   const unread = ref(0)
 
   async function refresh() {
-    const response = await apiFetch('/api/notifications/unread/')
-    if (response.ok) unread.value = (await response.json()).count
+    unread.value = (await notificationsApi.unread()).count
   }
 
   async function markRead() {
-    const response = await apiFetch('/api/notifications/read/', { method: 'POST' })
-    if (response.ok) unread.value = 0
+    await notificationsApi.markRead()
+    unread.value = 0
   }
 
   function reset() {

@@ -35,14 +35,15 @@
 <script>
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import moderationApi from '@/api/moderation.js'
 import { formatDate } from '@/lib/time.js'
 
 export default {
   name: 'ModerationPanel',
   components: { AppIcon, BaseButton },
   props: {
-    url: { type: String, required: true },
+    kind: { type: String, required: true },
+    targetId: { type: String, required: true },
     details: { type: Object, required: true },
   },
   data() {
@@ -62,34 +63,29 @@ export default {
   },
   methods: {
     formatDate,
-    async send(path, body) {
+    async send(action) {
       this.busy = true
       this.error = null
       try {
-        const response = await apiFetch(`${this.url}${path}`, {
-          method: 'POST',
-          body: JSON.stringify(body ?? {}),
-        })
-        const data = await response.json().catch(() => null)
-        if (!response.ok) {
-          this.error = extractErrorMessage(data, 'Aktion fehlgeschlagen.')
-          return null
-        }
+        const data = await action()
         this.reportCount = data.report_count
         return data
+      } catch (error) {
+        this.error = error.detail ?? 'Aktion fehlgeschlagen.'
+        return null
       } finally {
         this.busy = false
       }
     },
     async warn() {
-      const data = await this.send('warnings/', { reason: this.reason })
+      const data = await this.send(() => moderationApi.warn(this.kind, this.targetId, this.reason))
       if (!data) return
       this.warnings.unshift(data.warning)
       this.canWarn = false
       this.reason = ''
     },
     async dismiss() {
-      await this.send('dismiss/')
+      await this.send(() => moderationApi.dismiss(this.kind, this.targetId))
     },
   },
 }

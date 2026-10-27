@@ -40,7 +40,7 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import albumsApi from '@/api/albums.js'
 
 export default {
   name: 'EntryDialog',
@@ -63,30 +63,25 @@ export default {
       this.error = null
       this.$refs.dialog.open()
     },
-    async request(method, body) {
+    async request(action) {
       this.busy = true
       this.error = null
       try {
-        const response = await apiFetch(`/api/album-entries/${this.entry.id}/`, {
-          method,
-          body: body && JSON.stringify(body),
-        })
-        const data = await response.json().catch(() => null)
-        if (!response.ok) {
-          this.error = extractErrorMessage(data, 'Eintrag konnte nicht gespeichert werden.')
-          return
-        }
+        const album = await action()
         this.$refs.dialog.close()
-        this.$emit('saved', data)
+        this.$emit('saved', album)
+      } catch (error) {
+        this.error = error.detail ?? 'Eintrag konnte nicht gespeichert werden.'
       } finally {
         this.busy = false
       }
     },
     save() {
-      return this.request('PATCH', { date: this.date || null, title: this.title.trim() })
+      const body = { date: this.date || null, title: this.title.trim() }
+      return this.request(() => albumsApi.updateEntry(this.entry.id, body))
     },
     remove() {
-      return this.request('DELETE')
+      return this.request(() => albumsApi.removeEntry(this.entry.id))
     },
   },
 }

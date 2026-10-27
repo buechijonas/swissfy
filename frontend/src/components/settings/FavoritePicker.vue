@@ -90,7 +90,7 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import FavoriteCover from '@/components/settings/FavoriteCover.vue'
 import LibraryCredits from '@/components/settings/LibraryCredits.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import profilesApi from '@/api/profiles.js'
 
 const DEBOUNCE_MS = 300
 
@@ -144,18 +144,10 @@ export default {
     },
     async search(query) {
       try {
-        const response = await apiFetch(
-          `/api/social/library/${this.kind}/?q=${encodeURIComponent(query)}`,
-        )
-        const data = await response.json().catch(() => null)
-        if (query !== this.query.trim()) return
-        if (response.ok) {
-          this.results = data.results
-        } else {
-          this.error = extractErrorMessage(data, 'Suche fehlgeschlagen.')
-        }
-      } catch {
-        this.error = 'Suche fehlgeschlagen.'
+        const data = await profilesApi.searchLibrary(this.kind, query)
+        if (query === this.query.trim()) this.results = data.results
+      } catch (error) {
+        if (query === this.query.trim()) this.error = error.detail ?? 'Suche fehlgeschlagen.'
       } finally {
         if (query === this.query.trim()) this.loading = false
       }

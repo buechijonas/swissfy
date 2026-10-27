@@ -63,12 +63,10 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
 import { avatars } from '@/assets/images.js'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import profilesApi from '@/api/profiles.js'
 import { compressImage } from '@/lib/image.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useGroupsStore } from '@/stores/posts.js'
-
-const URL = '/api/social/profiles/me/pictures/'
 
 export default {
   name: 'ProfilePictures',
@@ -109,30 +107,24 @@ export default {
   },
   methods: {
     async load() {
-      const response = await apiFetch(URL).catch(() => null)
-      if (response?.ok) {
-        this.settings = await response.json()
-      } else {
+      try {
+        this.settings = await profilesApi.pictures()
+      } catch {
         this.error = 'Profilbilder konnten nicht geladen werden.'
       }
     },
-    async request(url, options) {
+    async request(action) {
       this.busy = true
       this.error = null
       try {
-        const response = await apiFetch(url, options)
-        const data = await response.json().catch(() => null)
-        if (!response.ok) {
-          this.error = extractErrorMessage(data, 'Speichern fehlgeschlagen.')
-          return
-        }
+        const data = await action()
         this.settings = data
         this.authStore.user = {
           ...this.authStore.user,
           picture: data.private_picture ?? data.public_picture,
         }
-      } catch {
-        this.error = 'Speichern fehlgeschlagen.'
+      } catch (error) {
+        this.error = error.detail ?? 'Speichern fehlgeschlagen.'
       } finally {
         this.busy = false
       }
@@ -147,10 +139,10 @@ export default {
       if (!file) return
       const body = new FormData()
       body.append(`${this.kind}_picture`, await compressImage(file), file.name)
-      await this.request(URL, { method: 'PATCH', body })
+      await this.request(() => profilesApi.updatePictures(body))
     },
     remove(kind) {
-      return this.request(`${URL}${kind}/`, { method: 'DELETE' })
+      return this.request(() => profilesApi.removePicture(kind))
     },
     saveAudience(visibility, groups) {
       this.settings = {
@@ -159,13 +151,12 @@ export default {
         private_picture_groups: groups,
       }
       if (visibility === 'groups' && !groups.length) return
-      return this.request(URL, {
-        method: 'PATCH',
-        body: JSON.stringify({
+      return this.request(() =>
+        profilesApi.updatePictures({
           private_picture_visibility: visibility,
           private_picture_groups: groups,
         }),
-      })
+      )
     },
   },
 }

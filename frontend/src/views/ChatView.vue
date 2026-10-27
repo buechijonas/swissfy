@@ -99,7 +99,7 @@
           v-else-if="canRequest && (!chatRequest || declinedByMe)"
           class="my-4 flex justify-center"
         >
-          <BaseButton variant="primary" :disabled="answering" @click="updateRequest('', 'POST')">
+          <BaseButton variant="primary" :disabled="answering" @click="updateRequest('send')">
             Anfrage senden
             <AppIcon name="paper-plane-top" />
           </BaseButton>
@@ -109,7 +109,7 @@
             <AppIcon name="cross" />
             Abbrechen
           </BaseButton>
-          <BaseButton variant="error" :disabled="answering" @click="updateRequest('', 'DELETE')">
+          <BaseButton variant="error" :disabled="answering" @click="updateRequest('decline')">
             <AppIcon name="cross" />
             Endgültig ablehnen
           </BaseButton>
@@ -119,17 +119,13 @@
             <AppIcon name="cross" />
             Ablehnen
           </BaseButton>
-          <BaseButton
-            variant="primary"
-            :disabled="answering"
-            @click="updateRequest('accept/', 'POST')"
-          >
+          <BaseButton variant="primary" :disabled="answering" @click="updateRequest('accept')">
             <AppIcon name="check" />
             Annehmen
           </BaseButton>
         </div>
         <div v-else-if="outgoingRequest" class="my-4 flex justify-center">
-          <BaseButton :disabled="answering" @click="updateRequest('withdraw/', 'POST')">
+          <BaseButton :disabled="answering" @click="updateRequest('withdraw')">
             <AppIcon name="cross" />
             Anfrage zurückziehen
           </BaseButton>
@@ -167,7 +163,8 @@ import CipherText from '@/components/common/CipherText.vue'
 import MessageStatus from '@/components/common/MessageStatus.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import chatsApi from '@/api/chats.js'
+import profilesApi from '@/api/profiles.js'
 import { decryptMessage, encryptMessage } from '@/lib/chatCrypto.js'
 import { localKeys, prepareChatKeys, unlockWithPin } from '@/lib/chatKeys.js'
 import { formatRelativeTime } from '@/lib/time.js'
@@ -221,9 +218,6 @@ export default {
     },
     username() {
       return this.$route.params.username
-    },
-    apiBase() {
-      return `/api/chats/${encodeURIComponent(this.username)}`
     },
     breadcrumbs() {
       return [
@@ -286,15 +280,7 @@ export default {
       clearInterval(this.cooldownTimer)
       Object.assign(this.$data, this.$options.data.call(this))
       try {
-        const response = await apiFetch(
-          `/api/social/profiles/${encodeURIComponent(this.username)}/`,
-        )
-        if (!response.ok) {
-          this.error =
-            response.status === 404 ? 'Profil nicht gefunden.' : 'Chat konnte nicht geladen werden.'
-          return
-        }
-        this.partner = await response.json()
+        this.partner = await profilesApi.get(this.username)
         if (this.partner.is_self) {
           this.error = 'Mit dir selbst kannst du nicht chatten.'
           return
@@ -304,7 +290,10 @@ export default {
         this.pinKey = state.pinKey
         if (!this.locked) await this.start()
       } catch (error) {
-        this.error = error.message || 'Chat konnte nicht geladen werden.'
+        this.error =
+          error.status === 404
+            ? 'Profil nicht gefunden.'
+            : error.detail || error.message || 'Chat konnte nicht geladen werden.'
       }
     },
     async unlock() {
@@ -331,9 +320,9 @@ export default {
       this.pollTimer = setInterval(() => this.poll(), POLL_INTERVAL)
     },
     async loadConversationKeys() {
-      const response = await apiFetch(`${this.apiBase}/keys/`)
-      if (!response.ok) throw new Error('Chat konnte nicht geladen werden.')
-      const data = await response.json()
+      const data = await chatsApi.keys(this.username).catch(() => {
+        throw new Error('Chat konnte nicht geladen werden.')
+      })
       this.conversationKeys = data.keys
       this.serverKey = data.server_key
     },
@@ -345,12 +334,10 @@ export default {
       this.polling = true
       try {
         const lastId = this.messages.at(-1)?.id
-        const params = new URLSearchParams()
-        if (lastId) params.set('after', lastId)
-        if (document.visibilityState === 'visible') params.set('read', 'true')
-        const response = await apiFetch(`${this.apiBase}/messages/?${params}`)
-        if (!response.ok) return
-        const data = await response.json()
+        const read = document.visibilityState === 'visible'
+        const params = { ...(lastId && { after: lastId }), ...(read && { read: 'true' }) }
+        const data = await chatsApi.messages(this.username, params).catch(() => null)
+        if (!data) return
         this.chatRequest = data.chat_request
         this.canRequest = data.can_request
         for (const message of this.messages) {
@@ -365,7 +352,7 @@ export default {
             text: await decryptMessage(message, this.keys),
           })),
         )
-        if (params.has('read')) useChatsStore().markRead(this.username)
+        if (read) useChatsStore().markRead(this.username)
         if (this.chatRequest?.status === 'accepted') {
           useChatsStore().cacheMessages(this.username, this.messages)
         }
@@ -381,10 +368,7 @@ export default {
     },
     async postMessage(text) {
       const payload = await encryptMessage(text, this.conversationKeys, this.serverKey)
-      return apiFetch(`${this.apiBase}/messages/`, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      })
+      return chatsApi.send(this.username, payload)
     },
     async send() {
       if (!this.canSend) return
@@ -392,40 +376,33 @@ export default {
       this.sending = true
       this.sendError = null
       try {
-        let response = await this.postMessage(text)
-        if (response.status === 409) {
+        const data = await this.postMessage(text).catch(async (error) => {
+          if (error.status !== 409) throw error
           await this.loadConversationKeys()
-          response = await this.postMessage(text)
-        }
-        const data = await response.json().catch(() => null)
+          return this.postMessage(text)
+        })
         if (data?.retry_after) this.startCooldown(data.retry_after)
-        if (response.status === 429) return
-        if (!response.ok) {
-          this.sendError = extractErrorMessage(data, 'Nachricht konnte nicht gesendet werden.')
-          if (response.status === 403) await this.poll()
-          return
-        }
         this.draft = ''
         await this.poll()
-      } catch {
-        this.sendError = 'Nachricht konnte nicht gesendet werden.'
+      } catch (error) {
+        if (error.data?.retry_after) this.startCooldown(error.data.retry_after)
+        if (error.status === 429) return
+        this.sendError = error.detail ?? 'Nachricht konnte nicht gesendet werden.'
+        if (error.status === 403) await this.poll()
       } finally {
         this.sending = false
       }
     },
-    async updateRequest(path, method) {
+    async updateRequest(action) {
       this.answering = true
       this.sendError = null
       try {
-        const response = await apiFetch(`${this.apiBase}/request/${path}`, { method })
-        const data = await response.json().catch(() => null)
-        if (response.ok) {
-          this.chatRequest = data
-          if (!data) this.messages = []
-        } else {
-          this.sendError = extractErrorMessage(data, 'Anfrage fehlgeschlagen.')
-          await this.poll()
-        }
+        const data = await chatsApi.updateRequest(this.username, action)
+        this.chatRequest = data
+        if (!data) this.messages = []
+      } catch (error) {
+        this.sendError = error.detail ?? 'Anfrage fehlgeschlagen.'
+        await this.poll()
       } finally {
         this.answering = false
         this.confirmDecline = false

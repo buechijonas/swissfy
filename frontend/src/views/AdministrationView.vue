@@ -73,7 +73,7 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import administrationApi from '@/api/administration.js'
 import { formatDate } from '@/lib/time.js'
 
 const DEBOUNCE_MS = 300
@@ -119,8 +119,7 @@ export default {
     },
   },
   async created() {
-    const response = await apiFetch('/api/administration/roles/')
-    if (response.ok) this.roles = await response.json()
+    this.roles = await administrationApi.roles().catch(() => [])
     this.reload()
   },
   beforeUnmount() {
@@ -138,11 +137,11 @@ export default {
       return `/profile/${encodeURIComponent(user.username)}`
     },
     reload() {
-      const params = new URLSearchParams()
-      if (this.query) params.set('q', this.query)
-      if (this.roleFilter) params.set('role', this.roleFilter)
       this.users = []
-      this.next = `/api/administration/users/?${params}`
+      this.next = administrationApi.usersUrl({
+        ...(this.query && { q: this.query }),
+        ...(this.roleFilter && { role: this.roleFilter }),
+      })
       this.load()
     },
     async load() {
@@ -150,9 +149,7 @@ export default {
       this.loading = true
       this.error = null
       try {
-        const response = await apiFetch(url)
-        if (!response.ok) throw new Error()
-        const data = await response.json()
+        const data = await administrationApi.list(url)
         if (url !== this.next) return
         this.users.push(...data.results)
         this.next = data.next
@@ -166,16 +163,9 @@ export default {
       this.saving = user.username
       this.error = null
       try {
-        const response = await apiFetch(
-          `/api/administration/users/${encodeURIComponent(user.username)}/`,
-          { method: 'PATCH', body: JSON.stringify({ role }) },
-        )
-        const data = await response.json().catch(() => null)
-        if (!response.ok) {
-          this.error = extractErrorMessage(data, 'Rolle konnte nicht geändert werden.')
-          return
-        }
-        Object.assign(user, data)
+        Object.assign(user, await administrationApi.setRole(user.username, role))
+      } catch (error) {
+        this.error = error.detail ?? 'Rolle konnte nicht geändert werden.'
       } finally {
         this.saving = null
       }

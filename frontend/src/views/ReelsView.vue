@@ -6,6 +6,7 @@
 <script>
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ReelFeed from '@/components/posts/ReelFeed.vue'
+import postsApi from '@/api/posts.js'
 
 export default {
   name: 'ReelsView',
@@ -13,9 +14,9 @@ export default {
   computed: {
     url() {
       const { username, name, id } = this.$route.params
-      if (username) return `/api/posts/users/${encodeURIComponent(username)}/?videos=1&from=${id}`
-      if (name) return `/api/posts/hashtags/${encodeURIComponent(name)}/posts/?videos=1&from=${id}`
-      return '/api/posts/reels/'
+      if (username) return postsApi.userPostsUrl(username, { videos: 1, from: id })
+      if (name) return postsApi.hashtagPostsUrl(name, { videos: 1, from: id })
+      return postsApi.reelsUrl()
     },
     emptyText() {
       return this.$route.params.id

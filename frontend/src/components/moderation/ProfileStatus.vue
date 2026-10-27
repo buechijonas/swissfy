@@ -66,7 +66,7 @@ import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
-import { apiFetch } from '@/lib/api.js'
+import profilesApi from '@/api/profiles.js'
 import { formatDate } from '@/lib/time.js'
 
 export default {
@@ -80,11 +80,7 @@ export default {
   },
   async created() {
     try {
-      const response = await apiFetch(
-        `/api/social/profiles/${encodeURIComponent(this.username)}/status/`,
-      )
-      if (!response.ok) throw new Error()
-      const data = await response.json()
+      const data = await profilesApi.status(this.username)
       this.events = data.events
       this.reports = data.reports
     } catch {

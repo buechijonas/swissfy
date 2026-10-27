@@ -33,7 +33,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import postsApi from '@/api/posts.js'
 import { useGroupsStore } from '@/stores/posts.js'
 
 export default {
@@ -52,9 +52,6 @@ export default {
     }
   },
   computed: {
-    url() {
-      return `/api/posts/${this.post.id}/`
-    },
     canSave() {
       return !this.busy && (this.visibility !== 'groups' || this.groups.length > 0)
     },
@@ -69,31 +66,31 @@ export default {
         .catch(() => {})
       this.$refs.dialog.open()
     },
-    async request(method, body, fallback) {
+    async run(action, fallback) {
       this.busy = true
       this.error = null
       try {
-        const response = await apiFetch(this.url, { method, body: body && JSON.stringify(body) })
-        if (response.ok) return response
-        this.error = extractErrorMessage(await response.json().catch(() => null), fallback)
-      } catch {
-        this.error = fallback
+        await action()
+      } catch (error) {
+        this.error = error.detail ?? fallback
       } finally {
         this.busy = false
       }
-      return null
     },
-    async save() {
-      const body = { visibility: this.visibility, groups: this.groups }
-      const response = await this.request('PATCH', body, 'Feed konnte nicht gespeichert werden.')
-      if (!response) return
-      this.$refs.dialog.close()
-      this.$emit('updated', await response.json())
+    save() {
+      return this.run(async () => {
+        const body = { visibility: this.visibility, groups: this.groups }
+        const post = await postsApi.update(this.post.id, body)
+        this.$refs.dialog.close()
+        this.$emit('updated', post)
+      }, 'Feed konnte nicht gespeichert werden.')
     },
-    async remove() {
-      if (!(await this.request('DELETE', null, 'Feed konnte nicht gelöscht werden.'))) return
-      this.$refs.dialog.close()
-      this.$emit('deleted', this.post.id)
+    remove() {
+      return this.run(async () => {
+        await postsApi.remove(this.post.id)
+        this.$refs.dialog.close()
+        this.$emit('deleted', this.post.id)
+      }, 'Feed konnte nicht gelöscht werden.')
     },
   },
 }

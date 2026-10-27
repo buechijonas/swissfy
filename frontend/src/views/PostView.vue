@@ -20,13 +20,13 @@
           />
           <CommentSection
             class="mt-4"
-            :url="`${apiBase}/comments/`"
+            :url="commentsUrl"
             :moderation="moderation"
             @created="post.comment_count += 1"
             @deleted="post.comment_count = $event.comment_count"
           >
             <template v-if="moderation" #composer>
-              <ModerationPanel :url="apiBase + '/'" :details="details" />
+              <ModerationPanel kind="posts" :target-id="id" :details="details" />
             </template>
           </CommentSection>
         </template>
@@ -44,7 +44,8 @@ import ModerationPanel from '@/components/moderation/ModerationPanel.vue'
 import CommentSection from '@/components/posts/CommentSection.vue'
 import PostCard from '@/components/posts/PostCard.vue'
 import ReelFeed from '@/components/posts/ReelFeed.vue'
-import { apiFetch } from '@/lib/api.js'
+import moderationApi from '@/api/moderation.js'
+import postsApi from '@/api/posts.js'
 
 export default {
   name: 'PostView',
@@ -68,9 +69,13 @@ export default {
     }
   },
   computed: {
-    apiBase() {
-      const base = this.moderation ? '/api/moderation/posts' : '/api/posts'
-      return `${base}/${this.$route.params.id}`
+    id() {
+      return this.$route.params.id
+    },
+    commentsUrl() {
+      return this.moderation
+        ? moderationApi.childrenUrl('posts', this.id)
+        : postsApi.commentsUrl(this.id)
     },
     reel() {
       return Boolean(this.post?.video) && !this.moderation
@@ -81,13 +86,16 @@ export default {
     },
   },
   async created() {
-    const response = await apiFetch(`${this.apiBase}/`)
-    if (!response.ok) {
+    let data
+    try {
+      data = this.moderation
+        ? await moderationApi.get('posts', this.id)
+        : await postsApi.get(this.id)
+    } catch (error) {
       this.error =
-        response.status === 404 ? 'Feed nicht gefunden.' : 'Feed konnte nicht geladen werden.'
+        error.status === 404 ? 'Feed nicht gefunden.' : 'Feed konnte nicht geladen werden.'
       return
     }
-    const data = await response.json()
     if (this.moderation) {
       const { post, ...details } = data
       this.details = details

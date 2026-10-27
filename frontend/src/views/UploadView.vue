@@ -184,7 +184,8 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ImageDropzone from '@/components/common/ImageDropzone.vue'
 import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import postsApi from '@/api/posts.js'
+import storiesApi from '@/api/stories.js'
 import { extractHashtags } from '@/lib/hashtags.js'
 import { compressImage, imageSize } from '@/lib/image.js'
 import { pageTitle } from '@/lib/title.js'
@@ -280,8 +281,7 @@ export default {
     },
     async loadQuota() {
       try {
-        const response = await apiFetch('/api/posts/quota/')
-        if (response.ok) this.quota = await response.json()
+        this.quota = await postsApi.quota()
       } catch {
         this.quota = null
       }
@@ -357,19 +357,11 @@ export default {
       this.sending = true
       this.error = null
       try {
-        const response = await apiFetch(story ? '/api/stories/' : '/api/posts/', {
-          method: 'POST',
-          body: this.form(),
-        })
-        const data = await response.json().catch(() => null)
-        if (!response.ok) {
-          this.error = extractErrorMessage(data, fallback)
-          if (response.status === 429) this.loadQuota()
-          return
-        }
+        await (story ? storiesApi.create(this.form()) : postsApi.create(this.form()))
         this.leave()
-      } catch {
-        this.error = fallback
+      } catch (error) {
+        this.error = error.detail ?? fallback
+        if (error.status === 429) this.loadQuota()
       } finally {
         this.sending = false
       }

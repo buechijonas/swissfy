@@ -42,7 +42,7 @@ import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import { wobble } from '@/lib/bubble.js'
-import { design } from '@/lib/design.js'
+import { design } from '@/lib/preferences.js'
 
 export default {
   name: 'BaseTabs',

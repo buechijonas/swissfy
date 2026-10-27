@@ -1,4 +1,4 @@
-import { contrastMode } from '@/lib/contrast.js'
+import { contrastMode } from '@/lib/preferences.js'
 
 export function wobble(el) {
   if (!el || contrastMode.value || matchMedia('(prefers-reduced-motion: reduce)').matches) return

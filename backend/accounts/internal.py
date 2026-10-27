@@ -7,7 +7,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from posts.views import serve_image
+from posts.views.media import serve_image
 
 from .models import UserProfile
 

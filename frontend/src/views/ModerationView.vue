@@ -48,7 +48,7 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
 import PostCard from '@/components/posts/PostCard.vue'
-import { apiFetch } from '@/lib/api.js'
+import moderationApi from '@/api/moderation.js'
 
 export default {
   name: 'ModerationView',
@@ -99,7 +99,7 @@ export default {
     },
     reload() {
       this.items = []
-      this.next = `/api/moderation/reports/?status=${this.status}`
+      this.next = moderationApi.reportsUrl(this.status)
       this.load()
     },
     itemId(item) {
@@ -110,9 +110,7 @@ export default {
       this.loading = true
       this.error = null
       try {
-        const response = await apiFetch(url)
-        if (!response.ok) throw new Error()
-        const data = await response.json()
+        const data = await moderationApi.list(url)
         if (url !== this.next) return
         this.items.push(...data.results)
         this.next = data.next

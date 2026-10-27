@@ -39,12 +39,12 @@
                 size="sm"
                 variant="primary"
                 :disabled="busy"
-                @click="answer(item, 'POST', 'accepted')"
+                @click="answer(item, 'accepted')"
               >
                 <AppIcon name="check" />
                 Annehmen
               </BaseButton>
-              <BaseButton size="sm" :disabled="busy" @click="answer(item, 'DELETE', 'declined')">
+              <BaseButton size="sm" :disabled="busy" @click="answer(item, 'declined')">
                 <AppIcon name="cross" />
                 Ablehnen
               </BaseButton>
@@ -86,7 +86,8 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import { apiFetch, extractErrorMessage } from '@/lib/api.js'
+import notificationsApi from '@/api/notifications.js'
+import profilesApi from '@/api/profiles.js'
 import { formatRelativeTime } from '@/lib/time.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
 
@@ -94,11 +95,6 @@ const KIND_ICONS = {
   warning: 'shield-exclamation',
   warning_expired: 'check',
   suspension: 'lock',
-}
-
-const REQUEST_ENDPOINTS = {
-  follow_request: 'follow-requests',
-  friend_request: 'friend-requests',
 }
 
 const KIND_COLORS = {
@@ -130,7 +126,7 @@ export default {
       breadcrumbs: [{ label: 'Benachrichtigungen', to: '/notifications' }],
       items: [],
       unreadIds: new Set(),
-      next: '/api/notifications/',
+      next: notificationsApi.listUrl(),
       loading: false,
       busy: false,
       error: null,
@@ -148,9 +144,7 @@ export default {
       this.loading = true
       this.error = null
       try {
-        const response = await apiFetch(this.next)
-        if (!response.ok) throw new Error()
-        const data = await response.json()
+        const data = await notificationsApi.list(this.next)
         this.items.push(...data.results)
         for (const item of data.results) if (!item.read) this.unreadIds.add(item.id)
         this.next = data.next
@@ -160,20 +154,16 @@ export default {
         this.loading = false
       }
     },
-    async answer(item, method, state) {
+    async answer(item, state) {
       this.busy = true
       this.error = null
       try {
-        const response = await apiFetch(
-          `/api/social/profiles/me/${REQUEST_ENDPOINTS[item.kind]}/${encodeURIComponent(item.actor.username)}/`,
-          { method },
-        )
-        if (!response.ok) {
-          const data = await response.json().catch(() => null)
-          this.error = extractErrorMessage(data, 'Aktion fehlgeschlagen.')
-          return
-        }
+        const respond =
+          state === 'accepted' ? profilesApi.acceptRequest : profilesApi.declineRequest
+        await respond(item.kind, item.actor.username)
         item.request = state
+      } catch (error) {
+        this.error = error.detail ?? 'Aktion fehlgeschlagen.'
       } finally {
         this.busy = false
       }
