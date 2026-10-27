@@ -32,15 +32,11 @@
             @action="requestToggle(user)"
           >
             <UserRow :user="user" :to="chatLink(user)">
-              <div
-                v-if="user.last_message"
-                class="contents"
-                :class="user.unread ? 'font-bold text-base-content' : 'text-swissfy-muted'"
-              >
-                <span class="text-xs">
-                  {{ formatRelativeTime(user.last_message.created_at, now) }}
-                </span>
-                <span class="flex items-center gap-1 min-w-0 max-w-full text-sm">
+              <template v-if="user.last_message" #subtitle>
+                <span
+                  class="flex items-center gap-1 min-w-0 text-sm"
+                  :class="user.unread ? 'font-bold text-base-content' : 'text-swissfy-muted'"
+                >
                   <CipherText v-if="previews[user.username] === null" :length="8" />
                   <span v-else class="truncate">{{ previews[user.username] }}</span>
                   <MessageStatus
@@ -48,7 +44,19 @@
                     :status="user.last_message.status"
                   />
                 </span>
-              </div>
+              </template>
+              <template v-else #subtitle>
+                <span class="text-swissfy-muted text-sm truncate">
+                  {{ user.pending ? 'Anfrage gesendet' : 'Noch keine Nachrichten' }}
+                </span>
+              </template>
+              <span
+                v-if="user.last_message"
+                class="text-xs"
+                :class="user.unread ? 'font-bold text-base-content' : 'text-swissfy-muted'"
+              >
+                {{ formatRelativeTime(user.last_message.created_at, now) }}
+              </span>
             </UserRow>
           </SwipeRow>
           <BaseButton

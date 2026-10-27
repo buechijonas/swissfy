@@ -425,6 +425,8 @@ class ChatRequestTests(TestCase):
         self.assertEqual([user["username"] for user in conversations], ["eve", "anna"])
 
         self.assertIsNone(conversations[0]["last_message"])
+        self.assertFalse(conversations[0]["pending"])
+        self.assertTrue(conversations[1]["pending"])
 
         self.client.force_login(self.anna)
         self.client.post("/api/chats/jonas/request/accept/")

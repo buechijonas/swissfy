@@ -7,7 +7,9 @@
         <span v-else class="font-bold truncate">{{ fullName || user.username }}</span>
         <RoleBadge :role="user.role" />
       </span>
-      <span class="text-swissfy-muted text-sm truncate">@{{ user.username }}</span>
+      <slot name="subtitle">
+        <span class="text-swissfy-muted text-sm truncate">@{{ user.username }}</span>
+      </slot>
     </div>
     <div v-if="$slots.default" class="flex flex-col items-end gap-1 min-w-0 max-w-[45%] text-right">
       <slot />
