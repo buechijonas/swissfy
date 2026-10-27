@@ -1,7 +1,4 @@
-function getCookie(name) {
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'))
-  return match ? decodeURIComponent(match[1]) : null
-}
+import { getCookie } from '@/lib/cookies.js'
 
 export async function apiFetch(url, options = {}) {
   const isUnsafe = options.method && options.method !== 'GET'
