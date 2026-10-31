@@ -125,13 +125,22 @@ class PostSummarySerializer(serializers.ModelSerializer):
         return thumbnail_url(obj)
 
 
+class PostImageSerializer(serializers.ModelSerializer):
+    url = serializers.CharField(read_only=True)
+    aspect_ratio = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = PostImage
+        fields = ["url", "aspect_ratio"]
+
+
 class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid", read_only=True)
     author = AuthorSerializer(read_only=True)
-    images = serializers.SerializerMethodField()
+    images = PostImageSerializer(many=True, read_only=True)
     video = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
-    aspect_ratio = serializers.SerializerMethodField()
+    aspect_ratio = serializers.FloatField(read_only=True)
     list_aspect_ratio = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
     comment_count = serializers.IntegerField(read_only=True)
@@ -170,9 +179,6 @@ class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
             "can_report",
         ]
 
-    def get_images(self, obj):
-        return [f"/api/posts/{obj.uuid}/images/{image.position}/" for image in obj.images.all()]
-
     def get_video(self, obj):
         if obj.video_status != Post.VideoStatus.READY:
             return None
@@ -181,12 +187,8 @@ class PostSerializer(ModeratedMixin, serializers.ModelSerializer):
     def get_thumbnail(self, obj):
         return thumbnail_url(obj)
 
-    def get_aspect_ratio(self, obj):
-        return round(obj.image_width / obj.image_height, 4) if obj.image_height else None
-
     def get_list_aspect_ratio(self, obj):
-        ratio = self.get_aspect_ratio(obj)
-        return max(ratio, 1) if ratio else None
+        return max(obj.aspect_ratio, 1) if obj.aspect_ratio else None
 
     def get_like_count(self, obj):
         return compact_number(obj.like_count)
@@ -273,8 +275,8 @@ class PostCreateSerializer(AudienceMixin, serializers.ModelSerializer):
         post = super().create({**data, "author": self.context["request"].user})
         hashtags.tag(post)
         PostImage.objects.bulk_create(
-            PostImage(post=post, file=file, position=position)
-            for position, file in enumerate(files)
+            PostImage(post=post, file=file, width=width, height=height, position=position)
+            for position, (file, width, height) in enumerate(files)
         )
         return post
 
@@ -332,7 +334,7 @@ class StoryCreateSerializer(AudienceMixin, serializers.ModelSerializer):
             files, *_ = images.compress([upload])
         except images.InvalidImage as error:
             raise serializers.ValidationError(str(error))
-        return files[0]
+        return files[0][0]
 
     def validate(self, data):
         if data.get("visibility") == Post.Visibility.GLOBAL:

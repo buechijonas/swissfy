@@ -43,6 +43,10 @@ class Hashtag(models.Model):
         return f"#{self.name}"
 
 
+def aspect_ratio(width, height):
+    return round(width / height, 4) if width and height else None
+
+
 class Post(models.Model):
     class Visibility(models.TextChoices):
         PUBLIC = "public", "Alle"
@@ -80,6 +84,10 @@ class Post(models.Model):
     def __str__(self):
         return f"Post({self.author}, {self.pk})"
 
+    @property
+    def aspect_ratio(self):
+        return aspect_ratio(self.image_width, self.image_height)
+
 
 class PostCreation(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
@@ -89,6 +97,8 @@ class PostCreation(models.Model):
 class PostImage(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="images")
     file = models.FileField(upload_to="posts/")
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
     position = models.PositiveSmallIntegerField()
 
     class Meta:
@@ -96,6 +106,14 @@ class PostImage(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["post", "position"], name="unique_post_image"),
         ]
+
+    @property
+    def url(self):
+        return f"/api/posts/{self.post.uuid}/images/{self.position}/"
+
+    @property
+    def aspect_ratio(self):
+        return aspect_ratio(self.width, self.height) or self.post.aspect_ratio
 
 
 @receiver(post_delete, sender=Post)
