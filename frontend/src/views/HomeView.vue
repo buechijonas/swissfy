@@ -21,10 +21,15 @@
   </template>
   <template v-else>
     <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex h-[calc(100dvh-139px)] lg:h-[calc(100dvh-192px)] px-6">
-      <div class="flex flex-col mx-auto my-32">
-        <h1 class="text-title my-8 text-center font-light">Herzlich Willkommen</h1>
-        <p class="subtitle mx-auto text-swissfy-muted font-light">swissfy.ch</p>
+    <div
+      class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    >
+      <div class="mx-auto w-full max-w-150 pt-4 max-sm:pt-0">
+        <div class="flex flex-col my-16">
+          <h1 class="text-title my-8 text-center font-light">Herzlich Willkommen</h1>
+          <p class="subtitle mx-auto text-swissfy-muted font-light">swissfy.ch</p>
+        </div>
+        <PostList :url="globalUrl" edge-to-edge empty-text="Noch keine Mitteilungen." />
       </div>
     </div>
     <BaseFooter />
@@ -47,6 +52,7 @@ export default {
     return {
       breadcrumbs: [{ label: 'Home', to: '/' }],
       feedUrl: postsApi.feedUrl(),
+      globalUrl: postsApi.globalUrl(),
     }
   },
   computed: {

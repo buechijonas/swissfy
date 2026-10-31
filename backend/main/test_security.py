@@ -23,6 +23,10 @@ PUBLIC = {
     "govex-account-deleted",
     "govex-account-updated",
     "me",
+    "global-feed",
+    "post-image",
+    "post-video",
+    "post-thumbnail",
 }
 SIGNED = {"govex-account-deleted", "govex-account-updated"}
 UNSAFE = ["post", "put", "patch", "delete"]

@@ -315,6 +315,7 @@ import PostEditDialog from '@/components/posts/PostEditDialog.vue'
 import HeartBurst from '@/components/posts/HeartBurst.vue'
 import PostText from '@/components/posts/PostText.vue'
 import postsApi from '@/api/posts.js'
+import { useAuthStore } from '@/stores/auth.js'
 import { formatRelativeTime } from '@/lib/time.js'
 import { videoAutoplay, videoLoop } from '@/lib/preferences.js'
 
@@ -394,8 +395,11 @@ export default {
     videoLoop() {
       return videoLoop.value
     },
+    authStore() {
+      return useAuthStore()
+    },
     hasCommentSheet() {
-      return !this.moderation && (this.reel || !this.detail)
+      return this.authStore.isAuthenticated && !this.moderation && (this.reel || !this.detail)
     },
     hasMenu() {
       return (this.post.is_own && !this.moderation) || this.post.can_report
@@ -457,6 +461,7 @@ export default {
       slides.scrollTo({ left: index * slides.clientWidth, behavior: 'smooth' })
     },
     async run(action) {
+      if (!this.authStore.isAuthenticated) return this.$router.push('/login')
       this.busy = true
       this.error = null
       try {

@@ -6,6 +6,7 @@ from .views import albums, collections, comments, feeds, hashtags, media, posts,
 
 urlpatterns = [
     path("posts/", feeds.FeedView.as_view(), name="feed"),
+    path("posts/global/", feeds.GlobalFeedView.as_view(), name="global-feed"),
     path("posts/quota/", posts.PostQuotaView.as_view(), name="post-quota"),
     path("posts/reels/", feeds.ReelFeedView.as_view(), name="reel-feed"),
     path("posts/hashtags/", hashtags.HashtagSearchView.as_view(), name="hashtags"),

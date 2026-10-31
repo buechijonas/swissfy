@@ -3,6 +3,7 @@ import re
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -58,12 +59,16 @@ def serve_video(request, file):
 
 
 class PostImageView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request, uuid, position):
         image = get_object_or_404(PostImage, post=visible_post(request, uuid), position=position)
         return serve_image(image.file)
 
 
 class PostVideoView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request, uuid):
         post = visible_post(request, uuid)
         if post.video_status != Post.VideoStatus.READY:
@@ -72,6 +77,8 @@ class PostVideoView(APIView):
 
 
 class PostThumbnailView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request, uuid):
         thumbnail = visible_post(request, uuid).thumbnail
         if not thumbnail:
