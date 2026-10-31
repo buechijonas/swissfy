@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import generics, status
 from rest_framework.parsers import MultiPartParser
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -22,12 +23,14 @@ from ..queries import (
     comment_details,
     comment_visibility,
     feed,
+    global_posts,
     image_posts,
     media_posts,
     reported_comments,
     video_posts,
     visible_posts,
     with_details,
+    with_guest_details,
 )
 from ..serializers import CommentSerializer, PostCreateSerializer, PostSerializer
 from .comments import post_summary
@@ -81,6 +84,15 @@ class FeedView(generics.ListCreateAPIView):
             PostSerializer(post, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+class GlobalFeedView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    pagination_class = NewestFirst
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return with_guest_details(global_posts())
 
 
 class UserPostListView(generics.ListAPIView):

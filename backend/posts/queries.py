@@ -1,4 +1,14 @@
-from django.db.models import Count, Exists, IntegerField, OuterRef, Q, Subquery, Sum, Value
+from django.db.models import (
+    CharField,
+    Count,
+    Exists,
+    IntegerField,
+    OuterRef,
+    Q,
+    Subquery,
+    Sum,
+    Value,
+)
 from django.db.models.functions import Coalesce, Greatest, TruncDate
 
 from accounts.models import UserProfile
@@ -21,6 +31,7 @@ from .models import (
 )
 
 NOT_HIDDEN = Q(hidden_at__isnull=True)
+UNFINISHED_VIDEO = Q(video_status__in=[Post.VideoStatus.PROCESSING, Post.VideoStatus.FAILED])
 
 
 def reported_comments():
@@ -75,8 +86,7 @@ def visible_posts(viewer):
     posts, shared = with_audience(
         Post.objects.all(), viewer, ContactGroup.objects.filter(posts=OuterRef("pk"))
     )
-    unfinished_video = Q(video_status__in=[Post.VideoStatus.PROCESSING, Post.VideoStatus.FAILED])
-    posts = posts.filter(~unfinished_video | Q(author=viewer))
+    posts = posts.filter(~UNFINISHED_VIDEO | Q(author=viewer))
     if is_admin(viewer):
         return posts
     global_post = Q(visibility=Post.Visibility.GLOBAL)
@@ -84,6 +94,14 @@ def visible_posts(viewer):
     if is_moderator(viewer):
         visible |= Q(pk__in=Post.objects.filter(reports__isnull=False).values("pk"))
     return posts.filter(visible)
+
+
+def global_posts():
+    return Post.objects.filter(
+        NOT_HIDDEN & ~by_suspended_author() & ~UNFINISHED_VIDEO,
+        visibility=Post.Visibility.GLOBAL,
+        author__is_active=True,
+    )
 
 
 def visible_stories(viewer):
@@ -160,23 +178,40 @@ def count_of(queryset, field="post"):
     return Coalesce(Subquery(counts, output_field=IntegerField()), Value(0))
 
 
-def with_details(posts, viewer):
-    saves = SavedPost.objects.filter(user=viewer, post=OuterRef("pk"))
+def with_counts(posts, comments):
     return (
         posts.select_related("author__profile")
         .prefetch_related("groups", "images", "author__groups")
         .annotate(
-            reported=Exists(Post.objects.filter(pk=OuterRef("pk"), reports__reporter=viewer)),
             like_count=count_of(Like.objects.all()),
-            comment_count=count_of(Comment.objects.filter(comment_visibility(viewer), parent=None)),
-            liked=Exists(Like.objects.filter(user=viewer, post=OuterRef("pk"))),
-            reposted=Exists(Repost.objects.filter(user=viewer, post=OuterRef("pk"))),
-            reposter=Subquery(
-                followed_reposts(viewer).filter(post=OuterRef("pk")).values("user__username")[:1]
-            ),
-            saved=Exists(saves),
-            saved_folder=Subquery(saves.values("folder")),
+            comment_count=count_of(comments.filter(parent=None)),
         )
+    )
+
+
+def with_details(posts, viewer):
+    saves = SavedPost.objects.filter(user=viewer, post=OuterRef("pk"))
+    return with_counts(posts, Comment.objects.filter(comment_visibility(viewer))).annotate(
+        reported=Exists(Post.objects.filter(pk=OuterRef("pk"), reports__reporter=viewer)),
+        liked=Exists(Like.objects.filter(user=viewer, post=OuterRef("pk"))),
+        reposted=Exists(Repost.objects.filter(user=viewer, post=OuterRef("pk"))),
+        reposter=Subquery(
+            followed_reposts(viewer).filter(post=OuterRef("pk")).values("user__username")[:1]
+        ),
+        saved=Exists(saves),
+        saved_folder=Subquery(saves.values("folder")),
+    )
+
+
+def with_guest_details(posts):
+    comments = Comment.objects.filter(NOT_HIDDEN & ~by_suspended_author())
+    return with_counts(posts, comments).annotate(
+        reported=Value(False),
+        liked=Value(False),
+        reposted=Value(False),
+        reposter=Value(None, output_field=CharField()),
+        saved=Value(False),
+        saved_folder=Value(None, output_field=IntegerField()),
     )
 
 

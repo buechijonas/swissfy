@@ -60,6 +60,9 @@ export default {
   feedUrl() {
     return '/api/posts/'
   },
+  globalUrl() {
+    return '/api/posts/global/'
+  },
   reelsUrl() {
     return '/api/posts/reels/'
   },

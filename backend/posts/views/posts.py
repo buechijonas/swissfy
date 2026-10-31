@@ -12,13 +12,15 @@ from notifications.models import Notification
 from notifications.notify import notify, withdraw
 
 from ..models import Like, Post, PostCreation, Repost, SavedFolder, SavedPost
-from ..queries import visible_posts, with_details
+from ..queries import global_posts, visible_posts, with_details
 from ..serializers import PostAudienceSerializer, PostSerializer
 
 POSTS_PER_DAY = 10
 
 
 def visible_post(request, uuid):
+    if request.user.is_anonymous:
+        return get_object_or_404(global_posts(), uuid=uuid)
     return get_object_or_404(visible_posts(request.user), uuid=uuid)
 
 
