@@ -13,14 +13,14 @@
     @mousedown="preventSelection"
   >
     <div
-      :class="{ relative: post.video }"
+      :class="{ relative: overlay }"
       @mousemove="showControls"
       @touchstart.passive="showControls"
     >
       <AuthorHeader
         :author="post.author"
-        :overlay="Boolean(post.video)"
-        :class="{ 'absolute inset-x-0 top-0 z-1': post.video }"
+        :overlay="overlay"
+        :class="{ 'absolute inset-x-0 top-0 z-1': overlay }"
       >
         <template v-if="!reel">
           <BaseButton
@@ -78,7 +78,7 @@
             : 'Video wird verarbeitet…'
         }}
       </div>
-      <template v-else-if="post.video">
+      <div v-else-if="post.video" class="relative">
         <video
           ref="video"
           class="post-video block bg-black object-contain"
@@ -100,7 +100,7 @@
           @pause="onPause"
         ></video>
         <div
-          v-if="post.text"
+          v-if="overlay && post.text"
           class="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent px-4 pt-8 text-white transition-[padding] [text-shadow:0_1px_2px_rgb(0_0_0/0.6)]"
           :class="[controlsVisible ? 'pb-14' : 'pb-4', { 'pr-16': reel }]"
         >
@@ -123,24 +123,29 @@
             <AppIcon name="play" alt="Abspielen" class="ml-1 size-8!" />
           </button>
         </Transition>
-      </template>
+      </div>
     </div>
     <p v-if="post.video && post.hidden" class="px-4 pt-3 text-xs font-bold text-error">
       Öffentlich verborgen
     </p>
+    <PostText
+      v-if="post.video && !overlay && post.text"
+      :text="post.text"
+      class="px-4 pt-3 whitespace-pre-line break-words"
+    />
 
     <div v-if="post.images.length" class="group relative">
       <HeartBurst ref="heart" />
       <div
         ref="slides"
-        class="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none]"
+        class="flex snap-x snap-mandatory items-center overflow-x-auto bg-base-200 [scrollbar-width:none]"
         @scroll.passive="onSlide"
       >
-        <div v-for="src in post.images" :key="src" class="w-full shrink-0 snap-center">
+        <div v-for="image in post.images" :key="image.url" class="w-full shrink-0 snap-center">
           <img
-            class="w-full object-cover bg-base-200"
-            :style="{ aspectRatio: detail ? post.aspect_ratio : post.list_aspect_ratio }"
-            :src="src"
+            class="max-h-[80dvh] w-full object-contain"
+            :style="{ aspectRatio: image.aspect_ratio }"
+            :src="image.url"
             alt=""
             loading="lazy"
           />
@@ -171,8 +176,8 @@
         </BaseButton>
         <div class="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
           <span
-            v-for="(src, index) in post.images"
-            :key="src"
+            v-for="(image, index) in post.images"
+            :key="image.url"
             class="size-1.5 rounded-full shadow"
             :class="index === slide ? 'bg-white' : 'bg-white/50'"
           />
@@ -393,6 +398,9 @@ export default {
     },
     videoLoop() {
       return videoLoop.value
+    },
+    overlay() {
+      return this.reel && Boolean(this.post.video)
     },
     hasCommentSheet() {
       return !this.moderation && (this.reel || !this.detail)
