@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { icons, y2kIcons } from '@/assets/icons'
+import { icons, romanceIcons, y2kIcons } from '@/assets/icons'
 import { design } from '@/lib/preferences.js'
 
 const FADED = ['heart', 'bookmark', 'unlock']
@@ -34,7 +34,8 @@ export default {
     },
     style() {
       if (this.y2kIcon) return { backgroundImage: `url("${this.y2kIcon}")` }
-      return { maskImage: `url("${icons[this.name]}")` }
+      const icon = (design.value === 'romance' && romanceIcons[this.name]) || icons[this.name]
+      return { maskImage: `url("${icon}")` }
     },
   },
 }

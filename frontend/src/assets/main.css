@@ -942,6 +942,295 @@
   }
 }
 
+[data-design='romance'] {
+  --rom-ground: light-dark(#efe5d6, #120a14);
+  --rom-paper: light-dark(#f9f3ea, #1c1220);
+  --rom-tint: light-dark(#ecdcd4, #2a1a2c);
+  --rom-ink: light-dark(#231a1f, #ece0e4);
+  --rom-gold: light-dark(#8a6a24, #d4b06a);
+  --rom-wine: light-dark(#7d1d2c, #c23a4a);
+  --rom-line: light-dark(rgb(138 106 36 / 0.45), rgb(212 176 106 / 0.35));
+  --rom-candle: light-dark(rgb(255 196 120 / 0.25), rgb(255 170 90 / 0.14));
+  --rom-motif: color-mix(in oklab, var(--rom-wine) 15%, transparent);
+  --color-primary: var(--rom-wine);
+  --color-primary-content: #ffffff;
+  --color-base-100: var(--rom-paper);
+  --color-base-200: light-dark(#ece0d0, #170d1a);
+  --color-base-300: light-dark(#e0d0bd, #23152a);
+  --color-base-content: var(--rom-ink);
+  --color-swissfy-border: var(--rom-line);
+  --color-swissfy-muted: light-dark(#5c4a52, #b9a6ad);
+  --radius-box: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 0.25rem;
+}
+
+:root[data-design='romance'] {
+  background:
+    radial-gradient(
+      ellipse at 50% 40%,
+      transparent 40%,
+      light-dark(rgb(60 30 20 / 0.18), rgb(0 0 0 / 0.6))
+    ),
+    url('./romance/damask.svg') 0 0 / 4.5rem,
+    var(--rom-ground);
+  background-attachment: fixed;
+}
+
+:root[data-design='romance']:not([data-dyslexia='on']) body {
+  font-family: 'Lora Variable', Georgia, serif;
+}
+
+:root[data-design='romance']:not([data-dyslexia='on']) :is(h1, h2, h3) {
+  font-family: 'Cormorant Garamond Variable', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+[data-design='romance'] :is(h1, h2, h3) {
+  color: var(--rom-wine);
+}
+
+[data-design='romance'] h3 {
+  font-size: 1.5rem;
+}
+
+[data-design='romance'] h3::before {
+  content: '';
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  margin-right: 0.3em;
+  vertical-align: -0.2em;
+  background-color: var(--rom-wine);
+  mask: url('./romance/rose.svg') center / contain no-repeat;
+}
+
+[data-design='romance'] ::selection {
+  background-color: var(--rom-wine);
+  color: #ffffff;
+}
+
+[data-design='romance'] body::before,
+:root[data-design='romance']::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--rom-motif);
+}
+
+[data-design='romance'] body::before {
+  right: 1rem;
+  width: min(32rem, 34vw);
+  height: 96vh;
+  mask: url('./romance/woman.svg') center bottom / contain no-repeat;
+}
+
+:root[data-design='romance']::after {
+  left: var(--rom-motif-left, 0);
+  width: min(22rem, 24vw);
+  height: 85vh;
+  mask: url('./romance/rose-stem.svg') center bottom 1rem / contain no-repeat;
+}
+
+:root[data-design='romance']::before {
+  content: '';
+  position: fixed;
+  top: 3rem;
+  bottom: 0;
+  left: calc(20.5rem - 1rem);
+  z-index: 45;
+  display: none;
+  width: 2rem;
+  pointer-events: none;
+  background-color: light-dark(rgb(138 106 36 / 0.75), rgb(212 176 106 / 0.6));
+  mask: url('./romance/vine.svg') top / 2rem auto repeat-y;
+}
+
+[data-design='romance'] .app-chat {
+  background:
+    url('./romance/woman-tint.svg') right 1rem bottom / auto 85% no-repeat,
+    url('./romance/rose-stem-tint.svg') left 0.5rem bottom / auto 45% no-repeat,
+    var(--rom-paper);
+}
+
+[data-design='romance'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(circle at 8% 92%, var(--rom-candle), transparent 30rem);
+  animation: rom-candle 4s ease-in-out infinite alternate;
+}
+
+[data-design='romance'] .app-content {
+  background-color: transparent;
+}
+
+[data-design='romance'] :is(.app-surface, .modal-box) {
+  border: 1px solid var(--rom-line);
+  background-color: var(--rom-paper);
+  box-shadow:
+    inset 0 0 0 4px var(--rom-paper),
+    inset 0 0 0 5px var(--rom-line),
+    0 10px 30px light-dark(rgb(60 30 20 / 0.15), rgb(0 0 0 / 0.55));
+}
+
+[data-design='romance'] .app-surface {
+  position: relative;
+}
+
+[data-design='romance'] .app-surface::before,
+[data-design='romance'] .app-surface::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  width: 2.5rem;
+  height: 2.5rem;
+  pointer-events: none;
+  background: url('./romance/corner.svg') center / contain no-repeat;
+}
+
+[data-design='romance'] .app-surface::before {
+  top: -0.5rem;
+  left: -0.5rem;
+}
+
+[data-design='romance'] .app-surface::after {
+  right: -0.5rem;
+  bottom: -0.5rem;
+  transform: rotate(180deg);
+}
+
+[data-design='romance'] :is(.app-nav, .app-header, .app-footer:not(.app-footer-dark)) {
+  background-color: var(--rom-paper);
+  border-color: var(--rom-line);
+}
+
+[data-design='romance'] .nav-item.active {
+  background-color: var(--rom-tint);
+  color: var(--rom-wine);
+  box-shadow: inset 3px 0 0 var(--rom-gold);
+}
+
+[data-design='romance'] .btn:not(.btn-primary, .btn-error, .btn-ghost, .btn-circle) {
+  background-color: var(--rom-tint);
+  border-color: var(--rom-line);
+  color: var(--rom-ink);
+}
+
+[data-design='romance'] :is(.input, .select, .textarea) {
+  background-color: var(--rom-paper);
+  border-color: var(--rom-line);
+}
+
+[data-design='romance'] .tab-active,
+[data-design='romance'] .app-footer .border-b-current {
+  border-bottom-color: var(--rom-gold);
+  color: var(--rom-wine);
+}
+
+[data-design='romance'] .chat-bubble:not(.chat-bubble-primary) {
+  background-color: var(--rom-tint);
+  color: var(--rom-ink);
+}
+
+[data-design='romance'] .alert-warning {
+  border: 1px solid var(--rom-gold);
+  border-radius: var(--radius-box);
+  background-color: var(--rom-paper);
+  color: var(--rom-ink);
+}
+
+[data-design='romance'] :focus-visible {
+  outline: 2px solid var(--rom-gold);
+  outline-offset: 2px;
+}
+
+@media (width < 40rem) {
+  [data-design='romance'] .app-surface::before,
+  [data-design='romance'] .app-surface::after {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  [data-design='romance'] .app-surface::before {
+    top: 0.125rem;
+    left: 0.125rem;
+  }
+
+  [data-design='romance'] .app-surface::after {
+    right: 0.125rem;
+    bottom: 0.125rem;
+  }
+
+  [data-design='romance'] .app-tabs::before,
+  [data-design='romance'] .app-tabs::after {
+    display: none;
+  }
+
+  [data-design='romance'] body::before,
+  :root[data-design='romance']::after {
+    right: 0;
+    left: auto;
+    width: 70vw;
+    height: 75vh;
+    animation: rom-slide 40s ease-in-out infinite;
+  }
+
+  :root[data-design='romance']::after {
+    animation-delay: -20s;
+  }
+
+  [data-design='romance'] .app-chat {
+    background:
+      url('./romance/woman-tint.svg') right bottom / auto 70% no-repeat,
+      var(--rom-paper);
+  }
+}
+
+@media (width >= 64rem) {
+  :root[data-design='romance'] {
+    --rom-motif-left: 21rem;
+  }
+
+  :root[data-design='romance']::before {
+    display: block;
+  }
+}
+
+@keyframes rom-slide {
+  0%,
+  42% {
+    opacity: 1;
+  }
+  50%,
+  92% {
+    opacity: 0;
+  }
+}
+
+@keyframes rom-candle {
+  to {
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-design='romance'] body::after,
+  [data-design='romance'] body::before {
+    animation: none;
+  }
+
+  :root[data-design='romance']::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 [data-design='y2k'] {
   --y2k-surface: light-dark(rgb(255 255 255 / 0.6), rgb(10 32 52 / 0.6));
   --y2k-edge: light-dark(rgb(255 255 255 / 0.95), rgb(150 225 255 / 0.3));
@@ -1586,6 +1875,10 @@
   }
 }
 
+[data-design] .btn.app-design-tile {
+  border-radius: var(--radius-box);
+}
+
 [data-design='y2k'][data-contrast='on'] {
   --y2k-surface: light-dark(#ffffff, #04121f);
   --y2k-sheen: light-dark(#cfeaff, rgb(111 208 255 / 0.2));
@@ -1610,5 +1903,27 @@
 }
 
 [data-design='ecopunk'][data-contrast='on'] :is(.app-surface, .modal-box) {
+  border-width: 2px;
+}
+
+[data-design='romance'][data-contrast='on'] {
+  --rom-paper: light-dark(#ffffff, #000000);
+  --rom-ground: light-dark(#ffffff, #000000);
+  --rom-line: var(--rom-gold);
+  --color-swissfy-muted: light-dark(#2e2328, #e2d6da);
+}
+
+[data-design='romance'][data-contrast='on'] body::before,
+:root[data-design='romance'][data-contrast='on']::after,
+:root[data-design='romance'][data-contrast='on']::before,
+[data-design='romance'][data-contrast='on'] body::after {
+  display: none;
+}
+
+[data-design='romance'][data-contrast='on'] .app-chat {
+  background: var(--rom-paper);
+}
+
+[data-design='romance'][data-contrast='on'] :is(.app-surface, .modal-box) {
   border-width: 2px;
 }

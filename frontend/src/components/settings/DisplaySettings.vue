@@ -18,23 +18,19 @@
 
   <div class="mb-10">
     <h3 class="text-xl my-4">Design</h3>
-    <BaseCard
-      class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-    >
-      <p class="text-swissfy-muted min-w-0">Stil der Oberfläche.</p>
-      <div class="flex flex-wrap justify-center gap-2">
-        <BaseSwitcher
-          v-for="(options, index) in designGroups"
-          :key="index"
-          class="gap-2"
-          item-class="max-sm:btn-sm"
-          vertical
-          :options="options"
-          :active="design"
-          @select="design = $event"
-        />
-      </div>
-    </BaseCard>
+    <div class="grid grid-cols-3 gap-3">
+      <BaseButton
+        v-for="option in designOptions"
+        :key="option.value"
+        class="app-design-tile aspect-square h-auto flex-col gap-3 whitespace-normal px-2 text-center leading-tight"
+        :variant="design === option.value ? 'primary' : 'neutral'"
+        :aria-pressed="design === option.value"
+        @click="design = option.value"
+      >
+        <AppIcon :name="option.icon" class="size-8!" />
+        {{ option.label }}
+      </BaseButton>
+    </div>
     <div v-if="limitedDesigns.includes(design)" role="status" class="alert alert-warning mt-4">
       <AppIcon name="shield-exclamation" />
       <span>
@@ -75,9 +71,10 @@
 
 <script>
 import AppIcon from '@/components/common/AppIcon.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
-import { designGroups, limitedDesigns, onOffOptions, themeOptions } from '@/data/settings.js'
+import { designOptions, limitedDesigns, onOffOptions, themeOptions } from '@/data/settings.js'
 import { contrastMode, design, dyslexiaFont, themeMode } from '@/lib/preferences.js'
 
 function preference(setting) {
@@ -93,9 +90,9 @@ function preference(setting) {
 
 export default {
   name: 'DisplaySettings',
-  components: { AppIcon, BaseCard, BaseSwitcher },
+  components: { AppIcon, BaseButton, BaseCard, BaseSwitcher },
   data() {
-    return { designGroups, limitedDesigns, onOffOptions, themeOptions }
+    return { designOptions, limitedDesigns, onOffOptions, themeOptions }
   },
   computed: {
     themeMode: preference(themeMode),

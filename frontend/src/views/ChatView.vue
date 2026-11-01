@@ -64,7 +64,7 @@
       </BaseCard>
 
       <template v-else>
-        <BaseCard ref="scroller" class="flex-1 min-h-0 overflow-y-auto p-4 border-t-0">
+        <BaseCard ref="scroller" class="app-chat flex-1 min-h-0 overflow-y-auto p-4 border-t-0">
           <p v-if="ready" class="text-swissfy-muted text-xs text-center mb-4">
             Nachrichten werden nach 14 Tagen automatisch gelöscht.
           </p>

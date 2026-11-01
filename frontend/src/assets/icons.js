@@ -9,3 +9,7 @@ export const icons = byName(import.meta.glob('./icons/*.svg', { eager: true, imp
 export const y2kIcons = byName(
   import.meta.glob('./icons-y2k/*.svg', { eager: true, import: 'default', query: '?no-inline' }),
 )
+
+export const romanceIcons = byName(
+  import.meta.glob('./icons-romance/*.svg', { eager: true, import: 'default' }),
+)

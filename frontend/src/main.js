@@ -1,5 +1,7 @@
 import '@fontsource-variable/fraunces'
 import '@fontsource-variable/nunito'
+import '@fontsource-variable/cormorant-garamond'
+import '@fontsource-variable/lora'
 import './assets/main.css'
 import './lib/preferences.js'
 

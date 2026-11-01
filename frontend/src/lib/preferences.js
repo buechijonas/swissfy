@@ -8,7 +8,7 @@ export const themeMode = storedChoice('theme', ['auto', 'light', 'dark'], (mode)
 
 export const design = storedChoice(
   'design',
-  ['default', 'glass', 'cyberpunk', 'ecopunk', 'y2k'],
+  ['default', 'glass', 'cyberpunk', 'ecopunk', 'romance', 'y2k'],
   (value) => rootAttribute('data-design', value === 'default' ? null : value),
 )
 
