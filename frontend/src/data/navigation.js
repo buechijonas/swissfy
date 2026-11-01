@@ -9,6 +9,15 @@ export function canAccess(item, authStore) {
   return !item.roles || item.roles.includes(authStore.user?.role)
 }
 
+export function isListed(item, authStore) {
+  if (item.hiddenForGuests && !authStore.isAuthenticated) return false
+  return !item.roles || item.roles.includes(authStore.user?.role)
+}
+
+export function isLocked(item, authStore) {
+  return !canAccess(item, authStore)
+}
+
 export const navigationItems = [
   { key: 'dashboard', label: 'Startseite', icon: 'house-blank', to: '/', footer: true },
   {
@@ -58,6 +67,7 @@ export const navigationItems = [
     avatar: true,
     to: '/profile',
     requiresAuth: true,
+    hiddenForGuests: true,
     footer: true,
   },
   {

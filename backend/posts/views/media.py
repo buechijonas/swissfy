@@ -3,6 +3,7 @@ import re
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from commons.views import BaseViewSet
@@ -59,6 +60,7 @@ def serve_video(request, file):
 
 class PostMediaViewSet(BaseViewSet):
     lookup_field = "uuid"
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         return Post.objects.apply_acl(self.request.user)

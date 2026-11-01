@@ -23,15 +23,17 @@
         class="app-bubble"
         :style="{ left: `${bubble.left}px`, width: `${bubble.width}px`, '--stretch': stretch }"
       />
-      <RouterLink
+      <component
+        :is="isLocked(item) ? 'span' : RouterLink"
         v-for="item in footerItems"
         :key="item.key"
         ref="links"
-        :to="item.to"
+        v-bind="isLocked(item) ? { 'aria-disabled': 'true' } : { to: item.to }"
         class="relative flex h-full items-center px-4 border-y-2 border-t-transparent"
-        :class="
-          $route.meta.activeNavigation === item.key ? 'border-b-current' : 'border-b-transparent'
-        "
+        :class="[
+          $route.meta.activeNavigation === item.key ? 'border-b-current' : 'border-b-transparent',
+          { 'cursor-not-allowed text-swissfy-muted': isLocked(item) },
+        ]"
       >
         <UserAvatar
           v-if="item.avatar && hasAvatar"
@@ -48,7 +50,7 @@
         <span v-if="item.badge?.()" class="badge badge-primary badge-xs absolute top-2 right-2">
           {{ item.badge() }}
         </span>
-      </RouterLink>
+      </component>
     </nav>
   </footer>
 </template>
@@ -57,7 +59,7 @@
 import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import { canAccess, navigationItems } from '@/data/navigation.js'
+import { isListed, isLocked, navigationItems } from '@/data/navigation.js'
 import { avatarSrc } from '@/lib/avatar.js'
 import { wobble } from '@/lib/bubble.js'
 import { design } from '@/lib/preferences.js'
@@ -71,6 +73,7 @@ export default {
   },
   data() {
     return {
+      RouterLink,
       bubble: null,
       dragging: false,
       stretch: 1,
@@ -82,7 +85,7 @@ export default {
       return useAuthStore()
     },
     footerItems() {
-      return navigationItems.filter((item) => item.footer && canAccess(item, this.authStore))
+      return navigationItems.filter((item) => item.footer && isListed(item, this.authStore))
     },
     hasAvatar() {
       return Boolean(avatarSrc(this.authStore.user))
@@ -107,8 +110,12 @@ export default {
     window.removeEventListener('resize', this.placeBubble)
   },
   methods: {
+    isLocked(item) {
+      return isLocked(item, this.authStore)
+    },
     linkAt(index) {
-      return this.$refs.links?.[index]?.$el
+      const link = this.$refs.links?.[index]
+      return link?.$el ?? link
     },
     placeBubble() {
       const link = this.linkAt(this.activeIndex)
@@ -150,7 +157,7 @@ export default {
         const { left, right } = this.linkAt(i).getBoundingClientRect()
         return event.clientX >= left && event.clientX <= right
       })
-      if (index === -1) return this.placeBubble()
+      if (index === -1 || this.isLocked(this.footerItems[index])) return this.placeBubble()
       const link = this.linkAt(index)
       this.bubble = { left: link.offsetLeft, width: link.offsetWidth }
       if (index === this.activeIndex) this.wobble()

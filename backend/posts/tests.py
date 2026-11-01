@@ -258,6 +258,20 @@ class PostTests(TestCase):
         self.assertEqual([post["id"] for post in feed], [str(global_post.uuid)])
         self.assertEqual(self.visible_ids(), [str(global_post.uuid)])
 
+    def test_guests_see_only_global_posts(self):
+        global_post = Post.objects.create(author=self.anna, text="an alle", visibility="global")
+        Post.objects.create(author=self.anna, text="öffentlich", visibility="public")
+        Post.objects.create(
+            author=self.anna, text="verborgen", visibility="global", hidden_at=timezone.now()
+        )
+        self.client.logout()
+
+        feed = self.client.get("/api/posts/global/").json()["results"]
+        self.assertEqual([post["id"] for post in feed], [str(global_post.uuid)])
+        self.assertFalse(feed[0]["liked"])
+        self.assertFalse(feed[0]["can_report"])
+        self.assertEqual(self.client.get("/api/posts/").status_code, 403)
+
     def test_repost_reaches_followers_of_reposter(self):
         post = Post.objects.create(author=self.eve, text="teilen")
         Post.objects.filter(pk=post.pk).update(created_at=timezone.now() - timedelta(days=3))

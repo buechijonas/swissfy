@@ -23,14 +23,13 @@
             }"
           >
             <component
-              :is="item.href ? 'a' : 'RouterLink'"
-              v-bind="
-                item.href ? { href: item.href, target: '_blank', rel: 'noopener' } : { to: item.to }
-              "
+              :is="linkComponent(item)"
+              v-bind="linkAttributes(item)"
               class="nav-item flex items-center gap-3 p-4"
               :class="{
                 'active bg-swissfy-highlight text-primary shadow-none':
                   activeNavigation === item.key,
+                'disabled cursor-not-allowed text-swissfy-muted': isLocked(item),
               }"
               @click="isNavDrawerOpen = false"
             >
@@ -45,6 +44,7 @@
               <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
                 {{ item.badge() }}
               </span>
+              <AppIcon v-if="isLocked(item)" name="lock" class="ml-auto size-3!" />
             </component>
           </li>
         </template>
@@ -81,7 +81,7 @@ import { RouterLink } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import { canAccess, navigationItems } from '@/data/navigation.js'
+import { isListed, isLocked, navigationItems } from '@/data/navigation.js'
 import { avatarSrc } from '@/lib/avatar.js'
 import { isNavDrawerOpen } from '@/lib/navDrawer.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -99,6 +99,7 @@ export default {
   data() {
     return {
       navigationItems,
+      RouterLink,
       appName: packageJson.name,
       version: packageJson.version,
     }
@@ -108,7 +109,7 @@ export default {
       return useAuthStore()
     },
     visibleNavigationItems() {
-      return this.navigationItems.filter((item) => canAccess(item, this.authStore))
+      return this.navigationItems.filter((item) => isListed(item, this.authStore))
     },
     hasAvatar() {
       return Boolean(avatarSrc(this.authStore.user))
@@ -120,6 +121,21 @@ export default {
       set(value) {
         isNavDrawerOpen.value = value
       },
+    },
+  },
+  methods: {
+    isLocked(item) {
+      return isLocked(item, this.authStore)
+    },
+    linkComponent(item) {
+      if (item.href) return 'a'
+      if (this.isLocked(item)) return 'span'
+      return RouterLink
+    },
+    linkAttributes(item) {
+      if (item.href) return { href: item.href, target: '_blank', rel: 'noopener' }
+      if (this.isLocked(item)) return { 'aria-disabled': 'true' }
+      return { to: item.to }
     },
   },
 }

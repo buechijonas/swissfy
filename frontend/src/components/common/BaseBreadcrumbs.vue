@@ -1,6 +1,6 @@
 <template>
   <div
-    class="app-header max-lg:hidden flex items-center justify-between gap-4 border-b border-swissfy-border py-2 px-6"
+    class="app-header max-lg:hidden sticky top-0 z-10 bg-base-200 flex items-center justify-between gap-4 border-b border-swissfy-border py-2 px-6"
   >
     <div class="breadcrumbs text-sm">
       <ul>

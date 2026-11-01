@@ -13,6 +13,7 @@ from .views.users import UserPostViewSet
 
 urlpatterns = [
     path("posts/", PostViewSet.as_view({"get": "list", "post": "create"}), name="feed"),
+    path("posts/global/", PostViewSet.as_view({"get": "global_feed"}), name="global-feed"),
     path("posts/quota/", PostViewSet.as_view({"get": "quota"}), name="post-quota"),
     path("posts/reels/", PostViewSet.as_view({"get": "reels"}), name="reel-feed"),
     path("posts/hashtags/", HashtagViewSet.as_view({"get": "list"}), name="hashtags"),

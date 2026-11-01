@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status
 from rest_framework.exceptions import Throttled
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from commons.views import BaseViewSet, CreateModelMixin, UpdateModelMixin
@@ -54,6 +54,7 @@ class PostViewSet(
     pagination_class = NewestFirst
     pagination_action_classes = {"list": FeedOrder, "saved": SavedOrder}
     permission_action_classes = {
+        "global_feed": [AllowAny],
         "create": [IsAuthenticated, IsNotSuspended],
         "update": [IsAuthenticated, IsAuthor],
         "destroy": [IsAuthenticated, IsAuthor],
@@ -88,6 +89,10 @@ class PostViewSet(
     def quota(self, request):
         remaining = PostCreation.objects.remaining(request.user)
         return Response({"limit": POSTS_PER_DAY, "remaining": remaining})
+
+    def global_feed(self, request):
+        posts = Post.objects.apply_acl(request.user).filter(visibility=Post.Visibility.GLOBAL)
+        return self.paginated(posts)
 
     def reels(self, request):
         reels = Post.objects.feed(request.user).videos()

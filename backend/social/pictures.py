@@ -13,6 +13,8 @@ Audience = UserProfile.PictureAudience
 
 
 def viewer_relations(viewer, users=None):
+    if viewer.is_anonymous:
+        return {"following": set(), "friends": set(), "picture_groups": set()}
     following = Follow.objects.filter(follower=viewer)
     friends = Friendship.objects.filter(user=viewer)
     groups = UserProfile.objects.filter(private_picture_groups__members=viewer)
@@ -55,7 +57,7 @@ def file_url(user, kind, file):
 
 def picture_url(user, context):
     profile = getattr(user, "profile", None)
-    if profile is None:
+    if profile is None or context["request"].user.is_anonymous:
         return None
     if profile.private_picture and sees_private(
         profile, context["request"].user, cached_relations(context)

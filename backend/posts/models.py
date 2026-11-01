@@ -2,7 +2,17 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Count, Exists, IntegerField, OuterRef, Q, Subquery, Sum, Value
+from django.db.models import (
+    CharField,
+    Count,
+    Exists,
+    IntegerField,
+    OuterRef,
+    Q,
+    Subquery,
+    Sum,
+    Value,
+)
 from django.db.models.functions import Coalesce, Greatest, TruncDate
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
@@ -154,6 +164,12 @@ class HideableModel(UUIDModel):
 
 class PostQuerySet(AudienceQuerySet):
     def apply_acl(self, user):
+        if user.is_anonymous:
+            return self.filter(
+                NOT_HIDDEN & ~by_suspended_author() & ~unfinished_video(),
+                visibility=Post.Visibility.GLOBAL,
+                author__is_active=True,
+            )
         posts, shared = self.with_audience(user, ContactGroup.objects.filter(posts=OuterRef("pk")))
         posts = posts.filter(~unfinished_video() | Q(author=user))
         if is_admin(user):
@@ -201,22 +217,30 @@ class PostQuerySet(AudienceQuerySet):
         )
 
     def with_details(self, user):
-        saves = SavedPost.objects.filter(user=user, post=OuterRef("pk"))
-        reposter = Repost.objects.followed_by(user).filter(post=OuterRef("pk"))
         comments = Comment.objects.visible_to(user).filter(parent=None)
-        return (
+        posts = (
             self.select_related("author__profile")
             .prefetch_related("groups", "images", "author__groups")
-            .annotate(
-                reported=Exists(Post.objects.filter(pk=OuterRef("pk"), reports__reporter=user)),
-                like_count=count_of(Like.objects.all()),
-                comment_count=count_of(comments),
-                liked=Exists(Like.objects.filter(user=user, post=OuterRef("pk"))),
-                reposted=Exists(Repost.objects.filter(user=user, post=OuterRef("pk"))),
-                reposter=Subquery(reposter.values("user__username")[:1]),
-                saved=Exists(saves),
-                saved_folder=Subquery(saves.values("folder")),
+            .annotate(like_count=count_of(Like.objects.all()), comment_count=count_of(comments))
+        )
+        if user.is_anonymous:
+            return posts.annotate(
+                reported=Value(False),
+                liked=Value(False),
+                reposted=Value(False),
+                reposter=Value(None, output_field=CharField()),
+                saved=Value(False),
+                saved_folder=Value(None, output_field=IntegerField()),
             )
+        saves = SavedPost.objects.filter(user=user, post=OuterRef("pk"))
+        reposter = Repost.objects.followed_by(user).filter(post=OuterRef("pk"))
+        return posts.annotate(
+            reported=Exists(Post.objects.filter(pk=OuterRef("pk"), reports__reporter=user)),
+            liked=Exists(Like.objects.filter(user=user, post=OuterRef("pk"))),
+            reposted=Exists(Repost.objects.filter(user=user, post=OuterRef("pk"))),
+            reposter=Subquery(reposter.values("user__username")[:1]),
+            saved=Exists(saves),
+            saved_folder=Subquery(saves.values("folder")),
         )
 
 
@@ -428,6 +452,8 @@ class Repost(BaseModel):
 
 class CommentQuerySet(BaseQuerySet):
     def visible_to(self, user):
+        if user.is_anonymous:
+            return self.filter(NOT_HIDDEN & ~by_suspended_author())
         if is_admin(user):
             return self.all()
         visible = NOT_HIDDEN & (~by_suspended_author() | Q(author=user))

@@ -52,6 +52,8 @@ class AuthorModelSerializer(BaseModelSerializer):
         def story_authors(self):
             if "story_authors" not in self.context:
                 viewer = self.context["request"].user
+                if viewer.is_anonymous:
+                    return set(), set()
                 stories = Story.objects.apply_acl(viewer)
                 unseen = stories.exclude(views__user=viewer)
                 self.context["story_authors"] = (
@@ -95,6 +97,8 @@ class ModeratedSerializerMixin(serializers.Serializer):
 
     def get_can_report(self, obj):
         viewer = self.context["request"].user
+        if viewer.is_anonymous:
+            return False
         protected = is_moderator(viewer) and outranks(obj.author, viewer)
         return not self.moderating and not self.is_author(obj) and not protected
 
