@@ -2,7 +2,6 @@ import json
 import subprocess
 import tempfile
 import uuid
-from contextlib import contextmanager
 from pathlib import Path
 
 from django.core.files.base import ContentFile
@@ -22,18 +21,6 @@ LOCAL_ONLY = ["-protocol_whitelist", "file"]
 
 class InvalidVideo(Exception):
     pass
-
-
-@contextmanager
-def local_path(upload):
-    if hasattr(upload, "temporary_file_path"):
-        yield upload.temporary_file_path()
-        return
-    with tempfile.NamedTemporaryFile() as file:
-        for chunk in upload.chunks():
-            file.write(chunk)
-        file.flush()
-        yield file.name
 
 
 def probe(path):
@@ -67,8 +54,7 @@ def probe(path):
 def validate(upload):
     if upload.size > MAX_UPLOAD_SIZE:
         raise InvalidVideo("Das Video ist zu gross (max. 250 MB).")
-    with local_path(upload) as path:
-        streams, duration = probe(path)
+    streams, duration = probe(upload.temporary_file_path())
     if not streams:
         raise InvalidVideo("Die Datei ist kein gültiges Video.")
     if duration > MAX_DURATION + 0.5:

@@ -21,7 +21,9 @@ class QueryScalingTests(TestCase):
         for _ in range(count):
             self.created += 1
             author = User.objects.create(username=f"author{self.created}")
-            UserProfile.objects.create(user=author, public_picture="profiles/p.webp")
+            UserProfile.objects.update_or_create(
+                user=author, defaults={"public_picture": "profiles/p.webp"}
+            )
             Follow.objects.create(follower=self.viewer, following=author)
             Follow.objects.create(follower=author, following=self.viewer)
             post = Post.objects.create(author=author, text=f"Feed #{self.created}")

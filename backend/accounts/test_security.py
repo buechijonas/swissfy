@@ -10,7 +10,6 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import Client, TestCase, override_settings
 
-from .models import UserProfile
 from .roles import Role, role_of, set_role
 from .tests import SECRET, govex_user, signed_post
 
@@ -223,7 +222,6 @@ class AdminTakeoverTests(TestCase):
 class WebhookTests(TestCase):
     def setUp(self):
         self.admin = User.objects.create(username="admin", is_superuser=True, is_staff=True)
-        UserProfile.objects.create(user=self.admin)
         self.jonas = govex_user("jonas", "s1")
 
     def deleted(self, payload, **kwargs):
@@ -357,7 +355,8 @@ class AccountEndpointTests(TestCase):
         govex_user("jonas", "s1")
         with self.assertRaisesMessage(Exception, "already linked"):
             call_command("link_govex_user", "anna", "s1", stdout=StringIO())
-        self.assertIsNone(UserProfile.objects.filter(user=self.anna).first())
+        self.anna.profile.refresh_from_db()
+        self.assertIsNone(self.anna.profile.govex_sub)
 
 
 class RoleTests(TestCase):

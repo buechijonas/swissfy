@@ -334,7 +334,9 @@ class SearchOrderTests(TestCase):
         for username, role in (("adam", Role.ADMIN), ("abby", Role.DEFAULT)):
             private = User.objects.create(username=username)
             set_role(private, role)
-            UserProfile.objects.create(user=private, profile_visibility="friends")
+            UserProfile.objects.update_or_create(
+                user=private, defaults={"profile_visibility": "friends"}
+            )
         self.client.force_login(viewer)
         data = self.client.get("/api/social/profiles/").json()
         self.assertEqual(
@@ -465,7 +467,9 @@ class ConnectionListTests(TestCase):
         self.assertEqual(self.usernames("followers", q="ev"), ["eve"])
 
     def test_private_profile(self):
-        UserProfile.objects.create(user=self.jonas, profile_visibility="friends")
+        UserProfile.objects.update_or_create(
+            user=self.jonas, defaults={"profile_visibility": "friends"}
+        )
         response = self.client.get("/api/social/profiles/jonas/followers/")
         self.assertEqual(response.status_code, 403)
 
@@ -578,7 +582,9 @@ class AboutTests(TestCase):
         self.assertEqual(response.status_code, 503)
 
     def test_profile_shows_about_only_when_visible(self):
-        UserProfile.objects.create(user=self.anna, biography="Hi", favorite_games=[movie("tt5")])
+        UserProfile.objects.update_or_create(
+            user=self.anna, defaults={"biography": "Hi", "favorite_games": [movie("tt5")]}
+        )
         data = self.client.get("/api/social/profiles/anna/").json()
         self.assertEqual(data["biography"], "Hi")
         self.assertEqual(data["favorite_games"][0]["cover"], "/api/social/covers/imdb/tt5")

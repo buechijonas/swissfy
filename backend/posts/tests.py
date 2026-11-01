@@ -1,4 +1,5 @@
 import io
+import json
 import shutil
 import subprocess
 import tempfile
@@ -830,7 +831,9 @@ class AlbumTests(TestCase):
         return [a["cover"] for a in self.client.get("/api/posts/users/anna/albums/").json()]
 
     def send(self, method, url, data=None):
-        return getattr(self.client, method)(url, data, content_type="application/json")
+        return self.client.generic(
+            method.upper(), url, json.dumps(data), content_type="application/json"
+        )
 
     def add(self, album, *entries):
         return self.send("post", f"/api/albums/{album['id']}/entries/", {"entries": entries})

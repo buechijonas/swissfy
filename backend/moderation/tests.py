@@ -319,7 +319,9 @@ class PrivateBadgeTests(TestCase):
         viewer = User.objects.create(username="viewer")
         secret = User.objects.create(username="secret")
         set_role(secret, Role.VERIFIED)
-        UserProfile.objects.create(user=secret, profile_visibility="friends")
+        UserProfile.objects.update_or_create(
+            user=secret, defaults={"profile_visibility": "friends"}
+        )
         post = Post.objects.create(author=viewer, text="offen")
         Comment.objects.create(post=post, author=secret, text="psst")
 
@@ -380,7 +382,7 @@ class RoleLockTests(TestCase):
 class ModeratorReportedContentTests(TestCase):
     def test_moderator_sees_only_reported_content_of_private_profile(self):
         anna = User.objects.create(username="anna")
-        UserProfile.objects.create(user=anna, profile_visibility="friends")
+        UserProfile.objects.update_or_create(user=anna, defaults={"profile_visibility": "friends"})
         reporter = User.objects.create(username="jonas")
         mod = User.objects.create(username="mod")
         set_role(mod, Role.MODERATOR)

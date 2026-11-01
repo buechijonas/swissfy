@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.test import TestCase, override_settings
 
-from accounts.models import UserProfile
 from accounts.roles import Role, set_role
 from posts.models import ContactGroup
 
@@ -40,7 +39,7 @@ class PictureMatrixTests(TestCase):
     def setUp(self):
         self.owner = User.objects.create(username="owner")
         self.group = ContactGroup.objects.create(owner=self.owner, name="Familie")
-        self.profile = UserProfile.objects.create(user=self.owner)
+        self.profile = self.owner.profile
         self.profile.public_picture.save("public.webp", ContentFile(b"public"))
         self.profile.private_picture.save("private.webp", ContentFile(b"private"), save=False)
         self.private_name = self.profile.private_picture.name

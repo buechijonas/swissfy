@@ -4,8 +4,6 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 
-from posts.models import Comment, Post
-
 
 class Reason(models.TextChoices):
     ANTISEMITISM = "antisemitism", "Antisemitismus"
@@ -62,10 +60,10 @@ class Report(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
     )
     post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, null=True, blank=True, related_name="reports"
+        "posts.Post", on_delete=models.CASCADE, null=True, blank=True, related_name="reports"
     )
     comment = models.ForeignKey(
-        Comment, on_delete=models.CASCADE, null=True, blank=True, related_name="reports"
+        "posts.Comment", on_delete=models.CASCADE, null=True, blank=True, related_name="reports"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
@@ -93,8 +91,8 @@ class Warning(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
     )
     reason = models.CharField(max_length=40, choices=Reason.choices)
-    post = models.ForeignKey(Post, on_delete=models.SET_NULL, null=True, blank=True)
-    comment = models.ForeignKey(Comment, on_delete=models.SET_NULL, null=True, blank=True)
+    post = models.ForeignKey("posts.Post", on_delete=models.SET_NULL, null=True, blank=True)
+    comment = models.ForeignKey("posts.Comment", on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

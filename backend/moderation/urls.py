@@ -11,7 +11,7 @@ urlpatterns = [
     ),
     path(
         "moderation/posts/<uuid:uuid>/comments/",
-        views.ModerationPostCommentsView.as_view(),
+        views.ModerationPostCommentsView.as_view({"get": "list"}),
         name="moderation-post-comments",
     ),
     path(
@@ -26,12 +26,12 @@ urlpatterns = [
     ),
     path(
         "moderation/comments/<uuid:uuid>/",
-        views.ModerationCommentView.as_view(),
+        views.ModerationCommentView.as_view({"get": "retrieve"}),
         name="moderation-comment",
     ),
     path(
         "moderation/comments/<uuid:uuid>/replies/",
-        views.ModerationCommentRepliesView.as_view(),
+        views.ModerationCommentRepliesView.as_view({"get": "list"}),
         name="moderation-comment-replies",
     ),
     path(

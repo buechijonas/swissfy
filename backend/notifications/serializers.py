@@ -2,7 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from moderation.sanctions import SUSPENSION_STEPS
-from posts.serializers import AuthorSerializer
+from posts.serializers import AuthorModelSerializer
 from social.models import Follow, FollowRequest, FriendRequest, Friendship
 
 from .models import Notification
@@ -21,7 +21,7 @@ def quote(text):
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    actor = AuthorSerializer(read_only=True)
+    actor = AuthorModelSerializer.read(read_only=True)
     message = serializers.SerializerMethodField()
     link = serializers.SerializerMethodField()
     read = serializers.SerializerMethodField()

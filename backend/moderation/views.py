@@ -12,15 +12,8 @@ from main.pagination import NextPagePagination
 from notifications.models import Notification
 from notifications.notify import notify
 from posts.models import Comment, Post
-from posts.queries import comment_details, with_details
-from posts.serializers import CommentSerializer, PostSerializer, PostSummarySerializer
-from posts.views.comments import (
-    CommentDetailView,
-    CommentListView,
-    CommentReplyListView,
-    visible_comments,
-)
-from posts.views.posts import visible_post
+from posts.serializers import CommentModelSerializer, PostModelSerializer
+from posts.views.comments import CommentReplyViewSet, CommentViewSet, PostCommentViewSet
 
 from .models import Reason, Report, Suspension, Warning
 from .sanctions import suspend_if_needed
@@ -47,14 +40,14 @@ class PostReportView(ReportView):
     field = "post"
 
     def target(self, request, uuid):
-        return visible_post(request, uuid)
+        return get_object_or_404(Post.objects.apply_acl(request.user), uuid=uuid)
 
 
 class CommentReportView(ReportView):
     field = "comment"
 
     def target(self, request, uuid):
-        return get_object_or_404(visible_comments(request.user), uuid=uuid)
+        return get_object_or_404(Comment.objects.apply_acl(request.user), uuid=uuid)
 
 
 def moderation_context(request):
@@ -91,16 +84,21 @@ class ReportQueueView(APIView):
 
         viewer = request.user
         context = moderation_context(request)
-        posts = with_details(
-            Post.objects.filter(pk__in=[item["post"] for item in page if item["post"]]), viewer
-        ).in_bulk()
-        comments = comment_details(
-            Comment.objects.filter(pk__in=[item["comment"] for item in page if item["comment"]]),
-            viewer,
-        ).in_bulk()
-        summaries = with_details(
-            Post.objects.filter(pk__in=[comment.post_id for comment in comments.values()]), viewer
-        ).in_bulk()
+        posts = (
+            Post.objects.filter(pk__in=[item["post"] for item in page if item["post"]])
+            .with_details(viewer)
+            .in_bulk()
+        )
+        comments = (
+            Comment.objects.filter(pk__in=[item["comment"] for item in page if item["comment"]])
+            .with_details(viewer)
+            .in_bulk()
+        )
+        summaries = (
+            Post.objects.filter(pk__in=[comment.post_id for comment in comments.values()])
+            .with_details(viewer)
+            .in_bulk()
+        )
 
         warnings = Warning.objects.filter(Q(post__in=posts) | Q(comment__in=comments))
         warned = {(warning.post_id, warning.comment_id) for warning in warnings}
@@ -112,7 +110,7 @@ class ReportQueueView(APIView):
                 "warned": (item["post"], item["comment"]) in warned,
             }
             if item["post"]:
-                post = PostSerializer(posts[item["post"]], context=context).data
+                post = PostModelSerializer.read(posts[item["post"]], context=context).data
                 results.append({"type": "post", **summary, "post": post})
             else:
                 comment = comments[item["comment"]]
@@ -120,8 +118,8 @@ class ReportQueueView(APIView):
                     {
                         "type": "comment",
                         **summary,
-                        "comment": CommentSerializer(comment, context=context).data,
-                        "post": PostSummarySerializer(
+                        "comment": CommentModelSerializer.read(comment, context=context).data,
+                        "post": PostModelSerializer.summary(
                             summaries[comment.post_id], context=context
                         ).data,
                     }
@@ -150,7 +148,7 @@ def moderated_posts():
 
 
 def reported_post(request, uuid):
-    return get_object_or_404(with_details(moderated_posts(), request.user), uuid=uuid)
+    return get_object_or_404(moderated_posts().with_details(request.user), uuid=uuid)
 
 
 class ModerationPostView(APIView):
@@ -160,18 +158,17 @@ class ModerationPostView(APIView):
         post = reported_post(request, uuid)
         return Response(
             {
-                "post": PostSerializer(post, context=moderation_context(request)).data,
+                "post": PostModelSerializer.read(post, context=moderation_context(request)).data,
                 **moderation_details(request.user, post=post),
             }
         )
 
 
-class ModerationPostCommentsView(CommentListView):
+class ModerationPostCommentsView(PostCommentViewSet):
     permission_classes = [IsModerator]
-    http_method_names = ["get"]
 
-    def comment_visibility(self):
-        return Q()
+    def comments(self):
+        return Comment.objects.all()
 
     def get_post(self):
         return reported_post(self.request, self.kwargs["uuid"])
@@ -181,32 +178,30 @@ class ModerationPostCommentsView(CommentListView):
 
 
 def moderated_comments(viewer):
-    return comment_details(Comment.objects.filter(post__in=moderated_posts()), viewer)
+    return Comment.objects.filter(post__in=moderated_posts()).with_details(viewer)
 
 
-class ModerationCommentRepliesView(CommentReplyListView):
+class ModerationCommentRepliesView(CommentReplyViewSet):
     permission_classes = [IsModerator]
-    http_method_names = ["get"]
 
-    def comment_visibility(self):
-        return Q()
+    def comments(self):
+        return Comment.objects.all()
 
-    def parent(self):
+    def get_parent(self):
         return get_object_or_404(moderated_comments(self.request.user), uuid=self.kwargs["uuid"])
 
     def get_serializer_context(self):
         return moderation_context(self.request)
 
 
-class ModerationCommentView(CommentDetailView):
+class ModerationCommentView(CommentViewSet):
     permission_classes = [IsModerator]
-    http_method_names = ["get"]
 
     def get_queryset(self):
         return moderated_comments(self.request.user)
 
     def get_posts(self):
-        return with_details(moderated_posts(), self.request.user)
+        return moderated_posts().with_details(self.request.user)
 
     def get_object(self):
         return get_object_or_404(self.get_queryset(), uuid=self.kwargs["uuid"])

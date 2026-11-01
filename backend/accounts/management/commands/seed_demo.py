@@ -126,8 +126,7 @@ class Command(BaseCommand):
             )
             user.set_unusable_password()
             user.save(update_fields=["password"])
-            UserProfile.objects.create(
-                user=user,
+            UserProfile.objects.filter(user=user).update(
                 avatar=AVATAR_CHOICES[index % len(AVATAR_CHOICES)],
                 profile_visibility=visibility,
             )

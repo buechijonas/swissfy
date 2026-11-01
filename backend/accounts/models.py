@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 AVATAR_CHOICES = [
@@ -146,6 +146,12 @@ class UserProfile(models.Model):
 def delete_profile_pictures(sender, instance, **kwargs):
     instance.public_picture.delete(save=False)
     instance.private_picture.delete(save=False)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
 
 
 def get_or_create_profile(user):

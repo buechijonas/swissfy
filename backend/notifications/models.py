@@ -4,7 +4,6 @@ from django.db.models import Q
 from django.utils import timezone
 
 from moderation.models import Suspension, Warning
-from posts.models import Comment, Post
 
 
 class Notification(models.Model):
@@ -29,8 +28,8 @@ class Notification(models.Model):
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="+"
     )
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
+    post = models.ForeignKey("posts.Post", on_delete=models.CASCADE, null=True, blank=True)
+    comment = models.ForeignKey("posts.Comment", on_delete=models.CASCADE, null=True, blank=True)
     warning = models.ForeignKey(Warning, on_delete=models.CASCADE, null=True, blank=True)
     suspension = models.ForeignKey(Suspension, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)

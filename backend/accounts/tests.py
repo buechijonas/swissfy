@@ -14,7 +14,7 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from .consent import attested_status, sign, status_of
-from .models import DeviceToken, UserConsent, UserProfile
+from .models import DeviceToken, UserConsent
 
 User = get_user_model()
 
@@ -37,7 +37,8 @@ def signed_post(client, path, payload, secret=SECRET, timestamp=None):
 
 def govex_user(username, sub):
     user = User.objects.create(username=username)
-    UserProfile.objects.create(user=user, govex_sub=sub)
+    user.profile.govex_sub = sub
+    user.profile.save(update_fields=["govex_sub"])
     return user
 
 

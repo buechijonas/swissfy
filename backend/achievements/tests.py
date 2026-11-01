@@ -84,7 +84,9 @@ class AchievementTests(TestCase):
 
     def test_one_time_achievements(self):
         User.objects.filter(pk=self.jonas.pk).update(first_name="Jonas", last_name="Meier")
-        UserProfile.objects.create(user=self.jonas, avatar="owl", birthdate="1990-01-01")
+        UserProfile.objects.update_or_create(
+            user=self.jonas, defaults={"avatar": "owl", "birthdate": "1990-01-01"}
+        )
         self.client.force_login(self.jonas)
         achievements = self.achievements("jonas")
         self.assertTrue(achievements["og-1"]["unlocked"])
@@ -109,7 +111,9 @@ class AchievementTests(TestCase):
         self.assertFalse(achievements["topic_horror_posts-1"]["unlocked"])
 
     def test_private_profile_hides_achievements(self):
-        UserProfile.objects.create(user=self.anna, profile_visibility="followers")
+        UserProfile.objects.update_or_create(
+            user=self.anna, defaults={"profile_visibility": "followers"}
+        )
         self.client.force_login(self.jonas)
         response = self.client.get("/api/social/profiles/anna/achievements/")
         self.assertEqual(response.status_code, 403)
