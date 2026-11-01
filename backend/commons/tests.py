@@ -9,7 +9,8 @@ from cryptography.exceptions import InvalidTag
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.db import connection
+from django.db.models import TextField, Value
+from django.db.models.functions import Cast
 from django.test import TestCase, override_settings
 from PIL import Image
 
@@ -24,15 +25,12 @@ User = get_user_model()
 MEDIA = tempfile.mkdtemp()
 
 
-def raw(table, field, pk):
-    with connection.cursor() as cursor:
-        cursor.execute(f"SELECT {field} FROM {table} WHERE id = %s", [pk])
-        return cursor.fetchone()[0]
+def raw(model, field, pk):
+    return model.objects.values_list(Cast(field, TextField()), flat=True).get(pk=pk)
 
 
-def write_raw(table, field, pk, value):
-    with connection.cursor() as cursor:
-        cursor.execute(f"UPDATE {table} SET {field} = %s WHERE id = %s", [value, pk])
+def write_raw(model, field, pk, value):
+    model.objects.filter(pk=pk).update(**{field: Value(value, output_field=TextField())})
 
 
 def webp():
@@ -53,24 +51,24 @@ class EncryptionTests(TestCase):
 
     def test_text_is_stored_encrypted(self):
         post = Post.objects.create(author=self.anna, text="Hallo Welt")
-        stored = raw("posts_post", "text", post.pk)
+        stored = raw(Post, "text", post.pk)
         self.assertTrue(stored.startswith("enc:1:"))
         self.assertNotIn("Hallo", stored)
         self.assertEqual(Post.objects.get().text, "Hallo Welt")
 
     def test_tampered_text_is_rejected(self):
         post = Post.objects.create(author=self.anna, text="Hallo")
-        prefix, data = raw("posts_post", "text", post.pk).rsplit(":", 1)
+        prefix, data = raw(Post, "text", post.pk).rsplit(":", 1)
         data = bytearray(base64.b64decode(data))
         data[-1] ^= 1
-        write_raw("posts_post", "text", post.pk, f"{prefix}:{base64.b64encode(data).decode()}")
+        write_raw(Post, "text", post.pk, f"{prefix}:{base64.b64encode(data).decode()}")
         with self.assertRaises(InvalidTag):
             Post.objects.get()
 
     def test_text_cannot_be_moved_to_another_field(self):
         post = Post.objects.create(author=self.anna, text="Hallo")
         comment = Comment.objects.create(post=post, author=self.anna, text="Antwort")
-        write_raw("posts_comment", "text", comment.pk, raw("posts_post", "text", post.pk))
+        write_raw(Comment, "text", comment.pk, raw(Post, "text", post.pk))
         with self.assertRaises(InvalidTag):
             Comment.objects.get()
 
@@ -112,7 +110,7 @@ class BackfillTests(TestCase):
         self.image = webp()
         for visibility in [Post.Visibility.PUBLIC, Post.Visibility.FRIENDS]:
             post = Post.objects.create(author=self.anna, text=visibility, visibility=visibility)
-            write_raw("posts_post", "text", post.pk, f"alt {visibility}")
+            write_raw(Post, "text", post.pk, f"alt {visibility}")
             image = PostImage.objects.create(
                 post=post, file=f"posts/{visibility}.webp", width=30, height=20, position=0
             )
@@ -149,4 +147,4 @@ class BackfillTests(TestCase):
             stored = Path(default_storage.path(image.file.name)).read_bytes()
             self.assertTrue(stored.startswith(FILE_MAGIC))
         for post in Post.objects.all():
-            self.assertTrue(raw("posts_post", "text", post.pk).startswith("enc:1:"))
+            self.assertTrue(raw(Post, "text", post.pk).startswith("enc:1:"))
