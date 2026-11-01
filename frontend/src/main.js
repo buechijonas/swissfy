@@ -1,3 +1,5 @@
+import '@fontsource-variable/fraunces'
+import '@fontsource-variable/nunito'
 import './assets/main.css'
 import './lib/preferences.js'
 

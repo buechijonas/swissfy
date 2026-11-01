@@ -13,6 +13,7 @@ export const designGroups = [
   [
     { value: 'default', icon: 'grid', label: 'Standard' },
     { value: 'cyberpunk', icon: 'chip', label: 'Cyberpunk' },
+    { value: 'ecopunk', icon: 'globe', label: 'Ecopunk' },
   ],
   [
     { value: 'glass', icon: 'droplet', label: 'Glassmorphism' },

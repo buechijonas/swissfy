@@ -791,6 +791,157 @@
   }
 }
 
+[data-design='ecopunk'] {
+  --eco-ground: light-dark(#e6f1de, #07110b);
+  --eco-sky: light-dark(#d8ece6, #0a1a14);
+  --eco-paper: light-dark(#fcfdf9, #0e1a12);
+  --eco-tint: light-dark(#e1eed7, #18291c);
+  --eco-moss: light-dark(#2f6b3a, #8fd06a);
+  --eco-forest: light-dark(#1f4a28, #c6e8b0);
+  --eco-sun: light-dark(#e0a91c, #e8c15a);
+  --eco-ink: light-dark(#1d2a20, #e6ede4);
+  --eco-line: light-dark(#c9d9c0, #2a3f2e);
+  --eco-contour: light-dark(rgb(47 107 58 / 0.08), rgb(143 208 106 / 0.06));
+  --eco-leaf: 1.5rem 0.375rem;
+  --eco-frame: inset 0 0 0 5px var(--eco-paper), inset 0 0 0 6px var(--eco-line);
+  --eco-shadow: 0 6px 18px light-dark(rgb(31 74 40 / 0.1), rgb(0 0 0 / 0.4));
+  --color-base-content: var(--eco-ink);
+  --color-swissfy-border: var(--eco-line);
+  --color-swissfy-muted: light-dark(#4a5a4c, #a9b8a6);
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
+}
+
+:root[data-design='ecopunk'] {
+  background:
+    radial-gradient(
+      ellipse at 0% 0%,
+      light-dark(rgb(255 222 130 / 0.5), rgb(232 193 90 / 0.12)),
+      transparent 45%
+    ),
+    repeating-radial-gradient(circle at 85% 115%, transparent 0 34px, var(--eco-contour) 34px 35px),
+    linear-gradient(to bottom, var(--eco-sky), var(--eco-ground) 45%);
+  background-attachment: fixed;
+}
+
+:root[data-design='ecopunk']:not([data-dyslexia='on']) body {
+  font-family: 'Nunito Variable', system-ui, sans-serif;
+}
+
+[data-design='ecopunk'] body {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+:root[data-design='ecopunk']:not([data-dyslexia='on']) :is(h1, h2, h3) {
+  font-family: 'Fraunces Variable', Georgia, serif;
+}
+
+[data-design='ecopunk'] :is(h1, h2, h3) {
+  color: var(--eco-forest);
+  font-weight: 600;
+}
+
+[data-design='ecopunk'] h3::before {
+  content: '❧ ';
+  color: var(--eco-moss);
+}
+
+[data-design='ecopunk'] ::selection {
+  background-color: var(--eco-moss);
+  color: var(--eco-paper);
+}
+
+[data-design='ecopunk'] .app-content {
+  background-color: transparent;
+}
+
+[data-design='ecopunk'] :is(.app-surface, .modal-box) {
+  border: 1px solid var(--eco-line);
+  border-radius: var(--eco-leaf);
+  background-color: var(--eco-paper);
+  box-shadow: var(--eco-frame), var(--eco-shadow);
+}
+
+[data-design='ecopunk'] :is(.app-nav, .app-header, .app-footer:not(.app-footer-dark)) {
+  background-color: var(--eco-paper);
+  border-color: var(--eco-line);
+}
+
+[data-design='ecopunk'] .nav-item {
+  border-radius: var(--eco-leaf);
+}
+
+[data-design='ecopunk'] .nav-item.active {
+  background-color: var(--eco-tint);
+  color: var(--eco-forest);
+  box-shadow: inset 3px 0 0 var(--eco-sun);
+}
+
+[data-design='ecopunk'] .btn:not(.btn-ghost, .btn-circle) {
+  border-radius: var(--eco-leaf);
+  transition:
+    translate 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+[data-design='ecopunk'] .btn:not(.btn-ghost, .btn-circle):hover {
+  translate: 0 -1px;
+  box-shadow: 0 4px 10px light-dark(rgb(31 74 40 / 0.18), rgb(0 0 0 / 0.5));
+}
+
+[data-design='ecopunk'] .btn:not(.btn-primary, .btn-error, .btn-ghost, .btn-circle) {
+  background-color: var(--eco-tint);
+  border-color: var(--eco-line);
+  color: var(--eco-ink);
+}
+
+[data-design='ecopunk'] :is(.input, .select, .textarea) {
+  background-color: var(--eco-paper);
+  border-color: var(--eco-line);
+  border-radius: var(--eco-leaf);
+}
+
+[data-design='ecopunk'] .tab-active,
+[data-design='ecopunk'] .app-footer .border-b-current {
+  border-bottom-color: var(--eco-sun);
+  color: var(--eco-forest);
+}
+
+[data-design='ecopunk'] .chat-bubble {
+  border-radius: var(--eco-leaf);
+}
+
+[data-design='ecopunk'] .chat-bubble:not(.chat-bubble-primary) {
+  background-color: var(--eco-tint);
+  color: var(--eco-ink);
+}
+
+[data-design='ecopunk'] :is(.app-cover, .app-badge) {
+  border-radius: var(--eco-leaf);
+}
+
+[data-design='ecopunk'] :is(.nav-item, .app-footer-bar) .badge {
+  width: 0.625rem;
+  min-width: 0;
+  height: 0.625rem;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  font-size: 0;
+}
+
+[data-design='ecopunk'] :focus-visible {
+  outline: 3px solid var(--eco-moss);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-design='ecopunk'] .btn {
+    transition: none;
+  }
+}
+
 [data-design='y2k'] {
   --y2k-surface: light-dark(rgb(255 255 255 / 0.6), rgb(10 32 52 / 0.6));
   --y2k-edge: light-dark(rgb(255 255 255 / 0.95), rgb(150 225 255 / 0.3));
@@ -1449,4 +1600,15 @@
 [data-design='y2k'][data-contrast='on']
   :is(.app-surface, .app-nav, .modal-box, .app-switcher, .chat-bubble:not(.chat-bubble-primary)) {
   border: 1px solid var(--color-swissfy-border);
+}
+
+[data-design='ecopunk'][data-contrast='on'] {
+  --eco-paper: light-dark(#ffffff, #000000);
+  --eco-line: var(--eco-ink);
+  --eco-contour: transparent;
+  --color-swissfy-muted: light-dark(#24302a, #d6e0d4);
+}
+
+[data-design='ecopunk'][data-contrast='on'] :is(.app-surface, .modal-box) {
+  border-width: 2px;
 }
