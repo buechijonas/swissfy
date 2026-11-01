@@ -81,7 +81,9 @@ class PrivateContentTests(SecurityTestCase):
                 visibility="groups", groups=[self.group.pk], images=[image_upload()]
             ),
         }
-        Comment.objects.create(post=self.posts["friends"], author=self.anna, text="geheim")
+        self.secret = Comment.objects.create(
+            post=self.posts["friends"], author=self.anna, text="geheim"
+        )
 
     def private_urls(self, post):
         return [
@@ -135,7 +137,7 @@ class PrivateContentTests(SecurityTestCase):
                     self.assertNotIn(uuid, content)
 
     def test_private_comments_do_not_leak(self):
-        comment = Comment.objects.get(text="geheim")
+        comment = self.secret
         self.as_user(self.eve)
         for url in [
             f"/api/comments/{comment.uuid}/",

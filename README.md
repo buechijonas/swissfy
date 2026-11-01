@@ -565,6 +565,7 @@ production the backend reads these environment variables:
 | `DJANGO_DEBUG`                | `true` locally, `false` in production                             |
 | `DJANGO_SECRET_KEY`           | Django secret key                                                 |
 | `CHAT_ENCRYPTION_KEY`         | Base64 encoded 32-byte AES key for chat messages                  |
+| `CONTENT_ENCRYPTION_KEYS`     | `id:key` list (newest first) of base64 32-byte AES keys for posts, comments, stories, biographies and media |
 | `DJANGO_ALLOWED_HOSTS`        | Comma separated hostnames                                         |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | Comma separated origins                                           |
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | PostgreSQL connection                 |
@@ -602,6 +603,7 @@ Production runs from prebuilt images on Docker Hub
    ```sh
    python3 -c "import secrets; print(secrets.token_urlsafe(50))"                  # DJANGO_SECRET_KEY
    python3 -c "import base64, os; print(base64.b64encode(os.urandom(32)).decode())" # CHAT_ENCRYPTION_KEY
+   python3 -c "import base64, os; print('1:' + base64.b64encode(os.urandom(32)).decode())" # CONTENT_ENCRYPTION_KEYS
    ```
 
    `CHAT_ENCRYPTION_KEY` is not in `.env.example` yet and has to be added by

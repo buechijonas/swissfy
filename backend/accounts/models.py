@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
+from commons.models import EncryptedTextField
+
 AVATAR_CHOICES = [
     "bee",
     "bison",
@@ -113,7 +115,7 @@ class UserProfile(models.Model):
     )
     birthdate = models.DateField("Geburtsdatum", null=True, blank=True)
 
-    biography = models.TextField("Biografie", max_length=500, blank=True)
+    biography = EncryptedTextField("Biografie", max_length=500, blank=True)
     sex = models.CharField("Geschlecht", max_length=20, choices=Sex.choices, blank=True)
     profession = models.CharField("Tätigkeit", max_length=50, blank=True)
     place_of_residence = models.CharField("Wohnort", max_length=100, blank=True)

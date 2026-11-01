@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import tempfile
 import uuid
@@ -63,8 +64,11 @@ def validate(upload):
     return upload
 
 
-def transcode(source):
+def transcode(upload):
     with tempfile.TemporaryDirectory() as directory:
+        source = Path(directory) / "source"
+        with upload.open("rb"), source.open("wb") as target:
+            shutil.copyfileobj(upload, target)
         output = Path(directory) / "video.mp4"
         frame = Path(directory) / "frame.png"
         scale = (
@@ -75,7 +79,7 @@ def transcode(source):
         commands = [
             [
                 *ffmpeg,
-                *("-i", source, "-t", str(MAX_DURATION), "-vf", scale),
+                *("-i", str(source), "-t", str(MAX_DURATION), "-vf", scale),
                 *("-c:v", "libx264", "-preset", "veryfast", "-crf", str(CRF)),
                 *("-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", AUDIO_BITRATE, "-ac", "2"),
                 *("-movflags", "+faststart", str(output)),

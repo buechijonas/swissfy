@@ -31,7 +31,7 @@ class Command(BaseCommand):
     def process(self, post):
         changes = {"video_upload": ""}
         try:
-            video, thumbnail, width, height = videos.transcode(post.video_upload.path)
+            video, thumbnail, width, height = videos.transcode(post.video_upload)
         except (videos.InvalidVideo, OSError, ValueError) as error:
             self.stderr.write(f"Post {post.pk}: {error}")
             changes["video_status"] = Post.VideoStatus.FAILED

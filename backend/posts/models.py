@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from accounts.models import UserProfile
 from accounts.roles import is_admin, is_moderator
-from commons.models import BaseModel, BaseQuerySet, UUIDModel
+from commons.models import BaseModel, BaseQuerySet, EncryptedTextField, UUIDModel
 from moderation.sanctions import is_suspended, suspended_users
 from social.models import Follow, Friendship
 
@@ -238,7 +238,7 @@ class Post(HideableModel):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="posts"
     )
-    text = models.TextField(max_length=TEXT_LENGTH, blank=True)
+    text = EncryptedTextField(max_length=TEXT_LENGTH, blank=True)
     thumbnail = models.FileField(upload_to="posts/thumbnails/", blank=True)
     image_width = models.PositiveIntegerField(null=True, blank=True)
     image_height = models.PositiveIntegerField(null=True, blank=True)
@@ -366,7 +366,7 @@ class Story(UUIDModel):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="stories"
     )
     image = models.FileField(upload_to="stories/")
-    text = models.CharField(max_length=STORY_TEXT_LENGTH, blank=True)
+    text = EncryptedTextField(max_length=STORY_TEXT_LENGTH, blank=True)
     visibility = models.CharField(
         max_length=20, choices=Post.Visibility.choices, default=Post.Visibility.PUBLIC
     )
@@ -464,7 +464,7 @@ class Comment(HideableModel):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="comments"
     )
-    text = models.TextField(max_length=TEXT_LENGTH)
+    text = EncryptedTextField(max_length=TEXT_LENGTH)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = CommentQuerySet.as_manager()
