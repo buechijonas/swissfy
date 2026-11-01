@@ -748,4 +748,3 @@ def egg_pattern(egg):
 
 
 PATTERNS = {egg["key"]: re.compile(egg_pattern(egg), re.IGNORECASE) for egg in EGGS}
-ANY_PATTERN = "|".join(f"(?:{egg_pattern(egg)})" for egg in EGGS)

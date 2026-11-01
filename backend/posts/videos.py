@@ -1,8 +1,8 @@
 import json
+import shutil
 import subprocess
 import tempfile
 import uuid
-from contextlib import contextmanager
 from pathlib import Path
 
 from django.core.files.base import ContentFile
@@ -22,18 +22,6 @@ LOCAL_ONLY = ["-protocol_whitelist", "file"]
 
 class InvalidVideo(Exception):
     pass
-
-
-@contextmanager
-def local_path(upload):
-    if hasattr(upload, "temporary_file_path"):
-        yield upload.temporary_file_path()
-        return
-    with tempfile.NamedTemporaryFile() as file:
-        for chunk in upload.chunks():
-            file.write(chunk)
-        file.flush()
-        yield file.name
 
 
 def probe(path):
@@ -67,8 +55,7 @@ def probe(path):
 def validate(upload):
     if upload.size > MAX_UPLOAD_SIZE:
         raise InvalidVideo("Das Video ist zu gross (max. 250 MB).")
-    with local_path(upload) as path:
-        streams, duration = probe(path)
+    streams, duration = probe(upload.temporary_file_path())
     if not streams:
         raise InvalidVideo("Die Datei ist kein gültiges Video.")
     if duration > MAX_DURATION + 0.5:
@@ -77,8 +64,11 @@ def validate(upload):
     return upload
 
 
-def transcode(source):
+def transcode(upload):
     with tempfile.TemporaryDirectory() as directory:
+        source = Path(directory) / "source"
+        with upload.open("rb"), source.open("wb") as target:
+            shutil.copyfileobj(upload, target)
         output = Path(directory) / "video.mp4"
         frame = Path(directory) / "frame.png"
         scale = (
@@ -89,7 +79,7 @@ def transcode(source):
         commands = [
             [
                 *ffmpeg,
-                *("-i", source, "-t", str(MAX_DURATION), "-vf", scale),
+                *("-i", str(source), "-t", str(MAX_DURATION), "-vf", scale),
                 *("-c:v", "libx264", "-preset", "veryfast", "-crf", str(CRF)),
                 *("-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", AUDIO_BITRATE, "-ac", "2"),
                 *("-movflags", "+faststart", str(output)),

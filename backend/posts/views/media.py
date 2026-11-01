@@ -5,10 +5,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
+
+from commons.views import BaseViewSet
 
 from ..models import Post, PostImage
-from .posts import visible_post
 
 BYTE_RANGE = re.compile(r"bytes=(\d*)-(\d*)$")
 CHUNK_SIZE = 64 * 1024
@@ -58,29 +58,25 @@ def serve_video(request, file):
     return response
 
 
-class PostImageView(APIView):
+class PostMediaViewSet(BaseViewSet):
+    lookup_field = "uuid"
     permission_classes = [AllowAny]
 
-    def get(self, request, uuid, position):
-        image = get_object_or_404(PostImage, post=visible_post(request, uuid), position=position)
+    def get_queryset(self):
+        return Post.objects.apply_acl(self.request.user)
+
+    def image(self, request, uuid, position):
+        image = get_object_or_404(PostImage, post=self.get_object(), position=position)
         return serve_image(image.file)
 
-
-class PostVideoView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request, uuid):
-        post = visible_post(request, uuid)
-        if post.video_status != Post.VideoStatus.READY:
+    def video(self, request, uuid):
+        post = self.get_object()
+        if not post.has_video:
             return Response(status=status.HTTP_404_NOT_FOUND)
         return serve_video(request, post.video)
 
-
-class PostThumbnailView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request, uuid):
-        thumbnail = visible_post(request, uuid).thumbnail
+    def thumbnail(self, request, uuid):
+        thumbnail = self.get_object().thumbnail
         if not thumbnail:
             return Response(status=status.HTTP_404_NOT_FOUND)
         return serve_image(thumbnail)

@@ -1,59 +1,57 @@
-from django.db.models import Count, Exists, OuterRef, Q
 from django.shortcuts import get_object_or_404
-from rest_framework import generics
+from rest_framework import mixins
+from rest_framework.response import Response
+
+from commons.views import BaseViewSet
 
 from .. import hashtags
-from ..models import Hashtag
-from ..queries import visible_posts, with_details
-from ..serializers import HashtagSerializer, PostSerializer
-from .feeds import by_media
+from ..models import Hashtag, Post
+from ..serializers import HashtagModelSerializer, PostModelSerializer
 from .pagination import NewestFirst
+from .posts import starting_from
 
 
-def hashtags_for(viewer):
-    followers = Hashtag.followers.through.objects.filter(hashtag=OuterRef("pk"), user=viewer)
-    visible = visible_posts(viewer).values("pk")
-    return Hashtag.objects.annotate(
-        post_count=Count("posts", filter=Q(posts__in=visible), distinct=True),
-        following=Exists(followers),
-    )
-
-
-class HashtagSearchView(generics.ListAPIView):
-    serializer_class = HashtagSerializer
+class HashtagViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+    serializer_class = HashtagModelSerializer
     pagination_class = None
 
     def get_queryset(self):
-        query = hashtags.normalize(self.request.query_params.get("q", ""))
-        if not query:
-            return Hashtag.objects.none()
-        tags = hashtags_for(self.request.user).filter(name__startswith=query, post_count__gt=0)
-        return tags.order_by("-post_count", "name")[:20]
+        return Hashtag.objects.with_stats(self.request.user)
 
-
-class HashtagDetailView(generics.RetrieveAPIView):
-    serializer_class = HashtagSerializer
+    def list(self, request, *args, **kwargs):
+        query = hashtags.normalize(request.query_params.get("q", ""))
+        tags = Hashtag.objects.none()
+        if query:
+            tags = self.get_queryset().filter(name__startswith=query, post_count__gt=0)
+            tags = tags.order_by("-post_count", "name")[:20]
+        return Response(self.get_serializer(tags, many=True).data)
 
     def get_object(self):
         name = hashtags.normalize(self.kwargs["name"])
-        return get_object_or_404(hashtags_for(self.request.user), name=name)
+        return get_object_or_404(self.get_queryset(), name=name)
 
-
-class HashtagFollowView(HashtagDetailView):
-    def put(self, request, name):
+    def follow(self, request, name):
         self.get_object().followers.add(request.user)
         return self.retrieve(request)
 
-    def delete(self, request, name):
+    def unfollow(self, request, name):
         self.get_object().followers.remove(request.user)
         return self.retrieve(request)
 
+    def retrieve(self, request, *args, **kwargs):
+        serializer = HashtagModelSerializer.read(
+            self.get_object(), context=self.get_serializer_context()
+        )
+        return Response(serializer.data)
 
-class HashtagPostListView(generics.ListAPIView):
-    serializer_class = PostSerializer
+
+class HashtagPostViewSet(BaseViewSet, mixins.ListModelMixin):
+    serializer_class = PostModelSerializer
     pagination_class = NewestFirst
 
     def get_queryset(self):
+        user = self.request.user
         name = hashtags.normalize(self.kwargs["name"])
-        posts = visible_posts(self.request.user).filter(hashtags__name=name)
-        return with_details(by_media(posts, self.request), self.request.user)
+        posts = Post.objects.apply_acl(user).filter(hashtags__name=name)
+        posts = starting_from(posts.by_media(self.request.query_params), self.request.query_params)
+        return posts.with_details(user)

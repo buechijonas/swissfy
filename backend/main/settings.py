@@ -60,6 +60,14 @@ if not CHAT_ENCRYPTION_KEY:
         )
     CHAT_ENCRYPTION_KEY = "c3dpc3NmeS1sb2NhbC1jaGF0LWtleS1kZXYtb25seSE="
 
+CONTENT_ENCRYPTION_KEYS = os.getenv("CONTENT_ENCRYPTION_KEYS")
+if not CONTENT_ENCRYPTION_KEYS:
+    if not DEBUG:
+        raise ImproperlyConfigured(
+            "CONTENT_ENCRYPTION_KEYS must be set in the environment when DJANGO_DEBUG=false."
+        )
+    CONTENT_ENCRYPTION_KEYS = "1:c3dpc3NmeS1sb2NhbC1jb250ZW50LWtleS1vbmx5ISE="
+
 CHAT_RETENTION_DAYS = 14
 CHAT_SLOW_MODE_SECONDS = 5
 
@@ -79,6 +87,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "commons",
     "accounts",
     "social",
     "chats",
@@ -87,6 +96,8 @@ INSTALLED_APPS = [
     "notifications",
     "achievements",
 ]
+
+FILE_UPLOAD_HANDLERS = ["django.core.files.uploadhandler.TemporaryFileUploadHandler"]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -181,7 +192,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "commons.storage.EncryptedFileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",

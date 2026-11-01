@@ -1,67 +1,48 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
+from commons.views import BaseViewSet, CreateModelMixin
 from main.parsers import JSONParser
-from moderation.sanctions import ensure_not_suspended
 
 from ..models import Story, StoryLike, StoryView
-from ..queries import story_details, visible_stories
-from ..serializers import StoryCreateSerializer, StorySerializer
+from ..permissions import IsNotSuspended
+from ..serializers import StoryModelSerializer
 from .media import serve_image
 
 
-class StoryCreateView(APIView):
+class StoryViewSet(BaseViewSet, CreateModelMixin):
+    serializer_class = StoryModelSerializer
     parser_classes = [MultiPartParser, JSONParser]
+    lookup_field = "uuid"
+    permission_action_classes = {"create": [IsAuthenticated, IsNotSuspended]}
 
-    def post(self, request):
-        ensure_not_suspended(request.user)
-        serializer = StoryCreateSerializer(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        story = serializer.save()
-        return Response(story_response(request, story).data, status=status.HTTP_201_CREATED)
+    def get_queryset(self):
+        return Story.objects.apply_acl(self.request.user).with_details(self.request.user)
 
-
-class StoryDetailView(APIView):
-    def delete(self, request, uuid):
-        story = get_object_or_404(Story, uuid=uuid, author=request.user)
-        story.delete()
+    def destroy(self, request, uuid):
+        get_object_or_404(Story, uuid=uuid, author=request.user).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def record_view(self, story):
+        StoryView.objects.get_or_create(user=self.request.user, story=story)
 
-def story_response(request, story):
-    story = story_details(Story.objects.filter(pk=story.pk), request.user).get()
-    return StorySerializer(story, context={"request": request})
-
-
-def record_view(story, user):
-    StoryView.objects.get_or_create(user=user, story=story)
-
-
-class StoryViewView(APIView):
-    def post(self, request, uuid):
-        record_view(get_object_or_404(visible_stories(request.user), uuid=uuid), request.user)
+    def view(self, request, uuid):
+        self.record_view(self.get_object())
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-class StoryLikeView(APIView):
-    def post(self, request, uuid):
-        story = get_object_or_404(visible_stories(request.user), uuid=uuid)
+    def like(self, request, uuid):
+        story = self.get_object()
         StoryLike.objects.get_or_create(user=request.user, story=story)
-        record_view(story, request.user)
-        return self.state(request, story)
+        self.record_view(story)
+        return self.read(story)
 
-    def delete(self, request, uuid):
-        story = get_object_or_404(visible_stories(request.user), uuid=uuid)
+    def unlike(self, request, uuid):
+        story = self.get_object()
         StoryLike.objects.filter(user=request.user, story=story).delete()
-        return self.state(request, story)
+        return self.read(story)
 
-    def state(self, request, story):
-        return Response(story_response(request, story).data)
-
-
-class StoryImageView(APIView):
-    def get(self, request, uuid):
-        return serve_image(get_object_or_404(visible_stories(request.user), uuid=uuid).image)
+    def image(self, request, uuid):
+        return serve_image(self.get_object().image)

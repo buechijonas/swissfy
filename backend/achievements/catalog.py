@@ -9,7 +9,7 @@ from chats.models import ChatRequest
 from posts.models import Comment, CommentVote, Hashtag, Like, Post, SavedPost
 from social.models import Follow, Friendship
 
-from .eggs import ANY_PATTERN, EGGS, PATTERNS
+from .eggs import EGGS, PATTERNS
 from .models import Unlock
 from .themes import THEMES
 
@@ -548,8 +548,8 @@ def found_eggs(user, stored):
     if not missing:
         return {}
     texts = [
-        *visible_posts(user).filter(text__iregex=ANY_PATTERN).values_list("text", "created_at"),
-        *visible_comments(user).filter(text__iregex=ANY_PATTERN).values_list("text", "created_at"),
+        *visible_posts(user).values_list("text", "created_at"),
+        *visible_comments(user).values_list("text", "created_at"),
     ]
     found = {}
     for text, created_at in sorted(texts, key=lambda row: row[1]):

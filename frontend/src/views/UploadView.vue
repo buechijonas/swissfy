@@ -76,7 +76,7 @@
             v-for="(image, index) in images"
             :key="image.preview"
             class="relative h-40 max-w-full shrink-0"
-            :style="{ aspectRatio }"
+            :style="{ aspectRatio: `${image.width} / ${image.height}` }"
           >
             <img
               :src="image.preview"
@@ -233,10 +233,6 @@ export default {
     },
     hashtags() {
       return extractHashtags(this.text)
-    },
-    aspectRatio() {
-      const [first] = this.images
-      return `${first.width} / ${first.height}`
     },
     canSubmit() {
       const hasAudience = this.visibility !== 'groups' || this.selectedGroups.length

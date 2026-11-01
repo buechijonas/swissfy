@@ -1,4 +1,5 @@
 import io
+import json
 import shutil
 import tempfile
 from pathlib import Path
@@ -35,7 +36,7 @@ PADDING = "#" + "x" * 3 * 1024 * 1024 + "\n"
 
 
 def file_upload(name, data, content_type="application/octet-stream"):
-    return SimpleUploadedFile(name, data.encode() if isinstance(data, str) else data, content_type)
+    return SimpleUploadedFile(name, data, content_type)
 
 
 def image_bytes(format, size=(64, 64), mode="RGB"):
@@ -80,7 +81,9 @@ class PrivateContentTests(SecurityTestCase):
                 visibility="groups", groups=[self.group.pk], images=[image_upload()]
             ),
         }
-        Comment.objects.create(post=self.posts["friends"], author=self.anna, text="geheim")
+        self.secret = Comment.objects.create(
+            post=self.posts["friends"], author=self.anna, text="geheim"
+        )
 
     def private_urls(self, post):
         return [
@@ -110,8 +113,8 @@ class PrivateContentTests(SecurityTestCase):
             ]
             for method, url, data in actions:
                 with self.subTest(kind=kind, url=url, method=method):
-                    response = getattr(self.client, method)(
-                        url, data, content_type="application/json"
+                    response = self.client.generic(
+                        method.upper(), url, json.dumps(data), content_type="application/json"
                     )
                     self.assertEqual(response.status_code, 404)
         self.assertEqual(Comment.objects.filter(author=self.eve).count(), 0)
@@ -134,7 +137,7 @@ class PrivateContentTests(SecurityTestCase):
                     self.assertNotIn(uuid, content)
 
     def test_private_comments_do_not_leak(self):
-        comment = Comment.objects.get(text="geheim")
+        comment = self.secret
         self.as_user(self.eve)
         for url in [
             f"/api/comments/{comment.uuid}/",
@@ -355,17 +358,17 @@ class ImageUploadTests(SecurityTestCase):
                 self.assertEqual(response.status_code, 201, response.content)
 
     def test_rejects_svg_with_script(self):
-        svg = '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+        svg = b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
         response = self.upload(file_upload("x.svg", svg, "image/svg+xml"))
         self.assertEqual(response.status_code, 400)
 
     def test_rejects_html_and_scripts_disguised_as_images(self):
         for name, data in [
-            ("x.jpg", "<html><script>alert(1)</script></html>"),
-            ("x.png", "#!/bin/sh\nrm -rf /"),
-            ("x.gif", "GIF89a<script>alert(1)</script>"),
-            ("x.jpg", "%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 1 1\n"),
-            ("x.jpg", ""),
+            ("x.jpg", b"<html><script>alert(1)</script></html>"),
+            ("x.png", b"#!/bin/sh\nrm -rf /"),
+            ("x.gif", b"GIF89a<script>alert(1)</script>"),
+            ("x.jpg", b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 1 1\n"),
+            ("x.jpg", b""),
         ]:
             with self.subTest(name=name, data=data[:20]):
                 self.assertEqual(
@@ -430,7 +433,7 @@ class VideoUploadTests(SecurityTestCase):
         return (
             "#EXTM3U\n#EXT-X-TARGETDURATION:1\n"
             f"{PADDING}#EXTINF:1.0,\n{target}\n#EXT-X-ENDLIST\n"
-        )
+        ).encode()
 
     def assert_rejected(self, response):
         self.assertEqual(response.status_code, 400, response.content)
@@ -452,15 +455,15 @@ class VideoUploadTests(SecurityTestCase):
                 self.assert_rejected(self.upload("evil.m3u8", self.playlist(target)))
 
     def test_rejects_concat_scripts(self):
-        script = f"ffconcat version 1.0\n{PADDING}file '{self.segment}'\n"
+        script = f"ffconcat version 1.0\n{PADDING}file '{self.segment}'\n".encode()
         self.assert_rejected(self.upload("evil.ffconcat", script))
         self.assert_rejected(self.upload("evil.mp4", script))
 
     def test_rejects_non_video_files(self):
         for name, data in [
-            ("x.mp4", "not a video"),
+            ("x.mp4", b"not a video"),
             ("x.mp4", image_bytes("PNG")),
-            ("x.mp4", "<script>alert(1)</script>"),
+            ("x.mp4", b"<script>alert(1)</script>"),
             ("x.mp4", b"\x00" * 1024),
         ]:
             with self.subTest(name=name):
@@ -548,9 +551,11 @@ class StorySecurityTests(SecurityTestCase):
     def test_invalid_stories_are_rejected(self):
         cases = {
             "no image": {"text": "Hallo"},
-            "html image": {"image": file_upload("x.png", "<script>alert(1)</script>", "image/png")},
+            "html image": {
+                "image": file_upload("x.png", b"<script>alert(1)</script>", "image/png")
+            },
             "svg image": {
-                "image": file_upload("x.svg", "<svg onload=alert(1)/>", "image/svg+xml"),
+                "image": file_upload("x.svg", b"<svg onload=alert(1)/>", "image/svg+xml"),
             },
             "too long text": {"image": image_upload(), "text": "x" * 201},
             "unknown visibility": {"image": image_upload(), "visibility": "everyone"},
@@ -581,7 +586,7 @@ class StorySecurityTests(SecurityTestCase):
             ("delete", ""),
         ]:
             with self.subTest(method=method, path=path):
-                response = getattr(self.client, method)(f"/api/stories/{story.uuid}/{path}")
+                response = self.client.generic(method.upper(), f"/api/stories/{story.uuid}/{path}")
                 self.assertEqual(response.status_code, 404)
         self.assertFalse(StoryView.objects.exists())
         self.assertFalse(StoryLike.objects.exists())

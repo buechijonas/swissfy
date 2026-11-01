@@ -25,6 +25,7 @@ services:
     environment: &backend-environment
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       CHAT_ENCRYPTION_KEY: ${CHAT_ENCRYPTION_KEY}
+      CONTENT_ENCRYPTION_KEYS: ${CONTENT_ENCRYPTION_KEYS}
       DJANGO_DEBUG: "false"
       DJANGO_ALLOWED_HOSTS: ${DOMAIN},backend,localhost
       DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN}

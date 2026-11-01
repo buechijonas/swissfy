@@ -105,7 +105,8 @@ def create_user(govex_sub, username, email):
         user = User(username=username, email=email)
         user.set_unusable_password()
         user.save()
-        UserProfile.objects.create(user=user, govex_sub=govex_sub)
+        user.profile.govex_sub = govex_sub
+        user.profile.save(update_fields=["govex_sub"])
         user.groups.add(Group.objects.get(name=DEFAULT_ROLE))
     return user
 

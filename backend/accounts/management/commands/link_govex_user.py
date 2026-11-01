@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 
-from accounts.models import UserProfile, get_or_create_profile
+from accounts.models import UserProfile
 
 User = get_user_model()
 
@@ -28,9 +28,8 @@ class Command(BaseCommand):
         if taken:
             raise CommandError(f"govex identity {govex_sub} is already linked to '{taken.user}'.")
 
-        profile = get_or_create_profile(user)
-        profile.govex_sub = govex_sub
-        profile.save(update_fields=["govex_sub"])
+        user.profile.govex_sub = govex_sub
+        user.profile.save(update_fields=["govex_sub"])
         user.set_unusable_password()
         user.save(update_fields=["password"])
         self.stdout.write(

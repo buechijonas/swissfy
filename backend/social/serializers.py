@@ -6,9 +6,8 @@ from accounts.roles import is_admin, is_moderator, role_badge
 from chats.models import ChatRequest
 from main.numbers import compact_number
 from posts import images
-from posts.models import ContactGroup
-from posts.queries import image_posts, story_details, video_posts, visible_posts, visible_stories
-from posts.serializers import StorySerializer
+from posts.models import ContactGroup, Post, Story
+from posts.serializers import StoryModelSerializer
 
 from . import library
 from .models import Follow, FollowRequest, FriendRequest, Friendship
@@ -146,13 +145,13 @@ class ProfileSerializer(serializers.ModelSerializer):
         return obj == self.viewer or is_moderator(self.viewer)
 
     def get_stories(self, obj):
-        stories = visible_stories(self.viewer).filter(author=obj).order_by("created_at")
-        stories = story_details(stories, self.viewer)
-        return StorySerializer(stories, many=True, context=self.context).data
+        stories = Story.objects.apply_acl(self.viewer).filter(author=obj).order_by("created_at")
+        stories = stories.with_details(self.viewer)
+        return StoryModelSerializer.read(stories, many=True, context=self.context).data
 
     def get_media(self, obj):
-        posts = visible_posts(self.viewer).filter(author=obj)
-        return {"pictures": image_posts(posts).exists(), "reels": video_posts(posts).exists()}
+        posts = Post.objects.apply_acl(self.viewer).filter(author=obj)
+        return {"pictures": posts.images().exists(), "reels": posts.videos().exists()}
 
     def get_follower_count(self, obj):
         return compact_number(obj.followers.count())

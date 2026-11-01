@@ -1,42 +1,36 @@
-from rest_framework import generics
+from rest_framework import mixins
+
+from commons.views import BaseViewSet, CreateModelMixin, UpdateModelMixin
 
 from ..models import ContactGroup, SavedFolder
-from ..serializers import ContactGroupSerializer, SavedFolderSerializer
+from ..serializers import ContactGroupModelSerializer, SavedFolderModelSerializer
 
 
-class OwnedListView(generics.ListCreateAPIView):
+class OwnedViewSet(
+    BaseViewSet,
+    mixins.ListModelMixin,
+    CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    UpdateModelMixin,
+    mixins.DestroyModelMixin,
+):
     pagination_class = None
 
     def get_queryset(self):
         return self.model.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        return serializer.save(owner=self.request.user)
 
 
-class OwnedDetailView(generics.RetrieveUpdateDestroyAPIView):
-    def get_queryset(self):
-        return self.model.objects.filter(owner=self.request.user)
-
-
-class FolderListView(OwnedListView):
+class SavedFolderViewSet(OwnedViewSet):
     model = SavedFolder
-    serializer_class = SavedFolderSerializer
+    serializer_class = SavedFolderModelSerializer
 
 
-class FolderDetailView(OwnedDetailView):
-    model = SavedFolder
-    serializer_class = SavedFolderSerializer
-
-
-class GroupListView(OwnedListView):
+class ContactGroupViewSet(OwnedViewSet):
     model = ContactGroup
-    serializer_class = ContactGroupSerializer
+    serializer_class = ContactGroupModelSerializer
 
     def get_queryset(self):
         return super().get_queryset().prefetch_related("members")
-
-
-class GroupDetailView(OwnedDetailView):
-    model = ContactGroup
-    serializer_class = ContactGroupSerializer

@@ -126,8 +126,7 @@ class Command(BaseCommand):
             )
             user.set_unusable_password()
             user.save(update_fields=["password"])
-            UserProfile.objects.create(
-                user=user,
+            UserProfile.objects.filter(user=user).update(
                 avatar=AVATAR_CHOICES[index % len(AVATAR_CHOICES)],
                 profile_visibility=visibility,
             )
@@ -210,8 +209,10 @@ class Command(BaseCommand):
                     post.groups.add(group)
                 if image_count:
                     PostImage.objects.bulk_create(
-                        PostImage(post=post, file=file, position=position)
-                        for position, file in enumerate(files)
+                        PostImage(
+                            post=post, file=file, width=width, height=height, position=position
+                        )
+                        for position, (file, width, height) in enumerate(files)
                     )
                 self.backdate(Post, post)
                 posts.append(post)

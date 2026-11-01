@@ -1,4 +1,5 @@
 import io
+import json
 import shutil
 import subprocess
 import tempfile
@@ -90,7 +91,7 @@ class PostTests(TestCase):
         data = self.post(images=[image_upload()]).json()
         self.assertEqual((data["aspect_ratio"], data["list_aspect_ratio"]), (2, 2))
 
-        response = self.client.get(data["images"][0])
+        response = self.client.get(data["images"][0]["url"])
         self.assertEqual(response["Content-Type"], "image/webp")
         self.assertIn("private", response["Cache-Control"])
         with Image.open(io.BytesIO(b"".join(response.streaming_content))) as image:
@@ -99,14 +100,13 @@ class PostTests(TestCase):
 
         self.assertEqual(self.image_size(data["thumbnail"]), (400, 400))
 
-    def test_images_are_cropped_to_first_ratio(self):
-        square, landscape = image_upload(1000, 1000), image_upload(2000, 1000)
-        data = self.post(images=[square, landscape]).json()
-        self.assertEqual([self.image_size(url) for url in data["images"]], [(1000, 1000)] * 2)
-
-        square, landscape = image_upload(1000, 1000), image_upload(2000, 1000)
-        data = self.post(images=[landscape, square]).json()
-        self.assertEqual([self.image_size(url) for url in data["images"]], [(1280, 640)] * 2)
+    def test_images_keep_their_own_ratio(self):
+        square, portrait = image_upload(1000, 1000), image_upload(1000, 2000)
+        data = self.post(images=[square, portrait]).json()
+        sizes = [self.image_size(image["url"]) for image in data["images"]]
+        self.assertEqual(sizes, [(1000, 1000), (640, 1280)])
+        self.assertEqual([image["aspect_ratio"] for image in data["images"]], [1, 0.5])
+        self.assertEqual(data["aspect_ratio"], 1)
 
     def test_invalid_image_is_rejected(self):
         upload = SimpleUploadedFile("x.jpg", b"no image", content_type="image/jpeg")
@@ -845,7 +845,9 @@ class AlbumTests(TestCase):
         return [a["cover"] for a in self.client.get("/api/posts/users/anna/albums/").json()]
 
     def send(self, method, url, data=None):
-        return getattr(self.client, method)(url, data, content_type="application/json")
+        return self.client.generic(
+            method.upper(), url, json.dumps(data), content_type="application/json"
+        )
 
     def add(self, album, *entries):
         return self.send("post", f"/api/albums/{album['id']}/entries/", {"entries": entries})

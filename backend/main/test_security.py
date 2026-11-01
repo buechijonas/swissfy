@@ -362,6 +362,7 @@ PRODUCTION_ENV = {
     "DJANGO_DEBUG": "false",
     "DJANGO_SECRET_KEY": "x" * 50,
     "CHAT_ENCRYPTION_KEY": "c3dpc3NmeS1sb2NhbC1jaGF0LWtleS1kZXYtb25seSE=",
+    "CONTENT_ENCRYPTION_KEYS": "1:c3dpc3NmeS1sb2NhbC1jb250ZW50LWtleS1vbmx5ISE=",
     "GOVEX_PUBLIC_URL": "https://auth.example",
     "GOVEX_ACCOUNT_URL": "https://auth.example/account",
     "GOVEX_CLIENT_ID": "swissfy",

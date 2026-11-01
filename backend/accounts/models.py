@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+
+from commons.models import EncryptedTextField
 
 AVATAR_CHOICES = [
     "bee",
@@ -113,7 +115,7 @@ class UserProfile(models.Model):
     )
     birthdate = models.DateField("Geburtsdatum", null=True, blank=True)
 
-    biography = models.TextField("Biografie", max_length=500, blank=True)
+    biography = EncryptedTextField("Biografie", max_length=500, blank=True)
     sex = models.CharField("Geschlecht", max_length=20, choices=Sex.choices, blank=True)
     profession = models.CharField("Tätigkeit", max_length=50, blank=True)
     place_of_residence = models.CharField("Wohnort", max_length=100, blank=True)
@@ -146,6 +148,12 @@ class UserProfile(models.Model):
 def delete_profile_pictures(sender, instance, **kwargs):
     instance.public_picture.delete(save=False)
     instance.private_picture.delete(save=False)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
 
 
 def get_or_create_profile(user):
