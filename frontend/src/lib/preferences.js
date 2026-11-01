@@ -6,7 +6,7 @@ export const themeMode = storedChoice('theme', ['auto', 'light', 'dark'], (mode)
   rootAttribute('data-theme', THEME_ATTRIBUTES[mode]),
 )
 
-export const design = storedChoice('design', ['default', 'glass', 'cyberpunk'], (value) =>
+export const design = storedChoice('design', ['default', 'glass', 'cyberpunk', 'y2k'], (value) =>
   rootAttribute('data-design', value === 'default' ? null : value),
 )
 

@@ -1,7 +1,13 @@
-import { contrastMode } from '@/lib/preferences.js'
+import { contrastMode, design } from '@/lib/preferences.js'
 
 export function wobble(el) {
-  if (!el || contrastMode.value || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  if (
+    !el ||
+    design.value !== 'glass' ||
+    contrastMode.value ||
+    matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+    return
   el.animate(
     [
       { transform: 'scale(1)' },

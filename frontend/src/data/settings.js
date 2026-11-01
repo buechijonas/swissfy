@@ -9,11 +9,18 @@ export const themeOptions = [
   { value: 'dark', icon: 'moon-stars', label: 'Dunkel' },
 ]
 
-export const designOptions = [
-  { value: 'default', icon: 'grid', label: 'Standard' },
-  { value: 'glass', icon: 'droplet', label: 'Glassmorphism' },
-  { value: 'cyberpunk', icon: 'chip', label: 'Cyberpunk' },
+export const designGroups = [
+  [
+    { value: 'default', icon: 'grid', label: 'Standard' },
+    { value: 'cyberpunk', icon: 'chip', label: 'Cyberpunk' },
+  ],
+  [
+    { value: 'glass', icon: 'droplet', label: 'Glassmorphism' },
+    { value: 'y2k', icon: 'world', label: 'Y2K' },
+  ],
 ]
+
+export const limitedDesigns = ['cyberpunk', 'y2k']
 
 export const visibilityOptions = [
   { value: 'public', label: 'Öffentlich', icon: 'globe' },
