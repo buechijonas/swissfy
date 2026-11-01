@@ -18,19 +18,26 @@
 
   <div class="mb-10">
     <h3 class="text-xl my-4">Design</h3>
-    <BaseCard
-      class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
-    >
-      <p class="text-swissfy-muted min-w-0">Stil der Oberfläche.</p>
-      <BaseSwitcher
-        class="gap-2"
-        size="sm"
-        vertical
-        :options="designOptions"
-        :active="design"
-        @select="design = $event"
-      />
-    </BaseCard>
+    <div class="grid grid-cols-3 gap-3">
+      <BaseButton
+        v-for="option in designOptions"
+        :key="option.value"
+        class="app-design-tile aspect-square h-auto flex-col gap-3 whitespace-normal px-2 text-center leading-tight"
+        :variant="design === option.value ? 'primary' : 'neutral'"
+        :aria-pressed="design === option.value"
+        @click="design = option.value"
+      >
+        <AppIcon :name="option.icon" class="size-8!" />
+        {{ option.label }}
+      </BaseButton>
+    </div>
+    <div v-if="limitedDesigns.includes(design)" role="status" class="alert alert-warning mt-4">
+      <AppIcon name="shield-exclamation" />
+      <span>
+        Dieses Design kann die Barrierefreiheit einschränken, etwa bei Kontrast, Lesbarkeit und
+        Animationen. Am besten für Barrierefreiheit optimiert ist das Standard-Design.
+      </span>
+    </div>
   </div>
 
   <div class="mb-10">
@@ -63,9 +70,11 @@
 </template>
 
 <script>
+import AppIcon from '@/components/common/AppIcon.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
-import { designOptions, onOffOptions, themeOptions } from '@/data/settings.js'
+import { designOptions, limitedDesigns, onOffOptions, themeOptions } from '@/data/settings.js'
 import { contrastMode, design, dyslexiaFont, themeMode } from '@/lib/preferences.js'
 
 function preference(setting) {
@@ -81,9 +90,9 @@ function preference(setting) {
 
 export default {
   name: 'DisplaySettings',
-  components: { BaseCard, BaseSwitcher },
+  components: { AppIcon, BaseButton, BaseCard, BaseSwitcher },
   data() {
-    return { designOptions, onOffOptions, themeOptions }
+    return { designOptions, limitedDesigns, onOffOptions, themeOptions }
   },
   computed: {
     themeMode: preference(themeMode),

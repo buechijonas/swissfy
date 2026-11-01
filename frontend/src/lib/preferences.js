@@ -6,8 +6,10 @@ export const themeMode = storedChoice('theme', ['auto', 'light', 'dark'], (mode)
   rootAttribute('data-theme', THEME_ATTRIBUTES[mode]),
 )
 
-export const design = storedChoice('design', ['default', 'glass', 'cyberpunk'], (value) =>
-  rootAttribute('data-design', value === 'default' ? null : value),
+export const design = storedChoice(
+  'design',
+  ['default', 'glass', 'cyberpunk', 'ecopunk', 'romance', 'y2k'],
+  (value) => rootAttribute('data-design', value === 'default' ? null : value),
 )
 
 export const dyslexiaFont = storedFlag('dyslexia-font', {

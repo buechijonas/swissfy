@@ -12,8 +12,13 @@ export const themeOptions = [
 export const designOptions = [
   { value: 'default', icon: 'grid', label: 'Standard' },
   { value: 'glass', icon: 'droplet', label: 'Glassmorphism' },
+  { value: 'y2k', icon: 'world', label: 'Y2K' },
   { value: 'cyberpunk', icon: 'chip', label: 'Cyberpunk' },
+  { value: 'ecopunk', icon: 'globe', label: 'Ecopunk' },
+  { value: 'romance', icon: 'heart', label: 'Dark Romance' },
 ]
+
+export const limitedDesigns = ['cyberpunk', 'romance', 'y2k']
 
 export const visibilityOptions = [
   { value: 'public', label: 'Öffentlich', icon: 'globe' },

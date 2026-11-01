@@ -27,7 +27,7 @@
       <ul v-else-if="activeView === 'collection'" class="divide-y divide-swissfy-border">
         <li v-for="achievement in collection" :key="achievement.group" class="flex gap-4 py-3">
           <span
-            class="flex size-10 shrink-0 items-center justify-center rounded-full"
+            class="app-badge flex size-10 shrink-0 items-center justify-center rounded-full"
             :class="accent(achievement).icon"
           >
             <AppIcon name="trophy" />
@@ -57,7 +57,7 @@
             class="absolute left-5 top-10 -bottom-0.5 w-0.5 -translate-x-1/2 bg-swissfy-border"
           ></span>
           <span
-            class="relative flex size-10 shrink-0 items-center justify-center rounded-full"
+            class="app-badge relative flex size-10 shrink-0 items-center justify-center rounded-full"
             :class="accent(achievement).icon"
           >
             <AppIcon :name="previousTitle(achievement) ? 'arrow-up' : 'trophy'" />
@@ -91,7 +91,7 @@
             class="flex gap-4 py-3 opacity-60"
           >
             <span
-              class="flex size-10 shrink-0 items-center justify-center rounded-full bg-base-200"
+              class="app-badge flex size-10 shrink-0 items-center justify-center rounded-full bg-base-200"
             >
               <AppIcon name="lock" />
             </span>

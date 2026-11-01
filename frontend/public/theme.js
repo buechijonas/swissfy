@@ -3,7 +3,7 @@ try {
   if (mode === 'light') document.documentElement.setAttribute('data-theme', 'swissfy')
   if (mode === 'dark') document.documentElement.setAttribute('data-theme', 'dark')
   const design = localStorage.getItem('design')
-  if (design === 'glass' || design === 'cyberpunk') {
+  if (['glass', 'cyberpunk', 'ecopunk', 'romance', 'y2k'].includes(design)) {
     document.documentElement.setAttribute('data-design', design)
   }
 } catch {}
