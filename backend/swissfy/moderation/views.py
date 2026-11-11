@@ -71,6 +71,7 @@ class ReportQueueViewSet(BaseViewSet, mixins.ListModelMixin):
 
 
 MODERATOR_OF_AUTHOR = [IsModerator, CanModerateAuthor]
+ALREADY_WARNED = "Dieser Inhalt wurde bereits verwarnt."
 
 
 class ModerationActionsMixin:
@@ -90,13 +91,15 @@ class ModerationActionsMixin:
     )
     def warn(self, request, uuid):
         target = self.reported_target()
+        if target.is_warned:
+            raise BadRequest(ALREADY_WARNED)
         serializer = WarningModelSerializer.write(data=request.data)
         serializer.is_valid(raise_exception=True)
         reason = serializer.validated_data["reason"]
         try:
             warning = issue_warning(target, request.user, reason)
         except AlreadyWarned:
-            raise BadRequest("Dieser Inhalt wurde bereits verwarnt.")
+            raise BadRequest(ALREADY_WARNED)
         return Response(
             {"warning": WarningModelSerializer.read(warning).data, "report_count": 0},
             status=status.HTTP_201_CREATED,

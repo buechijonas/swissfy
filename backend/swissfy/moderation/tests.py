@@ -428,6 +428,23 @@ class ModeratorReportedContentTests(TestCase):
         )
 
 
+class RepeatedWarningTests(TestCase):
+    def setUp(self):
+        anna = User.objects.create(username="anna")
+        self.mod = User.objects.create(username="mod")
+        set_role(self.mod, Role.MODERATOR)
+        self.post = Post.objects.create(author=anna, text="Hallo")
+        Report.objects.create(reporter=self.mod, post=self.post)
+        issue_warning(self.post, self.mod, Reason.SPAM)
+        self.client.force_login(self.mod)
+
+    def test_warning_again_without_reason_says_already_warned(self):
+        response = self.client.post(f"/api/moderation/posts/{self.post.uuid}/warnings/")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"detail": "Dieser Inhalt wurde bereits verwarnt."})
+
+
 class IssueWarningTests(TestCase):
     def setUp(self):
         self.anna = User.objects.create(username="anna")

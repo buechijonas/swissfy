@@ -4,17 +4,20 @@ import hmac
 import json
 import time
 from datetime import timedelta
+from io import StringIO
 from unittest import mock
 
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from .consent import attested_status, sign, status_of
-from .models import DeviceToken, UserConsent
+from .models import DeviceToken, UserConsent, UserProfile
+from .oidc import create_user
 
 User = get_user_model()
 
@@ -276,3 +279,25 @@ class CallbackConsentPushTests(TestCase):
     def test_skips_push_without_any_consent(self):
         push = self.login({"sub": "s1", "preferred_username": "jonas"})
         push.assert_not_called()
+
+
+class ProfileInvariantTests(TestCase):
+    def test_created_user_gets_a_profile(self):
+        user = User.objects.create(username="anna")
+        self.assertTrue(UserProfile.objects.filter(user=user).exists())
+
+    def test_user_created_through_the_manager_gets_a_profile(self):
+        user = User.objects.create_user(username="anna")
+        self.assertTrue(UserProfile.objects.filter(user=user).exists())
+
+    def test_superuser_gets_a_profile(self):
+        user = User.objects.create_superuser(username="root", password="secret")
+        self.assertTrue(UserProfile.objects.filter(user=user).exists())
+
+    def test_bootstrapped_admin_gets_a_profile(self):
+        call_command("bootstrap_admin", stdout=StringIO(), stderr=StringIO())
+        self.assertFalse(User.objects.filter(profile__isnull=True).exists())
+
+    def test_govex_login_creates_a_user_with_profile(self):
+        user = create_user("s1", "anna", "anna@example.com")
+        self.assertTrue(UserProfile.objects.filter(user=user, govex_sub="s1").exists())

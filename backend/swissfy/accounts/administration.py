@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.db.models import BooleanField, ExpressionWrapper, Q
+from django.db.models import Q
 from rest_framework import mixins, serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
+from commons.models import boolean
 from commons.serializers import BaseModelSerializer
 from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
@@ -94,12 +95,11 @@ class AdminUserViewSet(BaseViewSet, mixins.ListModelMixin):
     lookup_field = "username"
 
     def get_queryset(self):
-        is_self = ExpressionWrapper(Q(pk=self.request.user.pk), output_field=BooleanField())
         users = (
             User.objects.filter(is_active=True)
             .select_related("profile")
             .prefetch_related("groups")
-            .annotate(is_self=is_self)
+            .annotate(is_self=boolean(Q(pk=self.request.user.pk)))
         )
         return annotate_role_lock(users)
 

@@ -1,9 +1,11 @@
 import datetime
-from functools import cache, cached_property
+from functools import cached_property, lru_cache
 
 from django.conf import settings
 
 from commons.markdown import render
+
+CACHED_CHANGELOGS = 256
 
 
 class Changelog:
@@ -46,6 +48,6 @@ class Changelog:
         return load(path, path.stat().st_mtime) if path.is_file() else None
 
 
-@cache
+@lru_cache(maxsize=CACHED_CHANGELOGS)
 def load(path, modified):
     return Changelog(path)
