@@ -2,6 +2,8 @@ cryptography==50.0.0
 Django==6.0.8
 djangorestframework==3.18.2
 gunicorn==23.0.0
+Markdown==3.7
+nh3==0.2.20
 Pillow==13.0.0
 psycopg[binary]==3.2.10
 requests==2.34.2

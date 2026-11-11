@@ -9,8 +9,8 @@ from django.test import TestCase, override_settings
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.utils import timezone
 
-from posts.models import Post, Story, StoryLike, StoryView
-from posts.tests import image_upload
+from swissfy.posts.models import Post, Story, StoryLike, StoryView
+from swissfy.posts.tests import image_upload
 
 User = get_user_model()
 MEDIA = tempfile.mkdtemp()

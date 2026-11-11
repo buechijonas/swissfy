@@ -23,6 +23,7 @@ CSRF_TRUSTED_ORIGINS = os.getenv(
 ).split(",")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5175")
+DOCS_URL = os.getenv("DOCS_URL", "http://localhost:5176")
 
 GOVEX_PUBLIC_URL = os.getenv("GOVEX_PUBLIC_URL")
 GOVEX_ACCOUNT_URL = os.getenv("GOVEX_ACCOUNT_URL")
@@ -77,6 +78,8 @@ CSRF_COOKIE_SECURE = not DEBUG
 
 SESSION_COOKIE_NAME = "swissfy_sessionid"
 CSRF_COOKIE_NAME = "swissfy_csrftoken"
+SESSION_COOKIE_DOMAIN = os.getenv("DJANGO_COOKIE_DOMAIN") or None
+CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
 
 
 INSTALLED_APPS = [
@@ -88,13 +91,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "commons",
-    "accounts",
-    "social",
-    "chats",
-    "posts",
-    "moderation",
-    "notifications",
-    "achievements",
+    "swissfy.accounts",
+    "swissfy.social",
+    "swissfy.chats",
+    "swissfy.posts",
+    "swissfy.moderation",
+    "swissfy.notifications",
+    "swissfy.achievements",
+    "docs",
 ]
 
 FILE_UPLOAD_HANDLERS = ["django.core.files.uploadhandler.TemporaryFileUploadHandler"]
@@ -189,6 +193,8 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_ROOT = BASE_DIR / "media"
+
+CHANGELOG_DIR = BASE_DIR / "docs" / "changelogs"
 
 STORAGES = {
     "default": {

@@ -14,9 +14,9 @@ from django.db.models.functions import Cast
 from django.test import TestCase, override_settings
 from PIL import Image
 
-from accounts.roles import Role, set_role
-from posts.models import Comment, Post, PostImage
-from social.models import Friendship
+from swissfy.accounts.roles import Role, set_role
+from swissfy.posts.models import Comment, Post, PostImage
+from swissfy.social.models import Friendship
 
 from .backfill import encrypt_rows
 from .encryption import CHUNK, FILE_MAGIC

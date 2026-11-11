@@ -10,8 +10,8 @@ from django.db import transaction
 from django.test import Client, TestCase
 from django.urls import URLResolver, get_resolver
 
-from accounts.roles import Role, set_role
-from posts.models import Comment, Post
+from swissfy.accounts.roles import Role, set_role
+from swissfy.posts.models import Comment, Post
 
 User = get_user_model()
 
@@ -27,6 +27,8 @@ PUBLIC = {
     "post-image",
     "post-video",
     "post-thumbnail",
+    "changelog-list",
+    "changelog-detail",
 }
 SIGNED = {"govex-account-deleted", "govex-account-updated"}
 UNSAFE = ["post", "put", "patch", "delete"]

@@ -3,10 +3,10 @@ from django.db import connection
 from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 
-from accounts.models import UserProfile
-from notifications.models import Notification
-from posts.models import Comment, Like, Post, Repost, Story, StoryView
-from social.models import Follow
+from swissfy.accounts.models import UserProfile
+from swissfy.notifications.models import Notification
+from swissfy.posts.models import Comment, Like, Post, Repost, Story, StoryView
+from swissfy.social.models import Follow
 
 User = get_user_model()
 
