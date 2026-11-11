@@ -13,9 +13,6 @@
       <span v-else-if="authStore.isAuthenticated" class="text-white text-sm max-lg:hidden">
         {{ authStore.user.display_name }}
       </span>
-      <RouterLink to="/settings" title="Einstellungen" :class="[iconLinkClass, 'max-lg:hidden']">
-        <AppIcon name="settings" alt="Einstellungen" class="size-6!" />
-      </RouterLink>
       <RouterLink
         v-if="authStore.isAuthenticated"
         to="/notifications"
@@ -24,9 +21,56 @@
       >
         <AppIcon :name="notificationsIcon" :alt="notificationsLabel" class="size-6!" />
       </RouterLink>
-      <label for="my-drawer-3" aria-label="Navigation öffnen" :class="[iconLinkClass, 'lg:hidden']">
-        <AppIcon :name="drawerIcon" class="size-6!" />
-      </label>
+      <div class="group dropdown dropdown-end h-full" @keydown.esc="closeMenu">
+        <div tabindex="0" role="button" aria-label="Menü" :class="iconLinkClass">
+          <AppIcon name="menu-burger" class="size-6!" />
+        </div>
+        <ul
+          tabindex="0"
+          class="dropdown-content menu invisible z-40 w-56 rounded-box border border-swissfy-border bg-base-100 p-1 text-base-content [--depth:0] [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)] group-focus-within:visible"
+        >
+          <li>
+            <RouterLink to="/settings" class="flex h-12 items-center gap-3" @click="closeMenu">
+              <AppIcon name="settings" class="size-6!" />
+              <span>Einstellungen</span>
+            </RouterLink>
+          </li>
+          <li v-if="authStore.isAuthenticated">
+            <RouterLink to="/saved" class="flex h-12 items-center gap-3" @click="closeMenu">
+              <AppIcon name="bookmark" class="size-6!" />
+              <span>Gespeichert</span>
+            </RouterLink>
+          </li>
+          <li v-for="item in staffItems" :key="item.key" class="lg:hidden">
+            <RouterLink :to="item.to" class="flex h-12 items-center gap-3" @click="closeMenu">
+              <AppIcon :name="item.icon" class="size-6!" />
+              <span>{{ item.label }}</span>
+            </RouterLink>
+          </li>
+          <li class="mt-1 border-t border-swissfy-border pt-1">
+            <a :href="docsUrl" class="flex h-12 items-center gap-3">
+              <AppIcon name="circle-book-open" class="size-6!" />
+              <span>Dokumentation</span>
+            </a>
+          </li>
+          <li>
+            <a href="/api/auth/oidc/account/" class="flex h-12 items-center gap-3">
+              <img :src="govexLogo" alt="" class="size-6" />
+              <span>govex</span>
+            </a>
+          </li>
+          <li v-if="authStore.ready" class="mt-1 border-t border-swissfy-border pt-1">
+            <RouterLink
+              :to="authStore.isAuthenticated ? '/logout' : '/login'"
+              class="flex h-12 items-center gap-3"
+              @click="closeMenu"
+            >
+              <AppIcon :name="authStore.isAuthenticated ? 'exit' : 'enter'" class="size-6!" />
+              <span>{{ authStore.isAuthenticated ? 'Abmelden' : 'Anmelden' }}</span>
+            </RouterLink>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -34,7 +78,9 @@
 <script>
 import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
-import { isNavDrawerOpen } from '@/lib/navDrawer.js'
+import govexLogo from '@core/assets/govex.svg'
+import { closeMenu } from '@core/lib/menu.js'
+import { docsUrl, isListed, navigationItems } from '@/data/navigation.js'
 import { pageTitle } from '@/lib/title.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
@@ -47,6 +93,8 @@ export default {
     return {
       brandInitial: packageJson.name.charAt(0),
       iconLinkClass: 'flex h-full cursor-pointer items-center px-2 text-white',
+      docsUrl,
+      govexLogo,
     }
   },
   computed: {
@@ -65,9 +113,12 @@ export default {
     notificationsLabel() {
       return this.notificationsStore.unread ? 'Neue Benachrichtigungen' : 'Benachrichtigungen'
     },
-    drawerIcon() {
-      return isNavDrawerOpen.value ? 'cross' : 'menu-burger'
+    staffItems() {
+      return navigationItems.filter((item) => item.roles && isListed(item, this.authStore))
     },
+  },
+  methods: {
+    closeMenu,
   },
 }
 </script>

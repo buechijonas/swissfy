@@ -1,6 +1,8 @@
 import { useChatsStore } from '@/stores/chats.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
 
+export const docsUrl = import.meta.env.VITE_DOCS_URL ?? 'https://docs.swissfy.ch'
+
 export const MODERATION_ROLES = ['moderator', 'admin']
 export const ADMINISTRATION_ROLES = ['admin']
 
@@ -54,13 +56,6 @@ export const navigationItems = [
     footer: true,
     badge: () => useChatsStore().unread.length,
   },
-  { key: 'saved', label: 'Gespeichert', icon: 'bookmark', to: '/saved', requiresAuth: true },
-  {
-    key: 'donate',
-    label: 'Spenden',
-    icon: 'hands-heart',
-    href: 'https://buymeacoffee.com/wintersehn',
-  },
   {
     key: 'profile',
     label: 'Profil',
@@ -86,12 +81,5 @@ export const navigationItems = [
     to: '/administration',
     requiresAuth: true,
     roles: ADMINISTRATION_ROLES,
-  },
-  {
-    key: 'settings',
-    label: 'Einstellungen',
-    icon: 'settings',
-    to: '/settings',
-    mobileOnly: true,
   },
 ]

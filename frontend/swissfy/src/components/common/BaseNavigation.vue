@@ -16,12 +16,7 @@
             role="separator"
             class="pointer-events-none mx-4 my-2 h-px bg-swissfy-muted opacity-100!"
           ></li>
-          <li
-            :class="{
-              'max-lg:hidden': item.footer || item.desktopOnly,
-              'lg:hidden': item.mobileOnly,
-            }"
-          >
+          <li :class="{ 'max-lg:hidden': item.footer || item.desktopOnly }">
             <component
               :is="linkComponent(item)"
               v-bind="linkAttributes(item)"
@@ -40,7 +35,6 @@
               />
               <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-6! lg:size-5!" />
               <span>{{ item.label }}</span>
-              <span v-if="item.href" class="ml-auto text-xs text-swissfy-muted">Externer Link</span>
               <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
                 {{ item.badge() }}
               </span>
