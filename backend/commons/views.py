@@ -14,6 +14,13 @@ class BaseViewSet(viewsets.GenericViewSet):
     def get_serializer_class(self):
         return super().get_serializer_class().for_action(self.action)
 
+    @cached_property
+    def instance(self):
+        return super().get_object()
+
+    def get_object(self):
+        return self.instance
+
     def get_permissions(self):
         classes = self.permission_action_classes.get(self.action, self.permission_classes)
         return [permission() for permission in classes]
@@ -23,7 +30,7 @@ class BaseViewSet(viewsets.GenericViewSet):
         pagination = self.pagination_action_classes.get(self.action, self.pagination_class)
         return pagination() if pagination else None
 
-    def read(self, instance, status_code=status.HTTP_200_OK):
+    def respond(self, instance, status_code=status.HTTP_200_OK):
         instance = self.get_queryset().get(pk=instance.pk)
         serializer = self.serializer_class.read(instance, context=self.get_serializer_context())
         return Response(serializer.data, status=status_code)
@@ -33,7 +40,7 @@ class CreateModelMixin(mixins.CreateModelMixin):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return self.read(self.perform_create(serializer), status.HTTP_201_CREATED)
+        return self.respond(self.perform_create(serializer), status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
         return serializer.save()
@@ -44,7 +51,7 @@ class UpdateModelMixin(mixins.UpdateModelMixin):
         partial = kwargs.pop("partial", False)
         serializer = self.get_serializer(self.get_object(), data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        return self.read(self.perform_update(serializer))
+        return self.respond(self.perform_update(serializer))
 
     def perform_update(self, serializer):
         return serializer.save()

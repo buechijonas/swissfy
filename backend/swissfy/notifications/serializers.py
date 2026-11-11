@@ -1,98 +1,19 @@
-from django.utils import timezone
 from rest_framework import serializers
 
-from swissfy.moderation.sanctions import SUSPENSION_STEPS
+from commons.serializers import BaseModelSerializer
 from swissfy.posts.serializers import AuthorModelSerializer
-from swissfy.social.models import Follow, FollowRequest, FriendRequest, Friendship
 
 from .models import Notification
 
-Kind = Notification.Kind
-PREVIEW_LENGTH = 80
 
+class NotificationModelSerializer(BaseModelSerializer):
+    class read(BaseModelSerializer.read):
+        actor = AuthorModelSerializer.read(read_only=True)
+        message = serializers.CharField(read_only=True)
+        link = serializers.CharField(read_only=True, allow_null=True)
+        read = serializers.BooleanField(source="is_read", read_only=True)
+        request = serializers.CharField(source="request_state", read_only=True, allow_null=True)
 
-def local_date(value):
-    return timezone.localtime(value).strftime("%d.%m.%Y")
-
-
-def quote(text):
-    text = " ".join(text.split())
-    return f"«{text[:PREVIEW_LENGTH]}…»" if len(text) > PREVIEW_LENGTH else f"«{text}»"
-
-
-class NotificationSerializer(serializers.ModelSerializer):
-    actor = AuthorModelSerializer.read(read_only=True)
-    message = serializers.SerializerMethodField()
-    link = serializers.SerializerMethodField()
-    read = serializers.SerializerMethodField()
-    request = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Notification
-        fields = ["id", "kind", "actor", "message", "link", "created_at", "read", "request"]
-
-    def get_read(self, obj):
-        return obj.read_at is not None
-
-    def get_message(self, obj):
-        name = f"@{obj.actor.username}" if obj.actor else ""
-        match obj.kind:
-            case Kind.WARNING:
-                return f"Du wurdest verwarnt: {obj.warning.get_reason_display()}."
-            case Kind.WARNING_EXPIRED:
-                reason = obj.warning.get_reason_display()
-                return (
-                    f"Deine Verwarnung «{reason}» vom "
-                    f"{local_date(obj.warning.created_at)} ist verjährt."
-                )
-            case Kind.SUSPENSION:
-                return self.suspension_message(obj.suspension)
-            case Kind.COMMENT:
-                return f"{name} hat deinen Feed kommentiert: {quote(obj.comment.text)}"
-            case Kind.LIKE:
-                return f"{name} gefällt dein Feed."
-            case Kind.FOLLOW:
-                return f"{name} folgt dir jetzt."
-            case Kind.FOLLOW_REQUEST:
-                return f"{name} möchte dir folgen."
-            case Kind.FRIEND_REQUEST:
-                return f"{name} möchte mit dir befreundet sein."
-        return ""
-
-    def suspension_message(self, suspension):
-        duration = SUSPENSION_STEPS[suspension.step][1]
-        if suspension.ends_at is None:
-            return "Dein Konto wurde dauerhaft gesperrt."
-        until = local_date(suspension.ends_at)
-        if suspension.starts_at > timezone.now():
-            start = local_date(suspension.starts_at)
-            return f"Dein Konto wird für {duration} gesperrt, ab {start} bis {until}."
-        return f"Dein Konto wurde für {duration} gesperrt, bis {until}."
-
-    def get_link(self, obj):
-        match obj.kind:
-            case Kind.WARNING | Kind.WARNING_EXPIRED | Kind.SUSPENSION:
-                return f"/profile/{obj.recipient.username}?tab=status"
-            case Kind.COMMENT:
-                return f"/comments/{obj.comment.uuid}"
-            case Kind.LIKE:
-                return f"/posts/{obj.post.uuid}"
-        return f"/profile/{obj.actor.username}" if obj.actor else None
-
-    def get_request(self, obj):
-        match obj.kind:
-            case Kind.FOLLOW_REQUEST:
-                pending = FollowRequest.objects.filter(follower=obj.actor, following=obj.recipient)
-                accepted = Follow.objects.filter(follower=obj.actor, following=obj.recipient)
-            case Kind.FRIEND_REQUEST:
-                pending = FriendRequest.objects.filter(sender=obj.actor, receiver=obj.recipient)
-                accepted = Friendship.objects.filter(user=obj.recipient, friend=obj.actor)
-            case _:
-                return None
-        if obj.resolution:
-            return obj.resolution
-        if pending.exists():
-            return "pending"
-        if accepted.exists():
-            return Notification.Resolution.ACCEPTED
-        return Notification.Resolution.DECLINED
+        class Meta(BaseModelSerializer.read.Meta):
+            model = Notification
+            fields = ["id", "kind", "actor", "message", "link", "created_at", "read", "request"]

@@ -15,7 +15,7 @@ def hash_token(token):
 
 
 def find_device(token):
-    if not isinstance(token, str) or not token:
+    if not token:
         return None
     cutoff = timezone.now() - timedelta(days=DEVICE_TOKEN_IDLE_DAYS)
     return (

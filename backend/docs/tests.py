@@ -1,3 +1,4 @@
+import os
 import tempfile
 from pathlib import Path
 
@@ -41,6 +42,17 @@ class ChangelogTests(TestCase):
         self.assertEqual(changelog["date"], "2026-11-10")
         self.assertIn("<strong>bold</strong>", changelog["html"])
         self.assertNotIn("<script>", changelog["html"])
+
+    def test_edited_changelog_is_read_again(self):
+        self.write("1.0.0", "major", "- feat: first")
+        self.client.get("/api/docs/changelogs/1.0.0/")
+        self.write("1.0.0", "major", "- feat: second")
+        path = self.directory / "v1.0.0.md"
+        os.utime(path, (path.stat().st_atime, path.stat().st_mtime + 1))
+
+        response = self.client.get("/api/docs/changelogs/1.0.0/")
+
+        self.assertIn("second", response.json()["html"])
 
     def test_unknown_version_is_not_found(self):
         response = self.client.get("/api/docs/changelogs/9.9.9/")

@@ -1,4 +1,5 @@
-from django.test import SimpleTestCase
+from django.contrib.auth import get_user_model
+from django.test import SimpleTestCase, TestCase
 
 from .numbers import compact_number
 
@@ -21,3 +22,16 @@ class CompactNumberTests(SimpleTestCase):
         }
         for value, expected in cases.items():
             self.assertEqual(compact_number(value), expected)
+
+
+class OptionsTests(TestCase):
+    def setUp(self):
+        self.client.force_login(get_user_model().objects.create(username="anna"))
+
+    def test_options_on_a_viewset_without_queryset_answers(self):
+        response = self.client.options("/api/chats/protection/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_options_on_a_model_viewset_answers(self):
+        response = self.client.options("/api/posts/")
+        self.assertEqual(response.status_code, 200)

@@ -27,10 +27,5 @@ export default {
       return this.$route.name === 'settings'
     },
   },
-  watch: {
-    '$route.path'() {
-      window.scrollTo(0, 0)
-    },
-  },
 }
 </script>

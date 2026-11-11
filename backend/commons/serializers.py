@@ -12,8 +12,14 @@ class BaseModelSerializer:
         class Meta:
             fields = []
 
+    list = None
+    retrieve = None
+
     @classmethod
     def for_action(cls, action):
+        by_action = {"list": cls.list, "retrieve": cls.retrieve}.get(action)
+        if by_action:
+            return by_action
         return cls.read if action in READ_ACTIONS else cls.write
 
 

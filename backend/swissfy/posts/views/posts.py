@@ -5,11 +5,13 @@ from django.db import transaction
 from django.db.models import OuterRef, Subquery
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status
+from rest_framework.decorators import action
 from rest_framework.exceptions import Throttled
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from commons.exceptions import BadRequest
 from commons.views import BaseViewSet, CreateModelMixin, UpdateModelMixin
 from main.numbers import compact_number
 from main.parsers import JSONParser
@@ -51,12 +53,12 @@ class PostViewSet(
     serializer_class = PostModelSerializer
     parser_classes = [MultiPartParser, JSONParser]
     lookup_field = "uuid"
+    lookup_value_converter = "uuid"
     pagination_class = NewestFirst
     pagination_action_classes = {"list": FeedOrder, "saved": SavedOrder}
     permission_action_classes = {
-        "global_feed": [AllowAny],
         "create": [IsAuthenticated, IsNotSuspended],
-        "update": [IsAuthenticated, IsAuthor],
+        "partial_update": [IsAuthenticated, IsAuthor],
         "destroy": [IsAuthenticated, IsAuthor],
     }
 
@@ -66,7 +68,7 @@ class PostViewSet(
         return posts.with_details(user)
 
     def get_serializer_class(self):
-        if self.action == "update":
+        if self.action == "partial_update":
             return PostModelSerializer.audience
         return super().get_serializer_class()
 
@@ -86,18 +88,25 @@ class PostViewSet(
         self.check_quota()
         return super().create(request, *args, **kwargs)
 
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    @action(detail=False)
     def quota(self, request):
         remaining = PostCreation.objects.remaining(request.user)
         return Response({"limit": POSTS_PER_DAY, "remaining": remaining})
 
+    @action(detail=False, url_path="global", permission_classes=[AllowAny])
     def global_feed(self, request):
         posts = Post.objects.apply_acl(request.user).filter(visibility=Post.Visibility.GLOBAL)
         return self.paginated(posts)
 
+    @action(detail=False)
     def reels(self, request):
         reels = Post.objects.feed(request.user).videos()
         return self.paginated(starting_from(reels, request.query_params))
 
+    @action(detail=False)
     def saved(self, request):
         folder = request.query_params.get("folder")
         saves = SavedPost.objects.filter(user=request.user).in_folder(folder)
@@ -115,6 +124,7 @@ class PostViewSet(
         )
         return self.get_paginated_response(serializer.data)
 
+    @action(detail=True, methods=["post"])
     def like(self, request, uuid):
         post = self.get_object()
         _, created = Like.objects.get_or_create(user=request.user, post=post)
@@ -122,6 +132,7 @@ class PostViewSet(
             notify(post.author, Notification.Kind.LIKE, actor=request.user, post=post)
         return self.like_state(post, True)
 
+    @like.mapping.delete
     def unlike(self, request, uuid):
         post = self.get_object()
         Like.objects.filter(user=request.user, post=post).delete()
@@ -131,25 +142,25 @@ class PostViewSet(
     def like_state(self, post, liked):
         return Response({"liked": liked, "like_count": compact_number(post.likes.count())})
 
+    @action(detail=True, methods=["post"])
     def repost(self, request, uuid):
         post = self.get_object()
         if post.author == request.user:
-            return Response(
-                {"detail": "Du kannst deine eigenen Feeds nicht reposten."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise BadRequest("Du kannst deine eigenen Feeds nicht reposten.")
         Repost.objects.get_or_create(user=request.user, post=post)
-        return self.repost_state()
+        return self.repost_state(post)
 
+    @repost.mapping.delete
     def unrepost(self, request, uuid):
         post = self.get_object()
         Repost.objects.filter(user=request.user, post=post).delete()
-        return self.repost_state()
+        return self.repost_state(post)
 
-    def repost_state(self):
-        post = self.get_object()
+    def repost_state(self, post):
+        post = self.get_queryset().get(pk=post.pk)
         return Response({"reposted": post.reposted, "reposter": post.reposter})
 
+    @action(detail=True, methods=["put"])
     def save(self, request, uuid):
         folder = request.data.get("folder")
         if folder is not None:
@@ -159,6 +170,7 @@ class PostViewSet(
         )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @save.mapping.delete
     def unsave(self, request, uuid):
         SavedPost.objects.filter(user=request.user, post=self.get_object()).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

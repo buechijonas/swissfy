@@ -45,7 +45,8 @@ class ProfileTests(TestCase):
         )
 
     def test_profile_list_excludes_self_and_pages(self):
-        User.objects.bulk_create(User(username=f"user{i:02}") for i in range(25))
+        users = User.objects.bulk_create(User(username=f"user{i:02}") for i in range(25))
+        UserProfile.objects.bulk_create(UserProfile(user=user) for user in users)
         data = self.client.get("/api/social/profiles/").json()
         self.assertNotIn("count", data)
         self.assertEqual(len(data["results"]), 20)

@@ -1,9 +1,8 @@
-from django.urls import path
+from commons.routers import Router
 
-from . import views
+from .views import NotificationViewSet
 
-urlpatterns = [
-    path("", views.NotificationListView.as_view(), name="notifications"),
-    path("unread/", views.UnreadCountView.as_view(), name="notifications-unread"),
-    path("read/", views.ReadView.as_view(), name="notifications-read"),
-]
+router = Router()
+router.register("", NotificationViewSet, basename="notifications")
+
+urlpatterns = router.urls

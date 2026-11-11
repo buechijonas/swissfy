@@ -5,10 +5,11 @@ import sys
 from uuid import uuid4
 
 from django.conf import settings
+from django.contrib.admindocs.views import extract_views_from_urlpatterns
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.test import Client, TestCase
-from django.urls import URLResolver, get_resolver
+from django.urls import get_resolver
 
 from swissfy.accounts.roles import Role, set_role
 from swissfy.posts.models import Comment, Post
@@ -22,11 +23,11 @@ PUBLIC = {
     "govex-account",
     "govex-account-deleted",
     "govex-account-updated",
-    "me",
-    "global-feed",
-    "post-image",
-    "post-video",
-    "post-thumbnail",
+    "auth-me",
+    "posts-global-feed",
+    "post-media-image",
+    "post-media-video",
+    "post-media-thumbnail",
     "changelog-list",
     "changelog-detail",
 }
@@ -86,14 +87,10 @@ QUERY_PARAMS = [
 ]
 
 
-def routes(patterns=None, prefix=""):
-    for pattern in get_resolver().url_patterns if patterns is None else patterns:
-        if isinstance(pattern, URLResolver):
-            if str(pattern.pattern).startswith("django-admin"):
-                continue
-            yield from routes(pattern.url_patterns, prefix + str(pattern.pattern))
-        else:
-            yield prefix + str(pattern.pattern), pattern.name
+def routes():
+    for _, route, _, name in extract_views_from_urlpatterns(get_resolver().url_patterns):
+        if not route.startswith("django-admin"):
+            yield route, name
 
 
 class Fixtures(TestCase):
@@ -123,7 +120,7 @@ class AuthenticationRequiredTests(Fixtures):
                 continue
             for method in ["get", *UNSAFE]:
                 with self.subTest(path=path, method=method):
-                    response = getattr(self.client, method)(path)
+                    response = self.client.generic(method.upper(), path)
                     self.assertIn(response.status_code, (401, 403, 405))
 
     def test_public_endpoints_leak_nothing_to_anonymous_users(self):
@@ -181,8 +178,8 @@ class CsrfTests(Fixtures):
                 continue
             for method in UNSAFE:
                 with self.subTest(path=path, method=method):
-                    response = getattr(self.client, method)(
-                        path, {}, content_type="application/json"
+                    response = self.client.generic(
+                        method.upper(), path, "{}", content_type="application/json"
                     )
                     self.assertIn(response.status_code, (403, 405))
 

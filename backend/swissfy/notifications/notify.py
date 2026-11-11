@@ -1,3 +1,5 @@
+from functools import wraps
+
 from django.db.models import Exists, OuterRef
 from django.utils import timezone
 
@@ -42,3 +44,12 @@ def sync_expired_warnings(user):
         ],
         ignore_conflicts=True,
     )
+
+
+def syncs_expired_warnings(action):
+    @wraps(action)
+    def wrapper(self, request, *args, **kwargs):
+        sync_expired_warnings(request.user)
+        return action(self, request, *args, **kwargs)
+
+    return wrapper

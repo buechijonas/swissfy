@@ -1,46 +1,33 @@
-from django.utils import timezone
-from rest_framework import generics
+from rest_framework import mixins
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
+from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
 
 from .models import Notification
-from .notify import sync_expired_warnings
-from .serializers import NotificationSerializer
+from .notify import syncs_expired_warnings
+from .serializers import NotificationModelSerializer
 
 
-class NotificationListView(generics.ListAPIView):
-    serializer_class = NotificationSerializer
+class NotificationViewSet(BaseViewSet, mixins.ListModelMixin):
+    serializer_class = NotificationModelSerializer
     pagination_class = NextPagePagination
 
     def get_queryset(self):
-        user = self.request.user
-        sync_expired_warnings(user)
-        return (
-            Notification.objects.filter(recipient=user)
-            .select_related(
-                "recipient",
-                "actor__profile",
-                "post",
-                "comment",
-                "warning",
-                "suspension",
-            )
-            .prefetch_related("actor__groups")
-        )
+        return Notification.objects.apply_acl(self.request.user).with_details()
 
+    @syncs_expired_warnings
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
-class UnreadCountView(APIView):
-    def get(self, request):
-        sync_expired_warnings(request.user)
-        unread = Notification.objects.filter(recipient=request.user, read_at=None)
+    @action(detail=False)
+    @syncs_expired_warnings
+    def unread(self, request):
+        unread = Notification.objects.apply_acl(request.user).unread()
         return Response({"count": unread.count()})
 
-
-class ReadView(APIView):
-    def post(self, request):
-        Notification.objects.filter(recipient=request.user, read_at=None).update(
-            read_at=timezone.now()
-        )
+    @action(detail=False, methods=["post"], url_path="read")
+    def mark_read(self, request):
+        Notification.objects.apply_acl(request.user).mark_read()
         return Response({"count": 0})

@@ -1,105 +1,122 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
-from rest_framework import generics, serializers
+from rest_framework import mixins, serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
+from commons.models import boolean
+from commons.serializers import BaseModelSerializer
+from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
-from swissfy.moderation.sanctions import role_locked_until
+from swissfy.moderation.sanctions import annotate_role_lock, role_lock, role_locked_until
 from swissfy.social.pictures import PictureField
 
-from .roles import USER_ORDERING, IsAdmin, Role, role_badge, role_of, set_role, with_role_rank
+from .fields import RoleBadgeField, RoleField
+from .roles import USER_ORDERING, IsAdmin, Role, set_role, with_role_rank
 
 User = get_user_model()
 
 
-class AdminUserSerializer(serializers.ModelSerializer):
-    avatar = serializers.SerializerMethodField()
-    picture = PictureField()
-    role = serializers.ChoiceField(choices=Role.choices, source="current_role")
-    badge = serializers.SerializerMethodField()
-    role_locked_until = serializers.SerializerMethodField()
-    is_self = serializers.SerializerMethodField()
+class RoleLockField(serializers.Field):
+    def __init__(self, **kwargs):
+        super().__init__(source="*", read_only=True, **kwargs)
 
-    class Meta:
-        model = User
-        fields = [
-            "username",
-            "first_name",
-            "last_name",
-            "avatar",
-            "picture",
-            "role",
-            "badge",
-            "role_locked_until",
-            "is_self",
-        ]
-        read_only_fields = ["username", "first_name", "last_name"]
-
-    def get_avatar(self, obj):
-        profile = getattr(obj, "profile", None)
-        return profile.avatar if profile else ""
-
-    def get_badge(self, obj):
-        return role_badge(obj)
-
-    def get_role_locked_until(self, obj):
-        return role_locked_until(obj)
-
-    def get_is_self(self, obj):
-        return obj == self.context["request"].user
-
-    def to_representation(self, obj):
-        obj.current_role = role_of(obj)
-        return super().to_representation(obj)
-
-    def update(self, user, data):
-        if user == self.context["request"].user:
-            raise PermissionDenied("Du kannst deine eigene Rolle nicht ändern.")
-        if role_locked_until(user):
-            raise PermissionDenied(
-                "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt "
-                "und Sperren abgelaufen sind."
-            )
-        set_role(user, data["current_role"])
-        return User.objects.prefetch_related("groups").get(pk=user.pk)
+    def to_representation(self, user):
+        return role_lock(user)
 
 
-class AdminRoleView(APIView):
+class AdminUserModelSerializer(BaseModelSerializer):
+    class read(BaseModelSerializer.read):
+        avatar = serializers.CharField(source="profile.avatar", read_only=True)
+        picture = PictureField()
+        role = RoleField(read_only=True)
+        badge = RoleBadgeField()
+        role_locked_until = RoleLockField()
+        is_self = serializers.BooleanField(read_only=True)
+
+        class Meta(BaseModelSerializer.read.Meta):
+            model = User
+            fields = [
+                "username",
+                "first_name",
+                "last_name",
+                "avatar",
+                "picture",
+                "role",
+                "badge",
+                "role_locked_until",
+                "is_self",
+            ]
+
+    class write(BaseModelSerializer.write):
+        role = RoleField()
+
+        class Meta(BaseModelSerializer.write.Meta):
+            model = User
+            fields = ["role"]
+
+        def validate(self, data):
+            if self.instance == self.context["request"].user:
+                raise PermissionDenied("Du kannst deine eigene Rolle nicht ändern.")
+            if role_locked_until(self.instance):
+                raise PermissionDenied(
+                    "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt "
+                    "und Sperren abgelaufen sind."
+                )
+            return data
+
+        def update(self, user, data):
+            set_role(user, data["role"])
+            return user
+
+
+def matching(users, query):
+    for term in query.split():
+        users = users.filter(
+            Q(username__icontains=term)
+            | Q(first_name__icontains=term)
+            | Q(last_name__icontains=term)
+        )
+    return users
+
+
+def with_role(users, role):
+    if role == Role.DEFAULT:
+        return users.filter(Q(groups__name=Role.DEFAULT.label) | Q(groups__isnull=True))
+    if role in Role.values:
+        return users.filter(groups__name=Role(role).label)
+    return users
+
+
+class AdminUserViewSet(BaseViewSet, mixins.ListModelMixin):
     permission_classes = [IsAdmin]
-
-    def get(self, request):
-        return Response([{"value": value, "label": label} for value, label in Role.choices])
-
-
-class AdminUserListView(generics.ListAPIView):
-    permission_classes = [IsAdmin]
-    serializer_class = AdminUserSerializer
+    serializer_class = AdminUserModelSerializer
     pagination_class = NextPagePagination
+    lookup_field = "username"
 
     def get_queryset(self):
-        users = User.objects.filter(is_active=True).select_related("profile")
-        for term in self.request.query_params.get("q", "").split():
-            users = users.filter(
-                Q(username__icontains=term)
-                | Q(first_name__icontains=term)
-                | Q(last_name__icontains=term)
-            )
-        role = self.request.query_params.get("role")
-        if role == Role.DEFAULT:
-            users = users.filter(Q(groups__name=Role.DEFAULT.label) | Q(groups__isnull=True))
-        elif role in Role.values:
-            users = users.filter(groups__name=Role(role).label)
-        return with_role_rank(users).prefetch_related("groups").order_by(*USER_ORDERING)
+        users = (
+            User.objects.filter(is_active=True)
+            .select_related("profile")
+            .prefetch_related("groups")
+            .annotate(is_self=boolean(Q(pk=self.request.user.pk)))
+        )
+        return annotate_role_lock(users)
+
+    def filter_queryset(self, users):
+        params = self.request.query_params
+        users = with_role(matching(users, params.get("q", "")), params.get("role"))
+        return with_role_rank(users).order_by(*USER_ORDERING)
+
+    def partial_update(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = self.get_serializer(user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return self.respond(serializer.save())
 
 
-class AdminUserView(generics.UpdateAPIView):
+class RoleViewSet(BaseViewSet):
     permission_classes = [IsAdmin]
-    serializer_class = AdminUserSerializer
-    lookup_field = "username"
-    http_method_names = ["patch"]
 
-    def get_object(self):
-        return get_object_or_404(User, username=self.kwargs["username"], is_active=True)
+    def list(self, request):
+        return Response([{"value": value, "label": label} for value, label in Role.choices])

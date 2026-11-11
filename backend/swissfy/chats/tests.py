@@ -13,7 +13,8 @@ from .models import ChatKey, ChatRequest, Envelope, Message
 
 User = get_user_model()
 
-PUBLIC_KEY = {"ecdh": {"kty": "EC", "crv": "P-256", "x": "abc", "y": "def"}, "kem": "a2Vt"}
+ECDH_KEY = {"kty": "EC", "crv": "P-256", "x": "x" * 43, "y": "y" * 43}
+PUBLIC_KEY = {"ecdh": ECDH_KEY, "kem": "a2Vt"}
 MESSAGE_KEY = base64.b64encode(bytes(range(32))).decode()
 
 

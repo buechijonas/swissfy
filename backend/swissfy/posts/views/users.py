@@ -4,11 +4,12 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime
 from rest_framework import mixins
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from commons.views import BaseViewSet
 from swissfy.accounts.roles import is_moderator
-from swissfy.social.serializers import can_view_profile
+from swissfy.social.models import Member
 
 from ..models import Comment, Post, reported_comments
 from ..serializers import CommentModelSerializer, PostModelSerializer
@@ -38,13 +39,14 @@ class UserPostViewSet(BaseViewSet, mixins.ListModelMixin):
             on_visible_post, author__username=username
         )
         author = User.objects.filter(username=username).select_related("profile").first()
-        if author and not can_view_profile(viewer, author):
+        if author and not Member.objects.can_view(viewer, author):
             if is_moderator(viewer):
                 comments = comments.filter(reported_comments())
             else:
                 comments = comments.none()
         return comments.with_details(viewer)
 
+    @action(detail=False)
     def activities(self, request, username):
         viewer = request.user
         posts = Post.objects.apply_acl(viewer).filter(author__username=username)

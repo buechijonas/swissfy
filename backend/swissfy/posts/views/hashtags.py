@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from commons.views import BaseViewSet
@@ -12,6 +13,7 @@ from .posts import starting_from
 
 
 class HashtagViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+    lookup_field = "name"
     serializer_class = HashtagModelSerializer
     pagination_class = None
 
@@ -30,10 +32,12 @@ class HashtagViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
         name = hashtags.normalize(self.kwargs["name"])
         return get_object_or_404(self.get_queryset(), name=name)
 
+    @action(detail=True, methods=["put"])
     def follow(self, request, name):
         self.get_object().followers.add(request.user)
         return self.retrieve(request)
 
+    @follow.mapping.delete
     def unfollow(self, request, name):
         self.get_object().followers.remove(request.user)
         return self.retrieve(request)

@@ -1,14 +1,22 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 
 from swissfy.accounts.models import UserProfile
+from swissfy.accounts.roles import Role, set_role
+from swissfy.chats.models import ChatRequest, Message
+from swissfy.moderation.models import Reason, Suspension, Warning
 from swissfy.notifications.models import Notification
 from swissfy.posts.models import Comment, Like, Post, Repost, Story, StoryView
-from swissfy.social.models import Follow
+from swissfy.social.models import Follow, FollowRequest
 
 User = get_user_model()
+
+PROFILE_QUERY_LIMIT = 12
 
 
 class QueryScalingTests(TestCase):
@@ -35,6 +43,21 @@ class QueryScalingTests(TestCase):
             Notification.objects.create(
                 recipient=self.viewer, kind=Notification.Kind.FOLLOW, actor=author
             )
+            FollowRequest.objects.create(follower=author, following=self.viewer)
+            Notification.objects.create(
+                recipient=self.viewer, kind=Notification.Kind.FOLLOW_REQUEST, actor=author
+            )
+            ChatRequest.objects.create(
+                sender=author, recipient=self.viewer, status=ChatRequest.Status.ACCEPTED
+            )
+            Message.objects.create(
+                sender=author, recipient=self.viewer, ciphertext="YQ==", iv="YQ=="
+            )
+            warning = Warning.objects.create(user=author, reason=Reason.SPAM)
+            later = timezone.now() + timedelta(days=1)
+            Suspension.objects.create(
+                user=author, warning=warning, step=0, starts_at=later, ends_at=later
+            )
 
     def queries(self, url):
         with CaptureQueriesContext(connection) as context:
@@ -60,6 +83,27 @@ class QueryScalingTests(TestCase):
 
     def test_notifications(self):
         self.assert_constant("/api/notifications/")
+
+    def test_chat_conversations(self):
+        self.assert_constant("/api/chats/conversations/")
+
+    def test_admin_users(self):
+        set_role(self.viewer, Role.ADMIN)
+        self.assert_constant("/api/administration/users/")
+
+    def test_moderation_status(self):
+        set_role(self.viewer, Role.MODERATOR)
+        self.add_authors(1)
+        small = self.queries("/api/social/profiles/author1/status/")
+        author = User.objects.get(username="author1")
+        for _ in range(10):
+            Warning.objects.create(user=author, reason=Reason.SPAM)
+        large = self.queries("/api/social/profiles/author1/status/")
+        self.assertEqual(small, large, f"status grows from {small} to {large} queries")
+
+    def test_profile_counts_in_one_query(self):
+        self.add_authors(15)
+        self.assertLessEqual(self.queries("/api/social/profiles/author1/"), PROFILE_QUERY_LIMIT)
 
     def test_profile_with_stories(self):
         self.add_authors(1)
@@ -89,7 +133,8 @@ class LargeDataTests(TestCase):
             url = page["next"]
 
     def test_search_with_many_users_returns_one_page(self):
-        User.objects.bulk_create(User(username=f"user{i:04}") for i in range(1500))
+        users = User.objects.bulk_create(User(username=f"user{i:04}") for i in range(1500))
+        UserProfile.objects.bulk_create(UserProfile(user=user) for user in users)
         viewer = User.objects.create(username="viewer")
         self.client.force_login(viewer)
         data = self.client.get("/api/social/profiles/", {"q": "user1"}).json()

@@ -1,229 +1,221 @@
-from django.contrib.auth import get_user_model
-from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, Subquery, Value, When
+from django.db.models import Exists, OuterRef, Subquery
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, status
+from rest_framework import mixins, status
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
+from commons.exceptions import BadRequest
+from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
-from swissfy.accounts.models import UserProfile, get_or_create_profile
-from swissfy.accounts.roles import NAME_ORDERING, is_admin, is_moderator, with_role_rank
-from swissfy.moderation.sanctions import suspended_users
-from swissfy.notifications.models import Notification
-from swissfy.notifications.notify import notify, resolve_request, withdraw
+from swissfy.chats.models import annotate_chat_availability
 from swissfy.posts.models import Story, StoryLike, StoryView, story_cutoff
 from swissfy.posts.views.media import serve_image
 
-from . import library
-from .models import Follow, FollowRequest, FriendRequest, Friendship
+from . import library, relations
+from .models import FollowRequest, FriendRequest, Member
 from .pictures import KINDS, picture_file, sees_private, viewer_relations
 from .serializers import (
-    AboutSerializer,
-    PictureSettingsSerializer,
-    PrivacySerializer,
-    ProfileListSerializer,
-    ProfileSerializer,
-    StoryViewerSerializer,
-    are_friends,
-    can_view_profile,
+    ProfileModelSerializer,
+    ProfileSettingsModelSerializer,
     favorites_data,
-    follows,
-    requires_follow_request,
 )
 
-User = get_user_model()
-Resolution = Notification.Resolution
+CONNECTIONS = {"followers", "following", "friends"}
+LIST_ACTIONS = {"list", *CONNECTIONS}
 
 
-class ProfileListView(generics.ListAPIView):
-    serializer_class = ProfileListSerializer
+def checked_kind(kind):
+    if kind not in KINDS:
+        raise Http404
+    return kind
+
+
+class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+    serializer_class = ProfileModelSerializer
     pagination_class = NextPagePagination
+    lookup_field = "username"
 
-    def get_users(self):
-        return User.objects.filter(is_active=True).exclude(pk=self.request.user.pk)
-
-    def get_queryset(self):
-        viewer = self.request.user
-        users = self.get_users()
-        if not is_admin(viewer):
-            users = users.exclude(pk__in=suspended_users())
-        query = " ".join(self.request.query_params.get("q", "").split())
-        if query:
-            users = search(users, query, viewer) if len(query) >= MIN_QUERY_LENGTH else users.none()
-        users = with_visibility_ranks(with_viewer_relations(with_role_rank(users), viewer), viewer)
-        return users.order_by("lock_rank", "shown_role_rank", *NAME_ORDERING)
-
-
-def with_visibility_ranks(users, viewer):
-    if is_admin(viewer):
-        return users.annotate(lock_rank=Value(0), shown_role_rank=F("role_rank"))
-    Visibility = UserProfile.Visibility
-    viewable = (
-        Q(profile__isnull=True)
-        | Q(profile__profile_visibility=Visibility.PUBLIC)
-        | Q(profile__profile_visibility=Visibility.FOLLOWERS, viewer_follows=True)
-        | Q(viewer_is_friend=True)
-    )
-    return users.annotate(
-        lock_rank=Case(
-            When(viewable, then=Value(0)), default=Value(1), output_field=IntegerField()
-        ),
-        shown_role_rank=Case(When(viewable, then=F("role_rank")), default=Value(0)),
-    )
-
-
-MIN_QUERY_LENGTH = 2
-
-
-def search(users, query, viewer):
-    Visibility = UserProfile.Visibility
-    names_visible = (
-        Q()
-        if is_admin(viewer)
-        else (
-            Q(profile__isnull=True)
-            | Q(profile__profile_visibility=Visibility.PUBLIC)
-            | Q(
-                profile__profile_visibility=Visibility.FOLLOWERS,
-                pk__in=Follow.objects.filter(follower=viewer).values("following"),
-            )
-            | Q(pk__in=Friendship.objects.filter(user=viewer).values("friend"))
-        )
-    )
-    terms = query.split()
-    partial = User.objects.all()
-    for term in terms:
-        by_username = User.objects.filter(username__icontains=term).values("pk")
-        by_name = User.objects.filter(
-            names_visible, Q(first_name__icontains=term) | Q(last_name__icontains=term)
-        ).values("pk")
-        partial = partial.filter(pk__in=by_username.union(by_name))
-
-    full_name = Q(pk__in=[])
-    for split in range(1, len(terms)):
-        first, last = " ".join(terms[:split]), " ".join(terms[split:])
-        full_name |= Q(first_name__iexact=first, last_name__iexact=last)
-        full_name |= Q(first_name__iexact=last, last_name__iexact=first)
-    exact = User.objects.filter(full_name).values("pk")
-    return users.filter(pk__in=partial.values("pk").union(exact))
-
-
-def with_viewer_relations(users, viewer):
-    return (
-        users.select_related("profile")
-        .prefetch_related("groups")
-        .annotate(
-            viewer_follows=Exists(Follow.objects.filter(follower=viewer, following=OuterRef("pk"))),
-            viewer_is_friend=Exists(Friendship.objects.filter(user=viewer, friend=OuterRef("pk"))),
-        )
-    )
-
-
-class FollowRequestListView(generics.ListAPIView):
-    serializer_class = ProfileListSerializer
-    pagination_class = None
+    def get_serializer_class(self):
+        if self.action in LIST_ACTIONS:
+            return ProfileModelSerializer.list
+        return ProfileModelSerializer.read
 
     def get_queryset(self):
         viewer = self.request.user
-        users = User.objects.filter(
-            is_active=True, sent_follow_requests__following=viewer
-        ).order_by("sent_follow_requests__created_at")
-        return with_viewer_relations(users, viewer)
+        if self.action == "list":
+            return self.ranked(Member.objects.exclude(pk=viewer.pk))
+        if self.action in CONNECTIONS:
+            return self.ranked(Member.objects.connected_to(self.action, self.connected()))
+        return annotate_chat_availability(Member.objects.annotate_profile_details(viewer), viewer)
 
+    def ranked(self, members):
+        viewer = self.request.user
+        query = self.request.query_params.get("q", "")
+        return members.listed_for(viewer).search(query, viewer).ranked_for(viewer)
 
-class FollowRequestView(APIView):
-    def get_request(self, request, username):
-        return get_object_or_404(FollowRequest, follower__username=username, following=request.user)
+    def connected(self):
+        target = self.get_object()
+        if not Member.objects.can_view(self.request.user, target):
+            raise PermissionDenied("Dieses Profil ist privat.")
+        return target
 
-    def post(self, request, username):
-        follow_request = self.get_request(request, username)
-        resolve_request(
-            request.user,
-            Notification.Kind.FOLLOW_REQUEST,
-            follow_request.follower,
-            Resolution.ACCEPTED,
+    def get_object(self):
+        members = Member.objects.apply_acl(self.request.user)
+        return get_object_or_404(members, username=self.kwargs["username"])
+
+    def respond(self, user):
+        user = self.get_queryset().get(pk=user.pk)
+        return Response(
+            ProfileModelSerializer.read(user, context=self.get_serializer_context()).data
         )
-        follow_request.accept()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def delete(self, request, username):
-        follow_request = self.get_request(request, username)
-        resolve_request(
-            request.user,
-            Notification.Kind.FOLLOW_REQUEST,
-            follow_request.follower,
-            Resolution.DECLINED,
-        )
-        follow_request.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def retrieve(self, request, *args, **kwargs):
+        return self.respond(self.get_object())
+
+    @action(detail=False)
+    def me(self, request):
+        return self.respond(request.user)
+
+    @action(detail=True)
+    def followers(self, request, username):
+        return self.list(request)
+
+    @action(detail=True)
+    def following(self, request, username):
+        return self.list(request)
+
+    @action(detail=True)
+    def friends(self, request, username):
+        return self.list(request)
+
+    @action(detail=True, methods=["post"])
+    def follow(self, request, username):
+        target = self.get_object()
+        if target == request.user:
+            raise BadRequest("Du kannst dir nicht selbst folgen.")
+        relations.follow(request.user, target)
+        return self.respond(target)
+
+    @follow.mapping.delete
+    def unfollow(self, request, username):
+        target = self.get_object()
+        relations.unfollow(request.user, target)
+        return self.respond(target)
+
+    @action(detail=True, methods=["post"], url_path="friend-request")
+    def friend_request(self, request, username):
+        target = self.get_object()
+        relations.send_friend_request(request.user, target)
+        return self.respond(target)
+
+    @action(detail=True, url_path="pictures/<str:kind>")
+    def picture(self, request, username, kind):
+        target = self.get_object()
+        file = picture_file(target.profile, checked_kind(kind))
+        if kind == "private" and not sees_private(
+            target.profile, request.user, viewer_relations(request.user, [target])
+        ):
+            file = None
+        if not file:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return serve_image(file)
 
 
-class FriendRequestDecisionView(FollowRequestView):
-    def get_request(self, request, username):
-        return get_object_or_404(FriendRequest, sender__username=username, receiver=request.user)
+class OwnProfileViewSet(BaseViewSet):
+    @property
+    def profile(self):
+        return self.request.user.profile
 
-    def post(self, request, username):
-        friend_request = self.get_request(request, username)
-        resolve_request(
-            request.user,
-            Notification.Kind.FRIEND_REQUEST,
-            friend_request.sender,
-            Resolution.ACCEPTED,
-        )
-        friend_request.accept()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def delete(self, request, username):
-        friend_request = self.get_request(request, username)
-        resolve_request(
-            request.user,
-            Notification.Kind.FRIEND_REQUEST,
-            friend_request.sender,
-            Resolution.DECLINED,
-        )
-        friend_request.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class PrivacyView(APIView):
-    def get(self, request):
-        return Response(PrivacySerializer(get_or_create_profile(request.user)).data)
-
-    def patch(self, request):
-        serializer = PrivacySerializer(
-            get_or_create_profile(request.user), data=request.data, partial=True
+    def edit(self, serializer_class):
+        serializer = serializer_class(
+            self.profile,
+            data=self.request.data,
+            partial=True,
+            context=self.get_serializer_context(),
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        if not requires_follow_request(request.user):
-            for follow_request in request.user.received_follow_requests.all():
-                resolve_request(
-                    request.user,
-                    Notification.Kind.FOLLOW_REQUEST,
-                    follow_request.follower,
-                    Resolution.ACCEPTED,
-                )
-                follow_request.accept()
+        return serializer
+
+    @action(detail=False)
+    def privacy(self, request):
+        return Response(ProfileSettingsModelSerializer.privacy(self.profile).data)
+
+    @privacy.mapping.patch
+    def update_privacy(self, request):
+        serializer = self.edit(ProfileSettingsModelSerializer.privacy)
+        if not serializer.instance.requires_follow_request:
+            relations.accept_open_follow_requests(request.user)
         return Response(serializer.data)
 
+    @action(detail=False)
+    def about(self, request):
+        return Response(ProfileSettingsModelSerializer.about(self.profile).data)
 
-class AboutView(APIView):
-    def get(self, request):
-        return Response(AboutSerializer(get_or_create_profile(request.user)).data)
+    @about.mapping.patch
+    def update_about(self, request):
+        return Response(self.edit(ProfileSettingsModelSerializer.about).data)
 
-    def patch(self, request):
-        serializer = AboutSerializer(
-            get_or_create_profile(request.user), data=request.data, partial=True
+    @action(detail=False, url_path="follow-requests")
+    def follow_requests(self, request):
+        users = (
+            Member.objects.filter(is_active=True, sent_follow_requests__following=request.user)
+            .with_viewer_relations(request.user)
+            .order_by("sent_follow_requests__created_at")
+        )
+        context = self.get_serializer_context()
+        return Response(ProfileModelSerializer.list(users, many=True, context=context).data)
+
+    @action(detail=False, methods=["post", "delete"], url_path="follow-requests/<str:username>")
+    def decide_follow_request(self, request, username):
+        follow_request = get_object_or_404(
+            FollowRequest, follower__username=username, following=request.user
+        )
+        relations.decide_follow_request(follow_request, accepted=request.method == "POST")
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["post", "delete"], url_path="friend-requests/<str:username>")
+    def decide_friend_request(self, request, username):
+        friend_request = get_object_or_404(
+            FriendRequest, sender__username=username, receiver=request.user
+        )
+        relations.decide_friend_request(friend_request, accepted=request.method == "POST")
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class OwnPictureViewSet(BaseViewSet):
+    parser_classes = [MultiPartParser, JSONParser]
+
+    @property
+    def profile(self):
+        return self.request.user.profile
+
+    @action(detail=False)
+    def pictures(self, request):
+        context = self.get_serializer_context()
+        return Response(ProfileSettingsModelSerializer.pictures(self.profile, context=context).data)
+
+    @pictures.mapping.patch
+    def update_pictures(self, request):
+        serializer = ProfileSettingsModelSerializer.pictures(
+            self.profile, data=request.data, partial=True, context=self.get_serializer_context()
         )
         serializer.is_valid(raise_exception=True)
-        return Response(AboutSerializer(serializer.save()).data)
+        serializer.save()
+        return self.pictures(request)
+
+    @action(detail=False, methods=["delete"], url_path="pictures/<str:kind>")
+    def delete_picture(self, request, kind):
+        picture_file(self.profile, checked_kind(kind)).delete()
+        return self.pictures(request)
 
 
-class LibrarySearchView(APIView):
-    def get(self, request, kind):
+class LibraryViewSet(BaseViewSet):
+    @action(detail=False, url_path="library/<str:kind>")
+    def search(self, request, kind):
         if kind not in library.KINDS:
             raise Http404
         query = request.query_params.get("q", "").strip()
@@ -231,9 +223,7 @@ class LibrarySearchView(APIView):
             return Response({"results": []})
         return Response({"results": favorites_data(library.search(kind, query))})
 
-
-class CoverView(APIView):
-    def get(self, request, path):
+    def cover(self, request, path):
         cover = library.fetch_cover(path)
         if not cover:
             raise Http404
@@ -243,152 +233,22 @@ class CoverView(APIView):
         return response
 
 
-def picture_settings_response(request, profile):
-    return Response(PictureSettingsSerializer(profile, context={"request": request}).data)
-
-
-def checked_kind(kind):
-    if kind not in KINDS:
-        raise Http404
-    return kind
-
-
-class PictureSettingsView(APIView):
-    parser_classes = [MultiPartParser, JSONParser]
-
-    def get(self, request):
-        return picture_settings_response(request, get_or_create_profile(request.user))
-
-    def patch(self, request):
-        serializer = PictureSettingsSerializer(
-            get_or_create_profile(request.user),
-            data=request.data,
-            partial=True,
-            context={"request": request},
-        )
-        serializer.is_valid(raise_exception=True)
-        return picture_settings_response(request, serializer.save())
-
-
-class OwnPictureView(APIView):
-    def delete(self, request, kind):
-        profile = get_or_create_profile(request.user)
-        picture_file(profile, checked_kind(kind)).delete()
-        return picture_settings_response(request, profile)
-
-
-def profile_target(request, username):
-    users = User.objects.filter(is_active=True)
-    if not is_moderator(request.user):
-        users = users.filter(~Q(pk__in=suspended_users()) | Q(pk=request.user.pk))
-    return get_object_or_404(users, username=username)
-
-
-def followers_of(user):
-    return Follow.objects.filter(following=user).values("follower")
-
-
-def followed_by(user):
-    return Follow.objects.filter(follower=user).values("following")
-
-
-def friends_of(user):
-    return Friendship.objects.filter(user=user).values("friend")
-
-
-class ConnectionListView(ProfileListView):
-    connections = None
-
-    def get_users(self):
-        target = profile_target(self.request, self.kwargs["username"])
-        if not can_view_profile(self.request.user, target):
-            raise PermissionDenied("Dieses Profil ist privat.")
-        return User.objects.filter(is_active=True, pk__in=self.connections(target))
-
-
-class ProfileView(APIView):
-    def get_target(self, request, username=None):
-        return request.user if username is None else profile_target(request, username)
-
-    def profile_response(self, request, target):
-        return Response(ProfileSerializer(target, context={"request": request}).data)
-
-    def get(self, request, username=None):
-        return self.profile_response(request, self.get_target(request, username))
-
-
-class FollowView(ProfileView):
-    def post(self, request, username):
-        target = self.get_target(request, username)
-        if target == request.user:
-            return Response(
-                {"detail": "Du kannst dir nicht selbst folgen."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if requires_follow_request(target) and not follows(request.user, target):
-            _, created = FollowRequest.objects.get_or_create(
-                follower=request.user, following=target
-            )
-            if created:
-                notify(target, Notification.Kind.FOLLOW_REQUEST, actor=request.user)
-        else:
-            _, created = Follow.objects.get_or_create(follower=request.user, following=target)
-            if created:
-                notify(target, Notification.Kind.FOLLOW, actor=request.user)
-        return self.profile_response(request, target)
-
-    def delete(self, request, username):
-        target = self.get_target(request, username)
-        Follow.objects.filter(follower=request.user, following=target).delete()
-        withdraw(target, Notification.Kind.FOLLOW, request.user)
-        FollowRequest.objects.filter(follower=request.user, following=target).delete()
-        withdraw(target, Notification.Kind.FOLLOW_REQUEST, request.user, resolution="")
-        return self.profile_response(request, target)
-
-
-class FriendRequestView(ProfileView):
-    def post(self, request, username):
-        target = self.get_target(request, username)
-        if not (follows(request.user, target) and follows(target, request.user)):
-            return Response(
-                {"detail": "Freundschaftsanfragen gehen nur, wenn ihr euch gegenseitig folgt."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if are_friends(request.user, target):
-            return Response(
-                {"detail": "Ihr seid bereits befreundet."}, status=status.HTTP_400_BAD_REQUEST
-            )
-        _, created = FriendRequest.objects.get_or_create(sender=request.user, receiver=target)
-        if created:
-            notify(target, Notification.Kind.FRIEND_REQUEST, actor=request.user)
-        return self.profile_response(request, target)
-
-
-class PictureView(ProfileView):
-    def get(self, request, username, kind):
-        target = self.get_target(request, username)
-        profile = get_or_create_profile(target)
-        file = picture_file(profile, checked_kind(kind))
-        if kind == "private" and not sees_private(
-            profile, request.user, viewer_relations(request.user, [target])
-        ):
-            file = None
-        if not file:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        return serve_image(file)
-
-
-class StoryViewerListView(generics.ListAPIView):
-    serializer_class = StoryViewerSerializer
+class StoryViewerViewSet(BaseViewSet, mixins.ListModelMixin):
     pagination_class = NextPagePagination
+
+    def get_serializer_class(self):
+        return ProfileModelSerializer.story_viewer
 
     def get_queryset(self):
         stories = Story.objects.filter(author=self.request.user, created_at__gte=story_cutoff())
         story = get_object_or_404(stories, uuid=self.kwargs["uuid"])
         views = StoryView.objects.filter(story=story, user=OuterRef("pk"))
-        users = User.objects.filter(pk__in=views.values("user")).exclude(pk=self.request.user.pk)
-        users = users.annotate(
-            viewed_at=Subquery(views.values("created_at")),
-            liked=Exists(StoryLike.objects.filter(story=story, user=OuterRef("pk"))),
+        users = Member.objects.filter(pk__in=views.values("user")).exclude(pk=self.request.user.pk)
+        return (
+            users.with_viewer_relations(self.request.user)
+            .annotate(
+                viewed_at=Subquery(views.values("created_at")),
+                liked=Exists(StoryLike.objects.filter(story=story, user=OuterRef("pk"))),
+            )
+            .order_by("-viewed_at")
         )
-        return with_viewer_relations(users, self.request.user).order_by("-viewed_at")

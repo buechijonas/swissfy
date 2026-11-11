@@ -1,12 +1,8 @@
-from django.urls import path
+from commons.routers import Router
 
-from . import views
+from .views import ChangelogViewSet
 
-urlpatterns = [
-    path("changelogs/", views.ChangelogListView.as_view(), name="changelog-list"),
-    path(
-        "changelogs/<str:version>/",
-        views.ChangelogView.as_view(),
-        name="changelog-detail",
-    ),
-]
+router = Router()
+router.register("changelogs", ChangelogViewSet, basename="changelog")
+
+urlpatterns = router.urls

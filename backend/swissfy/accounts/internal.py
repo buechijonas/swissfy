@@ -1,12 +1,12 @@
 import hmac
 
 from django.conf import settings
-from django.shortcuts import get_object_or_404
-from rest_framework import serializers
+from rest_framework import serializers, status
+from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
+from commons.views import BaseViewSet
 from swissfy.posts.views.media import serve_image
 
 from .models import UserProfile
@@ -24,32 +24,23 @@ class InternalProfileSerializer(serializers.Serializer):
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
     avatar = serializers.CharField()
-    has_picture = serializers.SerializerMethodField()
-
-    def get_has_picture(self, profile):
-        return bool(profile.public_picture)
+    has_picture = serializers.BooleanField(source="has_public_picture")
 
 
-class InternalProfileView(APIView):
+class InternalProfileViewSet(BaseViewSet):
     authentication_classes = []
     permission_classes = [HasMonolithToken]
+    lookup_field = "govex_sub"
 
-    def get(self, request, govex_sub):
-        return Response(InternalProfileSerializer(active_profile(govex_sub)).data)
+    def get_queryset(self):
+        return UserProfile.objects.select_related("user").filter(user__is_active=True)
 
+    def retrieve(self, request, govex_sub):
+        return Response(InternalProfileSerializer(self.get_object()).data)
 
-class InternalPictureView(APIView):
-    authentication_classes = []
-    permission_classes = [HasMonolithToken]
-
-    def get(self, request, govex_sub):
-        profile = active_profile(govex_sub)
+    @action(detail=True)
+    def picture(self, request, govex_sub):
+        profile = self.get_object()
         if not profile.public_picture:
-            return Response(status=404)
+            return Response(status=status.HTTP_404_NOT_FOUND)
         return serve_image(profile.public_picture)
-
-
-def active_profile(govex_sub):
-    return get_object_or_404(
-        UserProfile.objects.select_related("user"), govex_sub=govex_sub, user__is_active=True
-    )

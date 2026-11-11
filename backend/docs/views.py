@@ -1,23 +1,21 @@
+from rest_framework import mixins, viewsets
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from .changelogs import all_changelogs, changelog
+from .models import Changelog
+from .serializers import ChangelogSerializer
 
 
-class ChangelogListView(APIView):
+class ChangelogViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+    serializer_class = ChangelogSerializer
     permission_classes = [AllowAny]
+    lookup_field = "version"
 
-    def get(self, request):
-        return Response(all_changelogs())
+    def get_queryset(self):
+        return Changelog.all()
 
-
-class ChangelogView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request, version):
-        found = changelog(version)
-        if found is None:
+    def get_object(self):
+        changelog = Changelog.get(self.kwargs["version"])
+        if changelog is None:
             raise NotFound("Diese Version gibt es nicht.")
-        return Response(found)
+        return changelog

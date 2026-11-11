@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
@@ -49,8 +51,8 @@ class ModerationAccessTests(TestCase):
             self.as_user(self.eve)
             for method, url, data in self.moderation_urls():
                 with self.subTest(role=role, url=url):
-                    response = getattr(self.client, method)(
-                        url, data, content_type="application/json"
+                    response = self.client.generic(
+                        method.upper(), url, json.dumps(data), content_type="application/json"
                     )
                     self.assertEqual(response.status_code, 403)
         self.assertFalse(Warning.objects.exists())

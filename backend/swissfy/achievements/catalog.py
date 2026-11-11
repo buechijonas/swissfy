@@ -17,8 +17,6 @@ User = get_user_model()
 
 OG_ACCOUNTS = 10
 PIONEER_ACCOUNTS = 100
-PROFILE_FIELDS = ["avatar", "birthdate"]
-USER_FIELDS = ["first_name", "last_name"]
 
 
 def visible_posts(user):
@@ -124,12 +122,8 @@ def account_rank(user):
 
 
 def profile_complete(user):
-    profile = getattr(user, "profile", None)
-    return (
-        profile is not None
-        and all(getattr(profile, field) for field in PROFILE_FIELDS)
-        and all(getattr(user, field) for field in USER_FIELDS)
-    )
+    profile = user.profile
+    return all([profile.avatar, profile.birthdate, user.first_name, user.last_name])
 
 
 @dataclass(frozen=True)
@@ -518,16 +512,12 @@ def theme_achievements(theme):
 ACHIEVEMENTS += [achievement for theme in THEMES for achievement in theme_achievements(theme)]
 
 
-def titles_of(achievement):
-    return (achievement.title,) if isinstance(achievement.title, str) else achievement.title
-
-
 def tiers(achievement, count):
     if not achievement.tiered:
         yield achievement.title, achievement.base, bool(count), None, None
         return
     previous = 0
-    for index, title in enumerate(titles_of(achievement)):
+    for index, title in enumerate(achievement.title):
         target = achievement.base * 2**index
         yield title, target, count >= target, previous, target
         previous = target

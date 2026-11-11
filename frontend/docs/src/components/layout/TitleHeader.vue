@@ -13,30 +13,36 @@
     <span v-else-if="authStore.isAuthenticated" class="text-sm">
       {{ authStore.user.display_name }}
     </span>
-    <div class="group dropdown dropdown-end" @keydown.esc="closeMenu">
-      <div
-        tabindex="0"
-        role="button"
+    <div
+      class="dropdown dropdown-end"
+      :class="{ 'dropdown-open': isMenuOpen }"
+      @keydown.esc="isMenuOpen = false"
+    >
+      <button
+        type="button"
         aria-label="Menü"
+        :aria-expanded="isMenuOpen"
         class="flex size-10 cursor-pointer items-center justify-center"
+        @click="isMenuOpen = !isMenuOpen"
       >
         <AppIcon name="menu-burger" class="size-6!" />
-      </div>
+      </button>
+      <div v-if="isMenuOpen" class="fixed inset-0 z-30" @click="isMenuOpen = false"></div>
       <ul
-        tabindex="0"
-        class="dropdown-content menu invisible z-40 w-56 rounded-box border border-docs-border bg-base-100 p-1 [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)] group-focus-within:visible"
+        v-if="isMenuOpen"
+        @click="isMenuOpen = false"
+        class="dropdown-content menu z-40 w-56 rounded-box border border-docs-border bg-base-100 p-1 [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)]"
       >
         <li>
           <RouterLink
             v-if="$route.name !== 'settings'"
             to="/settings"
             class="flex h-12 items-center gap-3"
-            @click="closeMenu"
           >
             <AppIcon name="settings" class="size-6!" />
             <span>Einstellungen</span>
           </RouterLink>
-          <RouterLink v-else to="/" class="flex h-12 items-center gap-3" @click="closeMenu">
+          <RouterLink v-else to="/" class="flex h-12 items-center gap-3">
             <AppIcon name="circle-book-open" class="size-6!" />
             <span>Dokumentation</span>
           </RouterLink>
@@ -86,7 +92,6 @@
 import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import govexLogo from '@core/assets/govex.svg'
-import { closeMenu } from '@core/lib/menu.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
@@ -97,17 +102,21 @@ export default {
     switches: { type: Array, default: () => [] },
   },
   data() {
-    return { govexLogo }
+    return { govexLogo, isMenuOpen: false }
   },
   computed: {
     authStore() {
       return useAuthStore()
     },
   },
+  watch: {
+    '$route.path'() {
+      this.isMenuOpen = false
+    },
+  },
   methods: {
-    closeMenu,
     async logout() {
-      closeMenu()
+      this.isMenuOpen = false
       await this.authStore.logout()
     },
   },

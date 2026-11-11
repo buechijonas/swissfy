@@ -104,6 +104,7 @@ INSTALLED_APPS = [
 FILE_UPLOAD_HANDLERS = ["django.core.files.uploadhandler.TemporaryFileUploadHandler"]
 
 REST_FRAMEWORK = {
+    "DEFAULT_METADATA_CLASS": "commons.metadata.Metadata",
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
     ],
