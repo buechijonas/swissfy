@@ -4,8 +4,10 @@ Swissfy is a social network: posts with images and videos, reels, comments,
 hashtags, friends and followers, end-to-end encrypted chats, notifications,
 achievements and moderation.
 
-It consists of a Django REST backend (`backend/`) and a Vue frontend
-(`frontend/`), set up like wintersehn. Login goes through
+It consists of a Django REST backend (`backend/`) and two Vue frontends
+(`frontend/swissfy`, the social network, and `frontend/docs`, the public
+changelog at `docs.swissfy.ch`) that share `frontend/core`, set up like
+wintersehn. Login goes through
 [govex](https://github.com/NEOTYRA/govex) (authentik, OIDC): swissfy keeps no
 passwords, username, email, name, birthdate and avatar come from govex.
 
@@ -57,7 +59,7 @@ All pinned in `backend/requirements.txt`.
 | [@noble/post-quantum](https://github.com/paulmillr/noble-post-quantum) | 0.7 | Client-side chat key exchange |
 | ESLint, oxlint, Prettier                        | –       | Linting and formatting                      |
 
-All listed in `frontend/package.json`.
+All listed in `frontend/swissfy/package.json` and `frontend/docs/package.json`.
 
 ### Infrastructure
 
@@ -85,7 +87,7 @@ flowchart LR
     browser(["Browser<br/>Vue SPA"])
 
     subgraph swissfy["swissfy"]
-        frontend["frontend<br/>Vite / Caddy"]
+        frontend["swissfy + docs<br/>Vite / Caddy"]
         backend["backend<br/>Django + DRF"]
         video["video-worker<br/>FFmpeg"]
         cleanup["chat-cleanup<br/>hourly"]
@@ -147,6 +149,7 @@ flowchart TB
 | `/api/` (posts, …)       | `posts`, `moderation`         |
 | `/api/administration/`   | `accounts.administration`     |
 | `/api/notifications/`    | `notifications`               |
+| `/api/docs/`             | `docs` (changelogs, public)   |
 | `/api/health/`           | `main`                        |
 | `/django-admin/`         | Django admin                  |
 
@@ -332,7 +335,7 @@ flowchart LR
     anubis --> origin["origin<br/>Caddy"]
 
     subgraph app["app"]
-        spa["frontend build<br/>/srv"]
+        spa["swissfy + docs builds<br/>/srv/swissfy, /srv/docs"]
         backend["backend ×1–2<br/>gunicorn"]
         worker["video-worker"]
         cleanup["chat-cleanup"]
@@ -349,6 +352,8 @@ flowchart LR
     backend & worker --> media
 ```
 
+`edge` tags each request with `X-Swissfy-App` (`swissfy` for the domain,
+`docs` for `docs.<domain>`), and `origin` serves the matching build.
 `origin` resolves `backend` via DNS every 5 seconds and health-checks it, which
 is what lets `bin/deploy` run two backends side by side during a deploy.
 
@@ -363,7 +368,7 @@ sequenceDiagram
     participant S as Server
 
     Note right of Dev: bin/release<br/>on clean master
-    Dev->>GH: push version bump commit
+    Dev->>GH: push version bump + changelog commit
     Dev->>Hub: push swissfy-backend + swissfy-proxy<br/>:latest and :vX.Y.Z
     Dev->>GH: create release with changelog
     Dev->>S: ./deploy
@@ -446,13 +451,15 @@ This starts:
 | -------------- | --------------------------------------------------------------------- |
 | `db`           | PostgreSQL 17                                                         |
 | `backend`      | Runs migrations, creates the admin user, then `runserver` with reload |
-| `frontend`     | Vite dev server with hot reload, proxies `/api` to the backend        |
+| `swissfy`      | swissfy Vite dev server with hot reload, proxies `/api` to the backend |
+| `docs`         | docs Vite dev server with hot reload, proxies `/api` to the backend   |
 | `video-worker` | Transcodes uploaded videos (`process_videos`)                         |
 | `chat-cleanup` | Deletes chat messages older than 14 days, once per hour               |
 
 | Service      | URL                                 | Login             |
 | ------------ | ----------------------------------- | ----------------- |
-| Frontend     | http://localhost:5175               | via govex         |
+| swissfy      | http://localhost:5175               | via govex         |
+| docs         | http://localhost:5176               | – (public)        |
 | Backend API  | http://localhost:8001/api/          | –                 |
 | Health check | http://localhost:8001/api/health/   | –                 |
 | Django admin | http://localhost:8001/django-admin/ | `admin` / `admin` |
@@ -460,7 +467,7 @@ This starts:
 The ports sit next to wintersehn (5173/8000) and govex (5174), so all three
 can run at once.
 
-`backend/` and `frontend/` are mounted into the containers, so code changes
+`backend/`, `frontend/<app>` and `frontend/core` are mounted into the containers, so code changes
 are picked up without a rebuild. Rebuild (`--build`) only after changing
 `requirements.txt`, `package.json` or a Dockerfile.
 
@@ -499,15 +506,17 @@ All run from the swissfy root while the stack is up.
 | Task                     | Command                                                                 |
 | ------------------------ | ----------------------------------------------------------------------- |
 | Backend tests            | `docker compose run --rm backend python manage.py test`                 |
-| Tests of one app         | `docker compose run --rm backend python manage.py test posts`           |
+| Tests of one app         | `docker compose run --rm backend python manage.py test swissfy.posts`   |
 | Create migrations        | `docker compose exec backend python manage.py makemigrations`           |
 | Apply migrations         | `docker compose exec backend python manage.py migrate`                  |
 | Django shell             | `docker compose exec backend python manage.py shell`                    |
 | Format backend           | `docker compose exec backend sh -c "isort . && black ."`                |
 | Lint backend             | `docker compose exec backend flake8`                                    |
-| Lint frontend            | `docker compose exec frontend npm run lint`                             |
-| Format frontend          | `docker compose exec frontend npm run format`                           |
-| Production build test    | `docker compose exec frontend npm run build`                            |
+| Frontend tests           | `docker compose exec swissfy npm test`                                  |
+| Lint frontend            | `docker compose exec swissfy npm run lint` (or `docs`)                  |
+| Format frontend          | `docker compose exec swissfy npm run format` (or `docs`)                |
+| Production build test    | `docker compose exec swissfy npm run build` (or `docs`)                 |
+| Proxy test               | `bin/test-proxy`                                                        |
 | Logs of one service      | `docker compose logs -f backend`                                        |
 | Stop                     | `docker compose down`                                                   |
 | Stop and wipe all data   | `docker compose down -v`                                                |
@@ -516,7 +525,7 @@ After a new frontend dependency, refresh the `node_modules` volume:
 
 ```sh
 docker compose down
-docker volume rm swissfy_frontend_node_modules
+docker volume rm swissfy_swissfy_node_modules   # or swissfy_docs_node_modules
 docker compose up --build
 ```
 
@@ -525,29 +534,37 @@ docker compose up --build
 ```
 swissfy/
 ├── backend/
-│   ├── main/            settings, URLs, health check, pagination
-│   ├── accounts/        govex login (oidc.py), profile, legal consent,
-│   │                    roles, administration, management commands
-│   ├── social/          friend/follow requests, friendships, blocks, nicknames
-│   ├── posts/           posts, images, videos, reels, comments, hashtags,
-│   │                    likes, saved folders, contact groups
-│   ├── chats/           encrypted chats, message retention
-│   ├── notifications/   notifications
-│   ├── moderation/      reports, warnings, suspensions
-│   └── achievements/    achievements, themes, easter eggs
+│   ├── main/              settings, URLs, health check, pagination
+│   ├── commons/           encryption, fields, storage, markdown
+│   ├── swissfy/
+│   │   ├── accounts/      govex login (oidc.py), profile, legal consent,
+│   │   │                  roles, administration, management commands
+│   │   ├── social/        friend/follow requests, friendships, blocks, nicknames
+│   │   ├── posts/         posts, images, videos, reels, comments, hashtags,
+│   │   │                  likes, saved folders, contact groups
+│   │   ├── chats/         encrypted chats, message retention
+│   │   ├── notifications/ notifications
+│   │   ├── moderation/    reports, warnings, suspensions
+│   │   └── achievements/  achievements, themes, easter eggs
+│   └── docs/              public changelogs (changelogs/vX.Y.Z.md)
 ├── frontend/
-│   ├── src/
-│   │   ├── components/  common, layout, legal, posts, moderation, achievements
-│   │   ├── views/       pages, incl. auth/ and legal/
-│   │   ├── router/      routes
-│   │   ├── stores/      Pinia stores (auth, posts, chats, notifications)
-│   │   ├── lib/         API client, chat crypto, theme, helpers
-│   │   └── data/        navigation, footer, legal texts (data/legal)
-│   ├── Caddyfile        production: serves the build, proxies /api
-│   └── Caddyfile.edge   production: TLS edge proxy
+│   ├── core/src/          shared by swissfy and docs: API client, cookies,
+│   │                      stored settings, OpenDyslexic font
+│   ├── swissfy/src/
+│   │   ├── components/    common, layout, legal, posts, moderation, achievements
+│   │   ├── views/         pages, incl. auth/ and legal/
+│   │   ├── router/        routes
+│   │   ├── stores/        Pinia stores (auth, posts, chats, notifications)
+│   │   ├── lib/           chat crypto, preferences, helpers
+│   │   └── data/          navigation, footer, legal texts (data/legal)
+│   └── docs/src/          changelog app in the wintersehn style
+├── docker/
+│   └── proxy/             production Caddy image: Dockerfile (builds both
+│                          frontends), Caddyfile, Caddyfile.edge
 ├── bin/
-│   ├── release          cuts a release
-│   └── deploy           zero-downtime deploy on the server
+│   ├── release            cuts a release and writes its changelog
+│   ├── deploy             zero-downtime deploy on the server
+│   └── test-proxy         tests the production proxy image locally
 ├── compose.yml          local development
 ├── compose.prod.yml     production
 └── .env.example         production configuration template
@@ -588,7 +605,8 @@ Production runs from prebuilt images on Docker Hub
 
 ### Server setup (once)
 
-1. Point the domain's A/AAAA record to the server and open ports 80 and 443.
+1. Point the domain's and `docs.<domain>`'s A/AAAA records to the server and
+   open ports 80 and 443.
 2. Install Docker with the Compose plugin.
 3. Copy `compose.prod.yml`, `bin/deploy` and `.env.example` to the server,
    e.g. to `/opt/swissfy`, and create the `.env`:
@@ -629,7 +647,8 @@ bin/release
 ```
 
 It asks for the bump type (patch/minor/major), bumps the version in
-`frontend/package.json`, commits and pushes, builds and pushes both images for
+`frontend/swissfy/package.json`, writes the changelog to
+`backend/docs/changelogs/vX.Y.Z.md` (shown on docs), commits and pushes, builds and pushes both images for
 `linux/amd64` (tagged `latest` and `vX.Y.Z`) and creates a GitHub release with
 the commits since the last one as changelog.
 
@@ -655,7 +674,7 @@ The backend reaches authentik through `host.docker.internal:9000`, so port
 9000 must be free on the host.
 
 **Port already in use.** Another stack (or a local Postgres/Vite) uses 5175,
-8001, 5174 or 9000. Stop it, or change the host port in `compose.yml`.
+5176, 8001, 5174 or 9000. Stop it, or change the host port in `compose.yml`.
 
 **Frontend misses a package after `npm install`.** The `node_modules` volume is
 stale, see [Everyday commands](#everyday-commands).

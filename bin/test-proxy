@@ -43,12 +43,20 @@ edge() {
   curl_in --resolve "swissfy.test:443:$(edge_ip)" "$@"
 }
 
+docs_edge() {
+  curl_in --resolve "docs.swissfy.test:443:$(edge_ip)" "$@"
+}
+
 edge_ip() {
   docker inspect -f "{{(index .NetworkSettings.Networks \"$NETWORK\").IPAddress}}" swissfy-test-edge
 }
 
 echo "==> Building $IMAGE"
-docker build -q -f frontend/Dockerfile.prod -t "$IMAGE" frontend >/dev/null
+docker build -q \
+  --build-context core=frontend/core \
+  --build-context swissfy=frontend/swissfy \
+  --build-context docs=frontend/docs \
+  -t "$IMAGE" docker/proxy >/dev/null
 
 cleanup
 docker network create "$NETWORK" >/dev/null
@@ -85,6 +93,14 @@ page="$(edge https://swissfy.test/)"
 check_absent "index.html has no inline scripts" "<script>|<script type=\"module\">[^<]" "$page"
 check "theme script is external" "src=\"/theme.js\"" "$page"
 check "theme script is served" "localStorage" "$(edge https://swissfy.test/theme.js)"
+
+echo "==> Each host serves its own app"
+check "swissfy app" "<title>Swissfy</title>" "$page"
+docs_page="$(docs_edge https://docs.swissfy.test/changelog/0.17.0)"
+check "docs app" "<title>Swissfy Docs</title>" "$docs_page"
+check "docs api" "^backend /api/docs/changelogs/" "$(docs_edge https://docs.swissfy.test/api/docs/changelogs/)"
+spoofed="$(edge -H "X-Swissfy-App: docs" https://swissfy.test/)"
+check "app header cannot be spoofed" "<title>Swissfy</title>" "$spoofed"
 
 echo "==> API is routed to the backend"
 check "api" "^backend /api/health/" "$(edge https://swissfy.test/api/health/)"

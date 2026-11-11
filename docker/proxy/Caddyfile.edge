@@ -2,7 +2,7 @@
 	email {$ACME_EMAIL}
 }
 
-{$DOMAIN} {
+(app) {
 	header {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options "nosniff"
@@ -16,5 +16,14 @@
 		header_up X-Real-IP {remote_host}
 		header_up X-Http-Version {http.request.proto}
 		header_up X-TLS-SNI-Name {tls_server_name}
+		header_up X-Swissfy-App {args[0]}
 	}
+}
+
+{$DOMAIN} {
+	import app swissfy
+}
+
+docs.{$DOMAIN} {
+	import app docs
 }

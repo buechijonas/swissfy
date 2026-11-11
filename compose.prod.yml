@@ -27,8 +27,9 @@ services:
       CHAT_ENCRYPTION_KEY: ${CHAT_ENCRYPTION_KEY}
       CONTENT_ENCRYPTION_KEYS: ${CONTENT_ENCRYPTION_KEYS}
       DJANGO_DEBUG: "false"
-      DJANGO_ALLOWED_HOSTS: ${DOMAIN},backend,localhost
-      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN}
+      DJANGO_ALLOWED_HOSTS: ${DOMAIN},docs.${DOMAIN},backend,localhost
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN},https://docs.${DOMAIN}
+      DJANGO_COOKIE_DOMAIN: .${DOMAIN}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -43,6 +44,7 @@ services:
       GOVEX_CLIENT_SECRET: ${GOVEX_CLIENT_SECRET}
       GOVEX_REDIRECT_URI: https://${DOMAIN}/api/auth/oidc/callback/
       FRONTEND_URL: https://${DOMAIN}
+      DOCS_URL: https://docs.${DOMAIN}
       CONSENT_PRIVATE_KEY: ${CONSENT_PRIVATE_KEY:?see .env.example}
       MONOLITH_API_TOKEN: ${MONOLITH_API_TOKEN}
 

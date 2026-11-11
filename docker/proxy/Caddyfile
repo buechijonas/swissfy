@@ -15,8 +15,12 @@
 	}
 
 	handle {
+		map {header.X-Swissfy-App} {app_root} {
+			docs /srv/docs
+			default /srv/swissfy
+		}
 		header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
-		root * /srv
+		root * {app_root}
 		try_files {path} /index.html
 		file_server
 	}
