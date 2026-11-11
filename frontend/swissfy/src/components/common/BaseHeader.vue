@@ -21,28 +21,39 @@
       >
         <AppIcon :name="notificationsIcon" :alt="notificationsLabel" class="size-6!" />
       </RouterLink>
-      <div class="group dropdown dropdown-end h-full" @keydown.esc="closeMenu">
-        <div tabindex="0" role="button" aria-label="Menü" :class="iconLinkClass">
+      <div
+        class="dropdown dropdown-end h-full"
+        :class="{ 'dropdown-open': isMenuOpen }"
+        @keydown.esc="isMenuOpen = false"
+      >
+        <button
+          type="button"
+          aria-label="Menü"
+          :aria-expanded="isMenuOpen"
+          :class="iconLinkClass"
+          @click="isMenuOpen = !isMenuOpen"
+        >
           <AppIcon name="menu-burger" class="size-6!" />
-        </div>
+        </button>
+        <div v-if="isMenuOpen" class="fixed inset-0 z-30" @click="isMenuOpen = false"></div>
         <ul
-          tabindex="0"
-          class="dropdown-content menu invisible z-40 w-56 rounded-box border border-swissfy-border bg-base-100 p-1 text-base-content [--depth:0] [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)] group-focus-within:visible"
+          v-if="isMenuOpen"
+          class="dropdown-content menu z-40 w-56 rounded-box border border-swissfy-border bg-base-100 p-1 text-base-content [--depth:0] [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)]"
         >
           <li>
-            <RouterLink to="/settings" class="flex h-12 items-center gap-3" @click="closeMenu">
+            <RouterLink to="/settings" class="flex h-12 items-center gap-3">
               <AppIcon name="settings" class="size-6!" />
               <span>Einstellungen</span>
             </RouterLink>
           </li>
           <li v-if="authStore.isAuthenticated">
-            <RouterLink to="/saved" class="flex h-12 items-center gap-3" @click="closeMenu">
+            <RouterLink to="/saved" class="flex h-12 items-center gap-3">
               <AppIcon name="bookmark" class="size-6!" />
               <span>Gespeichert</span>
             </RouterLink>
           </li>
           <li v-for="item in staffItems" :key="item.key" class="lg:hidden">
-            <RouterLink :to="item.to" class="flex h-12 items-center gap-3" @click="closeMenu">
+            <RouterLink :to="item.to" class="flex h-12 items-center gap-3">
               <AppIcon :name="item.icon" class="size-6!" />
               <span>{{ item.label }}</span>
             </RouterLink>
@@ -63,7 +74,6 @@
             <RouterLink
               :to="authStore.isAuthenticated ? '/logout' : '/login'"
               class="flex h-12 items-center gap-3"
-              @click="closeMenu"
             >
               <AppIcon :name="authStore.isAuthenticated ? 'exit' : 'enter'" class="size-6!" />
               <span>{{ authStore.isAuthenticated ? 'Abmelden' : 'Anmelden' }}</span>
@@ -79,7 +89,6 @@
 import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import govexLogo from '@core/assets/govex.svg'
-import { closeMenu } from '@core/lib/menu.js'
 import { docsUrl, isListed, navigationItems } from '@/data/navigation.js'
 import { pageTitle } from '@/lib/title.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -95,6 +104,7 @@ export default {
       iconLinkClass: 'flex h-full cursor-pointer items-center px-2 text-white',
       docsUrl,
       govexLogo,
+      isMenuOpen: false,
     }
   },
   computed: {
@@ -117,8 +127,10 @@ export default {
       return navigationItems.filter((item) => item.roles && isListed(item, this.authStore))
     },
   },
-  methods: {
-    closeMenu,
+  watch: {
+    '$route.path'() {
+      this.isMenuOpen = false
+    },
   },
 }
 </script>
