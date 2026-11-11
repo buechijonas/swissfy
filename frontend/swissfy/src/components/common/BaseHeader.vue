@@ -38,6 +38,7 @@
         <div v-if="isMenuOpen" class="fixed inset-0 z-30" @click="isMenuOpen = false"></div>
         <ul
           v-if="isMenuOpen"
+          @click="isMenuOpen = false"
           class="dropdown-content menu z-40 w-56 rounded-box border border-swissfy-border bg-base-100 p-1 text-base-content [--depth:0] [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)]"
         >
           <li>
