@@ -17,8 +17,8 @@ from swissfy.accounts.models import AVATAR_CHOICES, UserConsent, UserProfile
 from swissfy.accounts.roles import Role, set_role
 from swissfy.chats.crypto import wrap_message_key
 from swissfy.chats.models import ChatRequest, Message
-from swissfy.moderation.models import Reason, Report, Warning
-from swissfy.moderation.sanctions import WARNING_EXPIRY, suspend
+from swissfy.moderation.models import WARNING_EXPIRY, Reason, Report, Warning
+from swissfy.moderation.sanctions import suspend
 from swissfy.notifications.models import Notification
 from swissfy.notifications.notify import sync_expired_warnings
 from swissfy.posts import images
@@ -284,7 +284,7 @@ class Command(BaseCommand):
         statuses = list(ChatRequest.Status)
         for index, sender in enumerate(everyone):
             for recipient in self.random.sample(users, 3):
-                if recipient == sender or ChatRequest.between(sender, recipient):
+                if recipient == sender or ChatRequest.objects.between(sender, recipient).exists():
                     continue
                 status = statuses[(index + recipient.pk) % len(statuses)]
                 ChatRequest.objects.create(sender=sender, recipient=recipient, status=status)
@@ -303,10 +303,10 @@ class Command(BaseCommand):
                     )
 
     def create_reports(self, users, posts, comments):
-        for target in self.random.sample(posts, min(len(posts), 10)) + self.random.sample(
-            comments, min(len(comments), 10)
-        ):
-            field = "post" if isinstance(target, Post) else "comment"
+        targets = [("post", post) for post in self.random.sample(posts, min(len(posts), 10))] + [
+            ("comment", comment) for comment in self.random.sample(comments, min(len(comments), 10))
+        ]
+        for field, target in targets:
             reporters = [user for user in users if user.pk != target.author_id]
             for reporter in self.random.sample(reporters, self.random.randint(1, 4)):
                 Report.objects.get_or_create(reporter=reporter, **{field: target})

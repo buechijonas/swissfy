@@ -13,9 +13,9 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 from django.conf import settings
 
-from .models import UserConsent, UserProfile
+from .models import UserConsent, UserProfile, user_consent
 
-CONSENT_FIELDS = ["privacy", "terms", "disclaimer"]
+CONSENT_FIELDS = UserConsent.FIELDS
 ATTESTATION_FLOW = "govex-attestation"
 
 logger = logging.getLogger(__name__)
@@ -26,8 +26,7 @@ def b64url(data):
 
 
 def consent_of(user):
-    record, _ = UserConsent.objects.get_or_create(user=user)
-    return {field: getattr(record, field) for field in CONSENT_FIELDS}
+    return user_consent(user).status
 
 
 def status_of(govex_sub):

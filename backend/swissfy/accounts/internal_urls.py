@@ -1,14 +1,16 @@
 from django.urls import path
 
-from . import internal
+from .internal import InternalProfileViewSet
 
 urlpatterns = [
     path(
-        "profiles/<str:govex_sub>/", internal.InternalProfileView.as_view(), name="internal-profile"
+        "profiles/<str:govex_sub>/",
+        InternalProfileViewSet.as_view({"get": "retrieve"}),
+        name="internal-profile",
     ),
     path(
         "profiles/<str:govex_sub>/picture/",
-        internal.InternalPictureView.as_view(),
+        InternalProfileViewSet.as_view({"get": "picture"}),
         name="internal-picture",
     ),
 ]

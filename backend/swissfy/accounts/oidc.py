@@ -5,6 +5,7 @@ import json
 import logging
 import secrets
 import time
+from functools import wraps
 from urllib.parse import urlencode
 
 import requests
@@ -17,6 +18,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from rest_framework import serializers
+
+from commons.fields import StrictCharField
 
 from .consent import attested_status, push_to_govex, status_of
 from .models import AVATAR_CHOICES, DEFAULT_ROLE, UserProfile, get_or_create_profile
@@ -119,20 +123,21 @@ def create_user(govex_sub, username, email):
 
 def claimable_username(username, govex_sub, owner=None):
     staff = User.objects.filter(Q(is_staff=True) | Q(is_superuser=True), username=username)
-    if staff.exclude(pk=getattr(owner, "pk", None)).exists():
+    if staff.exclude(pk=owner.pk if owner else None).exists():
         return f"govex-{govex_sub[:8]}"
     return username
 
 
 def release_username(username, owner=None):
-    holder = User.objects.filter(username=username).exclude(pk=getattr(owner, "pk", None)).first()
+    others = User.objects.filter(username=username)
+    holder = others.exclude(pk=owner.pk if owner else None).first()
     if holder is not None:
         holder.username = f"{holder.username[:140]}-{holder.pk}"
         holder.save(update_fields=["username"])
 
 
 def find_profile(govex_sub):
-    if not isinstance(govex_sub, str) or not govex_sub:
+    if not govex_sub:
         return None
     return UserProfile.objects.filter(govex_sub=govex_sub).select_related("user").first()
 
@@ -215,36 +220,38 @@ def valid_govex_signature(request):
     return hmac.compare_digest(expected, signature)
 
 
-@csrf_exempt
-@require_POST
-def govex_account_deleted(request):
-    if not valid_govex_signature(request):
-        return HttpResponse(status=403)
-    try:
-        payload = json.loads(request.body)
-    except ValueError:
-        return HttpResponse(status=400)
-
-    profile = find_profile(payload.get("sub"))
-    if profile is not None:
-        profile.user.delete()
-    return HttpResponse(status=204)
+class GovexWebhookSerializer(serializers.Serializer):
+    sub = StrictCharField()
 
 
-@csrf_exempt
-@require_POST
-def govex_account_updated(request):
-    if not valid_govex_signature(request):
-        return HttpResponse(status=403)
-    try:
-        payload = json.loads(request.body)
-    except ValueError:
-        return HttpResponse(status=400)
+def govex_webhook(handler):
+    @csrf_exempt
+    @require_POST
+    @wraps(handler)
+    def view(request):
+        if not valid_govex_signature(request):
+            return HttpResponse(status=403)
+        try:
+            payload = json.loads(request.body)
+        except ValueError:
+            return HttpResponse(status=400)
+        webhook = GovexWebhookSerializer(data=payload)
+        profile = find_profile(webhook.validated_data["sub"]) if webhook.is_valid() else None
+        if profile is not None:
+            handler(profile, payload)
+        return HttpResponse(status=204)
 
-    profile = find_profile(payload.get("sub"))
-    if profile is not None and payload.get("username"):
+    return view
+
+
+@govex_webhook
+def govex_account_deleted(profile, payload):
+    profile.user.delete()
+
+
+@govex_webhook
+def govex_account_updated(profile, payload):
+    if payload.get("username"):
         username = claimable_username(payload["username"], profile.govex_sub, owner=profile.user)
         sync_user(profile.user, username, payload.get("email") or "")
-    if profile is not None:
-        sync_meta(profile.user, payload.get("meta"))
-    return HttpResponse(status=204)
+    sync_meta(profile.user, payload.get("meta"))

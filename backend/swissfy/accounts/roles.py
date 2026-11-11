@@ -39,7 +39,7 @@ def with_role_rank(users):
 
 
 def role_of(user):
-    if user.pk and "groups" not in getattr(user, "_prefetched_objects_cache", {}):
+    if user.pk:
         prefetch_related_objects([user], "groups")
     group = next(iter(user.groups.all()), None)
     return ROLE_BY_GROUP.get(group.name, Role.DEFAULT) if group else Role.DEFAULT

@@ -88,12 +88,13 @@ QUERY_PARAMS = [
 
 def routes(patterns=None, prefix=""):
     for pattern in get_resolver().url_patterns if patterns is None else patterns:
-        if isinstance(pattern, URLResolver):
-            if str(pattern.pattern).startswith("django-admin"):
+        match pattern:
+            case URLResolver() if str(pattern.pattern).startswith("django-admin"):
                 continue
-            yield from routes(pattern.url_patterns, prefix + str(pattern.pattern))
-        else:
-            yield prefix + str(pattern.pattern), pattern.name
+            case URLResolver():
+                yield from routes(pattern.url_patterns, prefix + str(pattern.pattern))
+            case _:
+                yield prefix + str(pattern.pattern), pattern.name
 
 
 class Fixtures(TestCase):
@@ -123,7 +124,7 @@ class AuthenticationRequiredTests(Fixtures):
                 continue
             for method in ["get", *UNSAFE]:
                 with self.subTest(path=path, method=method):
-                    response = getattr(self.client, method)(path)
+                    response = self.client.generic(method.upper(), path)
                     self.assertIn(response.status_code, (401, 403, 405))
 
     def test_public_endpoints_leak_nothing_to_anonymous_users(self):
@@ -181,8 +182,8 @@ class CsrfTests(Fixtures):
                 continue
             for method in UNSAFE:
                 with self.subTest(path=path, method=method):
-                    response = getattr(self.client, method)(
-                        path, {}, content_type="application/json"
+                    response = self.client.generic(
+                        method.upper(), path, "{}", content_type="application/json"
                     )
                     self.assertIn(response.status_code, (403, 405))
 

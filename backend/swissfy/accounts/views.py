@@ -1,67 +1,59 @@
 from django.contrib.auth import login, logout
+from django.http import Http404
 from django.middleware.csrf import get_token
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from .consent import CONSENT_FIELDS, push_to_govex
+from commons.views import BaseViewSet
+
+from .consent import push_to_govex
 from .devices import find_device, forget_device, keep_or_issue, remember_device
-from .models import UserConsent, get_or_create_profile
-from .serializers import ConsentSerializer, UserSerializer
+from .models import UserConsent, user_consent
+from .serializers import ConsentModelSerializer, DeviceTokenSerializer, UserModelSerializer
 
 
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+class AuthViewSet(BaseViewSet):
+    permission_action_classes = {"me": [AllowAny], "restore_device": [AllowAny]}
 
-    def post(self, request):
+    def user_data(self, user):
+        return UserModelSerializer.read(user, context=self.get_serializer_context()).data
+
+    def device_token(self):
+        serializer = DeviceTokenSerializer(data=self.request.data)
+        return serializer.validated_data.get("token") if serializer.is_valid() else None
+
+    def me(self, request):
+        get_token(request)
+        if request.user.is_anonymous:
+            return Response({"user": None})
+        return Response({"user": self.user_data(request.user)})
+
+    def logout(self, request):
         forget_device(request)
         logout(request)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def sync_device(self, request):
+        return Response({"token": keep_or_issue(request, self.device_token())})
 
-class DeviceTokenView(APIView):
-    def post(self, request):
-        return Response({"token": keep_or_issue(request, request.data.get("token"))})
-
-    def delete(self, request):
+    def forget_device(self, request):
         forget_device(request)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-class DeviceRestoreView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        device = find_device(request.data.get("token"))
+    def restore_device(self, request):
+        device = find_device(self.device_token())
         if device is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         login(request, device.user)
         remember_device(request, device)
         get_token(request)
-        return Response({"user": UserSerializer(device.user, context={"request": request}).data})
+        return Response({"user": self.user_data(device.user)})
 
-
-class ConsentAcceptView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, field):
-        if field not in CONSENT_FIELDS:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        consent, _ = UserConsent.objects.get_or_create(user=request.user)
-        setattr(consent, field, True)
-        consent.save(update_fields=[field])
-        push_to_govex(get_or_create_profile(request.user).govex_sub)
-        return Response(ConsentSerializer(consent).data)
-
-
-class MeView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        get_token(request)
-        if request.user.is_authenticated:
-            return Response(
-                {"user": UserSerializer(request.user, context={"request": request}).data}
-            )
-        return Response({"user": None})
+    def accept_consent(self, request, field):
+        if field not in UserConsent.FIELDS:
+            raise Http404
+        consent = user_consent(request.user)
+        consent.accept(field)
+        push_to_govex(request.user.profile.govex_sub)
+        return Response(ConsentModelSerializer.read(consent).data)

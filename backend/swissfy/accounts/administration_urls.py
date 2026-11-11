@@ -1,9 +1,13 @@
 from django.urls import path
 
-from . import administration
+from .administration import AdminUserViewSet
 
 urlpatterns = [
-    path("roles/", administration.AdminRoleView.as_view(), name="admin-roles"),
-    path("users/", administration.AdminUserListView.as_view(), name="admin-users"),
-    path("users/<str:username>/", administration.AdminUserView.as_view(), name="admin-user"),
+    path("roles/", AdminUserViewSet.as_view({"get": "roles"}), name="admin-roles"),
+    path("users/", AdminUserViewSet.as_view({"get": "list"}), name="admin-users"),
+    path(
+        "users/<str:username>/",
+        AdminUserViewSet.as_view({"patch": "partial_update"}),
+        name="admin-user",
+    ),
 ]
