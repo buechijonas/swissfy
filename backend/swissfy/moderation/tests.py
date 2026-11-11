@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -8,8 +9,8 @@ from swissfy.accounts.models import UserProfile, get_or_create_profile
 from swissfy.accounts.roles import Role, role_of, set_role
 from swissfy.posts.models import Comment, Post
 
-from .models import Report, Suspension, Warning
-from .sanctions import role_locked_until, suspend, suspend_if_needed
+from .models import AlreadyWarned, Reason, Report, Suspension, Warning
+from .sanctions import issue_warning, role_locked_until, suspend, suspend_if_needed
 
 User = get_user_model()
 
@@ -425,3 +426,30 @@ class ModeratorReportedContentTests(TestCase):
             [(event["type"], event["id"]) for event in events[:2]],
             [("suspension", Suspension.objects.get().pk), ("warning", warnings[-1].pk)],
         )
+
+
+class IssueWarningTests(TestCase):
+    def setUp(self):
+        self.anna = User.objects.create(username="anna")
+        self.mod = User.objects.create(username="mod")
+        set_role(self.mod, Role.MODERATOR)
+        self.post = Post.objects.create(author=self.anna, text="Hallo")
+        Report.objects.create(reporter=self.mod, post=self.post)
+
+    def test_second_warning_for_the_same_post_is_rejected(self):
+        issue_warning(self.post, self.mod, Reason.SPAM)
+
+        with self.assertRaises(AlreadyWarned):
+            issue_warning(self.post, self.mod, Reason.INSULT)
+
+        self.assertEqual(Warning.objects.count(), 1)
+
+    def test_failure_leaves_no_half_issued_warning(self):
+        with mock.patch("swissfy.moderation.sanctions.suspend_if_needed", side_effect=RuntimeError):
+            with self.assertRaises(RuntimeError):
+                issue_warning(self.post, self.mod, Reason.SPAM)
+
+        self.post.refresh_from_db()
+        self.assertFalse(Warning.objects.exists())
+        self.assertTrue(Report.objects.open().filter(post=self.post).exists())
+        self.assertIsNone(self.post.hidden_at)
