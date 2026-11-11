@@ -1,6 +1,6 @@
 from django.urls import path
 
-from swissfy.social import views as social_views
+from swissfy.social.views import StoryViewerViewSet
 
 from .views.albums import AlbumEntryViewSet, AlbumViewSet
 from .views.collections import ContactGroupViewSet, SavedFolderViewSet
@@ -132,7 +132,7 @@ urlpatterns = [
     path("stories/<uuid:uuid>/view/", StoryViewSet.as_view({"post": "view"}), name="story-view"),
     path(
         "stories/<uuid:uuid>/viewers/",
-        social_views.StoryViewerListView.as_view(),
+        StoryViewerViewSet.as_view({"get": "list"}),
         name="story-viewers",
     ),
     path(

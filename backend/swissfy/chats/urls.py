@@ -1,25 +1,49 @@
 from django.urls import path
 
-from . import views
+from .views import ChatViewSet, ConversationViewSet
 
 urlpatterns = [
-    path("protection/", views.ProtectionView.as_view(), name="chat-protection"),
-    path("keys/", views.DeviceKeyView.as_view(), name="chat-device-keys"),
-    path("delivered/", views.DeliveryView.as_view(), name="chat-delivered"),
-    path("requests/", views.ChatRequestListView.as_view(), name="chat-requests"),
-    path("conversations/", views.ConversationListView.as_view(), name="chat-conversations"),
-    path("<str:username>/request/", views.ChatRequestView.as_view(), name="chat-request"),
+    path(
+        "protection/",
+        ChatViewSet.as_view({"get": "protection", "put": "update_protection"}),
+        name="chat-protection",
+    ),
+    path("keys/", ChatViewSet.as_view({"post": "add_device_key"}), name="chat-device-keys"),
+    path("delivered/", ChatViewSet.as_view({"post": "delivered"}), name="chat-delivered"),
+    path("requests/", ChatViewSet.as_view({"get": "requests"}), name="chat-requests"),
+    path(
+        "conversations/",
+        ChatViewSet.as_view({"get": "conversations"}),
+        name="chat-conversations",
+    ),
+    path(
+        "<str:username>/request/",
+        ConversationViewSet.as_view({"post": "request_chat", "delete": "decline"}),
+        name="chat-request",
+    ),
     path(
         "<str:username>/request/withdraw/",
-        views.ChatRequestWithdrawView.as_view(),
+        ConversationViewSet.as_view({"post": "withdraw"}),
         name="chat-request-withdraw",
     ),
     path(
         "<str:username>/request/accept/",
-        views.ChatRequestAcceptView.as_view(),
+        ConversationViewSet.as_view({"post": "accept"}),
         name="chat-request-accept",
     ),
-    path("<str:username>/archive/", views.ChatArchiveView.as_view(), name="chat-archive"),
-    path("<str:username>/keys/", views.ConversationKeysView.as_view(), name="chat-keys"),
-    path("<str:username>/messages/", views.MessagesView.as_view(), name="chat-messages"),
+    path(
+        "<str:username>/archive/",
+        ConversationViewSet.as_view({"post": "archive", "delete": "unarchive"}),
+        name="chat-archive",
+    ),
+    path(
+        "<str:username>/keys/",
+        ConversationViewSet.as_view({"get": "keys"}),
+        name="chat-keys",
+    ),
+    path(
+        "<str:username>/messages/",
+        ConversationViewSet.as_view({"get": "messages", "post": "send"}),
+        name="chat-messages",
+    ),
 ]

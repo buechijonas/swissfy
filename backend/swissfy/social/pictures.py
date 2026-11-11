@@ -47,7 +47,7 @@ def sees_private(profile, viewer, relations):
 
 
 def picture_file(profile, kind):
-    return getattr(profile, f"{kind}_picture")
+    return profile.pictures[kind]
 
 
 def file_url(user, kind, file):
@@ -56,8 +56,8 @@ def file_url(user, kind, file):
 
 
 def picture_url(user, context):
-    profile = getattr(user, "profile", None)
-    if profile is None or context["request"].user.is_anonymous:
+    profile = user.profile
+    if context["request"].user.is_anonymous:
         return None
     if profile.private_picture and sees_private(
         profile, context["request"].user, cached_relations(context)

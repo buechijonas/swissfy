@@ -1,212 +1,142 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from main.numbers import compact_number
-from swissfy.accounts.models import UserProfile, get_or_create_profile
-from swissfy.accounts.roles import is_admin, is_moderator, role_badge
-from swissfy.chats.models import ChatRequest
+from commons.fields import CompactNumberField
+from commons.serializers import BaseModelSerializer
+from swissfy.accounts.models import UserProfile
+from swissfy.accounts.roles import role_badge
 from swissfy.posts import images
 from swissfy.posts.models import ContactGroup, Post, Story
 from swissfy.posts.serializers import StoryModelSerializer
 
 from . import library
-from .models import Follow, FollowRequest, FriendRequest, Friendship
 from .pictures import KINDS, PictureField, file_url, picture_file
 
 User = get_user_model()
 
 
-def follows(follower, following):
-    return Follow.objects.filter(follower=follower, following=following).exists()
+class RoleBadgeField(serializers.Field):
+    def __init__(self, **kwargs):
+        super().__init__(source="*", read_only=True, **kwargs)
 
-
-def are_friends(user, other):
-    return Friendship.objects.filter(user=user, friend=other).exists()
-
-
-def requires_follow_request(user):
-    return get_or_create_profile(user).profile_visibility != UserProfile.Visibility.PUBLIC
-
-
-def is_visible(visibility, is_following, is_friend):
-    Visibility = UserProfile.Visibility
-    return (
-        visibility == Visibility.PUBLIC
-        or (visibility == Visibility.FOLLOWERS and is_following)
-        or is_friend
-    )
-
-
-def can_view_profile(viewer, user):
-    if user == viewer or is_admin(viewer):
-        return True
-    profile = getattr(user, "profile", None)
-    return not profile or is_visible(
-        profile.profile_visibility, follows(viewer, user), are_friends(viewer, user)
-    )
+    def to_representation(self, user):
+        return role_badge(user)
 
 
 HIDDEN_LIST_FIELDS = ["first_name", "last_name", "role"]
 HIDDEN_PROFILE_FIELDS = [*HIDDEN_LIST_FIELDS, "follower_count", "following_count", "friend_count"]
 
 
-class ProfileListSerializer(serializers.ModelSerializer):
-    avatar = serializers.SerializerMethodField()
-    picture = PictureField()
-    role = serializers.SerializerMethodField()
+class ProfileModelSerializer(BaseModelSerializer):
+    class list(BaseModelSerializer.read):
+        avatar = serializers.CharField(source="profile.avatar", read_only=True)
+        picture = PictureField()
+        role = RoleBadgeField()
+        can_view = serializers.BooleanField(source="viewer_can_view", read_only=True)
+        hidden_fields = HIDDEN_LIST_FIELDS
 
-    class Meta:
-        model = User
-        fields = ["username", "first_name", "last_name", "avatar", "picture", "role"]
+        class Meta(BaseModelSerializer.read.Meta):
+            model = User
+            fields = [
+                "username",
+                "first_name",
+                "last_name",
+                "avatar",
+                "picture",
+                "role",
+                "can_view",
+            ]
 
-    def get_avatar(self, obj):
-        profile = getattr(obj, "profile", None)
-        return profile.avatar if profile else ""
-
-    def get_role(self, obj):
-        return role_badge(obj)
-
-    def to_representation(self, obj):
-        data = super().to_representation(obj)
-        profile = getattr(obj, "profile", None)
-        data["can_view"] = (
-            not profile
-            or is_admin(self.context["request"].user)
-            or is_visible(profile.profile_visibility, obj.viewer_follows, obj.viewer_is_friend)
-        )
-        if not data["can_view"]:
-            for field in HIDDEN_LIST_FIELDS:
-                del data[field]
-        return data
-
-
-class StoryViewerSerializer(ProfileListSerializer):
-    liked = serializers.BooleanField(read_only=True)
-
-    class Meta(ProfileListSerializer.Meta):
-        fields = [*ProfileListSerializer.Meta.fields, "liked"]
-
-
-class ProfileSerializer(serializers.ModelSerializer):
-    avatar = serializers.SerializerMethodField()
-    picture = PictureField()
-    role = serializers.SerializerMethodField()
-    follower_count = serializers.SerializerMethodField()
-    following_count = serializers.SerializerMethodField()
-    friend_count = serializers.SerializerMethodField()
-    is_self = serializers.SerializerMethodField()
-    is_following = serializers.SerializerMethodField()
-    follows_you = serializers.SerializerMethodField()
-    is_friend = serializers.SerializerMethodField()
-    friend_request_sent = serializers.SerializerMethodField()
-    follow_requested = serializers.SerializerMethodField()
-    requires_follow_request = serializers.SerializerMethodField()
-    can_chat = serializers.SerializerMethodField()
-    can_view_warnings = serializers.SerializerMethodField()
-    media = serializers.SerializerMethodField()
-    stories = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = [
-            "username",
-            "first_name",
-            "last_name",
-            "avatar",
-            "picture",
-            "role",
-            "follower_count",
-            "following_count",
-            "friend_count",
-            "is_self",
-            "is_following",
-            "follows_you",
-            "is_friend",
-            "friend_request_sent",
-            "follow_requested",
-            "requires_follow_request",
-            "can_chat",
-            "can_view_warnings",
-            "media",
-            "stories",
-        ]
-
-    @property
-    def viewer(self):
-        return self.context["request"].user
-
-    def get_avatar(self, obj):
-        return get_or_create_profile(obj).avatar
-
-    def get_role(self, obj):
-        return role_badge(obj)
-
-    def get_can_view_warnings(self, obj):
-        return obj == self.viewer or is_moderator(self.viewer)
-
-    def get_stories(self, obj):
-        stories = Story.objects.apply_acl(self.viewer).filter(author=obj).order_by("created_at")
-        stories = stories.with_details(self.viewer)
-        return StoryModelSerializer.read(stories, many=True, context=self.context).data
-
-    def get_media(self, obj):
-        posts = Post.objects.apply_acl(self.viewer).filter(author=obj)
-        return {"pictures": posts.images().exists(), "reels": posts.videos().exists()}
-
-    def get_follower_count(self, obj):
-        return compact_number(obj.followers.count())
-
-    def get_following_count(self, obj):
-        return compact_number(obj.following.count())
-
-    def get_friend_count(self, obj):
-        return compact_number(obj.friendships.count())
-
-    def get_is_self(self, obj):
-        return obj == self.viewer
-
-    def get_is_following(self, obj):
-        return follows(self.viewer, obj)
-
-    def get_follows_you(self, obj):
-        return follows(obj, self.viewer)
-
-    def get_is_friend(self, obj):
-        return are_friends(self.viewer, obj)
-
-    def get_friend_request_sent(self, obj):
-        return FriendRequest.objects.filter(sender=self.viewer, receiver=obj).exists()
-
-    def get_follow_requested(self, obj):
-        return FollowRequest.objects.filter(follower=self.viewer, following=obj).exists()
-
-    def get_requires_follow_request(self, obj):
-        return requires_follow_request(obj)
-
-    def get_can_chat(self, obj):
-        if obj == self.viewer:
-            return False
-        if ChatRequest.between(self.viewer, obj):
-            return True
-        return get_or_create_profile(obj).chat_requests
-
-    def to_representation(self, obj):
-        data = super().to_representation(obj)
-        profile = get_or_create_profile(obj)
-
-        data["can_view"] = (
-            data["is_self"]
-            or is_admin(self.viewer)
-            or is_visible(profile.profile_visibility, data["is_following"], data["is_friend"])
-        )
-        if not data["can_view"]:
-            for field in HIDDEN_PROFILE_FIELDS:
-                del data[field]
+        def to_representation(self, obj):
+            data = super().to_representation(obj)
+            if not data["can_view"]:
+                for field in self.hidden_fields:
+                    del data[field]
             return data
-        data.update(about_data(profile))
-        if data["is_self"] or profile.show_birthdate:
-            data["birthdate"] = profile.birthdate
-        return data
+
+    class story_viewer(list):
+        liked = serializers.BooleanField(read_only=True)
+
+        class Meta(BaseModelSerializer.read.Meta):
+            model = User
+            fields = [
+                "username",
+                "first_name",
+                "last_name",
+                "avatar",
+                "picture",
+                "role",
+                "can_view",
+                "liked",
+            ]
+
+    class read(list):
+        follower_count = CompactNumberField()
+        following_count = CompactNumberField()
+        friend_count = CompactNumberField()
+        is_self = serializers.BooleanField(read_only=True)
+        is_following = serializers.BooleanField(source="viewer_follows", read_only=True)
+        follows_you = serializers.BooleanField(source="follows_viewer", read_only=True)
+        is_friend = serializers.BooleanField(source="viewer_is_friend", read_only=True)
+        friend_request_sent = serializers.BooleanField(read_only=True)
+        follow_requested = serializers.BooleanField(read_only=True)
+        requires_follow_request = serializers.BooleanField(
+            source="profile.requires_follow_request", read_only=True
+        )
+        can_chat = serializers.BooleanField(read_only=True)
+        can_view_warnings = serializers.BooleanField(read_only=True)
+        media = serializers.SerializerMethodField()
+        stories = serializers.SerializerMethodField()
+        hidden_fields = HIDDEN_PROFILE_FIELDS
+
+        class Meta(BaseModelSerializer.read.Meta):
+            model = User
+            fields = [
+                "username",
+                "first_name",
+                "last_name",
+                "avatar",
+                "picture",
+                "role",
+                "follower_count",
+                "following_count",
+                "friend_count",
+                "is_self",
+                "is_following",
+                "follows_you",
+                "is_friend",
+                "friend_request_sent",
+                "follow_requested",
+                "requires_follow_request",
+                "can_chat",
+                "can_view_warnings",
+                "media",
+                "stories",
+                "can_view",
+            ]
+
+        @property
+        def viewer(self):
+            return self.context["request"].user
+
+        def get_stories(self, obj):
+            stories = Story.objects.apply_acl(self.viewer).filter(author=obj).order_by("created_at")
+            stories = stories.with_details(self.viewer)
+            return StoryModelSerializer.read(stories, many=True, context=self.context).data
+
+        def get_media(self, obj):
+            posts = Post.objects.apply_acl(self.viewer).filter(author=obj)
+            return {"pictures": posts.images().exists(), "reels": posts.videos().exists()}
+
+        def to_representation(self, obj):
+            data = super().to_representation(obj)
+            if not data["can_view"]:
+                return data
+            profile = obj.profile
+            data.update(about_data(profile))
+            if data["is_self"] or profile.show_birthdate:
+                data["birthdate"] = profile.birthdate
+            return data
 
 
 class PrivacySerializer(serializers.ModelSerializer):
@@ -228,7 +158,7 @@ def favorites_data(items):
 def about_data(profile):
     return {
         "biography": profile.biography,
-        **{field: favorites_data(getattr(profile, field)) for field in FAVORITE_FIELDS},
+        **{field: favorites_data(items) for field, items in profile.favorites.items()},
     }
 
 
@@ -251,7 +181,7 @@ class AboutSerializer(serializers.ModelSerializer):
         for field, kind in FAVORITE_FIELDS.items():
             if field not in data:
                 continue
-            known = {item["id"]: item for item in getattr(self.instance, field)}
+            known = {item["id"]: item for item in self.instance.favorites[field]}
             ids = list(dict.fromkeys(data[field]))
             data[field] = [known.get(id) or library.details(kind, id) for id in ids]
         return data

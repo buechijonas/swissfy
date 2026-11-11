@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from commons.views import BaseViewSet
 from swissfy.accounts.roles import is_moderator
-from swissfy.social.serializers import can_view_profile
+from swissfy.social.users import can_view_profile
 
 from ..models import Comment, Post, reported_comments
 from ..serializers import CommentModelSerializer, PostModelSerializer

@@ -89,7 +89,8 @@ class LargeDataTests(TestCase):
             url = page["next"]
 
     def test_search_with_many_users_returns_one_page(self):
-        User.objects.bulk_create(User(username=f"user{i:04}") for i in range(1500))
+        users = User.objects.bulk_create(User(username=f"user{i:04}") for i in range(1500))
+        UserProfile.objects.bulk_create(UserProfile(user=user) for user in users)
         viewer = User.objects.create(username="viewer")
         self.client.force_login(viewer)
         data = self.client.get("/api/social/profiles/", {"q": "user1"}).json()

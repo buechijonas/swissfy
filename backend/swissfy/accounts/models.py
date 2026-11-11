@@ -143,6 +143,33 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"Profile({self.user})"
 
+    @property
+    def has_public_picture(self):
+        return bool(self.public_picture)
+
+    @property
+    def requires_follow_request(self):
+        return self.profile_visibility != self.Visibility.PUBLIC
+
+    @property
+    def pictures(self):
+        return {"public": self.public_picture, "private": self.private_picture}
+
+    @property
+    def favorites(self):
+        return {
+            "favorite_movies": self.favorite_movies,
+            "favorite_series": self.favorite_series,
+            "favorite_games": self.favorite_games,
+        }
+
+    def visible_with(self, is_following, is_friend):
+        return (
+            self.profile_visibility == self.Visibility.PUBLIC
+            or (self.profile_visibility == self.Visibility.FOLLOWERS and is_following)
+            or is_friend
+        )
+
 
 @receiver(post_delete, sender=UserProfile)
 def delete_profile_pictures(sender, instance, **kwargs):
@@ -169,8 +196,23 @@ class UserConsent(models.Model):
     terms = models.BooleanField("Nutzungsrichtlinien", default=False)
     disclaimer = models.BooleanField("Haftungsausschluss", default=False)
 
+    FIELDS = ["privacy", "terms", "disclaimer"]
+
     def __str__(self):
         return f"Consent({self.user})"
+
+    @property
+    def status(self):
+        return {"privacy": self.privacy, "terms": self.terms, "disclaimer": self.disclaimer}
+
+    def accept(self, field):
+        UserConsent.objects.filter(pk=self.pk).update(**{field: True})
+        self.refresh_from_db(fields=[field])
+
+
+def user_consent(user):
+    consent, _ = UserConsent.objects.get_or_create(user=user)
+    return consent
 
 
 class DeviceToken(models.Model):

@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from commons.views import BaseViewSet
-from swissfy.social.serializers import can_view_profile
+from swissfy.social.users import can_view_profile
 
 from ..models import Album, AlbumEntry, Post
 from ..permissions import IsNotSuspended
