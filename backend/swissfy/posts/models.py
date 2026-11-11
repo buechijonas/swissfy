@@ -151,6 +151,9 @@ class HideableModel(UUIDModel):
     def is_hidden(self):
         return self.hidden_at is not None
 
+    def hide(self):
+        type(self).objects.filter(pk=self.pk).update(hidden_at=timezone.now())
+
     @property
     def unavailable(self):
         if self.hidden_at:
@@ -163,6 +166,10 @@ class HideableModel(UUIDModel):
 
 
 class PostQuerySet(AudienceQuerySet):
+    def reported(self):
+        reported = Q(reports__isnull=False) | Q(comments__reports__isnull=False)
+        return self.filter(pk__in=Post.objects.filter(reported).values("pk"))
+
     def apply_acl(self, user):
         if user.is_anonymous:
             return self.filter(
@@ -459,6 +466,9 @@ class CommentQuerySet(BaseQuerySet):
         visible = NOT_HIDDEN & (~by_suspended_author() | Q(author=user))
         return self.filter(visible | reported_comments() if is_moderator(user) else visible)
 
+    def on_reported_posts(self):
+        return self.filter(post__in=Post.objects.reported())
+
     def apply_acl(self, user):
         on_visible_post = Q(post__in=Post.objects.apply_acl(user)) | Q(author=user)
         return self.visible_to(user).filter(on_visible_post)
@@ -500,6 +510,14 @@ class Comment(HideableModel):
 
     def __str__(self):
         return f"Comment({self.author}, {self.post_id})"
+
+    def hide(self):
+        now = timezone.now()
+        thread = [self.pk]
+        while thread:
+            Comment.objects.filter(pk__in=thread).update(hidden_at=now)
+            replies = Comment.objects.filter(parent__in=thread, hidden_at=None)
+            thread = list(replies.values_list("pk", flat=True))
 
     @property
     def parent_uuid(self):

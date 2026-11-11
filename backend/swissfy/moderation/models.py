@@ -2,7 +2,11 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
+from django.db.models import Count, Max, Q
+from django.utils import timezone
+
+from commons.models import BaseModel, BaseQuerySet
+from swissfy.accounts.roles import Role, is_admin
 
 
 class Reason(models.TextChoices):
@@ -47,15 +51,73 @@ class Reason(models.TextChoices):
     UNETHICAL_ADVERTISING = "unethical_advertising", "Unethische Werbung"
     WHATABOUTISM = "whataboutism", "Whataboutismus"
 
+    @classmethod
+    def options(cls):
+        return [{"value": value, "label": label} for value, label in cls.choices]
+
 
 WARNING_EXPIRY = timedelta(days=90)
+SUSPENSION_STEPS = [
+    (timedelta(days=3), "3 Tage"),
+    (timedelta(weeks=1), "1 Woche"),
+    (timedelta(days=30), "1 Monat"),
+    (timedelta(days=365), "1 Jahr"),
+    (None, "Lebenslang"),
+]
 
 ONE_TARGET = Q(post__isnull=False, comment__isnull=True) | Q(
     post__isnull=True, comment__isnull=False
 )
 
 
-class Report(models.Model):
+def by_admin():
+    admin = Role.ADMIN.label
+    return Q(post__author__groups__name=admin) | Q(comment__author__groups__name=admin)
+
+
+class ReportQuerySet(BaseQuerySet):
+    def open(self):
+        return self.filter(resolved_at=None)
+
+    def resolved(self):
+        return self.filter(resolved_at__isnull=False)
+
+    def resolve(self):
+        return self.open().update(resolved_at=timezone.now())
+
+    def closed_targets(self):
+        open_reports = Report.objects.open()
+        return (
+            self.resolved()
+            .exclude(post__in=open_reports.values("post"))
+            .exclude(comment__in=open_reports.values("comment"))
+        )
+
+    def queue(self, viewer, resolved):
+        reports = self.closed_targets() if resolved else self.open()
+        if not is_admin(viewer):
+            reports = reports.exclude(by_admin())
+        last_activity = Max("resolved_at" if resolved else "created_at")
+        return (
+            reports.values("post", "comment")
+            .annotate(report_count=Count("id"), last_activity=last_activity)
+            .order_by("-last_activity")
+        )
+
+    def about(self, user):
+        return (
+            self.filter(Q(post__author=user) | Q(comment__author=user))
+            .values("post", "post__uuid", "post__text", "comment", "comment__uuid", "comment__text")
+            .annotate(
+                report_count=Count("id"),
+                open_count=Count("id", filter=Q(resolved_at=None)),
+                last_reported_at=Max("created_at"),
+            )
+            .order_by("-last_reported_at")
+        )
+
+
+class Report(BaseModel):
     reporter = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
     )
@@ -67,6 +129,8 @@ class Report(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ReportQuerySet.as_manager()
 
     class Meta:
         constraints = [
@@ -83,7 +147,12 @@ class Report(models.Model):
         ]
 
 
-class Warning(models.Model):
+class WarningQuerySet(BaseQuerySet):
+    def active(self, now=None):
+        return self.filter(created_at__gt=(now or timezone.now()) - WARNING_EXPIRY)
+
+
+class Warning(BaseModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="warnings"
     )
@@ -94,6 +163,10 @@ class Warning(models.Model):
     post = models.ForeignKey("posts.Post", on_delete=models.SET_NULL, null=True, blank=True)
     comment = models.ForeignKey("posts.Comment", on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    event_type = "warning"
+
+    objects = WarningQuerySet.as_manager()
 
     class Meta:
         ordering = ["-created_at"]
@@ -108,8 +181,37 @@ class Warning(models.Model):
             ),
         ]
 
+    @property
+    def expires_at(self):
+        return self.created_at + WARNING_EXPIRY
 
-class Suspension(models.Model):
+    @property
+    def is_expired(self):
+        return self.expires_at <= timezone.now()
+
+    @property
+    def target_label(self):
+        if self.comment_id:
+            return "Kommentar"
+        return "Feed" if self.post_id else None
+
+    @property
+    def moderation_link(self):
+        if self.comment_id:
+            return f"/moderation/comments/{self.comment.uuid}"
+        return f"/moderation/posts/{self.post.uuid}" if self.post_id else None
+
+
+class SuspensionQuerySet(BaseQuerySet):
+    def running(self, now=None):
+        now = now or timezone.now()
+        return self.filter(Q(starts_at__lte=now), Q(ends_at__isnull=True) | Q(ends_at__gt=now))
+
+    def pending(self, now=None):
+        return self.filter(Q(ends_at__isnull=True) | Q(ends_at__gt=now or timezone.now()))
+
+
+class Suspension(BaseModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="suspensions"
     )
@@ -119,6 +221,25 @@ class Suspension(models.Model):
     ends_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    event_type = "suspension"
+
+    objects = SuspensionQuerySet.as_manager()
+
     class Meta:
         ordering = ["-starts_at"]
         indexes = [models.Index(fields=["user", "ends_at"], name="suspension_user_end")]
+
+    @property
+    def duration_label(self):
+        return SUSPENSION_STEPS[self.step][1]
+
+    @property
+    def caused_at(self):
+        return self.warning.created_at if self.warning else self.starts_at
+
+    @property
+    def state(self):
+        now = timezone.now()
+        if self.starts_at > now:
+            return "scheduled"
+        return "ended" if self.ends_at and self.ends_at <= now else "active"
