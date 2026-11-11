@@ -1,8 +1,7 @@
-from datetime import date
+import datetime
 from functools import cache, cached_property
 
 from django.conf import settings
-from rest_framework.exceptions import NotFound
 
 from commons.markdown import render
 
@@ -28,7 +27,7 @@ class Changelog:
 
     @property
     def date(self):
-        return date.fromisoformat(self.meta["date"])
+        return datetime.date.fromisoformat(self.meta["date"])
 
     @cached_property
     def html(self):
@@ -44,9 +43,7 @@ class Changelog:
     @classmethod
     def get(cls, version):
         path = settings.CHANGELOG_DIR / f"v{version}.md"
-        if not path.is_file():
-            raise NotFound("Diese Version gibt es nicht.")
-        return load(path, path.stat().st_mtime)
+        return load(path, path.stat().st_mtime) if path.is_file() else None
 
 
 @cache

@@ -2,6 +2,7 @@ import hmac
 
 from django.conf import settings
 from rest_framework import serializers, status
+from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 
@@ -37,6 +38,7 @@ class InternalProfileViewSet(BaseViewSet):
     def retrieve(self, request, govex_sub):
         return Response(InternalProfileSerializer(self.get_object()).data)
 
+    @action(detail=True)
     def picture(self, request, govex_sub):
         profile = self.get_object()
         if not profile.public_picture:

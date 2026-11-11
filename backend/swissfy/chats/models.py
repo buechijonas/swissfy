@@ -9,7 +9,7 @@ from django.db.models import Exists, OuterRef, Prefetch, Q, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-from commons.models import BaseModel, BaseQuerySet
+from commons.models import BaseModel, BaseQuerySet, boolean
 
 from .crypto import unwrap_message_key
 
@@ -21,6 +21,15 @@ def retention_cutoff():
 def lock_users(*users):
     pks = [user.pk for user in users]
     list(get_user_model().objects.select_for_update().filter(pk__in=pks).order_by("pk"))
+
+
+def annotate_chat_availability(members, viewer):
+    chat_request = ChatRequest.objects.between(viewer, OuterRef("pk"))
+    return members.annotate(has_chat_request=Exists(chat_request)).annotate(
+        can_chat=boolean(
+            ~Q(pk=viewer.pk) & (Q(has_chat_request=True) | Q(profile__chat_requests=True))
+        )
+    )
 
 
 class ChatKeyQuerySet(BaseQuerySet):

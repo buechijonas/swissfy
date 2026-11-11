@@ -1,8 +1,12 @@
 from rest_framework import serializers
 
+from commons.fields import ConstantField
 from commons.serializers import BaseModelSerializer
+from swissfy.accounts.roles import is_moderator, outranks
+from swissfy.posts.serializers import CommentModelSerializer, PostModelSerializer
 
-from .models import Reason, Suspension, Warning
+from .models import Reason, Report, Suspension, Warning
+from .reviews import ReportedContent
 
 CHOOSE_REASON = "Wähle einen Grund."
 
@@ -52,3 +56,70 @@ class SuspensionModelSerializer(BaseModelSerializer):
         class Meta(BaseModelSerializer.read.Meta):
             model = Suspension
             fields = ["id", "type", "created_at", "caused_at", "ends_at", "duration", "state"]
+
+
+class ReportGroupSerializer:
+    class post(serializers.Serializer):
+        type = serializers.CharField(source="kind", read_only=True)
+        report_count = serializers.IntegerField(read_only=True)
+        warned = serializers.BooleanField(read_only=True)
+        post = PostModelSerializer.read(read_only=True)
+
+    class comment(serializers.Serializer):
+        type = serializers.CharField(source="kind", read_only=True)
+        report_count = serializers.IntegerField(read_only=True)
+        warned = serializers.BooleanField(read_only=True)
+        comment = CommentModelSerializer.read(read_only=True)
+        post = PostModelSerializer.summary(source="summary", read_only=True)
+
+    @classmethod
+    def of(cls, group):
+        return cls.post if group.post else cls.comment
+
+
+class ModerationDetailsSerializer(serializers.Serializer):
+    report_count = serializers.IntegerField(source="open_report_count", read_only=True)
+    can_warn = serializers.SerializerMethodField()
+    reasons = ConstantField(Reason.options())
+    warnings = WarningModelSerializer.read(source="warning_set", many=True, read_only=True)
+
+    def get_can_warn(self, target):
+        viewer = self.context["request"].user
+        return not target.is_warned and not outranks(target.author, viewer)
+
+
+class ReportedContentSerializer(serializers.Serializer):
+    type = serializers.CharField(source="kind", read_only=True)
+    text = serializers.CharField(read_only=True)
+    report_count = serializers.IntegerField(read_only=True)
+    open_count = serializers.IntegerField(read_only=True)
+    link = serializers.CharField(read_only=True)
+
+
+class ModerationStatusSerializer(serializers.Serializer):
+    events = serializers.SerializerMethodField()
+    reports = serializers.SerializerMethodField()
+
+    @property
+    def moderating(self):
+        return is_moderator(self.context["request"].user)
+
+    def get_events(self, user):
+        warnings = Warning.objects.filter(user=user).select_related("post", "comment")
+        suspensions = Suspension.objects.filter(user=user).select_related("warning")
+        context = {"moderation": self.moderating}
+        events = [
+            *WarningModelSerializer.read(warnings, many=True, context=context).data,
+            *SuspensionModelSerializer.read(suspensions, many=True).data,
+        ]
+        return sorted(
+            events,
+            key=lambda event: (event["caused_at"], event["type"] == "suspension"),
+            reverse=True,
+        )
+
+    def get_reports(self, user):
+        if not self.moderating:
+            return None
+        reported = [ReportedContent(group) for group in Report.objects.about(user)]
+        return ReportedContentSerializer(reported, many=True).data

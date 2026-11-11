@@ -20,8 +20,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from rest_framework import serializers
 
-from commons.fields import StrictCharField
-
 from .consent import attested_status, push_to_govex, status_of
 from .models import AVATAR_CHOICES, DEFAULT_ROLE, UserProfile, get_or_create_profile
 
@@ -221,7 +219,7 @@ def valid_govex_signature(request):
 
 
 class GovexWebhookSerializer(serializers.Serializer):
-    sub = StrictCharField()
+    sub = serializers.CharField()
 
 
 def govex_webhook(handler):

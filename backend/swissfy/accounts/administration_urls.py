@@ -1,13 +1,9 @@
-from django.urls import path
+from commons.routers import Router
 
-from .administration import AdminUserViewSet
+from .administration import AdminUserViewSet, RoleViewSet
 
-urlpatterns = [
-    path("roles/", AdminUserViewSet.as_view({"get": "roles"}), name="admin-roles"),
-    path("users/", AdminUserViewSet.as_view({"get": "list"}), name="admin-users"),
-    path(
-        "users/<str:username>/",
-        AdminUserViewSet.as_view({"patch": "partial_update"}),
-        name="admin-user",
-    ),
-]
+router = Router()
+router.register("roles", RoleViewSet, basename="admin-roles")
+router.register("users", AdminUserViewSet, basename="admin-users")
+
+urlpatterns = router.urls

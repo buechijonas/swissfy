@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -31,10 +32,9 @@ def post_summary(post, visible, context):
     return post.unavailable
 
 
-class PostCommentViewSet(BaseViewSet, mixins.ListModelMixin, CreateModelMixin):
+class PostCommentListViewSet(BaseViewSet, mixins.ListModelMixin):
     serializer_class = CommentModelSerializer
     pagination_class = OldestFirst
-    permission_action_classes = {"create": [IsAuthenticated, IsNotSuspended]}
 
     def comments(self):
         return Comment.objects.visible_to(self.request.user)
@@ -58,13 +58,17 @@ class PostCommentViewSet(BaseViewSet, mixins.ListModelMixin, CreateModelMixin):
         )
         return self.get_paginated_response(serializer.data)
 
+
+class PostCommentViewSet(PostCommentListViewSet, CreateModelMixin):
+    permission_action_classes = {"create": [IsAuthenticated, IsNotSuspended]}
+
     def perform_create(self, serializer):
         comment = serializer.save(post=self.get_post(), author=self.request.user)
         notify_comment(comment)
         return comment
 
 
-class CommentReplyViewSet(PostCommentViewSet):
+class CommentReplyListViewSet(PostCommentListViewSet):
     def get_parent(self):
         comments = Comment.objects.apply_acl(self.request.user).with_details(self.request.user)
         return get_object_or_404(comments, uuid=self.kwargs["uuid"])
@@ -72,6 +76,10 @@ class CommentReplyViewSet(PostCommentViewSet):
     def get_queryset(self):
         replies = self.comments().filter(parent=self.get_parent())
         return replies.with_details(self.request.user)
+
+
+class CommentReplyViewSet(CommentReplyListViewSet, CreateModelMixin):
+    permission_action_classes = {"create": [IsAuthenticated, IsNotSuspended]}
 
     def perform_create(self, serializer):
         parent = self.get_parent()
@@ -82,10 +90,10 @@ class CommentReplyViewSet(PostCommentViewSet):
         return comment
 
 
-class CommentViewSet(BaseViewSet, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
+class CommentDetailViewSet(BaseViewSet, mixins.RetrieveModelMixin):
     serializer_class = CommentModelSerializer
     lookup_field = "uuid"
-    permission_action_classes = {"destroy": [IsAuthenticated, IsAuthor]}
+    lookup_value_converter = "uuid"
 
     def get_queryset(self):
         return Comment.objects.apply_acl(self.request.user).with_details(self.request.user)
@@ -114,6 +122,10 @@ class CommentViewSet(BaseViewSet, mixins.RetrieveModelMixin, mixins.DestroyModel
             }
         )
 
+
+class CommentViewSet(CommentDetailViewSet, mixins.DestroyModelMixin):
+    permission_action_classes = {"destroy": [IsAuthenticated, IsAuthor]}
+
     def destroy(self, request, *args, **kwargs):
         comment = self.get_object()
         comment.delete()
@@ -131,6 +143,7 @@ class CommentViewSet(BaseViewSet, mixins.RetrieveModelMixin, mixins.DestroyModel
             }
         )
 
+    @action(detail=True, methods=["put"])
     def vote(self, request, uuid):
         comment = self.get_object()
         if comment.author_id == request.user.pk:

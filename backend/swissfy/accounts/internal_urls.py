@@ -1,16 +1,8 @@
-from django.urls import path
+from commons.routers import Router
 
 from .internal import InternalProfileViewSet
 
-urlpatterns = [
-    path(
-        "profiles/<str:govex_sub>/",
-        InternalProfileViewSet.as_view({"get": "retrieve"}),
-        name="internal-profile",
-    ),
-    path(
-        "profiles/<str:govex_sub>/picture/",
-        InternalProfileViewSet.as_view({"get": "picture"}),
-        name="internal-picture",
-    ),
-]
+router = Router()
+router.register("profiles", InternalProfileViewSet, basename="internal-profiles")
+
+urlpatterns = router.urls

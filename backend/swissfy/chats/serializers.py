@@ -3,15 +3,16 @@ import binascii
 
 from rest_framework import serializers
 
-from commons.fields import StrictCharField
 from commons.serializers import BaseModelSerializer
 from swissfy.accounts.models import UserProfile
+from swissfy.social.serializers import ProfileModelSerializer
 
 from .models import ChatKey, Message
 
 Protection = UserProfile.ChatProtection
 
 BASE64 = r"^[A-Za-z0-9+/]*={0,2}$"
+P256_COORDINATE = r"^[A-Za-z0-9_-]{43}$"
 
 
 def base64_field(max_length, **kwargs):
@@ -21,8 +22,8 @@ def base64_field(max_length, **kwargs):
 class EcdhKeySerializer(serializers.Serializer):
     kty = serializers.ChoiceField(["EC"])
     crv = serializers.ChoiceField(["P-256"])
-    x = StrictCharField(max_length=100)
-    y = StrictCharField(max_length=100)
+    x = serializers.RegexField(P256_COORDINATE)
+    y = serializers.RegexField(P256_COORDINATE)
 
 
 class PublicKeySerializer(serializers.Serializer):
@@ -41,69 +42,46 @@ class ChatKeyModelSerializer(BaseModelSerializer):
             model = ChatKey
             fields = ["id", "kind", "public_key", "wrapped_private_key", "salt", "iv"]
 
+    class write(serializers.Serializer):
+        public_key = PublicKeySerializer()
+        wrapped_private_key = base64_field(10000, required=False)
+        salt = base64_field(64, required=False)
+        iv = base64_field(32, required=False)
 
-class ProtectionSerializer(serializers.Serializer):
-    mode = serializers.CharField(read_only=True)
-    keys = ChatKeyModelSerializer.read(many=True, read_only=True)
-    pin_key = ChatKeyModelSerializer.pin(read_only=True, allow_null=True)
-
-
-class NewKeySerializer(serializers.Serializer):
-    public_key = PublicKeySerializer()
-    wrapped_private_key = base64_field(10000, required=False)
-    salt = base64_field(64, required=False)
-    iv = base64_field(32, required=False)
+    class device(serializers.Serializer):
+        public_key = PublicKeySerializer()
 
 
-class DeviceKeyInputSerializer(serializers.Serializer):
-    public_key = PublicKeySerializer()
+class ProtectionSerializer:
+    class read(serializers.Serializer):
+        mode = serializers.CharField(read_only=True)
+        keys = ChatKeyModelSerializer.read(many=True, read_only=True)
+        pin_key = ChatKeyModelSerializer.pin(read_only=True, allow_null=True)
+
+    class write(serializers.Serializer):
+        mode = serializers.ChoiceField(Protection.choices)
+        key = ChatKeyModelSerializer.write(required=False)
+
+        def validate(self, data):
+            key = data.get("key")
+            if data["mode"] == Protection.STANDARD:
+                if key:
+                    raise serializers.ValidationError("Standard braucht keinen Schlüssel.")
+            elif not key:
+                raise serializers.ValidationError("Schlüssel fehlt.")
+            elif data["mode"] == Protection.PIN and not all(
+                key.get(field) for field in ["wrapped_private_key", "salt", "iv"]
+            ):
+                raise serializers.ValidationError("Der PIN-Schlüssel ist unvollständig.")
+            return data
 
 
-class ProtectionInputSerializer(serializers.Serializer):
-    mode = serializers.ChoiceField(Protection.choices)
-    key = NewKeySerializer(required=False)
-
-    def validate(self, data):
-        key = data.get("key")
-        if data["mode"] == Protection.STANDARD:
-            if key:
-                raise serializers.ValidationError("Standard braucht keinen Schlüssel.")
-        elif not key:
-            raise serializers.ValidationError("Schlüssel fehlt.")
-        elif data["mode"] == Protection.PIN and not all(
-            key.get(field) for field in ["wrapped_private_key", "salt", "iv"]
-        ):
-            raise serializers.ValidationError("Der PIN-Schlüssel ist unvollständig.")
-        return data
-
-
-class EnvelopeInputSerializer(serializers.Serializer):
+class EnvelopeSerializer(serializers.Serializer):
     key = serializers.IntegerField()
     kem = base64_field(2000)
     ecdh = EcdhKeySerializer()
     wrapped = base64_field(100)
     iv = base64_field(32)
-
-
-class MessageInputSerializer(serializers.Serializer):
-    ciphertext = base64_field(20000)
-    iv = base64_field(32)
-    envelopes = EnvelopeInputSerializer(many=True)
-    message_key = base64_field(64, required=False)
-
-    def validate_message_key(self, value):
-        try:
-            key = base64.b64decode(value, validate=True)
-        except binascii.Error:
-            key = b""
-        if len(key) != 32:
-            raise serializers.ValidationError("Ungültiger Schlüssel.")
-        return key
-
-
-class MessageQuerySerializer(serializers.Serializer):
-    after = serializers.IntegerField(required=False)
-    read = serializers.BooleanField(default=False)
 
 
 class MessageModelSerializer(BaseModelSerializer):
@@ -130,3 +108,53 @@ class MessageModelSerializer(BaseModelSerializer):
             if obj.sender_id != self.context["viewer"].pk:
                 return None
             return obj.status_for(self.context["show_read"])
+
+    class write(serializers.Serializer):
+        ciphertext = base64_field(20000)
+        iv = base64_field(32)
+        envelopes = EnvelopeSerializer(many=True)
+        message_key = base64_field(64, required=False)
+
+        def validate_message_key(self, value):
+            try:
+                key = base64.b64decode(value, validate=True)
+            except binascii.Error:
+                key = b""
+            if len(key) != 32:
+                raise serializers.ValidationError("Ungültiger Schlüssel.")
+            return key
+
+    class query(serializers.Serializer):
+        after = serializers.IntegerField(required=False)
+        read = serializers.BooleanField(default=False)
+
+
+class ConversationSerializer(ProfileModelSerializer.list):
+    last_message = serializers.SerializerMethodField()
+    unread = serializers.BooleanField(read_only=True)
+    archived = serializers.BooleanField(read_only=True)
+    pending = serializers.BooleanField(read_only=True)
+
+    class Meta(ProfileModelSerializer.list.Meta):
+        fields = [
+            *ProfileModelSerializer.list.Meta.fields,
+            "last_message",
+            "unread",
+            "archived",
+            "pending",
+        ]
+
+    @property
+    def viewer(self):
+        return self.context["request"].user
+
+    def message_of(self, partner):
+        return self.context["messages"].get(partner.last_message_id)
+
+    def get_last_message(self, partner):
+        message = self.message_of(partner)
+        if message is None:
+            return None
+        show_read = self.viewer.profile.read_receipts and partner.profile.read_receipts
+        context = {"viewer": self.viewer, "show_read": show_read}
+        return MessageModelSerializer.read(message, context=context).data

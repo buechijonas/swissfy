@@ -163,13 +163,6 @@ class UserProfile(models.Model):
             "favorite_games": self.favorite_games,
         }
 
-    def visible_with(self, is_following, is_friend):
-        return (
-            self.profile_visibility == self.Visibility.PUBLIC
-            or (self.profile_visibility == self.Visibility.FOLLOWERS and is_following)
-            or is_friend
-        )
-
 
 @receiver(post_delete, sender=UserProfile)
 def delete_profile_pictures(sender, instance, **kwargs):

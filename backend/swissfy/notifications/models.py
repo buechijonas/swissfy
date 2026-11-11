@@ -20,7 +20,7 @@ def quote(text):
 
 
 class NotificationQuerySet(BaseQuerySet):
-    def apply_acl(self, user):
+    def apply_acl(self, user, action="read"):
         if user.is_anonymous:
             return self.none()
         return self.filter(recipient=user)

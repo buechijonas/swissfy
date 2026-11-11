@@ -5,12 +5,13 @@ from django.db import transaction
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from commons.views import BaseViewSet
-from swissfy.social.users import can_view_profile
+from swissfy.social.models import Member
 
 from ..models import Album, AlbumEntry, Post
 from ..permissions import IsNotSuspended
@@ -51,20 +52,25 @@ class AlbumResponseMixin:
         return get_object_or_404(Album, uuid=uuid, owner=self.request.user)
 
 
+class UserAlbumViewSet(BaseViewSet):
+    serializer_class = AlbumModelSerializer
+
+    def list(self, request, username):
+        owner = get_object_or_404(User.objects.select_related("profile"), username=username)
+        if not Member.objects.can_view(request.user, owner):
+            raise PermissionDenied("Diese Alben sind nicht sichtbar.")
+        albums = owner.albums.select_related("cover__post")
+        return Response(self.get_serializer(albums, many=True).data)
+
+
 class AlbumViewSet(AlbumResponseMixin, BaseViewSet):
     serializer_class = AlbumModelSerializer
     lookup_field = "uuid"
+    lookup_value_converter = "uuid"
     permission_action_classes = {"create": [IsAuthenticated, IsNotSuspended]}
 
     def get_queryset(self):
         return Album.objects.select_related("owner__profile")
-
-    def list(self, request, username):
-        owner = get_object_or_404(User.objects.select_related("profile"), username=username)
-        if not can_view_profile(request.user, owner):
-            raise PermissionDenied("Diese Alben sind nicht sichtbar.")
-        albums = owner.albums.select_related("cover__post")
-        return Response(self.get_serializer(albums, many=True).data)
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -74,6 +80,7 @@ class AlbumViewSet(AlbumResponseMixin, BaseViewSet):
             album = serializer.save(owner=request.user, position=0)
         return self.album_response(album, status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=["put"])
     def order(self, request):
         albums = apply_order(request.user.albums.all(), request.data.get("albums"), "albums")
         Album.objects.bulk_update(albums, ["position"])
@@ -84,7 +91,7 @@ class AlbumViewSet(AlbumResponseMixin, BaseViewSet):
 
     def retrieve(self, request, uuid):
         album = self.get_object()
-        if not can_view_profile(request.user, album.owner):
+        if not Member.objects.can_view(request.user, album.owner):
             raise PermissionDenied("Dieses Album ist nicht sichtbar.")
         return self.album_response(album)
 
@@ -98,12 +105,8 @@ class AlbumViewSet(AlbumResponseMixin, BaseViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AlbumEntryViewSet(AlbumResponseMixin, BaseViewSet):
+class AlbumEntryCollectionViewSet(AlbumResponseMixin, BaseViewSet):
     serializer_class = AlbumEntryModelSerializer
-    lookup_field = "uuid"
-
-    def get_queryset(self):
-        return AlbumEntry.objects.select_related("album").filter(album__owner=self.request.user)
 
     def create(self, request, uuid):
         album = self.own_album(uuid)
@@ -119,6 +122,15 @@ class AlbumEntryViewSet(AlbumResponseMixin, BaseViewSet):
             for index, entry in enumerate(serializer.validated_data)
         )
         return self.album_response(album, status.HTTP_201_CREATED)
+
+
+class AlbumEntryViewSet(AlbumResponseMixin, BaseViewSet):
+    serializer_class = AlbumEntryModelSerializer
+    lookup_field = "uuid"
+    lookup_value_converter = "uuid"
+
+    def get_queryset(self):
+        return AlbumEntry.objects.select_related("album").filter(album__owner=self.request.user)
 
     def partial_update(self, request, uuid):
         entry = self.get_object()

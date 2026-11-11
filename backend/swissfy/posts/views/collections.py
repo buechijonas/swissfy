@@ -15,6 +15,7 @@ class OwnedViewSet(
     mixins.DestroyModelMixin,
 ):
     pagination_class = None
+    lookup_value_converter = "int"
 
     def get_queryset(self):
         return self.model.objects.filter(owner=self.request.user)

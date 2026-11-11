@@ -1,12 +1,37 @@
 from uuid import uuid4
 
 from django.db import models
+from django.db.models import (
+    BooleanField,
+    Count,
+    ExpressionWrapper,
+    IntegerField,
+    OuterRef,
+    Subquery,
+    Value,
+)
+from django.db.models.functions import Coalesce
 
 from . import encryption
 
 
+def count_of(queryset, field="post"):
+    counts = (
+        queryset.filter(**{field: OuterRef("pk")})
+        .order_by()
+        .values(field)
+        .annotate(count=Count("pk"))
+        .values("count")
+    )
+    return Coalesce(Subquery(counts, output_field=IntegerField()), Value(0))
+
+
+def boolean(condition):
+    return ExpressionWrapper(condition, output_field=BooleanField())
+
+
 class BaseQuerySet(models.QuerySet):
-    def apply_acl(self, user):
+    def apply_acl(self, user, action="read"):
         return self.none()
 
 

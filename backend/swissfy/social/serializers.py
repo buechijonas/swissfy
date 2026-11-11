@@ -3,8 +3,8 @@ from rest_framework import serializers
 
 from commons.fields import CompactNumberField
 from commons.serializers import BaseModelSerializer
+from swissfy.accounts.fields import RoleBadgeField
 from swissfy.accounts.models import UserProfile
-from swissfy.accounts.roles import role_badge
 from swissfy.posts import images
 from swissfy.posts.models import ContactGroup, Post, Story
 from swissfy.posts.serializers import StoryModelSerializer
@@ -13,14 +13,6 @@ from . import library
 from .pictures import KINDS, PictureField, file_url, picture_file
 
 User = get_user_model()
-
-
-class RoleBadgeField(serializers.Field):
-    def __init__(self, **kwargs):
-        super().__init__(source="*", read_only=True, **kwargs)
-
-    def to_representation(self, user):
-        return role_badge(user)
 
 
 HIDDEN_LIST_FIELDS = ["first_name", "last_name", "role"]
@@ -139,12 +131,6 @@ class ProfileModelSerializer(BaseModelSerializer):
             return data
 
 
-class PrivacySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserProfile
-        fields = ["profile_visibility", "read_receipts", "chat_requests", "show_birthdate"]
-
-
 FAVORITE_FIELDS = {f"favorite_{kind}": kind for kind in library.KINDS}
 
 
@@ -162,85 +148,90 @@ def about_data(profile):
     }
 
 
-class AboutSerializer(serializers.ModelSerializer):
-    favorite_movies = serializers.ListField(
-        child=serializers.CharField(), max_length=library.MAX_FAVORITES, required=False
-    )
-    favorite_series = serializers.ListField(
-        child=serializers.CharField(), max_length=library.MAX_FAVORITES, required=False
-    )
-    favorite_games = serializers.ListField(
-        child=serializers.CharField(), max_length=library.MAX_FAVORITES, required=False
-    )
+class ProfileSettingsModelSerializer:
+    class privacy(serializers.ModelSerializer):
+        class Meta:
+            model = UserProfile
+            fields = ["profile_visibility", "read_receipts", "chat_requests", "show_birthdate"]
 
-    class Meta:
-        model = UserProfile
-        fields = ["biography", *FAVORITE_FIELDS]
-
-    def validate(self, data):
-        for field, kind in FAVORITE_FIELDS.items():
-            if field not in data:
-                continue
-            known = {item["id"]: item for item in self.instance.favorites[field]}
-            ids = list(dict.fromkeys(data[field]))
-            data[field] = [known.get(id) or library.details(kind, id) for id in ids]
-        return data
-
-    def to_representation(self, profile):
-        return about_data(profile)
-
-
-class PictureSettingsSerializer(serializers.ModelSerializer):
-    public_picture = serializers.FileField(required=False, write_only=True)
-    private_picture = serializers.FileField(required=False, write_only=True)
-
-    class Meta:
-        model = UserProfile
-        fields = [
-            "public_picture",
-            "private_picture",
-            "private_picture_visibility",
-            "private_picture_groups",
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["private_picture_groups"].child_relation.queryset = ContactGroup.objects.filter(
-            owner=self.context["request"].user
+    class about(serializers.ModelSerializer):
+        favorite_movies = serializers.ListField(
+            child=serializers.CharField(), max_length=library.MAX_FAVORITES, required=False
+        )
+        favorite_series = serializers.ListField(
+            child=serializers.CharField(), max_length=library.MAX_FAVORITES, required=False
+        )
+        favorite_games = serializers.ListField(
+            child=serializers.CharField(), max_length=library.MAX_FAVORITES, required=False
         )
 
-    def compress(self, upload):
-        try:
-            return images.thumbnail(images.load(upload))
-        except images.InvalidImage as error:
-            raise serializers.ValidationError(str(error))
+        class Meta:
+            model = UserProfile
+            fields = ["biography", *FAVORITE_FIELDS]
 
-    def validate_public_picture(self, upload):
-        return self.compress(upload)
+        def validate(self, data):
+            for field, kind in FAVORITE_FIELDS.items():
+                if field not in data:
+                    continue
+                known = {item["id"]: item for item in self.instance.favorites[field]}
+                ids = list(dict.fromkeys(data[field]))
+                data[field] = [known.get(id) or library.details(kind, id) for id in ids]
+            return data
 
-    def validate_private_picture(self, upload):
-        return self.compress(upload)
+        def to_representation(self, profile):
+            return about_data(profile)
 
-    def validate(self, data):
-        visibility = data.get("private_picture_visibility")
-        if visibility == UserProfile.PictureAudience.GROUPS:
-            if not data.get("private_picture_groups"):
-                raise serializers.ValidationError(
-                    {"private_picture_groups": "Wähle mindestens eine Gruppe."}
-                )
-        elif visibility:
-            data["private_picture_groups"] = []
-        return data
+    class pictures(serializers.ModelSerializer):
+        public_picture = serializers.FileField(required=False, write_only=True)
+        private_picture = serializers.FileField(required=False, write_only=True)
 
-    def update(self, profile, data):
-        for kind in KINDS:
-            if f"{kind}_picture" in data:
-                picture_file(profile, kind).delete(save=False)
-        return super().update(profile, data)
+        class Meta:
+            model = UserProfile
+            fields = [
+                "public_picture",
+                "private_picture",
+                "private_picture_visibility",
+                "private_picture_groups",
+            ]
 
-    def to_representation(self, profile):
-        data = super().to_representation(profile)
-        for kind in KINDS:
-            file = picture_file(profile, kind)
-            data[f"{kind}_picture"] = file_url(profile.user, kind, file) if file else None
-        return data
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.fields["private_picture_groups"].child_relation.queryset = (
+                ContactGroup.objects.filter(owner=self.context["request"].user)
+            )
+
+        def compress(self, upload):
+            try:
+                return images.thumbnail(images.load(upload))
+            except images.InvalidImage as error:
+                raise serializers.ValidationError(str(error))
+
+        def validate_public_picture(self, upload):
+            return self.compress(upload)
+
+        def validate_private_picture(self, upload):
+            return self.compress(upload)
+
+        def validate(self, data):
+            visibility = data.get("private_picture_visibility")
+            if visibility == UserProfile.PictureAudience.GROUPS:
+                if not data.get("private_picture_groups"):
+                    raise serializers.ValidationError(
+                        {"private_picture_groups": "Wähle mindestens eine Gruppe."}
+                    )
+            elif visibility:
+                data["private_picture_groups"] = []
+            return data
+
+        def update(self, profile, data):
+            for kind in KINDS:
+                if f"{kind}_picture" in data:
+                    picture_file(profile, kind).delete(save=False)
+            return super().update(profile, data)
+
+        def to_representation(self, profile):
+            data = super().to_representation(profile)
+            for kind in KINDS:
+                file = picture_file(profile, kind)
+                data[f"{kind}_picture"] = file_url(profile.user, kind, file) if file else None
+            return data

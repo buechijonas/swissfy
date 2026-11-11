@@ -1,3 +1,4 @@
+from commons.exceptions import BadRequest
 from swissfy.notifications.models import Notification
 from swissfy.notifications.notify import notify, resolve_request, withdraw
 
@@ -33,15 +34,11 @@ def unfollow(viewer, target):
     withdraw(target, Kind.FOLLOW_REQUEST, viewer, resolution="")
 
 
-def friend_request_error(viewer, target):
-    if not (follows(viewer, target) and follows(target, viewer)):
-        return "Freundschaftsanfragen gehen nur, wenn ihr euch gegenseitig folgt."
-    if are_friends(viewer, target):
-        return "Ihr seid bereits befreundet."
-    return None
-
-
 def send_friend_request(viewer, target):
+    if not (follows(viewer, target) and follows(target, viewer)):
+        raise BadRequest("Freundschaftsanfragen gehen nur, wenn ihr euch gegenseitig folgt.")
+    if are_friends(viewer, target):
+        raise BadRequest("Ihr seid bereits befreundet.")
     _, created = FriendRequest.objects.get_or_create(sender=viewer, receiver=target)
     if created:
         notify(target, Kind.FRIEND_REQUEST, actor=viewer)

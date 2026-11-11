@@ -1,21 +1,32 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from commons.exceptions import BadRequest
 from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
 from swissfy.accounts.roles import IsModerator
 from swissfy.posts.models import Comment, Post
 from swissfy.posts.serializers import PostModelSerializer
-from swissfy.posts.views.comments import CommentReplyViewSet, CommentViewSet, PostCommentViewSet
+from swissfy.posts.views.comments import (
+    CommentDetailViewSet,
+    CommentReplyListViewSet,
+    PostCommentListViewSet,
+)
 
-from .models import Report, Warning
+from .models import AlreadyWarned, Report
 from .permissions import CanModerateAuthor, CanReportAuthor, CanViewWarnings, IsNotAuthor
-from .reviews import ReportQueuePage, moderation_context, moderation_details, status_of
+from .reviews import moderation_context, report_groups
 from .sanctions import issue_warning
-from .serializers import WarningModelSerializer
+from .serializers import (
+    ModerationDetailsSerializer,
+    ModerationStatusSerializer,
+    ReportGroupSerializer,
+    WarningModelSerializer,
+)
 
 User = get_user_model()
 
@@ -23,23 +34,20 @@ User = get_user_model()
 class ReportViewSet(BaseViewSet):
     permission_classes = [IsAuthenticated, IsNotAuthor, CanReportAuthor]
     lookup_field = "uuid"
-    field = None
+    lookup_value_converter = "uuid"
 
+    @action(detail=True, methods=["post"])
     def report(self, request, uuid):
-        Report.objects.get_or_create(reporter=request.user, **{self.field: self.get_object()})
+        self.get_object().report_by(request.user)
         return Response({"reported": True})
 
 
 class PostReportViewSet(ReportViewSet):
-    field = "post"
-
     def get_queryset(self):
         return Post.objects.apply_acl(self.request.user)
 
 
 class CommentReportViewSet(ReportViewSet):
-    field = "comment"
-
     def get_queryset(self):
         return Comment.objects.apply_acl(self.request.user)
 
@@ -54,27 +62,89 @@ class ReportQueueViewSet(BaseViewSet, mixins.ListModelMixin):
 
     def list(self, request, *args, **kwargs):
         page = self.paginate_queryset(self.get_queryset())
-        return self.get_paginated_response(ReportQueuePage(page, request).results())
+        context = moderation_context(request)
+        groups = [
+            ReportGroupSerializer.of(group)(group, context=context).data
+            for group in report_groups(page, request.user)
+        ]
+        return self.get_paginated_response(groups)
 
 
-class ModerationPostViewSet(BaseViewSet, mixins.RetrieveModelMixin):
+MODERATOR_OF_AUTHOR = [IsModerator, CanModerateAuthor]
+
+
+class ModerationActionsMixin:
+    model = None
+
+    def reported_target(self):
+        reported = self.model.objects.filter(reports__isnull=False).distinct()
+        target = get_object_or_404(reported, uuid=self.kwargs["uuid"])
+        self.check_object_permissions(self.request, target)
+        return target
+
+    def details(self, target):
+        return ModerationDetailsSerializer(target, context={"request": self.request}).data
+
+    @action(
+        detail=True, methods=["post"], url_path="warnings", permission_classes=MODERATOR_OF_AUTHOR
+    )
+    def warn(self, request, uuid):
+        target = self.reported_target()
+        serializer = WarningModelSerializer.write(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        reason = serializer.validated_data["reason"]
+        try:
+            warning = issue_warning(target, request.user, reason)
+        except AlreadyWarned:
+            raise BadRequest("Dieser Inhalt wurde bereits verwarnt.")
+        return Response(
+            {"warning": WarningModelSerializer.read(warning).data, "report_count": 0},
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=["post"], permission_classes=MODERATOR_OF_AUTHOR)
+    def dismiss(self, request, uuid):
+        self.reported_target().reports.resolve()
+        return Response({"report_count": 0})
+
+
+class ReportedPostViewSet(ModerationActionsMixin, BaseViewSet, mixins.RetrieveModelMixin):
     permission_classes = [IsModerator]
     lookup_field = "uuid"
+    lookup_value_converter = "uuid"
+    model = Post
 
     def get_queryset(self):
         return Post.objects.reported().with_details(self.request.user)
 
     def retrieve(self, request, *args, **kwargs):
         post = self.get_object()
+        context = moderation_context(request)
         return Response(
-            {
-                "post": PostModelSerializer.read(post, context=moderation_context(request)).data,
-                **moderation_details(request.user, post, post=post),
-            }
+            {"post": PostModelSerializer.read(post, context=context).data, **self.details(post)}
         )
 
 
-class ModerationPostCommentViewSet(PostCommentViewSet):
+class ReportedCommentViewSet(ModerationActionsMixin, CommentDetailViewSet):
+    permission_classes = [IsModerator]
+    lookup_value_converter = "uuid"
+    model = Comment
+
+    def get_queryset(self):
+        return Comment.objects.on_reported_posts().with_details(self.request.user)
+
+    def get_posts(self):
+        return Post.objects.reported().with_details(self.request.user)
+
+    def get_serializer_context(self):
+        return moderation_context(self.request)
+
+    def retrieve(self, request, *args, **kwargs):
+        data = super().retrieve(request, *args, **kwargs).data
+        return Response({**data, **self.details(self.get_object())})
+
+
+class ReportedPostCommentViewSet(PostCommentListViewSet):
     permission_classes = [IsModerator]
 
     def comments(self):
@@ -88,7 +158,7 @@ class ModerationPostCommentViewSet(PostCommentViewSet):
         return moderation_context(self.request)
 
 
-class ModerationCommentReplyViewSet(CommentReplyViewSet):
+class ReportedCommentReplyViewSet(CommentReplyListViewSet):
     permission_classes = [IsModerator]
 
     def comments(self):
@@ -102,74 +172,14 @@ class ModerationCommentReplyViewSet(CommentReplyViewSet):
         return moderation_context(self.request)
 
 
-class ModerationCommentViewSet(CommentViewSet):
-    permission_classes = [IsModerator]
-
-    def get_queryset(self):
-        return Comment.objects.on_reported_posts().with_details(self.request.user)
-
-    def get_posts(self):
-        return Post.objects.reported().with_details(self.request.user)
-
-    def get_object(self):
-        return get_object_or_404(self.get_queryset(), uuid=self.kwargs["uuid"])
-
-    def get_serializer_context(self):
-        return moderation_context(self.request)
-
-    def retrieve(self, request, *args, **kwargs):
-        comment = self.get_object()
-        data = super().retrieve(request, *args, **kwargs).data
-        return Response({**data, **moderation_details(request.user, comment, comment=comment)})
-
-
-class ModerationTargetViewSet(BaseViewSet):
-    permission_classes = [IsModerator, CanModerateAuthor]
-    lookup_field = "uuid"
-    field = None
-    model = None
-
-    def get_queryset(self):
-        return self.model.objects.filter(reports__isnull=False).distinct()
-
-    def warn(self, request, uuid):
-        target = self.get_object()
-        if Warning.objects.filter(**{self.field: target}).exists():
-            return Response(
-                {"detail": "Dieser Inhalt wurde bereits verwarnt."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        serializer = WarningModelSerializer.write(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        warning = issue_warning(
-            target, self.field, request.user, serializer.validated_data["reason"]
-        )
-        return Response(
-            {"warning": WarningModelSerializer.read(warning).data, "report_count": 0},
-            status=status.HTTP_201_CREATED,
-        )
-
-    def dismiss(self, request, uuid):
-        self.get_object().reports.resolve()
-        return Response({"report_count": 0})
-
-
-class PostModerationViewSet(ModerationTargetViewSet):
-    field = "post"
-    model = Post
-
-
-class CommentModerationViewSet(ModerationTargetViewSet):
-    field = "comment"
-    model = Comment
-
-
-class StatusViewSet(BaseViewSet, mixins.RetrieveModelMixin):
+class StatusViewSet(BaseViewSet):
     permission_classes = [IsAuthenticated, CanViewWarnings]
     lookup_field = "username"
 
     def get_queryset(self):
         return User.objects.filter(is_active=True)
 
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status_of(self.get_object(), request.user))
+    @action(detail=True)
+    def status(self, request, username):
+        context = self.get_serializer_context()
+        return Response(ModerationStatusSerializer(self.get_object(), context=context).data)

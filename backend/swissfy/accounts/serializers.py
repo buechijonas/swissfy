@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from commons.fields import StrictCharField
 from commons.serializers import BaseModelSerializer
 from swissfy.social.pictures import PictureField
 
@@ -44,5 +43,6 @@ class UserModelSerializer(BaseModelSerializer):
             ]
 
 
-class DeviceTokenSerializer(serializers.Serializer):
-    token = StrictCharField(required=False, allow_blank=True)
+class DeviceTokenModelSerializer:
+    class write(serializers.Serializer):
+        token = serializers.CharField(required=False, allow_blank=True)

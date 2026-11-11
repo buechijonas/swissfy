@@ -18,9 +18,10 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils import timezone
 
-from commons.models import BaseModel, BaseQuerySet, EncryptedTextField, UUIDModel
+from commons.models import BaseModel, BaseQuerySet, EncryptedTextField, UUIDModel, count_of
 from swissfy.accounts.models import UserProfile
 from swissfy.accounts.roles import is_admin, is_moderator
+from swissfy.moderation.models import Report, Warning
 from swissfy.moderation.sanctions import is_suspended, suspended_users
 from swissfy.social.models import Follow, Friendship
 
@@ -39,17 +40,6 @@ def story_cutoff():
 
 def aspect_ratio(width, height):
     return round(width / height, 4) if width and height else None
-
-
-def count_of(queryset, field="post"):
-    counts = (
-        queryset.filter(**{field: OuterRef("pk")})
-        .order_by()
-        .values(field)
-        .annotate(count=Count("pk"))
-        .values("count")
-    )
-    return Coalesce(Subquery(counts, output_field=IntegerField()), Value(0))
 
 
 def unfinished_video():
@@ -152,7 +142,16 @@ class HideableModel(UUIDModel):
         return self.hidden_at is not None
 
     def hide(self):
-        type(self).objects.filter(pk=self.pk).update(hidden_at=timezone.now())
+        self.hidden_at = timezone.now()
+        self.save(update_fields=["hidden_at"])
+
+    @property
+    def open_report_count(self):
+        return self.reports.open().count()
+
+    @property
+    def is_warned(self):
+        return self.warning_set.exists()
 
     @property
     def unavailable(self):
@@ -170,7 +169,7 @@ class PostQuerySet(AudienceQuerySet):
         reported = Q(reports__isnull=False) | Q(comments__reports__isnull=False)
         return self.filter(pk__in=Post.objects.filter(reported).values("pk"))
 
-    def apply_acl(self, user):
+    def apply_acl(self, user, action="read"):
         if user.is_anonymous:
             return self.filter(
                 NOT_HIDDEN & ~by_suspended_author() & ~unfinished_video(),
@@ -290,6 +289,12 @@ class Post(HideableModel):
     def __str__(self):
         return f"Post({self.author}, {self.pk})"
 
+    def report_by(self, user):
+        return Report.objects.get_or_create(reporter=user, post=self)
+
+    def new_warning(self, moderator, reason):
+        return Warning(user_id=self.author_id, moderator=moderator, reason=reason, post=self)
+
     @property
     def aspect_ratio(self):
         return aspect_ratio(self.image_width, self.image_height)
@@ -376,7 +381,7 @@ class StoryQuerySet(AudienceQuerySet):
     def active(self):
         return self.filter(created_at__gte=story_cutoff())
 
-    def apply_acl(self, user):
+    def apply_acl(self, user, action="read"):
         groups = ContactGroup.objects.filter(stories=OuterRef("pk"))
         stories, shared = self.active().with_audience(user, groups)
         if is_admin(user):
@@ -469,7 +474,7 @@ class CommentQuerySet(BaseQuerySet):
     def on_reported_posts(self):
         return self.filter(post__in=Post.objects.reported())
 
-    def apply_acl(self, user):
+    def apply_acl(self, user, action="read"):
         on_visible_post = Q(post__in=Post.objects.apply_acl(user)) | Q(author=user)
         return self.visible_to(user).filter(on_visible_post)
 
@@ -510,6 +515,12 @@ class Comment(HideableModel):
 
     def __str__(self):
         return f"Comment({self.author}, {self.post_id})"
+
+    def report_by(self, user):
+        return Report.objects.get_or_create(reporter=user, comment=self)
+
+    def new_warning(self, moderator, reason):
+        return Warning(user_id=self.author_id, moderator=moderator, reason=reason, comment=self)
 
     def hide(self):
         now = timezone.now()

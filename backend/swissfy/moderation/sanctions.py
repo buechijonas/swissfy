@@ -1,10 +1,19 @@
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.db.models import Exists, Max, OuterRef, Subquery
 from django.utils import timezone
 
 from swissfy.accounts.roles import Role, role_of, set_role
 from swissfy.notifications.models import Notification
 from swissfy.notifications.notify import notify
 
-from .models import SUSPENSION_STEPS, Suspension, Warning
+from .models import (
+    SUSPENSION_STEPS,
+    WARNING_EXPIRY,
+    Suspension,
+    Warning,
+    convert_warning_integrity_error,
+)
 
 LOCKED_FOREVER = "forever"
 WARNINGS_BEFORE_SUSPENSION = 3
@@ -61,10 +70,11 @@ def suspend(user, warning, step, starts_at):
     return suspension
 
 
-def issue_warning(target, field, moderator, reason):
-    warning = Warning.objects.create(
-        user_id=target.author_id, moderator=moderator, reason=reason, **{field: target}
-    )
+@transaction.atomic
+def issue_warning(target, moderator, reason):
+    warning = target.new_warning(moderator, reason)
+    with convert_warning_integrity_error(), transaction.atomic():
+        warning.save()
     target.reports.resolve()
     target.hide()
     notify(warning.user, Notification.Kind.WARNING, warning=warning)
@@ -72,14 +82,32 @@ def issue_warning(target, field, moderator, reason):
     return warning
 
 
-def role_locked_until(user):
-    now = timezone.now()
-    if not Suspension.objects.filter(user=user).exists():
-        return None
-    pending = list(
-        Suspension.objects.filter(user=user).pending(now).values_list("ends_at", flat=True)
+def latest(queryset, field):
+    values = queryset.order_by().values("user").annotate(latest=Max(field)).values("latest")
+    return Subquery(values[:1])
+
+
+def annotate_role_lock(users, now=None):
+    now = now or timezone.now()
+    suspensions = Suspension.objects.filter(user=OuterRef("pk"))
+    warnings = Warning.objects.filter(user=OuterRef("pk")).active(now)
+    return users.annotate(
+        has_suspension=Exists(suspensions),
+        locked_forever=Exists(suspensions.filter(ends_at__isnull=True)),
+        latest_suspension_end=latest(suspensions.filter(ends_at__gt=now), "ends_at"),
+        latest_warning_at=latest(warnings, "created_at"),
     )
-    if None in pending:
+
+
+def role_lock(user):
+    if not user.has_suspension:
+        return None
+    if user.locked_forever:
         return LOCKED_FOREVER
-    expiries = [warning.expires_at for warning in Warning.objects.filter(user=user).active(now)]
-    return max(pending + expiries, default=None)
+    warning_expiry = user.latest_warning_at and user.latest_warning_at + WARNING_EXPIRY
+    return max(filter(None, [user.latest_suspension_end, warning_expiry]), default=None)
+
+
+def role_locked_until(user):
+    users = get_user_model().objects.filter(pk=user.pk)
+    return role_lock(annotate_role_lock(users).get())

@@ -1,51 +1,30 @@
-from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef, Subquery
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
+from commons.exceptions import BadRequest
 from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
-from swissfy.accounts.roles import NAME_ORDERING, is_admin, with_role_rank
-from swissfy.moderation.sanctions import suspended_users
+from swissfy.chats.models import annotate_chat_availability
 from swissfy.posts.models import Story, StoryLike, StoryView, story_cutoff
 from swissfy.posts.views.media import serve_image
 
-from . import library
-from .models import FollowRequest, FriendRequest
+from . import library, relations
+from .models import FollowRequest, FriendRequest, Member
 from .pictures import KINDS, picture_file, sees_private, viewer_relations
-from .relations import (
-    accept_open_follow_requests,
-    decide_follow_request,
-    decide_friend_request,
-    follow,
-    friend_request_error,
-    send_friend_request,
-    unfollow,
-)
 from .serializers import (
-    AboutSerializer,
-    PictureSettingsSerializer,
-    PrivacySerializer,
     ProfileModelSerializer,
+    ProfileSettingsModelSerializer,
     favorites_data,
 )
-from .users import (
-    CONNECTIONS,
-    can_view_profile,
-    profile_target,
-    search,
-    with_profile_details,
-    with_viewer_relations,
-    with_visibility_ranks,
-)
 
-User = get_user_model()
-
-LIST_ACTIONS = {"list", "connections"}
+CONNECTIONS = {"followers", "following", "friends"}
+LIST_ACTIONS = {"list", *CONNECTIONS}
 
 
 def checked_kind(kind):
@@ -65,30 +44,27 @@ class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
         return ProfileModelSerializer.read
 
     def get_queryset(self):
-        if self.action == "list":
-            users = User.objects.filter(is_active=True).exclude(pk=self.request.user.pk)
-            return self.ranked(users)
-        if self.action == "connections":
-            return self.ranked(self.connected_users())
-        return with_profile_details(User.objects.all(), self.request.user)
-
-    def ranked(self, users):
         viewer = self.request.user
-        if not is_admin(viewer):
-            users = users.exclude(pk__in=suspended_users())
-        users = search(users, self.request.query_params.get("q", ""), viewer)
-        users = with_visibility_ranks(with_viewer_relations(with_role_rank(users), viewer), viewer)
-        return users.order_by("lock_rank", "shown_role_rank", *NAME_ORDERING)
+        if self.action == "list":
+            return self.ranked(Member.objects.exclude(pk=viewer.pk))
+        if self.action in CONNECTIONS:
+            return self.ranked(Member.objects.connected_to(self.action, self.connected()))
+        return annotate_chat_availability(Member.objects.annotate_profile_details(viewer), viewer)
 
-    def connected_users(self):
-        target = profile_target(self.request.user, self.kwargs["username"])
-        if not can_view_profile(self.request.user, target):
+    def ranked(self, members):
+        viewer = self.request.user
+        query = self.request.query_params.get("q", "")
+        return members.listed_for(viewer).search(query, viewer).ranked_for(viewer)
+
+    def connected(self):
+        target = self.get_object()
+        if not Member.objects.can_view(self.request.user, target):
             raise PermissionDenied("Dieses Profil ist privat.")
-        connected = CONNECTIONS[self.kwargs["kind"]](target)
-        return User.objects.filter(is_active=True, pk__in=connected)
+        return target
 
     def get_object(self):
-        return profile_target(self.request.user, self.kwargs["username"])
+        members = Member.objects.apply_acl(self.request.user)
+        return get_object_or_404(members, username=self.kwargs["username"])
 
     def respond(self, user):
         user = self.get_queryset().get(pk=user.pk)
@@ -99,35 +75,43 @@ class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
     def retrieve(self, request, *args, **kwargs):
         return self.respond(self.get_object())
 
+    @action(detail=False)
     def me(self, request):
         return self.respond(request.user)
 
-    def connections(self, request, username, kind):
+    @action(detail=True)
+    def followers(self, request, username):
         return self.list(request)
 
+    @action(detail=True)
+    def following(self, request, username):
+        return self.list(request)
+
+    @action(detail=True)
+    def friends(self, request, username):
+        return self.list(request)
+
+    @action(detail=True, methods=["post"])
     def follow(self, request, username):
         target = self.get_object()
         if target == request.user:
-            return Response(
-                {"detail": "Du kannst dir nicht selbst folgen."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        follow(request.user, target)
+            raise BadRequest("Du kannst dir nicht selbst folgen.")
+        relations.follow(request.user, target)
         return self.respond(target)
 
+    @follow.mapping.delete
     def unfollow(self, request, username):
         target = self.get_object()
-        unfollow(request.user, target)
+        relations.unfollow(request.user, target)
         return self.respond(target)
 
+    @action(detail=True, methods=["post"], url_path="friend-request")
     def friend_request(self, request, username):
         target = self.get_object()
-        error = friend_request_error(request.user, target)
-        if error:
-            return Response({"detail": error}, status=status.HTTP_400_BAD_REQUEST)
-        send_friend_request(request.user, target)
+        relations.send_friend_request(request.user, target)
         return self.respond(target)
 
+    @action(detail=True, url_path="pictures/<str:kind>")
     def picture(self, request, username, kind):
         target = self.get_object()
         file = picture_file(target.profile, checked_kind(kind))
@@ -145,7 +129,7 @@ class OwnProfileViewSet(BaseViewSet):
     def profile(self):
         return self.request.user.profile
 
-    def edit(self, serializer_class, **kwargs):
+    def edit(self, serializer_class):
         serializer = serializer_class(
             self.profile,
             data=self.request.data,
@@ -153,64 +137,84 @@ class OwnProfileViewSet(BaseViewSet):
             context=self.get_serializer_context(),
         )
         serializer.is_valid(raise_exception=True)
-        return serializer, serializer.save()
+        serializer.save()
+        return serializer
 
+    @action(detail=False)
     def privacy(self, request):
-        return Response(PrivacySerializer(self.profile).data)
+        return Response(ProfileSettingsModelSerializer.privacy(self.profile).data)
 
+    @privacy.mapping.patch
     def update_privacy(self, request):
-        serializer, profile = self.edit(PrivacySerializer)
-        if not profile.requires_follow_request:
-            accept_open_follow_requests(request.user)
+        serializer = self.edit(ProfileSettingsModelSerializer.privacy)
+        if not serializer.instance.requires_follow_request:
+            relations.accept_open_follow_requests(request.user)
         return Response(serializer.data)
 
+    @action(detail=False)
     def about(self, request):
-        return Response(AboutSerializer(self.profile).data)
+        return Response(ProfileSettingsModelSerializer.about(self.profile).data)
 
+    @about.mapping.patch
     def update_about(self, request):
-        _, profile = self.edit(AboutSerializer)
-        return Response(AboutSerializer(profile).data)
+        return Response(self.edit(ProfileSettingsModelSerializer.about).data)
 
+    @action(detail=False, url_path="follow-requests")
     def follow_requests(self, request):
-        users = User.objects.filter(
-            is_active=True, sent_follow_requests__following=request.user
-        ).order_by("sent_follow_requests__created_at")
-        users = with_viewer_relations(users, request.user)
+        users = (
+            Member.objects.filter(is_active=True, sent_follow_requests__following=request.user)
+            .with_viewer_relations(request.user)
+            .order_by("sent_follow_requests__created_at")
+        )
         context = self.get_serializer_context()
         return Response(ProfileModelSerializer.list(users, many=True, context=context).data)
 
+    @action(detail=False, methods=["post", "delete"], url_path="follow-requests/<str:username>")
     def decide_follow_request(self, request, username):
         follow_request = get_object_or_404(
             FollowRequest, follower__username=username, following=request.user
         )
-        decide_follow_request(follow_request, accepted=request.method == "POST")
+        relations.decide_follow_request(follow_request, accepted=request.method == "POST")
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=False, methods=["post", "delete"], url_path="friend-requests/<str:username>")
     def decide_friend_request(self, request, username):
         friend_request = get_object_or_404(
             FriendRequest, sender__username=username, receiver=request.user
         )
-        decide_friend_request(friend_request, accepted=request.method == "POST")
+        relations.decide_friend_request(friend_request, accepted=request.method == "POST")
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class OwnPictureViewSet(OwnProfileViewSet):
+class OwnPictureViewSet(BaseViewSet):
     parser_classes = [MultiPartParser, JSONParser]
 
+    @property
+    def profile(self):
+        return self.request.user.profile
+
+    @action(detail=False)
     def pictures(self, request):
         context = self.get_serializer_context()
-        return Response(PictureSettingsSerializer(self.profile, context=context).data)
+        return Response(ProfileSettingsModelSerializer.pictures(self.profile, context=context).data)
 
+    @pictures.mapping.patch
     def update_pictures(self, request):
-        self.edit(PictureSettingsSerializer)
+        serializer = ProfileSettingsModelSerializer.pictures(
+            self.profile, data=request.data, partial=True, context=self.get_serializer_context()
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return self.pictures(request)
 
+    @action(detail=False, methods=["delete"], url_path="pictures/<str:kind>")
     def delete_picture(self, request, kind):
         picture_file(self.profile, checked_kind(kind)).delete()
         return self.pictures(request)
 
 
 class LibraryViewSet(BaseViewSet):
+    @action(detail=False, url_path="library/<str:kind>")
     def search(self, request, kind):
         if kind not in library.KINDS:
             raise Http404
@@ -239,9 +243,12 @@ class StoryViewerViewSet(BaseViewSet, mixins.ListModelMixin):
         stories = Story.objects.filter(author=self.request.user, created_at__gte=story_cutoff())
         story = get_object_or_404(stories, uuid=self.kwargs["uuid"])
         views = StoryView.objects.filter(story=story, user=OuterRef("pk"))
-        users = User.objects.filter(pk__in=views.values("user")).exclude(pk=self.request.user.pk)
-        users = users.annotate(
-            viewed_at=Subquery(views.values("created_at")),
-            liked=Exists(StoryLike.objects.filter(story=story, user=OuterRef("pk"))),
+        users = Member.objects.filter(pk__in=views.values("user")).exclude(pk=self.request.user.pk)
+        return (
+            users.with_viewer_relations(self.request.user)
+            .annotate(
+                viewed_at=Subquery(views.values("created_at")),
+                liked=Exists(StoryLike.objects.filter(story=story, user=OuterRef("pk"))),
+            )
+            .order_by("-viewed_at")
         )
-        return with_viewer_relations(users, self.request.user).order_by("-viewed_at")

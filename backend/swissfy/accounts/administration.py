@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from commons.serializers import BaseModelSerializer
 from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
-from swissfy.moderation.sanctions import role_locked_until
+from swissfy.moderation.sanctions import annotate_role_lock, role_lock, role_locked_until
 from swissfy.social.pictures import PictureField
 
 from .fields import RoleBadgeField, RoleField
@@ -16,13 +16,21 @@ from .roles import USER_ORDERING, IsAdmin, Role, set_role, with_role_rank
 User = get_user_model()
 
 
+class RoleLockField(serializers.Field):
+    def __init__(self, **kwargs):
+        super().__init__(source="*", read_only=True, **kwargs)
+
+    def to_representation(self, user):
+        return role_lock(user)
+
+
 class AdminUserModelSerializer(BaseModelSerializer):
     class read(BaseModelSerializer.read):
         avatar = serializers.CharField(source="profile.avatar", read_only=True)
         picture = PictureField()
         role = RoleField(read_only=True)
         badge = RoleBadgeField()
-        role_locked_until = serializers.SerializerMethodField()
+        role_locked_until = RoleLockField()
         is_self = serializers.BooleanField(read_only=True)
 
         class Meta(BaseModelSerializer.read.Meta):
@@ -38,9 +46,6 @@ class AdminUserModelSerializer(BaseModelSerializer):
                 "role_locked_until",
                 "is_self",
             ]
-
-        def get_role_locked_until(self, obj):
-            return role_locked_until(obj)
 
     class write(BaseModelSerializer.write):
         role = RoleField()
@@ -90,12 +95,13 @@ class AdminUserViewSet(BaseViewSet, mixins.ListModelMixin):
 
     def get_queryset(self):
         is_self = ExpressionWrapper(Q(pk=self.request.user.pk), output_field=BooleanField())
-        return (
+        users = (
             User.objects.filter(is_active=True)
             .select_related("profile")
             .prefetch_related("groups")
             .annotate(is_self=is_self)
         )
+        return annotate_role_lock(users)
 
     def filter_queryset(self, users):
         params = self.request.query_params
@@ -106,7 +112,11 @@ class AdminUserViewSet(BaseViewSet, mixins.ListModelMixin):
         user = self.get_object()
         serializer = self.get_serializer(user, data=request.data)
         serializer.is_valid(raise_exception=True)
-        return self.read(serializer.save())
+        return self.respond(serializer.save())
 
-    def roles(self, request):
+
+class RoleViewSet(BaseViewSet):
+    permission_classes = [IsAdmin]
+
+    def list(self, request):
         return Response([{"value": value, "label": label} for value, label in Role.choices])

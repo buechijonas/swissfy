@@ -11,8 +11,10 @@ class CompactNumberField(serializers.IntegerField):
         return compact_number(value)
 
 
-class StrictCharField(serializers.CharField):
-    def to_internal_value(self, data):
-        if type(data) is not str:
-            self.fail("invalid")
-        return super().to_internal_value(data)
+class ConstantField(serializers.Field):
+    def __init__(self, value, **kwargs):
+        super().__init__(source="*", read_only=True, **kwargs)
+        self.value = value
+
+    def to_representation(self, instance):
+        return self.value

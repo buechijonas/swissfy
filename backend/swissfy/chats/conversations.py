@@ -1,15 +1,15 @@
 from functools import cached_property
 
 from django.contrib.auth import get_user_model
-from django.db.models import OuterRef, Subquery
+from django.db.models import Exists, F, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
 
+from commons.models import boolean
 from swissfy.accounts.models import UserProfile
-from swissfy.social.serializers import ProfileModelSerializer
-from swissfy.social.users import with_viewer_relations
+from swissfy.social.models import Member
 
 from .crypto import wrap_message_key
-from .models import ChatKey, ChatRequest, Envelope, Message
-from .serializers import MessageModelSerializer
+from .models import ArchivedChat, ChatKey, ChatRequest, Envelope, Message
 
 User = get_user_model()
 Protection = UserProfile.ChatProtection
@@ -127,45 +127,27 @@ class Conversation:
         return message
 
 
-class ConversationList:
-    def __init__(self, request):
-        self.request = request
-        self.me = request.user
-        chat_requests = list(ChatRequest.objects.started_by(self.me))
-        self.started = {chat.partner_of(self.me): chat.created_at for chat in chat_requests}
-        self.pending = {chat.recipient_id for chat in chat_requests if not chat.is_accepted}
-        self.archived = set(self.me.archived_chats.values_list("partner_id", flat=True))
-        self.partners = list(self.load_partners())
-        self.last_messages = self.load_last_messages()
-
-    def load_partners(self):
-        last_message = Message.objects.between(self.me, OuterRef("pk")).order_by("-id")
-        users = User.objects.filter(pk__in=self.started, is_active=True)
-        return with_viewer_relations(users, self.me).annotate(
-            last_message_id=Subquery(last_message.values("id")[:1])
+def conversation_partners(user):
+    partner = OuterRef("pk")
+    chat_requests = ChatRequest.objects.started_by(user).between(user, partner)
+    last_message = Message.objects.between(user, partner).order_by("-id")
+    started_at = Subquery(chat_requests.values("created_at")[:1])
+    return (
+        Member.objects.filter(Exists(chat_requests), is_active=True)
+        .with_viewer_relations(user)
+        .annotate(
+            last_message_id=Subquery(last_message.values("id")[:1]),
+            last_sender_id=Subquery(last_message.values("sender")[:1]),
+            last_seen_at=Subquery(last_message.values("seen_at")[:1]),
+            activity=Coalesce(Subquery(last_message.values("created_at")[:1]), started_at),
+            archived=Exists(ArchivedChat.objects.filter(user=user, partner=partner)),
+            pending=Exists(ChatRequest.objects.pending().filter(sender=user, recipient=partner)),
         )
+        .annotate(unread=boolean(Q(last_sender_id=F("pk"), last_seen_at__isnull=True)))
+        .order_by("-activity")
+    )
 
-    def load_last_messages(self):
-        ids = [partner.last_message_id for partner in self.partners if partner.last_message_id]
-        return Message.objects.filter(pk__in=ids).for_reader(self.me).in_bulk()
 
-    def results(self):
-        entries = sorted(
-            (self.entry(partner) for partner in self.partners),
-            key=lambda entry: entry[0],
-            reverse=True,
-        )
-        return [data for _, data in entries]
-
-    def entry(self, partner):
-        message = self.last_messages.get(partner.last_message_id)
-        show_read = self.me.profile.read_receipts and partner.profile.read_receipts
-        context = {"viewer": self.me, "show_read": show_read}
-        data = {
-            **ProfileModelSerializer.list(partner, context={"request": self.request}).data,
-            "last_message": message and MessageModelSerializer.read(message, context=context).data,
-            "unread": bool(message and message.sender_id != self.me.pk and not message.seen_at),
-            "archived": partner.pk in self.archived,
-            "pending": partner.pk in self.pending,
-        }
-        return (message.created_at if message else self.started[partner.pk]), data
+def last_messages(user, partners):
+    ids = [partner.last_message_id for partner in partners if partner.last_message_id]
+    return Message.objects.filter(pk__in=ids).for_reader(user).in_bulk()

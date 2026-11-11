@@ -1,7 +1,8 @@
+from contextlib import contextmanager
 from datetime import timedelta
 
 from django.conf import settings
-from django.db import models
+from django.db import IntegrityError, models
 from django.db.models import Count, Max, Q
 from django.utils import timezone
 
@@ -54,6 +55,18 @@ class Reason(models.TextChoices):
     @classmethod
     def options(cls):
         return [{"value": value, "label": label} for value, label in cls.choices]
+
+
+class AlreadyWarned(Exception):
+    pass
+
+
+@contextmanager
+def convert_warning_integrity_error():
+    try:
+        yield
+    except IntegrityError as exc:
+        raise AlreadyWarned() from exc
 
 
 WARNING_EXPIRY = timedelta(days=90)
