@@ -1,12 +1,16 @@
 from django.urls import path
 
-from . import views
+from .views import ChangelogViewSet
 
 urlpatterns = [
-    path("changelogs/", views.ChangelogListView.as_view(), name="changelog-list"),
+    path(
+        "changelogs/",
+        ChangelogViewSet.as_view({"get": "list"}),
+        name="changelog-list",
+    ),
     path(
         "changelogs/<str:version>/",
-        views.ChangelogView.as_view(),
+        ChangelogViewSet.as_view({"get": "retrieve"}),
         name="changelog-detail",
     ),
 ]
