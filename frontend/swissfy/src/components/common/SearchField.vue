@@ -9,7 +9,6 @@
       autocomplete="off"
     />
   </label>
-  <SearchButton @click="openDialog" />
   <BaseDialog ref="dialog" title="Suchen">
     <form id="search-dialog-form" @submit.prevent="submitDialog">
       <label class="input w-full">
@@ -42,13 +41,13 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
-import SearchButton from '@/components/common/SearchButton.vue'
+import { useAddButtonStore } from '@/stores/addButton.js'
 
 const DEBOUNCE_MS = 300
 
 export default {
   name: 'SearchField',
-  components: { AppIcon, BaseButton, BaseDialog, SearchButton },
+  components: { AppIcon, BaseButton, BaseDialog },
   props: {
     placeholder: { type: String, required: true },
   },
@@ -65,8 +64,20 @@ export default {
       this.timer = setTimeout(() => this.search(term), DEBOUNCE_MS)
     },
   },
+  beforeCreate() {
+    this.owner = Symbol('SearchField')
+  },
+  created() {
+    useAddButtonStore().show(this.owner, {
+      label: 'Suchen',
+      icon: 'search',
+      loading: false,
+      onClick: () => this.openDialog(),
+    })
+  },
   beforeUnmount() {
     clearTimeout(this.timer)
+    useAddButtonStore().hide(this.owner)
   },
   methods: {
     search(term) {

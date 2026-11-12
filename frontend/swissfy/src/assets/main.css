@@ -90,6 +90,7 @@
   :is(
     .app-surface,
     .app-nav,
+    .app-menu,
     .modal-box,
     .btn:not(.btn-primary, .btn-error, .btn-ghost, .btn-outline)
   ) {
@@ -156,6 +157,10 @@
   }
 }
 
+:is([data-design='glass'], [data-design='y2k']) .app-menu li > * {
+  border-radius: calc(var(--radius-box) - var(--spacing));
+}
+
 :is([data-design='glass'], [data-design='y2k']) .app-footer {
   position: fixed;
   inset-inline: 0;
@@ -175,7 +180,7 @@
   padding: 0.3rem;
   border-radius: 9999px;
   color: var(--color-base-content);
-  background-color: color-mix(in oklab, var(--color-base-100) 70%, transparent);
+  background-color: color-mix(in oklab, var(--color-base-100) 50%, transparent);
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(24px) saturate(180%);
   touch-action: none;
@@ -1304,7 +1309,7 @@
   background-color: transparent;
 }
 
-[data-design='y2k'] :is(.app-surface, .app-nav, .modal-box) {
+[data-design='y2k'] :is(.app-surface, .app-nav, .app-menu, .modal-box) {
   background-color: var(--y2k-surface);
   background-image: linear-gradient(to bottom, var(--y2k-sheen), transparent 2.5rem);
   border-color: transparent;
@@ -1409,6 +1414,7 @@
 }
 
 [data-design='y2k'] .app-footer-bar {
+  background-color: color-mix(in oklab, var(--y2k-surface) 70%, transparent);
   box-shadow: var(--y2k-shadow);
   backdrop-filter: var(--y2k-blur);
 }
@@ -1858,8 +1864,19 @@
   background-color: light-dark(#1c4464, #0c2a40);
 }
 
+[data-design='y2k'][data-contrast='on'] .app-footer-bar {
+  background-color: var(--y2k-surface);
+}
+
 [data-design='y2k'][data-contrast='on']
-  :is(.app-surface, .app-nav, .modal-box, .app-switcher, .chat-bubble:not(.chat-bubble-primary)) {
+  :is(
+    .app-surface,
+    .app-nav,
+    .app-menu,
+    .modal-box,
+    .app-switcher,
+    .chat-bubble:not(.chat-bubble-primary)
+  ) {
   border: 1px solid var(--color-swissfy-border);
 }
 
