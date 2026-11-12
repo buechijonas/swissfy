@@ -175,7 +175,7 @@
   padding: 0.3rem;
   border-radius: 9999px;
   color: var(--color-base-content);
-  background-color: color-mix(in oklab, var(--color-base-100) 70%, transparent);
+  background-color: color-mix(in oklab, var(--color-base-100) 50%, transparent);
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(24px) saturate(180%);
   touch-action: none;
@@ -1409,6 +1409,7 @@
 }
 
 [data-design='y2k'] .app-footer-bar {
+  background-color: color-mix(in oklab, var(--y2k-surface) 70%, transparent);
   box-shadow: var(--y2k-shadow);
   backdrop-filter: var(--y2k-blur);
 }
@@ -1856,6 +1857,10 @@
 
 [data-design='y2k'][data-contrast='on'] .app-tabs {
   background-color: light-dark(#1c4464, #0c2a40);
+}
+
+[data-design='y2k'][data-contrast='on'] .app-footer-bar {
+  background-color: var(--y2k-surface);
 }
 
 [data-design='y2k'][data-contrast='on']
