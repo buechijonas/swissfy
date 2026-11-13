@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="flex shrink-0 gap-1 overflow-x-auto border-b border-docs-border px-6 py-4 [scrollbar-width:none] lg:w-64 lg:flex-col lg:overflow-y-auto lg:border-r lg:border-b-0 lg:pr-4"
+    class="flex shrink-0 gap-1 overflow-x-auto border-b border-app-border px-6 py-4 [scrollbar-width:none] lg:w-64 lg:flex-col lg:overflow-y-auto lg:border-r lg:border-b-0 lg:pr-4"
   >
     <component
       :is="item.href ? 'a' : 'RouterLink'"
@@ -11,13 +11,13 @@
       :class="
         activeNavigation === item.key
           ? 'bg-base-200 text-base-content'
-          : 'text-docs-muted hover:bg-base-200 hover:text-base-content'
+          : 'text-app-muted hover:bg-base-200 hover:text-base-content'
       "
     >
       <AppIcon :name="item.icon" />
       <span>{{ item.label }}</span>
     </component>
-    <div class="hidden text-xs font-light text-docs-muted lg:mt-auto lg:block lg:px-3 lg:pt-6">
+    <div class="hidden text-xs font-light text-app-muted lg:mt-auto lg:block lg:px-3 lg:pt-6">
       Version {{ app.version }}
     </div>
   </nav>
@@ -25,7 +25,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 
 export default {
   name: 'SideNav',

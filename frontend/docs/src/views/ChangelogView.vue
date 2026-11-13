@@ -7,7 +7,7 @@
 <script>
 import ChangelogCard from '@/components/ChangelogCard.vue'
 import DocsPage from '@/components/layout/DocsPage.vue'
-import asyncActionMixin from '@/mixins/asyncActionMixin.js'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import { useChangelogsStore } from '@/stores/changelogs.js'
 
 export default {

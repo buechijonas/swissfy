@@ -1,5 +1,5 @@
 <template>
-  <BaseCard tag="article" class="flex max-w-200 flex-col gap-4 rounded-box p-6">
+  <BaseCard inset tag="article" class="flex max-w-200 flex-col gap-4 rounded-box p-6">
     <header class="flex flex-wrap items-center gap-3">
       <RouterLink :to="`/changelog/${changelog.version}`" class="text-xl font-light">
         v{{ changelog.version }}
@@ -7,7 +7,7 @@
       <span class="badge badge-sm" :class="BUMP_BADGES[changelog.bump]">
         {{ BUMP_LABELS[changelog.bump] }}
       </span>
-      <time :datetime="changelog.date" class="ml-auto text-sm text-docs-muted">
+      <time :datetime="changelog.date" class="ml-auto text-sm text-app-muted">
         {{ formattedDate }}
       </time>
     </header>
@@ -17,7 +17,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import MarkdownContent from '@/components/common/MarkdownContent.vue'
 
 const BUMP_LABELS = { major: 'Major', minor: 'Minor', patch: 'Patch' }
