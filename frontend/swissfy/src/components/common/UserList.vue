@@ -1,5 +1,5 @@
 <template>
-  <BaseCard v-if="users.length" tag="ul" class="divide-y divide-swissfy-border">
+  <BaseCard v-if="users.length" tag="ul" class="divide-y divide-app-border">
     <li v-for="user in users" :key="user.username">
       <UserRow :user="user" :to="linkTo(user)">
         <template v-if="$slots.default" #default>
@@ -10,12 +10,12 @@
   </BaseCard>
 
   <BaseCard v-else-if="!hasMore && !loading" class="p-6">
-    <p class="text-swissfy-muted">
+    <p class="text-app-muted">
       {{ query ? 'Keine User gefunden.' : emptyText }}
     </p>
   </BaseCard>
 
-  <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
+  <ErrorText :message="error" class="mt-4 text-center" />
 
   <div v-if="loading" class="flex flex-col gap-3 mt-3">
     <div v-for="n in 3" :key="n" class="flex items-center gap-4 px-6 py-3">
@@ -27,18 +27,21 @@
     </div>
   </div>
 
-  <div ref="sentinel" class="h-px"></div>
+  <div v-intersect="onSentinel" class="h-px"></div>
 </template>
 
 <script>
-import BaseCard from '@/components/common/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import UserRow from '@/components/common/UserRow.vue'
 import api from '@core/api/client.js'
 import profilesApi from '@/api/profiles.js'
+import intersect from '@/directives/intersect.js'
 
 export default {
   name: 'UserList',
-  components: { BaseCard, UserRow },
+  components: { BaseCard, UserRow, ErrorText },
+  directives: { intersect },
   props: {
     linkTo: { type: Function, required: true },
     query: { type: String, default: '' },
@@ -60,16 +63,10 @@ export default {
       this.loadMore()
     },
   },
-  mounted() {
-    this.observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) this.loadMore()
-    })
-    this.observer.observe(this.$refs.sentinel)
-  },
-  beforeUnmount() {
-    this.observer.disconnect()
-  },
   methods: {
+    onSentinel(visible) {
+      if (visible) this.loadMore()
+    },
     async loadMore() {
       if (this.loading || !this.hasMore || this.error) return
       this.loading = true
@@ -87,9 +84,6 @@ export default {
         this.loading = false
         if (query !== this.query) this.loadMore()
       }
-      await this.$nextTick()
-      this.observer.unobserve(this.$refs.sentinel)
-      this.observer.observe(this.$refs.sentinel)
     },
   },
 }

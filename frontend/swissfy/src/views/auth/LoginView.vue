@@ -3,7 +3,7 @@
     <p class="font-light mb-6">
       Swissfy nutzt govex für die Anmeldung. Benutzername und Passwort verwaltest du dort.
     </p>
-    <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
+    <ErrorText :message="error" class="mb-4" />
     <BaseButton variant="primary" block @click="authStore.startGovexLogin()">
       <AppIcon name="enter" />
       Mit govex anmelden
@@ -12,9 +12,11 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
+import { mapStores } from 'pinia'
 import AuthPage from '@/components/layout/AuthPage.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 
 const ERROR_MESSAGES = {
@@ -23,7 +25,7 @@ const ERROR_MESSAGES = {
 
 export default {
   name: 'LoginView',
-  components: { AppIcon, AuthPage, BaseButton },
+  components: { AppIcon, AuthPage, BaseButton, ErrorText },
   data() {
     return {
       error: Object.hasOwn(ERROR_MESSAGES, this.$route.query.error ?? '')
@@ -32,9 +34,7 @@ export default {
     }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
+    ...mapStores(useAuthStore),
   },
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <p class="text-xs text-swissfy-muted">
+  <p class="text-xs text-app-muted">
     Daten und Cover von
     <a class="link" href="https://www.imdb.com" target="_blank" rel="noopener noreferrer">IMDb</a>
     und

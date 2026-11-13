@@ -4,7 +4,7 @@
   >
     <div class="mx-auto w-full max-w-150 px-6 lg:flex-1 sm:pt-4">
       <div
-        class="app-surface list bg-base-100 rounded-box max-sm:-mx-6 max-sm:rounded-none max-sm:border-x-0 shadow-none border-swissfy-border border-solid border-1 p-8"
+        class="app-surface list bg-base-100 rounded-box max-sm:-mx-6 max-sm:rounded-none max-sm:border-x-0 shadow-none border-app-border border-solid border-1 p-8"
       >
         <div class="text-swissfy-slate">
           <slot />

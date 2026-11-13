@@ -15,8 +15,8 @@ export default {
   create(formData) {
     return api.post('/api/posts/', formData)
   },
-  update(id, body) {
-    return api.patch(postPath(id), body)
+  updateAudience(id, body) {
+    return api.put(postPath(id, 'audience'), body)
   },
   remove(id) {
     return api.delete(postPath(id))

@@ -1,9 +1,10 @@
 <template>
   <p>
-    <template v-for="(part, index) in parts" :key="index">
+    <template v-for="part in parts" :key="part.start">
       <RouterLink
         v-if="part.hashtag"
         :to="hashtagLink(part.hashtag)"
+        @click.stop
         class="pointer-events-auto font-semibold text-primary hover:underline"
         >{{ part.text }}</RouterLink
       >
@@ -14,18 +15,13 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import { hashtagLink, splitHashtags } from '@/lib/hashtags.js'
+import { hashtagLink } from '@/lib/hashtags.js'
 
 export default {
   name: 'PostText',
   components: { RouterLink },
   props: {
-    text: { type: String, required: true },
-  },
-  computed: {
-    parts() {
-      return splitHashtags(this.text)
-    },
+    parts: { type: Array, required: true },
   },
   methods: {
     hashtagLink,

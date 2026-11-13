@@ -6,46 +6,49 @@
   >
     <template v-if="depth > 0">
       <span
-        class="absolute top-0 h-7 w-6 -translate-x-px rounded-bl-lg border-b-2 border-l-2 border-swissfy-border"
+        class="absolute top-0 h-7 w-6 -translate-x-px rounded-bl-lg border-b-2 border-l-2 border-app-border"
         :class="CENTER[depth - 1]"
       ></span>
       <span
-        v-if="siblingBelow"
-        class="absolute top-0 bottom-0 w-0.5 -translate-x-1/2 bg-swissfy-border"
+        class="hidden group-not-last/thread:block absolute top-0 bottom-0 w-0.5 -translate-x-1/2 bg-app-border"
         :class="CENTER[depth - 1]"
       ></span>
     </template>
     <span
       v-else-if="lineAbove"
-      class="absolute top-0 h-2 w-0.5 -translate-x-1/2 bg-swissfy-border"
+      class="absolute top-0 h-2 w-0.5 -translate-x-1/2 bg-app-border"
       :class="CENTER[depth]"
     ></span>
     <span
       v-if="lineBelow"
-      class="absolute top-12 bottom-0 w-0.5 -translate-x-1/2 bg-swissfy-border"
+      class="absolute top-12 bottom-0 w-0.5 -translate-x-1/2 bg-app-border"
       :class="CENTER[depth]"
     ></span>
 
-    <RouterLink :to="profileLink(comment.author)" class="shrink-0">
+    <RouterLink :to="profileLink(comment.author)" class="shrink-0" @click.stop>
       <UserAvatar class="size-8" :user="comment.author" />
     </RouterLink>
     <div class="flex min-w-0 flex-1 flex-col">
       <div class="flex flex-wrap items-center gap-x-2">
-        <RouterLink :to="profileLink(comment.author)" class="font-bold truncate max-w-full">
+        <RouterLink
+          :to="profileLink(comment.author)"
+          class="font-bold truncate max-w-full"
+          @click.stop
+        >
           {{ comment.author.username }}
         </RouterLink>
         <RoleBadge :role="comment.author.role" />
         <span v-if="comment.is_post_author" class="text-xs font-bold text-error shrink-0">
           Verfasser
         </span>
-        <span class="text-xs text-swissfy-muted shrink-0">
+        <span class="text-xs text-app-muted shrink-0">
           {{ formatRelativeTime(comment.created_at) }}
         </span>
         <span v-if="comment.hidden" class="text-xs font-bold text-error shrink-0">Verborgen</span>
       </div>
-      <p v-if="showReplyTo && comment.reply_to" class="text-xs text-swissfy-muted">
+      <p v-if="showReplyTo && comment.reply_to" class="text-xs text-app-muted">
         Antwort an
-        <RouterLink :to="profileLink({ username: comment.reply_to })" class="link">
+        <RouterLink :to="profileLink({ username: comment.reply_to })" class="link" @click.stop>
           @{{ comment.reply_to }}
         </RouterLink>
       </p>
@@ -64,14 +67,14 @@
         loading="lazy"
       />
       <div class="mt-1 flex flex-wrap items-center gap-2">
-        <span class="flex items-center gap-1 text-xs text-swissfy-muted">
+        <span class="flex items-center gap-1 text-xs text-app-muted">
           <AppIcon name="comment-alt-middle" size="sm" alt="Antworten" />
           {{ count ?? comment.reply_count }}
         </span>
-        <div v-if="'score' in comment" class="ml-auto flex items-center gap-2">
+        <div v-if="'score' in comment" class="ml-auto flex items-center gap-2" @click.stop>
           <span
             class="min-w-5 text-right text-sm leading-none"
-            :class="myVote ? 'text-primary' : 'text-swissfy-muted'"
+            :class="myVote ? 'text-primary' : 'text-app-muted'"
           >
             {{ score }}
           </span>
@@ -109,8 +112,8 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
@@ -129,7 +132,6 @@ export default {
     depth: { type: Number, default: 0 },
     to: { type: String, default: null },
     count: { type: Number, default: null },
-    siblingBelow: { type: Boolean, default: false },
     lineAbove: { type: Boolean, default: false },
     lineBelow: { type: Boolean, default: false },
     focused: { type: Boolean, default: false },
@@ -188,8 +190,8 @@ export default {
         this.reporting = false
       }
     },
-    open(event) {
-      if (this.focused || event.target.closest('a, button')) return
+    open() {
+      if (this.focused) return
       this.$router.push(this.to ?? commentLink(this.comment, this.moderation))
     },
   },

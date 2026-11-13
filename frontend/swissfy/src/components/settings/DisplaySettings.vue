@@ -5,7 +5,7 @@
       class="p-6 flex flex-col items-center text-center gap-4"
       :class="{ 'sm:flex-row sm:items-center sm:text-left sm:justify-between': !dyslexiaFont }"
     >
-      <p class="text-swissfy-muted min-w-0">Erscheinungsbild der Oberfläche.</p>
+      <p class="text-app-muted min-w-0">Erscheinungsbild der Oberfläche.</p>
       <BaseSwitcher
         class="flex-wrap justify-center gap-2"
         size="sm"
@@ -45,7 +45,7 @@
     <BaseCard
       class="p-6 flex flex-col items-center text-center gap-4 mb-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
     >
-      <p class="text-swissfy-muted min-w-0">Legasthenie</p>
+      <p class="text-app-muted min-w-0">Legasthenie</p>
       <BaseSwitcher
         class="flex-wrap justify-center gap-2"
         size="sm"
@@ -57,7 +57,7 @@
     <BaseCard
       class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
     >
-      <p class="text-swissfy-muted min-w-0">Kontrastmodus</p>
+      <p class="text-app-muted min-w-0">Kontrastmodus</p>
       <BaseSwitcher
         class="flex-wrap justify-center gap-2"
         size="sm"
@@ -70,23 +70,12 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import { designOptions, limitedDesigns, onOffOptions, themeOptions } from '@/data/settings.js'
 import { contrastMode, design, dyslexiaFont, themeMode } from '@/lib/preferences.js'
-
-function preference(setting) {
-  return {
-    get() {
-      return setting.value
-    },
-    set(value) {
-      setting.value = value
-    },
-  }
-}
 
 export default {
   name: 'DisplaySettings',
@@ -95,10 +84,38 @@ export default {
     return { designOptions, limitedDesigns, onOffOptions, themeOptions }
   },
   computed: {
-    themeMode: preference(themeMode),
-    design: preference(design),
-    dyslexiaFont: preference(dyslexiaFont),
-    contrastMode: preference(contrastMode),
+    themeMode: {
+      get() {
+        return themeMode.value
+      },
+      set(value) {
+        themeMode.value = value
+      },
+    },
+    design: {
+      get() {
+        return design.value
+      },
+      set(value) {
+        design.value = value
+      },
+    },
+    dyslexiaFont: {
+      get() {
+        return dyslexiaFont.value
+      },
+      set(value) {
+        dyslexiaFont.value = value
+      },
+    },
+    contrastMode: {
+      get() {
+        return contrastMode.value
+      },
+      set(value) {
+        contrastMode.value = value
+      },
+    },
   },
 }
 </script>

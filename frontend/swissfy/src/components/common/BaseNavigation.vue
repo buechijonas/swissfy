@@ -14,7 +14,7 @@
           <li
             v-if="item.divider"
             role="separator"
-            class="pointer-events-none mx-4 my-2 h-px bg-swissfy-muted opacity-100!"
+            class="pointer-events-none mx-4 my-2 h-px bg-app-muted opacity-100!"
           ></li>
           <li :class="{ 'max-lg:hidden': item.footer || item.desktopOnly }">
             <component
@@ -24,7 +24,7 @@
               :class="{
                 'active bg-swissfy-highlight text-primary shadow-none':
                   activeNavigation === item.key,
-                'disabled cursor-not-allowed text-swissfy-muted': isLocked(item),
+                'disabled cursor-not-allowed text-app-muted': isLocked(item),
               }"
               @click="isNavDrawerOpen = false"
             >
@@ -49,7 +49,7 @@
         <div class="skeleton h-10 w-full"></div>
       </div>
       <div v-else class="mt-auto p-4 w-full">
-        <div class="mb-4 text-xs text-swissfy-muted font-light">
+        <div class="mb-4 text-xs text-app-muted font-light">
           <div>Version {{ version }}</div>
           <div>Created by NEOTYRA</div>
         </div>
@@ -71,9 +71,10 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
-import BaseButton from '@/components/common/BaseButton.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import { isListed, isLocked, navigationItems } from '@/data/navigation.js'
 import { avatarSrc } from '@/lib/avatar.js'
@@ -99,9 +100,7 @@ export default {
     }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
+    ...mapStores(useAuthStore),
     visibleNavigationItems() {
       return this.navigationItems.filter((item) => isListed(item, this.authStore))
     },

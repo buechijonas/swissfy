@@ -5,7 +5,7 @@
       'rounded-full object-cover': user?.picture,
       'rounded-full ring-2 ring-offset-2 ring-offset-base-100': storyRing,
       'ring-primary': storyRing && !storySeen,
-      'ring-swissfy-muted': storyRing && storySeen,
+      'ring-app-muted': storyRing && storySeen,
     }"
     :src="avatarSrc(user) ?? icons.user"
     :alt="alt"

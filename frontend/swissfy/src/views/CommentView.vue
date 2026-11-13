@@ -5,7 +5,7 @@
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseCard v-if="error" class="p-6">
-        <p class="text-swissfy-muted">{{ error }}</p>
+        <p class="text-app-muted">{{ error }}</p>
       </BaseCard>
       <div v-else-if="!comment" class="skeleton h-96 w-full"></div>
       <template v-else>
@@ -54,7 +54,7 @@
             />
           </template>
         </CommentSection>
-        <p v-if="deleteError" class="text-error text-sm mt-2">{{ deleteError }}</p>
+        <ErrorText :message="deleteError" class="mt-2" />
         <ConfirmDialog
           ref="confirm"
           message="Willst du diesen Kommentar löschen? Antworten darauf werden auch gelöscht."
@@ -67,8 +67,9 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import ModerationPanel from '@/components/moderation/ModerationPanel.vue'
@@ -88,6 +89,7 @@ export default {
     CommentItem,
     CommentSection,
     ModerationPanel,
+    ErrorText,
   },
   props: {
     moderation: { type: Boolean, default: false },

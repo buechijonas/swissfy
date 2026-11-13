@@ -10,16 +10,13 @@
           <div class="flex flex-col min-w-0">
             <span class="flex min-w-0 items-center gap-2">
               <CipherText v-if="!partner.can_view" :length="10" class="font-bold" />
-              <span v-else class="font-bold truncate">{{ fullName || partner.username }}</span>
+              <span v-else class="font-bold truncate">{{ partner.display_name }}</span>
               <RoleBadge :role="partner.role" />
             </span>
-            <span class="text-swissfy-muted text-sm truncate">@{{ partner.username }}</span>
+            <span class="text-app-muted text-sm truncate">@{{ partner.username }}</span>
           </div>
         </RouterLink>
-        <span
-          v-if="ready"
-          class="ml-auto flex items-center gap-2 text-xs text-swissfy-muted shrink-0"
-        >
+        <span v-if="ready" class="ml-auto flex items-center gap-2 text-xs text-app-muted shrink-0">
           <AppIcon name="lock" size="sm" />
           {{ serverKey ? 'Verschlüsselt' : 'Ende-zu-Ende verschlüsselt' }}
         </span>
@@ -40,11 +37,11 @@
         class="p-6 mb-4"
         :class="partner ? 'border-t-0' : 'sm:mt-4 max-sm:border-t-0'"
       >
-        <p class="text-swissfy-muted">{{ error }}</p>
+        <p class="text-app-muted">{{ error }}</p>
       </BaseCard>
 
       <BaseCard v-else-if="locked" class="p-6 flex flex-col gap-4 border-t-0">
-        <p class="text-swissfy-muted">Gib deine Chat-PIN ein, um deine Chats zu entschlüsseln.</p>
+        <p class="text-app-muted">Gib deine Chat-PIN ein, um deine Chats zu entschlüsseln.</p>
         <form class="flex flex-col gap-2" @submit.prevent="unlock">
           <input
             v-model="pin"
@@ -60,36 +57,39 @@
             </BaseButton>
           </div>
         </form>
-        <p v-if="pinError" class="text-error text-sm">{{ pinError }}</p>
+        <ErrorText :message="pinError" />
       </BaseCard>
 
       <template v-else>
-        <BaseCard ref="scroller" class="app-chat flex-1 min-h-0 overflow-y-auto p-4 border-t-0">
-          <p v-if="ready" class="text-swissfy-muted text-xs text-center mb-4">
+        <BaseCard
+          v-stick-to-bottom="ownMessages"
+          class="app-chat flex-1 min-h-0 overflow-y-auto p-4 border-t-0"
+        >
+          <p v-if="ready" class="text-app-muted text-xs text-center mb-4">
             Nachrichten werden nach 14 Tagen automatisch gelöscht.
           </p>
           <div v-if="!ready" class="flex flex-col gap-3">
             <div class="skeleton h-10 w-48"></div>
             <div class="skeleton h-10 w-40 self-end"></div>
           </div>
-          <p v-else-if="!messages.length" class="text-swissfy-muted text-center my-8">
+          <p v-else-if="!messages.length" class="text-app-muted text-center my-8">
             Noch keine Nachrichten.
           </p>
           <div
             v-for="message in messages"
             :key="message.id"
             class="chat"
-            :class="message.mine ? 'chat-end' : 'chat-start'"
+            :class="message.isOwn ? 'chat-end' : 'chat-start'"
           >
-            <div class="chat-bubble" :class="{ 'chat-bubble-primary': message.mine }">
+            <div class="chat-bubble" :class="{ 'chat-bubble-primary': message.isOwn }">
               <span v-if="message.text !== null" class="whitespace-pre-wrap break-words">
                 {{ message.text }}
               </span>
               <span v-else class="italic opacity-70">Auf diesem Gerät nicht lesbar.</span>
             </div>
-            <div class="chat-footer mt-1 flex items-center gap-1 text-xs text-swissfy-muted">
+            <div class="chat-footer mt-1 flex items-center gap-1 text-xs text-app-muted">
               {{ formatRelativeTime(message.createdAt, now) }}
-              <MessageStatus v-if="message.mine" :status="message.status" />
+              <MessageStatus v-if="message.isOwn" :status="message.status" />
             </div>
           </div>
         </BaseCard>
@@ -145,7 +145,7 @@
             <AppIcon v-else name="paper-plane-top" alt="Senden" />
           </BaseButton>
         </form>
-        <p v-if="sendError" class="text-error text-sm -mt-2 mb-4">{{ sendError }}</p>
+        <ErrorText :message="sendError" class="-mt-2 mb-4" />
       </template>
     </div>
   </div>
@@ -153,11 +153,16 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
+import clockMixin from '@/mixins/clockMixin.js'
+import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
+import { useIntervalFn } from '@vueuse/core'
+import some from 'lodash-es/some'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import MessageStatus from '@/components/common/MessageStatus.vue'
@@ -166,15 +171,19 @@ import UserAvatar from '@/components/common/UserAvatar.vue'
 import chatsApi from '@/api/chats.js'
 import profilesApi from '@/api/profiles.js'
 import { decryptMessage, encryptMessage } from '@/lib/chatCrypto.js'
+import stickToBottom from '@/directives/stickToBottom.js'
+import { documentVisibility } from '@/lib/browser.js'
 import { localKeys, prepareChatKeys, unlockWithPin } from '@/lib/chatKeys.js'
 import { formatRelativeTime } from '@/lib/time.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useChatsStore } from '@/stores/chats.js'
 
 const POLL_INTERVAL = 3000
+const COOLDOWN_STEP = 1000
 
 export default {
   name: 'ChatView',
+  mixins: [clockMixin],
   components: {
     RouterLink,
     AppIcon,
@@ -186,7 +195,9 @@ export default {
     MessageStatus,
     RoleBadge,
     UserAvatar,
+    ErrorText,
   },
+  directives: { stickToBottom },
   data() {
     return {
       partner: null,
@@ -204,17 +215,18 @@ export default {
       draft: '',
       sending: false,
       sendError: null,
-      now: Date.now(),
       cooldown: 0,
       chatRequest: null,
       canRequest: true,
       answering: false,
       confirmDecline: false,
+      ownMessages: 0,
     }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
+    ...mapStores(useAuthStore),
+    visible() {
+      return documentVisibility.value === 'visible'
     },
     username() {
       return this.$route.params.username
@@ -227,9 +239,6 @@ export default {
     },
     profileLink() {
       return `/profile/${encodeURIComponent(this.username)}`
-    },
-    fullName() {
-      return [this.partner.first_name, this.partner.last_name].filter(Boolean).join(' ')
     },
     outgoingRequest() {
       return this.chatRequest?.status === 'pending' && !this.chatRequest.incoming
@@ -257,6 +266,9 @@ export default {
     },
   },
   watch: {
+    visible() {
+      if (this.ready && this.visible) this.poll()
+    },
     username: {
       immediate: true,
       handler() {
@@ -265,19 +277,17 @@ export default {
     },
   },
   created() {
-    this.clockTimer = setInterval(() => (this.now = Date.now()), 30000)
-    document.addEventListener('visibilitychange', this.onVisibilityChange)
+    this.poller = useIntervalFn(this.poll, POLL_INTERVAL, { immediate: false })
+    this.cooldownTimer = useIntervalFn(this.countDown, COOLDOWN_STEP, { immediate: false })
   },
   beforeUnmount() {
-    clearInterval(this.pollTimer)
-    clearInterval(this.clockTimer)
-    clearInterval(this.cooldownTimer)
-    document.removeEventListener('visibilitychange', this.onVisibilityChange)
+    this.poller.pause()
+    this.cooldownTimer.pause()
   },
   methods: {
     async init() {
-      clearInterval(this.pollTimer)
-      clearInterval(this.cooldownTimer)
+      this.poller.pause()
+      this.cooldownTimer.pause()
       Object.assign(this.$data, this.$options.data.call(this))
       try {
         this.partner = await profilesApi.get(this.username)
@@ -316,8 +326,7 @@ export default {
       this.messages = useChatsStore().cachedMessages(this.username)
       await this.poll()
       this.ready = true
-      this.scrollToBottom()
-      this.pollTimer = setInterval(() => this.poll(), POLL_INTERVAL)
+      this.poller.resume()
     },
     async loadConversationKeys() {
       const data = await chatsApi.keys(this.username).catch(() => {
@@ -326,16 +335,14 @@ export default {
       this.conversationKeys = data.keys
       this.serverKey = data.server_key
     },
-    onVisibilityChange() {
-      if (this.ready && document.visibilityState === 'visible') this.poll()
-    },
     async poll() {
       if (this.polling) return
       this.polling = true
       try {
         const lastId = this.messages.at(-1)?.id
-        const read = document.visibilityState === 'visible'
-        const params = { ...(lastId && { after: lastId }), ...(read && { read: 'true' }) }
+        const read = this.visible
+        await chatsApi.receive(this.username, read).catch(() => null)
+        const params = lastId ? { after: lastId } : undefined
         const data = await chatsApi.messages(this.username, params).catch(() => null)
         if (!data) return
         this.chatRequest = data.chat_request
@@ -346,7 +353,7 @@ export default {
         const incoming = await Promise.all(
           data.messages.map(async (message) => ({
             id: message.id,
-            mine: message.sender === this.authStore.user.username,
+            isOwn: message.is_own,
             status: message.status,
             createdAt: message.created_at,
             text: await decryptMessage(message, this.keys),
@@ -356,12 +363,8 @@ export default {
         if (this.chatRequest?.status === 'accepted') {
           useChatsStore().cacheMessages(this.username, this.messages)
         }
-        if (!incoming.length) return
-        const scroller = this.$refs.scroller?.$el
-        const atBottom =
-          !scroller || scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 80
         this.messages.push(...incoming)
-        if (atBottom || incoming.some((m) => m.mine)) this.scrollToBottom()
+        if (some(incoming, 'isOwn')) this.ownMessages += 1
       } finally {
         this.polling = false
       }
@@ -409,17 +412,12 @@ export default {
       }
     },
     startCooldown(seconds) {
-      clearInterval(this.cooldownTimer)
       this.cooldown = seconds
-      this.cooldownTimer = setInterval(() => {
-        this.cooldown -= 1
-        if (this.cooldown <= 0) clearInterval(this.cooldownTimer)
-      }, 1000)
+      this.cooldownTimer.resume()
     },
-    async scrollToBottom() {
-      await this.$nextTick()
-      const scroller = this.$refs.scroller?.$el
-      if (scroller) scroller.scrollTop = scroller.scrollHeight
+    countDown() {
+      this.cooldown -= 1
+      if (this.cooldown <= 0) this.cooldownTimer.pause()
     },
     formatRelativeTime,
   },

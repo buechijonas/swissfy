@@ -5,16 +5,16 @@
       class="fixed inset-0 z-50 flex touch-manipulation select-none flex-col bg-black pb-[env(safe-area-inset-bottom)] text-white"
       role="dialog"
       aria-label="Story"
-      @click="tap"
+      @click="tap(next)"
     >
       <div class="absolute inset-x-0 top-0 z-10 flex flex-col gap-3 p-3">
         <div class="flex gap-1">
           <div
-            v-for="(story, position) in items"
+            v-for="story in items"
             :key="story.id"
             class="h-0.5 flex-1 overflow-hidden rounded-full bg-white/30"
           >
-            <div class="h-full bg-white" :style="{ width: `${barWidth(position)}%` }"></div>
+            <div class="h-full bg-white" :style="{ width: `${barWidth(story)}%` }"></div>
           </div>
         </div>
         <div class="flex items-center gap-3 [text-shadow:0_1px_2px_rgb(0_0_0/0.6)]">
@@ -110,8 +110,18 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import doubleTapMixin from '@/mixins/doubleTapMixin.js'
+import { onKeyStroke, useIntervalFn } from '@vueuse/core'
+import clone from 'lodash-es/clone'
+import find from 'lodash-es/find'
+import forEach from 'lodash-es/forEach'
+import head from 'lodash-es/head'
+import map from 'lodash-es/map'
+import reject from 'lodash-es/reject'
+import takeWhile from 'lodash-es/takeWhile'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
@@ -122,10 +132,10 @@ import { formatRelativeTime } from '@/lib/time.js'
 
 const DURATION_MS = 5000
 const TICK_MS = 50
-const DOUBLE_TAP_MS = 250
 
 export default {
   name: 'StoryViewer',
+  mixins: [asyncActionMixin, doubleTapMixin],
   components: {
     AppIcon,
     BaseButton,
@@ -143,19 +153,24 @@ export default {
   data() {
     return {
       items: [],
-      index: 0,
+      currentId: null,
+      passedIds: [],
       elapsed: 0,
       menuOpen: false,
       confirmOpen: false,
       sheetOpen: false,
       pendingViews: [],
-      busy: false,
-      error: null,
     }
   },
   computed: {
     current() {
-      return this.items[this.index] ?? null
+      return find(this.items, { id: this.currentId }) ?? null
+    },
+    upcoming() {
+      return find(this.items, (story) => this.isUpcoming(story)) ?? null
+    },
+    paused() {
+      return this.menuOpen || this.confirmOpen || this.sheetOpen
     },
   },
   watch: {
@@ -170,81 +185,70 @@ export default {
       this.close()
     },
   },
+  created() {
+    this.ticker = useIntervalFn(this.tick, TICK_MS, { immediate: false })
+  },
   beforeUnmount() {
     this.close()
   },
   methods: {
     formatRelativeTime,
     open() {
-      this.items = this.stories.map((story) => ({ ...story }))
-      this.index = Math.max(
-        0,
-        this.items.findIndex((story) => !story.seen),
+      this.items = map(this.stories, clone)
+      const start = find(this.items, { seen: false }) ?? head(this.items)
+      this.passedIds = map(
+        takeWhile(this.items, (story) => story !== start),
+        'id',
       )
+      this.currentId = start?.id ?? null
       this.error = null
+      this.keyListeners = [onKeyStroke('Escape', this.close), onKeyStroke('ArrowRight', this.next)]
       this.start()
-      document.addEventListener('keydown', this.onKeydown)
     },
     close() {
       if (this.items.length) {
         Promise.all(this.pendingViews).then(() => this.$emit('closed'))
         this.pendingViews = []
       }
-      clearInterval(this.ticker)
-      clearTimeout(this.tapTimer)
-      this.tapTimer = null
+      this.ticker.pause()
+      this.tapTimer.stop()
+      forEach(this.keyListeners, (stop) => stop())
+      this.keyListeners = []
       this.items = []
-      document.removeEventListener('keydown', this.onKeydown)
+      this.currentId = null
     },
     start() {
-      clearInterval(this.ticker)
       this.elapsed = 0
-      this.ticker = setInterval(() => {
-        if (this.menuOpen || this.confirmOpen || this.sheetOpen) return
-        this.elapsed += TICK_MS
-        if (this.elapsed >= DURATION_MS) this.next()
-      }, TICK_MS)
+      this.ticker.resume()
+    },
+    tick() {
+      if (this.paused) return
+      this.elapsed += TICK_MS
+      if (this.elapsed >= DURATION_MS) this.next()
+    },
+    isUpcoming(story) {
+      return story.id !== this.currentId && !this.passedIds.includes(story.id)
     },
     next() {
-      if (this.index < this.items.length - 1) {
-        this.index++
-        this.start()
-      } else {
+      if (!this.upcoming) {
         this.close()
-      }
-    },
-    barWidth(position) {
-      if (position < this.index) return 100
-      if (position > this.index) return 0
-      return Math.min(100, (this.elapsed / DURATION_MS) * 100)
-    },
-    tap() {
-      if (this.tapTimer) {
-        clearTimeout(this.tapTimer)
-        this.tapTimer = null
-        this.$refs.heart.show()
-        if (!this.current.liked) this.toggleLike()
         return
       }
-      this.tapTimer = setTimeout(() => {
-        this.tapTimer = null
-        this.next()
-      }, DOUBLE_TAP_MS)
+      this.passedIds.push(this.currentId)
+      this.currentId = this.upcoming.id
+      this.start()
     },
-    onKeydown(event) {
-      if (event.key === 'Escape') this.close()
-      if (event.key === 'ArrowRight') this.next()
+    barWidth(story) {
+      if (this.passedIds.includes(story.id)) return 100
+      if (story.id !== this.currentId) return 0
+      return Math.min(100, (this.elapsed / DURATION_MS) * 100)
     },
-    async run(action) {
-      this.busy = true
-      this.error = null
-      try {
-        await action()
-      } catch {
-        this.error = 'Aktion fehlgeschlagen.'
-      } finally {
-        this.busy = false
-      }
+    doubleTap() {
+      this.$refs.heart.show()
+      if (!this.current.liked) this.toggleLike()
+    },
+    run(action) {
+      return this.runAction(action, 'Aktion fehlgeschlagen.')
     },
     toggleLike() {
       const story = this.current
@@ -270,11 +274,17 @@ export default {
     },
     remove() {
       return this.run(async () => {
-        await storiesApi.remove(this.current.id)
-        this.items.splice(this.index, 1)
+        const removed = this.current
+        const upcoming = this.upcoming
+        await storiesApi.remove(removed.id)
+        this.items = reject(this.items, { id: removed.id })
         this.$emit('deleted')
-        if (this.index >= this.items.length) this.close()
-        else this.start()
+        if (!upcoming) {
+          this.close()
+          return
+        }
+        this.currentId = upcoming.id
+        this.start()
       })
     },
   },

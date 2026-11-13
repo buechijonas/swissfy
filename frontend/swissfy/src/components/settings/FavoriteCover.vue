@@ -8,14 +8,14 @@
   />
   <div
     v-else
-    class="app-cover flex aspect-2/3 w-full items-center justify-center rounded-box bg-base-200 text-swissfy-muted"
+    class="app-cover flex aspect-2/3 w-full items-center justify-center rounded-box bg-base-200 text-app-muted"
   >
     <AppIcon :name="icon" class="size-8!" :alt="item.title" />
   </div>
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 
 export default {
   name: 'FavoriteCover',

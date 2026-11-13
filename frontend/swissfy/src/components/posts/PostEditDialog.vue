@@ -1,7 +1,7 @@
 <template>
   <BaseDialog ref="dialog" title="Feed bearbeiten" class="modal-bottom sm:modal-middle">
     <VisibilityPicker v-model:visibility="visibility" v-model:groups="groups" />
-    <p v-if="error" class="text-error text-sm mt-4">{{ error }}</p>
+    <ErrorText :message="error" class="mt-4" />
     <BaseButton
       variant="error"
       outline
@@ -28,8 +28,10 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
@@ -38,7 +40,8 @@ import { useGroupsStore } from '@/stores/posts.js'
 
 export default {
   name: 'PostEditDialog',
-  components: { AppIcon, BaseButton, BaseDialog, ConfirmDialog, VisibilityPicker },
+  mixins: [asyncActionMixin],
+  components: { AppIcon, BaseButton, BaseDialog, ConfirmDialog, VisibilityPicker, ErrorText },
   props: {
     post: { type: Object, required: true },
   },
@@ -47,8 +50,6 @@ export default {
     return {
       visibility: 'public',
       groups: [],
-      busy: false,
-      error: null,
     }
   },
   computed: {
@@ -66,27 +67,16 @@ export default {
         .catch(() => {})
       this.$refs.dialog.open()
     },
-    async run(action, fallback) {
-      this.busy = true
-      this.error = null
-      try {
-        await action()
-      } catch (error) {
-        this.error = error.detail ?? fallback
-      } finally {
-        this.busy = false
-      }
-    },
     save() {
-      return this.run(async () => {
+      return this.runAction(async () => {
         const body = { visibility: this.visibility, groups: this.groups }
-        const post = await postsApi.update(this.post.id, body)
+        const post = await postsApi.updateAudience(this.post.id, body)
         this.$refs.dialog.close()
         this.$emit('updated', post)
       }, 'Feed konnte nicht gespeichert werden.')
     },
     remove() {
-      return this.run(async () => {
+      return this.runAction(async () => {
         await postsApi.remove(this.post.id)
         this.$refs.dialog.close()
         this.$emit('deleted', this.post.id)

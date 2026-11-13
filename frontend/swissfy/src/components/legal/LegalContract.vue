@@ -2,8 +2,8 @@
   <BaseBreadcrumbs :items="[{ label: contract.title, to: `/${page}` }]" />
   <LegalPage>
     <LegalSection
-      v-for="(section, index) in contract.sections"
-      :key="index"
+      v-for="section in contract.sections"
+      :key="section.title"
       :title="section.title"
       :text="section.text"
       :lines="section.lines"
@@ -13,7 +13,7 @@
       <img class="max-h-64" :src="illustrations[contract.illustration]" :alt="contract.title" />
     </div>
     <template v-if="pending">
-      <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
+      <ErrorText :message="error" class="mb-4" />
       <BaseButton variant="primary" block :disabled="accepting" @click="onAccept">
         <AppIcon name="check" />
         Zustimmen
@@ -23,9 +23,11 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import { mapStores } from 'pinia'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import LegalPage from '@/components/layout/LegalPage.vue'
 import LegalSection from '@/components/legal/LegalSection.vue'
 import { contracts, illustrations } from '@/data/legal/index.js'
@@ -33,7 +35,7 @@ import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'LegalContract',
-  components: { AppIcon, BaseBreadcrumbs, BaseButton, LegalPage, LegalSection },
+  components: { AppIcon, BaseBreadcrumbs, BaseButton, LegalPage, LegalSection, ErrorText },
   props: {
     page: { type: String, required: true },
   },
@@ -41,9 +43,7 @@ export default {
     return { illustrations, accepting: false, error: '' }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
+    ...mapStores(useAuthStore),
     contract() {
       return contracts[this.page]
     },

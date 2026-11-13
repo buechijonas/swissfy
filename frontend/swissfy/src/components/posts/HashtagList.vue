@@ -1,5 +1,5 @@
 <template>
-  <BaseCard v-if="hashtags.length" tag="ul" class="mb-4 divide-y divide-swissfy-border">
+  <BaseCard v-if="hashtags.length" tag="ul" class="mb-4 divide-y divide-app-border">
     <li v-for="hashtag in hashtags" :key="hashtag.name">
       <RouterLink
         :to="hashtagLink(hashtag.name)"
@@ -12,9 +12,9 @@
         </span>
         <div class="flex min-w-0 flex-1 flex-col">
           <span class="truncate font-bold">#{{ hashtag.name }}</span>
-          <span class="truncate text-sm text-swissfy-muted">{{ hashtag.post_count }} Feeds</span>
+          <span class="truncate text-sm text-app-muted">{{ hashtag.post_count }} Feeds</span>
         </div>
-        <span v-if="hashtag.following" class="text-sm text-swissfy-muted">Gefolgt</span>
+        <span v-if="hashtag.following" class="text-sm text-app-muted">Gefolgt</span>
       </RouterLink>
     </li>
   </BaseCard>
@@ -22,7 +22,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import postsApi from '@/api/posts.js'
 import { hashtagLink } from '@/lib/hashtags.js'
 

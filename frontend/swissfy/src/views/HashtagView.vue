@@ -5,7 +5,7 @@
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseCard v-if="error" class="p-6">
-        <p class="text-swissfy-muted">{{ error }}</p>
+        <p class="text-app-muted">{{ error }}</p>
       </BaseCard>
       <div v-else-if="!hashtag" class="skeleton h-28 w-full"></div>
       <template v-else>
@@ -17,7 +17,7 @@
           </span>
           <div class="flex min-w-0 flex-1 flex-col">
             <span class="truncate text-lg font-bold">#{{ hashtag.name }}</span>
-            <span class="text-sm text-swissfy-muted">{{ hashtag.post_count }} Feeds</span>
+            <span class="text-sm text-app-muted">{{ hashtag.post_count }} Feeds</span>
           </div>
           <BaseButton
             size="sm"
@@ -46,10 +46,10 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import PostList from '@/components/posts/PostList.vue'

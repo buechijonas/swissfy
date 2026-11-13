@@ -17,7 +17,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 
 export default {
   name: 'PostTile',

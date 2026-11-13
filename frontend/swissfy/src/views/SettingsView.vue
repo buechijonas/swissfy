@@ -37,6 +37,7 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
@@ -69,9 +70,7 @@ export default {
     }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
+    ...mapStores(useAuthStore),
     tabs() {
       return [
         { key: 'general', label: 'Allgemein' },

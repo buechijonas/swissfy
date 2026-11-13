@@ -11,7 +11,7 @@
         size="sm"
         :options="visibilityOptions"
         :active="privacy.profile_visibility"
-        :disabled="saving"
+        :disabled="busy"
         @select="save('profile_visibility', $event)"
       />
       <div v-else-if="!error" class="skeleton h-8 w-56"></div>
@@ -29,18 +29,20 @@
         size="sm"
         :options="onOffOptions"
         :active="privacy[toggle.field]"
-        :disabled="saving"
+        :disabled="busy"
         @select="save(toggle.field, $event)"
       />
       <div v-else-if="!error" class="skeleton h-8 w-28"></div>
     </SettingCard>
-    <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
+    <ErrorText :message="error" class="mt-4 text-center" />
 
     <ChatProtectionSetting class="mt-4" />
   </div>
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import ChatProtectionSetting from '@/components/settings/ChatProtectionSetting.vue'
 import SettingCard from '@/components/settings/SettingCard.vue'
@@ -49,15 +51,14 @@ import { onOffOptions, privacyToggles, visibilityOptions } from '@/data/settings
 
 export default {
   name: 'PrivacySettings',
-  components: { BaseSwitcher, ChatProtectionSetting, SettingCard },
+  mixins: [asyncActionMixin],
+  components: { BaseSwitcher, ChatProtectionSetting, SettingCard, ErrorText },
   data() {
     return {
       onOffOptions,
       privacyToggles,
       visibilityOptions,
       privacy: null,
-      saving: false,
-      error: null,
     }
   },
   async created() {
@@ -71,16 +72,11 @@ export default {
     async save(field, value) {
       const previous = this.privacy[field]
       this.privacy[field] = value
-      this.saving = true
-      this.error = null
-      try {
-        await profilesApi.updatePrivacy({ [field]: value })
-      } catch (error) {
-        this.error = error.detail ?? 'Speichern fehlgeschlagen.'
-        this.privacy[field] = previous
-      } finally {
-        this.saving = false
-      }
+      await this.runAction(
+        () => profilesApi.updatePrivacy({ [field]: value }),
+        'Speichern fehlgeschlagen.',
+      )
+      if (this.error) this.privacy[field] = previous
     },
   },
 }

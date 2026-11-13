@@ -7,7 +7,7 @@
     >
       <div class="min-w-0">
         <p>govex Account Center</p>
-        <p class="text-swissfy-muted text-sm mt-1">
+        <p class="text-app-muted text-sm mt-1">
           Profil, Profilbild, Passwort und Sicherheit verwaltest du im govex Account Center.
         </p>
       </div>
@@ -19,7 +19,7 @@
     <BaseCard v-else class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="min-w-0">
         <p>govex Konto</p>
-        <p class="text-swissfy-muted text-sm mt-1">Melde dich mit deinem govex Konto an.</p>
+        <p class="text-app-muted text-sm mt-1">Melde dich mit deinem govex Konto an.</p>
       </div>
       <BaseButton class="shrink-0" @click="authStore.startGovexLogin()">
         <AppIcon name="enter" />
@@ -37,11 +37,11 @@
         size="sm"
         :options="onOffOptions"
         :active="persistentLogin"
-        :disabled="saving"
+        :disabled="busy"
         @select="savePersistentLogin($event)"
       />
     </SettingCard>
-    <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
+    <ErrorText :message="error" class="mt-4 text-center" />
   </div>
 
   <div class="mb-10">
@@ -58,10 +58,13 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import SettingCard from '@/components/settings/SettingCard.vue'
 import { footerLinks } from '@/data/footer.js'
@@ -71,29 +74,20 @@ import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'GeneralSettings',
-  components: { RouterLink, AppIcon, BaseButton, BaseCard, BaseSwitcher, SettingCard },
+  mixins: [asyncActionMixin],
+  components: { RouterLink, AppIcon, BaseButton, BaseCard, BaseSwitcher, SettingCard, ErrorText },
   data() {
-    return { footerLinks, onOffOptions, saving: false, error: null }
+    return { footerLinks, onOffOptions }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
+    ...mapStores(useAuthStore),
     persistentLogin() {
       return persistentLogin.value
     },
   },
   methods: {
-    async savePersistentLogin(enabled) {
-      this.saving = true
-      this.error = null
-      try {
-        await this.authStore.setPersistentLogin(enabled)
-      } catch (error) {
-        this.error = error.message
-      } finally {
-        this.saving = false
-      }
+    savePersistentLogin(enabled) {
+      return this.runAction(() => this.authStore.setPersistentLogin(enabled))
     },
   },
 }

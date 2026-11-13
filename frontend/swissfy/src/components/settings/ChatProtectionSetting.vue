@@ -5,7 +5,7 @@
     >
       <div class="min-w-0">
         <p>Chat-Verschlüsselung</p>
-        <p v-if="mode" class="text-swissfy-muted text-sm mt-1">{{ chatProtectionHints[mode] }}</p>
+        <p v-if="mode" class="text-app-muted text-sm mt-1">{{ chatProtectionHints[mode] }}</p>
       </div>
       <BaseSwitcher
         v-if="mode"
@@ -13,7 +13,7 @@
         size="sm"
         :options="chatProtectionOptions"
         :active="mode"
-        :disabled="saving"
+        :disabled="busy"
         @select="select($event)"
       />
       <div v-else-if="!error" class="skeleton h-8 w-56"></div>
@@ -33,28 +33,31 @@
         class="input w-full"
         placeholder="Chat-PIN wiederholen"
       />
-      <p class="text-swissfy-muted text-sm">
+      <p class="text-app-muted text-sm">
         Ohne PIN kann niemand deine Chats wiederherstellen, auch wir nicht.
       </p>
       <div class="flex justify-end gap-2">
-        <BaseButton size="sm" :disabled="saving" @click="pinSetup = false">
+        <BaseButton size="sm" :disabled="busy" @click="pinSetup = false">
           <AppIcon name="cross" />
           Abbrechen
         </BaseButton>
-        <BaseButton type="submit" size="sm" variant="primary" :disabled="!pinValid || saving">
+        <BaseButton type="submit" size="sm" variant="primary" :disabled="!pinValid || busy">
           <AppIcon name="lock" />
           PIN festlegen
         </BaseButton>
       </div>
     </form>
-    <p v-if="error" class="text-error text-sm text-center">{{ error }}</p>
+    <ErrorText :message="error" class="text-center" />
   </BaseCard>
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import { mapStores } from 'pinia'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import { chatProtectionHints, chatProtectionOptions } from '@/data/settings.js'
 import { fetchProtection, setProtection } from '@/lib/chatKeys.js'
@@ -62,20 +65,20 @@ import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'ChatProtectionSetting',
-  components: { AppIcon, BaseButton, BaseCard, BaseSwitcher },
+  mixins: [asyncActionMixin],
+  components: { AppIcon, BaseButton, BaseCard, BaseSwitcher, ErrorText },
   data() {
     return {
       chatProtectionHints,
       chatProtectionOptions,
       mode: null,
-      saving: false,
-      error: null,
       pinSetup: false,
       newPin: '',
       newPinRepeat: '',
     }
   },
   computed: {
+    ...mapStores(useAuthStore),
     pinValid() {
       return this.newPin.length >= 6 && this.newPin === this.newPinRepeat
     },
@@ -98,18 +101,12 @@ export default {
       }
     },
     async save(mode, pin) {
-      this.saving = true
-      this.error = null
-      try {
-        this.mode = (await setProtection(useAuthStore().user.id, mode, pin)).mode
-        this.pinSetup = false
-        this.newPin = ''
-        this.newPinRepeat = ''
-      } catch (error) {
-        this.error = error.message
-      } finally {
-        this.saving = false
-      }
+      const state = await this.runAction(() => setProtection(this.authStore.user.id, mode, pin))
+      if (!state) return
+      this.mode = state.mode
+      this.pinSetup = false
+      this.newPin = ''
+      this.newPinRepeat = ''
     },
   },
 }

@@ -6,11 +6,11 @@
       'max-sm:border-y-0': edgeToEdge,
       'cursor-pointer': !detail,
       'relative max-w-full border-0! bg-black!': reel,
-      relative: !post.video && !post.images.length,
+      relative: !hasMedia,
+      'select-none': tapPending,
     }"
     class="touch-manipulation"
     @click="onCardClick"
-    @mousedown="preventSelection"
   >
     <div
       :class="{ relative: overlay }"
@@ -21,16 +21,17 @@
         :author="post.author"
         :overlay="overlay"
         :class="{ 'absolute inset-x-0 top-0 z-1': overlay }"
+        @click.stop
       >
         <template v-if="!reel">
           <BaseButton
-            v-if="folderPicker && saved"
+            v-if="folderPicker && post.saved"
             outline
             shape="square"
             size="sm"
             :disabled="busy"
             title="In Ordner verschieben"
-            @click="$refs.folderDialog.open(folder)"
+            @click="$refs.folderDialog.open(post.saved_folder)"
           >
             <AppIcon name="folder" alt="In Ordner verschieben" />
           </BaseButton>
@@ -38,21 +39,18 @@
             v-if="post.can_report"
             outline
             size="sm"
-            :disabled="busy || reported"
+            :disabled="busy || post.reported"
             @click="report"
           >
             <AppIcon name="flag" />
-            {{ reported ? 'Gemeldet' : 'Melden' }}
+            {{ post.reported ? 'Gemeldet' : 'Melden' }}
           </BaseButton>
-          <button
+          <PostAction
             v-if="post.is_own && !moderation"
-            type="button"
-            :class="triggerClass"
+            icon="pencil"
             title="Bearbeiten"
-            @click="$refs.edit.open()"
-          >
-            <AppIcon name="pencil" alt="Bearbeiten" :class="iconClass" />
-          </button>
+            @select="$refs.edit.open()"
+          />
         </template>
       </AuthorHeader>
 
@@ -62,218 +60,60 @@
         </p>
         <PostText
           v-if="post.text"
-          :text="post.text"
+          :parts="post.text_parts"
           class="px-4 py-3 whitespace-pre-line break-words"
         />
       </template>
 
-      <div
-        v-if="post.video_status === 'processing' || post.video_status === 'failed'"
-        class="flex aspect-video items-center justify-center gap-2 bg-base-200 text-sm text-swissfy-muted"
+      <PostVideo
+        v-if="post.video || post.video_status"
+        ref="player"
+        :post="post"
+        :detail="detail"
+        :reel="reel"
+        :overlay="overlay"
+        @tap="tap(togglePlay)"
       >
-        <AppIcon name="clapperboard-play" />
-        {{
-          post.video_status === 'failed'
-            ? 'Das Video konnte nicht verarbeitet werden.'
-            : 'Video wird verarbeitet…'
-        }}
-      </div>
-      <div v-else-if="post.video" class="relative">
-        <video
-          ref="video"
-          class="post-video block bg-black object-contain"
-          :class="
-            reel
-              ? 'h-[calc(100dvh-var(--reel-chrome-height))] w-auto max-w-full lg:h-[calc(100dvh-48px)]'
-              : 'w-full'
-          "
-          :style="{ aspectRatio: detail ? post.aspect_ratio : post.list_aspect_ratio }"
-          :src="`${post.video}#t=0.001`"
-          :controls="controlsVisible"
-          controlslist="nofullscreen nodownload noplaybackrate noremoteplayback"
-          disablepictureinpicture
-          disableremoteplayback
-          playsinline
-          preload="metadata"
-          :loop="videoLoop"
-          @play="onPlay"
-          @pause="onPause"
-        ></video>
-        <div
-          v-if="overlay && post.text"
-          class="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent px-4 pt-8 text-white transition-[padding] [text-shadow:0_1px_2px_rgb(0_0_0/0.6)]"
-          :class="[controlsVisible ? 'pb-14' : 'pb-4', { 'pr-16': reel }]"
-        >
-          <PostText :text="post.text" class="line-clamp-2 break-words" />
-        </div>
-        <div
-          class="absolute inset-x-0 top-0 cursor-pointer"
-          :class="controlsVisible ? 'bottom-12' : 'bottom-0'"
-          @click.stop="tap(togglePlay)"
-        ></div>
         <HeartBurst ref="heart" />
-        <Transition name="liquid">
-          <button
-            v-if="!playing"
-            type="button"
-            class="app-floating absolute top-1/2 left-1/2 flex size-18 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-content shadow-lg transition-transform hover:scale-105"
-            title="Abspielen"
-            @click="togglePlay"
-          >
-            <AppIcon name="play" alt="Abspielen" class="ml-1 size-8!" />
-          </button>
-        </Transition>
-      </div>
+      </PostVideo>
     </div>
     <p v-if="post.video && post.hidden" class="px-4 pt-3 text-xs font-bold text-error">
       Öffentlich verborgen
     </p>
     <PostText
       v-if="post.video && !overlay && post.text"
-      :text="post.text"
+      :parts="post.text_parts"
       class="px-4 pt-3 whitespace-pre-line break-words"
     />
 
-    <div v-if="post.images.length" class="group relative">
+    <PostImages v-if="post.images.length" :images="post.images">
       <HeartBurst ref="heart" />
-      <div
-        ref="slides"
-        class="flex snap-x snap-mandatory items-center overflow-x-auto bg-base-200 [scrollbar-width:none]"
-        @scroll.passive="onSlide"
-      >
-        <div v-for="image in post.images" :key="image.url" class="w-full shrink-0 snap-center">
-          <img
-            class="max-h-[80dvh] w-full object-contain"
-            :style="{ aspectRatio: image.aspect_ratio }"
-            :src="image.url"
-            alt=""
-            loading="lazy"
-          />
-        </div>
-      </div>
-      <template v-if="post.images.length > 1">
-        <BaseButton
-          v-if="slide > 0"
-          variant="neutral"
-          shape="circle"
-          size="sm"
-          class="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden"
-          title="Vorheriges Bild"
-          @click="showSlide(slide - 1)"
-        >
-          <AppIcon name="angle-left" alt="Vorheriges Bild" />
-        </BaseButton>
-        <BaseButton
-          v-if="slide < post.images.length - 1"
-          variant="neutral"
-          shape="circle"
-          size="sm"
-          class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden"
-          title="Nächstes Bild"
-          @click="showSlide(slide + 1)"
-        >
-          <AppIcon name="angle-right" alt="Nächstes Bild" />
-        </BaseButton>
-        <div class="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
-          <span
-            v-for="(image, index) in post.images"
-            :key="image.url"
-            class="size-1.5 rounded-full shadow"
-            :class="index === slide ? 'bg-white' : 'bg-white/50'"
-          />
-        </div>
-      </template>
-    </div>
+    </PostImages>
 
-    <HeartBurst v-if="!post.video && !post.images.length" ref="heart" />
+    <HeartBurst v-if="!hasMedia" ref="heart" />
 
-    <footer
+    <PostActions
       v-if="!moderation"
-      class="flex"
-      :class="
-        reel
-          ? 'absolute right-3 bottom-28 flex-col items-center gap-5 text-white drop-shadow'
-          : 'items-start gap-6 px-4 py-3'
-      "
-    >
-      <div :class="actionClass">
-        <button
-          type="button"
-          :class="triggerClass"
-          :disabled="busy"
-          title="Gefällt mir"
-          @click="toggleLike"
-        >
-          <AppIcon
-            :name="liked ? 'heart-filled' : 'heart'"
-            alt="Gefällt mir"
-            :class="[iconClass, { 'text-primary': liked }]"
-          />
-        </button>
-        <span :class="labelClass">{{ likeCount }}</span>
-      </div>
-      <div :class="actionClass">
-        <button
-          v-if="hasCommentSheet"
-          type="button"
-          :class="triggerClass"
-          title="Kommentare"
-          @click="$refs.comments.open()"
-        >
-          <AppIcon name="comment-alt-middle" alt="Kommentare" :class="iconClass" />
-        </button>
-        <span v-else :class="triggerClass" title="Kommentare">
-          <AppIcon name="comment-alt-middle" alt="Kommentare" :class="iconClass" />
-        </span>
-        <span :class="labelClass">{{ commentCount }}</span>
-      </div>
-      <div :class="actionClass">
-        <button
-          type="button"
-          :class="triggerClass"
-          :disabled="busy || post.is_own"
-          :title="reposted ? 'Repost entfernen' : 'Reposten'"
-          @click="toggleRepost"
-        >
-          <AppIcon
-            name="arrows-retweet"
-            :alt="reposted ? 'Repost entfernen' : 'Reposten'"
-            :class="[iconClass, { 'text-swissfy-repost': reposted, 'opacity-40': post.is_own }]"
-          />
-        </button>
-        <span class="max-w-20 truncate" :class="labelClass">{{ repostLabel }}</span>
-      </div>
-      <div class="flex flex-col gap-1" :class="reel ? 'items-center' : 'ml-auto items-end'">
-        <button
-          type="button"
-          :class="triggerClass"
-          :disabled="busy"
-          :title="saved ? 'Nicht mehr speichern' : 'Speichern'"
-          @click="saved ? unsave() : save(null)"
-        >
-          <AppIcon
-            :name="saved ? 'bookmarked' : 'bookmark'"
-            :alt="saved ? 'Nicht mehr speichern' : 'Speichern'"
-            :class="iconClass"
-          />
-        </button>
-        <span v-if="!reel" class="text-swissfy-muted" :class="labelClass">
-          {{ formatRelativeTime(post.created_at) }}
-        </span>
-      </div>
-      <button
-        v-if="reel && hasMenu"
-        type="button"
-        :class="triggerClass"
-        title="Mehr"
-        @click="$refs.menu.open()"
-      >
-        <AppIcon name="menu-dots-vertical" alt="Mehr" :class="iconClass" />
-      </button>
-    </footer>
-    <p v-if="error" class="text-error text-sm px-4 pb-3">{{ error }}</p>
+      :post="post"
+      :reel="reel"
+      :busy="busy"
+      :commentable="hasCommentSheet"
+      :has-menu="hasMenu"
+      @like="toggleLike"
+      @comments="$refs.comments.open()"
+      @repost="toggleRepost"
+      @save="toggleSave"
+      @menu="$refs.menu.open()"
+    />
+    <ErrorText :message="error" class="px-4 pb-3" />
 
-    <BaseDialog v-if="reel && hasMenu" ref="menu" title="Seed" class="modal-bottom sm:modal-middle">
+    <BaseDialog
+      v-if="reel && hasMenu"
+      ref="menu"
+      title="Seed"
+      class="modal-bottom sm:modal-middle"
+      @click.stop
+    >
       <div class="flex flex-col gap-2">
         <BaseButton v-if="post.is_own && !moderation" block @click="editFromMenu">
           <AppIcon name="pencil" />
@@ -282,52 +122,59 @@
         <BaseButton
           v-if="post.can_report"
           block
-          :disabled="busy || reported"
+          :disabled="busy || post.reported"
           @click="reportFromMenu"
         >
           <AppIcon name="shield-exclamation" />
-          {{ reported ? 'Gemeldet' : 'Seed melden' }}
+          {{ post.reported ? 'Gemeldet' : 'Seed melden' }}
         </BaseButton>
       </div>
     </BaseDialog>
     <PostEditDialog
       v-if="post.is_own && !moderation"
       ref="edit"
-      :post="{ ...post, ...audience }"
-      @updated="audience = { visibility: $event.visibility, groups: $event.groups }"
+      :post="post"
+      @click.stop
+      @updated="$emit('update', $event)"
       @deleted="$emit('deleted', post.id)"
     />
     <CommentSheet
       v-if="hasCommentSheet"
       ref="comments"
       :post-id="post.id"
-      @created="commentCount += 1"
-      @deleted="commentCount = $event.comment_count"
+      @click.stop
+      @created="refresh"
+      @deleted="refresh"
     />
-    <FolderDialog v-if="folderPicker" ref="folderDialog" @select="save" />
+    <FolderDialog v-if="folderPicker" ref="folderDialog" @click.stop @select="moveToFolder" />
   </BaseCard>
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import doubleTapMixin from '@/mixins/doubleTapMixin.js'
+import { mapStores } from 'pinia'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import AuthorHeader from '@/components/posts/AuthorHeader.vue'
 import CommentSheet from '@/components/posts/CommentSheet.vue'
 import FolderDialog from '@/components/posts/FolderDialog.vue'
-import PostEditDialog from '@/components/posts/PostEditDialog.vue'
 import HeartBurst from '@/components/posts/HeartBurst.vue'
+import PostAction from '@/components/posts/PostAction.vue'
+import PostActions from '@/components/posts/PostActions.vue'
+import PostEditDialog from '@/components/posts/PostEditDialog.vue'
+import PostImages from '@/components/posts/PostImages.vue'
 import PostText from '@/components/posts/PostText.vue'
+import PostVideo from '@/components/posts/PostVideo.vue'
 import postsApi from '@/api/posts.js'
 import { useAuthStore } from '@/stores/auth.js'
-import { formatRelativeTime } from '@/lib/time.js'
-import { videoAutoplay, videoLoop } from '@/lib/preferences.js'
-
-const DOUBLE_TAP_MS = 250
 
 export default {
   name: 'PostCard',
+  mixins: [asyncActionMixin, doubleTapMixin],
   components: {
     AppIcon,
     AuthorHeader,
@@ -337,8 +184,13 @@ export default {
     CommentSheet,
     FolderDialog,
     HeartBurst,
+    PostAction,
+    PostActions,
     PostEditDialog,
+    PostImages,
     PostText,
+    PostVideo,
+    ErrorText,
   },
   props: {
     post: { type: Object, required: true },
@@ -348,63 +200,17 @@ export default {
     moderation: { type: Boolean, default: false },
     reel: { type: Boolean, default: false },
   },
-  emits: ['deleted', 'saved-change'],
+  emits: ['update', 'deleted', 'saved-change'],
   data() {
-    return {
-      liked: this.post.liked,
-      likeCount: this.post.like_count,
-      reposted: this.post.reposted,
-      reposter: this.post.reposter,
-      saved: this.post.saved,
-      reported: this.post.reported,
-      folder: this.post.saved_folder,
-      commentCount: this.post.comment_count,
-      audience: { visibility: this.post.visibility, groups: this.post.groups },
-      slide: 0,
-      playing: false,
-      controlsVisible: true,
-      busy: false,
-      error: null,
-      actionClass: 'flex flex-col items-center gap-1',
-      triggerClass: 'relative flex size-6 box-content p-2.5 -m-2.5 cursor-pointer',
-      iconClass: 'size-6!',
-      labelClass: 'text-xs leading-4',
-    }
-  },
-  mounted() {
-    if (!this.$refs.video) return
-    this.visibilityObserver = new IntersectionObserver(
-      ([entry]) => {
-        const { video } = this.$refs
-        if (!entry.isIntersecting) {
-          video.pause()
-        } else if (videoAutoplay.value) {
-          video.muted = true
-          video.play().catch(() => {})
-        }
-      },
-      { threshold: 0.6 },
-    )
-    this.visibilityObserver.observe(this.$refs.video)
-  },
-  beforeUnmount() {
-    clearTimeout(this.hideControlsTimer)
-    clearTimeout(this.tapTimer)
-    this.visibilityObserver?.disconnect()
+    return {}
   },
   computed: {
-    repostLabel() {
-      if (this.reposter) return `@${this.reposter}`
-      return this.reposted ? 'Du' : ''
-    },
-    videoLoop() {
-      return videoLoop.value
+    ...mapStores(useAuthStore),
+    hasMedia() {
+      return Boolean(this.post.video || this.post.video_status || this.post.images.length)
     },
     overlay() {
       return this.reel && Boolean(this.post.video)
-    },
-    authStore() {
-      return useAuthStore()
     },
     hasCommentSheet() {
       return this.authStore.isAuthenticated && !this.moderation && (this.reel || !this.detail)
@@ -414,103 +220,60 @@ export default {
     },
   },
   methods: {
-    formatRelativeTime,
-    onCardClick(event) {
-      if (event.target.closest('a, button, dialog, header, video')) return
+    onCardClick() {
       if (this.moderation) {
         if (!this.detail) this.$router.push(`/moderation/posts/${this.post.id}`)
         return
       }
-      this.tap(this.hasCommentSheet && !this.reel ? () => this.$refs.comments.open() : null)
+      this.tap(this.hasCommentSheet && !this.reel ? this.openComments : null)
     },
-    preventSelection(event) {
-      if (event.detail > 1 && !event.target.closest('dialog')) event.preventDefault()
+    doubleTap() {
+      if (this.moderation) return
+      this.$refs.heart.show()
+      if (!this.post.liked) this.toggleLike()
     },
-    tap(action) {
-      if (this.tapTimer) {
-        clearTimeout(this.tapTimer)
-        this.tapTimer = null
-        if (this.moderation) return
-        this.$refs.heart?.show()
-        if (!this.liked) this.toggleLike()
-        return
-      }
-      this.tapTimer = setTimeout(() => {
-        this.tapTimer = null
-        action?.()
-      }, DOUBLE_TAP_MS)
-    },
-    showControls() {
-      clearTimeout(this.hideControlsTimer)
-      this.controlsVisible = true
-      if (this.playing) {
-        this.hideControlsTimer = setTimeout(() => (this.controlsVisible = false), 2500)
-      }
-    },
-    onPlay() {
-      this.playing = true
-      this.showControls()
-    },
-    onPause() {
-      this.playing = false
-      this.showControls()
+    openComments() {
+      this.$refs.comments.open()
     },
     togglePlay() {
-      const { video } = this.$refs
-      if (video.paused) video.play()
-      else video.pause()
+      this.$refs.player.toggle()
     },
-    onSlide() {
-      const { scrollLeft, clientWidth } = this.$refs.slides
-      this.slide = Math.round(scrollLeft / clientWidth)
+    showControls() {
+      if (this.post.video) this.$refs.player.showControls()
     },
-    showSlide(index) {
-      const { slides } = this.$refs
-      slides.scrollTo({ left: index * slides.clientWidth, behavior: 'smooth' })
-    },
-    async run(action) {
-      if (!this.authStore.isAuthenticated) return this.$router.push('/login')
-      this.busy = true
-      this.error = null
-      try {
-        await action()
-      } catch {
-        this.error = 'Aktion fehlgeschlagen.'
-      } finally {
-        this.busy = false
+    async run(request) {
+      if (!this.authStore.isAuthenticated) {
+        this.$router.push('/login')
+        return null
       }
+      const post = await this.runAction(request, 'Aktion fehlgeschlagen.')
+      if (post) this.$emit('update', post)
+      return post
     },
     toggleLike() {
-      return this.run(async () => {
-        const id = this.post.id
-        const data = this.liked ? await postsApi.unlike(id) : await postsApi.like(id)
-        this.liked = data.liked
-        this.likeCount = data.like_count
-      })
+      const { id, liked } = this.post
+      return this.run(() => (liked ? postsApi.unlike(id) : postsApi.like(id)))
     },
     toggleRepost() {
-      return this.run(async () => {
-        const id = this.post.id
-        const data = this.reposted ? await postsApi.unrepost(id) : await postsApi.repost(id)
-        this.reposted = data.reposted
-        this.reposter = data.reposter
-      })
+      const { id, reposted } = this.post
+      return this.run(() => (reposted ? postsApi.unrepost(id) : postsApi.repost(id)))
     },
-    save(folder) {
-      return this.run(async () => {
-        await postsApi.save(this.post.id, folder)
-        this.saved = true
-        this.folder = folder
-        this.$emit('saved-change', { saved: true, folder })
-      })
+    toggleSave() {
+      const { id, saved } = this.post
+      return this.changeSaved(() => (saved ? postsApi.unsave(id) : postsApi.save(id, null)))
     },
-    unsave() {
-      return this.run(async () => {
-        await postsApi.unsave(this.post.id)
-        this.saved = false
-        this.folder = null
-        this.$emit('saved-change', { saved: false, folder: null })
-      })
+    moveToFolder(folder) {
+      return this.changeSaved(() => postsApi.save(this.post.id, folder))
+    },
+    async changeSaved(request) {
+      const post = await this.run(request)
+      if (post) this.$emit('saved-change', { saved: post.saved, folder: post.saved_folder })
+    },
+    report() {
+      return this.run(() => postsApi.report(this.post.id))
+    },
+    refresh() {
+      return this.run(() => postsApi.get(this.post.id))
     },
     editFromMenu() {
       this.$refs.menu.close()
@@ -520,19 +283,6 @@ export default {
       await this.report()
       this.$refs.menu.close()
     },
-    report() {
-      return this.run(async () => {
-        await postsApi.report(this.post.id)
-        this.reported = true
-      })
-    },
   },
 }
 </script>
-
-<style scoped>
-.post-video::-webkit-media-controls-play-button,
-.post-video::-webkit-media-controls-overlay-play-button {
-  display: none;
-}
-</style>

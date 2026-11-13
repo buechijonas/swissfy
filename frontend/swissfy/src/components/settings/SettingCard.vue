@@ -4,14 +4,14 @@
   >
     <div class="min-w-0">
       <p>{{ title }}</p>
-      <p v-if="hint" class="text-swissfy-muted text-sm mt-1">{{ hint }}</p>
+      <p v-if="hint" class="text-app-muted text-sm mt-1">{{ hint }}</p>
     </div>
     <slot />
   </BaseCard>
 </template>
 
 <script>
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 
 export default {
   name: 'SettingCard',

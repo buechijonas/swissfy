@@ -11,7 +11,7 @@
       placeholder="Erzähl etwas über dich"
     ></textarea>
     <div class="flex items-center justify-between gap-4">
-      <span class="text-xs text-swissfy-muted">{{ biography.length }}/{{ maxLength }}</span>
+      <span class="text-xs text-app-muted">{{ biography.length }}/{{ maxLength }}</span>
       <BaseButton
         size="sm"
         variant="primary"
@@ -38,28 +38,29 @@
     />
   </template>
   <div v-else-if="!error" class="skeleton mt-4 h-24 w-full rounded-box"></div>
-  <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
+  <ErrorText :message="error" class="mt-4 text-center" />
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import FavoritePicker from '@/components/settings/FavoritePicker.vue'
 import { favoriteKinds } from '@/data/favorites.js'
 import profilesApi from '@/api/profiles.js'
 
 export default {
   name: 'ProfileAbout',
-  components: { AppIcon, BaseButton, BaseCard, FavoritePicker },
+  mixins: [asyncActionMixin],
+  components: { AppIcon, BaseButton, BaseCard, FavoritePicker, ErrorText },
   data() {
     return {
       favoriteKinds,
       maxLength: 500,
       about: null,
       biography: '',
-      busy: false,
-      error: null,
     }
   },
   mounted() {
@@ -75,15 +76,11 @@ export default {
       }
     },
     async save(changes) {
-      this.busy = true
-      this.error = null
-      try {
-        this.about = await profilesApi.updateAbout(changes)
-      } catch (error) {
-        this.error = error.detail ?? 'Speichern fehlgeschlagen.'
-      } finally {
-        this.busy = false
-      }
+      const about = await this.runAction(
+        () => profilesApi.updateAbout(changes),
+        'Speichern fehlgeschlagen.',
+      )
+      if (about) this.about = about
     },
   },
 }

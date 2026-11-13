@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col gap-3">
-    <p class="text-sm" :class="reportCount ? 'text-error' : 'text-swissfy-muted'">
+    <p class="text-sm" :class="reportCount ? 'text-error' : 'text-app-muted'">
       {{ reportCount ? `${reportCount}× gemeldet` : 'Keine offenen Meldungen' }}
     </p>
     <form class="flex flex-wrap gap-2" @submit.prevent="warn">
-      <p v-if="!canWarn" class="flex-1 self-center text-sm text-swissfy-muted">
+      <p v-if="!canWarn" class="flex-1 self-center text-sm text-app-muted">
         Bereits verwarnt und öffentlich verborgen.
       </p>
       <select v-else v-model="reason" class="select min-w-0 flex-1">
@@ -22,9 +22,9 @@
         Verwerfen
       </BaseButton>
     </form>
-    <p v-if="error" class="text-error text-sm">{{ error }}</p>
+    <ErrorText :message="error" />
     <ul v-if="warnings.length" class="flex flex-col gap-1 text-sm">
-      <li v-for="warning in warnings" :key="warning.id" class="text-swissfy-muted">
+      <li v-for="warning in warnings" :key="warning.id" class="text-app-muted">
         Verwarnt: <span class="text-base-content">{{ warning.reason }}</span> ·
         {{ formatDate(warning.created_at) }}
       </li>
@@ -33,14 +33,17 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import moderationApi from '@/api/moderation.js'
 import { formatDate } from '@/lib/time.js'
 
 export default {
   name: 'ModerationPanel',
-  components: { AppIcon, BaseButton },
+  mixins: [asyncActionMixin],
+  components: { AppIcon, BaseButton, ErrorText },
   props: {
     kind: { type: String, required: true },
     targetId: { type: String, required: true },
@@ -52,8 +55,6 @@ export default {
       reportCount: this.details.report_count,
       canWarn: this.details.can_warn,
       warnings: [...this.details.warnings],
-      busy: false,
-      error: null,
     }
   },
   computed: {
@@ -64,18 +65,9 @@ export default {
   methods: {
     formatDate,
     async send(action) {
-      this.busy = true
-      this.error = null
-      try {
-        const data = await action()
-        this.reportCount = data.report_count
-        return data
-      } catch (error) {
-        this.error = error.detail ?? 'Aktion fehlgeschlagen.'
-        return null
-      } finally {
-        this.busy = false
-      }
+      const data = await this.runAction(action, 'Aktion fehlgeschlagen.')
+      if (data) this.reportCount = data.report_count
+      return data
     },
     async warn() {
       const data = await this.send(() => moderationApi.warn(this.kind, this.targetId, this.reason))

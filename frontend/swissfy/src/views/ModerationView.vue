@@ -7,10 +7,15 @@
       <BaseTabs class="mb-4" :tabs="tabs" :active="status" />
       <div v-if="items.length" class="flex flex-col gap-6">
         <section v-for="item in items" :key="`${item.type}-${itemId(item)}`">
-          <p class="mb-2 text-sm" :class="resolved ? 'text-swissfy-muted' : 'text-error'">
+          <p class="mb-2 text-sm" :class="resolved ? 'text-app-muted' : 'text-error'">
             {{ caption(item) }}
           </p>
-          <PostCard v-if="item.type === 'post'" :post="item.post" moderation />
+          <PostCard
+            v-if="item.type === 'post'"
+            :post="item.post"
+            moderation
+            @update="item.post = $event"
+          />
           <BaseCard v-else>
             <CommentItem
               :comment="item.post"
@@ -23,12 +28,12 @@
         </section>
       </div>
       <BaseCard v-else-if="!loading && !error" class="p-6">
-        <p class="text-swissfy-muted">
+        <p class="text-app-muted">
           {{ resolved ? 'Noch keine erledigten Meldungen.' : 'Keine offenen Meldungen.' }}
         </p>
       </BaseCard>
 
-      <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
+      <ErrorText :message="error" class="mt-4 text-center" />
       <div v-if="loading" class="skeleton h-48 w-full mt-4"></div>
       <BaseButton v-else-if="next" class="mt-4" size="sm" block @click="load">
         <AppIcon name="down" />
@@ -40,10 +45,11 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
@@ -61,6 +67,7 @@ export default {
     BaseTabs,
     CommentItem,
     PostCard,
+    ErrorText,
   },
   data() {
     return {

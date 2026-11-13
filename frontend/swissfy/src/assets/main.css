@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import '../../../core/src/assets/dyslexia.css';
+@import '../../../core/src/assets/theme.css';
+@source '../../../core/src';
 @plugin "daisyui";
 
 @plugin "daisyui/theme" {
@@ -19,12 +21,30 @@
 }
 
 @theme {
-  --color-swissfy-muted: #a8b3bf;
   --color-swissfy-slate: #6c829c;
-  --color-swissfy-border: #e3e5e8;
   --color-swissfy-highlight: #ffe0e0;
   --color-swissfy-repost: #12936f;
   --text-title: 2.5rem;
+  --animate-heart-burst: heart-burst 900ms ease-out forwards;
+
+  @keyframes heart-burst {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    22% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    67% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.25);
+    }
+  }
 }
 
 :root {
@@ -34,18 +54,14 @@
 }
 
 [data-theme='dark'] {
-  --color-swissfy-muted: #8b96a3;
   --color-swissfy-slate: #a7b6c8;
-  --color-swissfy-border: #3a3f4a;
   --color-swissfy-highlight: #451a1a;
   --color-swissfy-repost: #3ccf9f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --color-swissfy-muted: #8b96a3;
     --color-swissfy-slate: #a7b6c8;
-    --color-swissfy-border: #3a3f4a;
     --color-swissfy-highlight: #451a1a;
     --color-swissfy-repost: #3ccf9f;
   }
@@ -59,7 +75,7 @@
     0 1px 2px light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.3)),
     0 10px 30px light-dark(rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.35));
   --glass-blur: blur(16px) saturate(160%);
-  --color-swissfy-muted: light-dark(#4f5b69, #c3ccd6);
+  --color-app-muted: light-dark(#4f5b69, #c3ccd6);
   --radius-box: 1.75rem;
   --footer-height: calc(4.5rem + env(safe-area-inset-bottom));
   --mobile-chrome-height: 3rem;
@@ -345,8 +361,8 @@
     0.6rem 100%,
     0 calc(100% - 0.6rem)
   );
-  --color-swissfy-muted: light-dark(#3f6170, #7fd3e0);
-  --color-swissfy-border: var(--cyber-line);
+  --color-app-muted: light-dark(#3f6170, #7fd3e0);
+  --color-app-border: var(--cyber-line);
   --radius-box: 0;
   --radius-field: 0;
   --radius-selector: 0;
@@ -812,8 +828,8 @@
   --eco-frame: inset 0 0 0 5px var(--eco-paper), inset 0 0 0 6px var(--eco-line);
   --eco-shadow: 0 6px 18px light-dark(rgb(31 74 40 / 0.1), rgb(0 0 0 / 0.4));
   --color-base-content: var(--eco-ink);
-  --color-swissfy-border: var(--eco-line);
-  --color-swissfy-muted: light-dark(#4a5a4c, #a9b8a6);
+  --color-app-border: var(--eco-line);
+  --color-app-muted: light-dark(#4a5a4c, #a9b8a6);
   --radius-field: 0.75rem;
   --radius-selector: 0.75rem;
 }
@@ -964,8 +980,8 @@
   --color-base-200: light-dark(#ece0d0, #170d1a);
   --color-base-300: light-dark(#e0d0bd, #23152a);
   --color-base-content: var(--rom-ink);
-  --color-swissfy-border: var(--rom-line);
-  --color-swissfy-muted: light-dark(#5c4a52, #b9a6ad);
+  --color-app-border: var(--rom-line);
+  --color-app-muted: light-dark(#5c4a52, #b9a6ad);
   --radius-box: 0.25rem;
   --radius-field: 0.25rem;
   --radius-selector: 0.25rem;
@@ -1260,8 +1276,8 @@
     light-dark(rgb(47 155 232 / 0.3), rgb(255 255 255 / 0.4)) 90%,
     transparent
   );
-  --color-swissfy-border: light-dark(rgb(0 90 150 / 0.2), rgb(150 225 255 / 0.2));
-  --color-swissfy-muted: light-dark(#3a6178, #a3d0e2);
+  --color-app-border: light-dark(rgb(0 90 150 / 0.2), rgb(150 225 255 / 0.2));
+  --color-app-muted: light-dark(#3a6178, #a3d0e2);
   --radius-box: 1.25rem;
   --radius-field: 0.875rem;
   --radius-selector: 1rem;
@@ -1552,21 +1568,7 @@
 }
 
 [data-contrast='on'] {
-  --color-swissfy-border: #8a97a5;
-}
-
-[data-theme='dark'][data-contrast='on'] {
-  --color-swissfy-border: #6b7482;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme])[data-contrast='on'] {
-    --color-swissfy-border: #6b7482;
-  }
-}
-
-[data-contrast='on'] {
-  --swissfy-contrast-border: var(--color-swissfy-border);
+  --swissfy-contrast-border: var(--color-app-border);
 }
 
 [data-contrast='on'] .btn {
@@ -1719,9 +1721,9 @@
 
 [data-design='cyberpunk'][data-contrast='on'] {
   --cyber-line: var(--color-primary);
-  --color-swissfy-border: var(--color-primary);
+  --color-app-border: var(--color-primary);
   --swissfy-contrast-border: var(--color-primary);
-  --color-swissfy-muted: light-dark(#1f3a45, #b5eef6);
+  --color-app-muted: light-dark(#1f3a45, #b5eef6);
   --cyber-hard: 4px 4px 0 var(--cyber-accent);
 }
 
@@ -1856,8 +1858,8 @@
 [data-design='y2k'][data-contrast='on'] {
   --y2k-surface: light-dark(#ffffff, #04121f);
   --y2k-sheen: light-dark(#cfeaff, rgb(111 208 255 / 0.2));
-  --color-swissfy-border: light-dark(#2f7fb8, #6fd0ff);
-  --color-swissfy-muted: light-dark(#163a4f, #d4ecf6);
+  --color-app-border: light-dark(#2f7fb8, #6fd0ff);
+  --color-app-muted: light-dark(#163a4f, #d4ecf6);
 }
 
 [data-design='y2k'][data-contrast='on'] .app-tabs {
@@ -1877,14 +1879,14 @@
     .app-switcher,
     .chat-bubble:not(.chat-bubble-primary)
   ) {
-  border: 1px solid var(--color-swissfy-border);
+  border: 1px solid var(--color-app-border);
 }
 
 [data-design='ecopunk'][data-contrast='on'] {
   --eco-paper: light-dark(#ffffff, #000000);
   --eco-line: var(--eco-ink);
   --eco-contour: transparent;
-  --color-swissfy-muted: light-dark(#24302a, #d6e0d4);
+  --color-app-muted: light-dark(#24302a, #d6e0d4);
 }
 
 [data-design='ecopunk'][data-contrast='on'] :is(.app-surface, .modal-box) {
@@ -1895,7 +1897,7 @@
   --rom-paper: light-dark(#ffffff, #000000);
   --rom-ground: light-dark(#ffffff, #000000);
   --rom-line: var(--rom-gold);
-  --color-swissfy-muted: light-dark(#2e2328, #e2d6da);
+  --color-app-muted: light-dark(#2e2328, #e2d6da);
 }
 
 [data-design='romance'][data-contrast='on'] body::before,

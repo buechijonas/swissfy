@@ -27,7 +27,7 @@
       <div class="mx-auto w-full max-w-150 pt-4 max-sm:pt-0">
         <div class="flex flex-col my-16">
           <h1 class="text-title my-8 text-center font-light">Herzlich Willkommen</h1>
-          <p class="subtitle mx-auto text-swissfy-muted font-light">swissfy.ch</p>
+          <p class="subtitle mx-auto text-app-muted font-light">swissfy.ch</p>
         </div>
         <PostList :url="globalUrl" edge-to-edge empty-text="Noch keine Mitteilungen." />
       </div>
@@ -37,6 +37,7 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
 import AddButton from '@/components/common/AddButton.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
@@ -56,9 +57,7 @@ export default {
     }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
+    ...mapStores(useAuthStore),
   },
 }
 </script>

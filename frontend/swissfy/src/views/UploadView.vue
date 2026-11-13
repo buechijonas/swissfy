@@ -39,9 +39,7 @@
           :maxlength="maxLength"
           placeholder="Text auf deiner Story (optional)"
         ></textarea>
-        <p class="mt-2 text-right text-xs text-swissfy-muted">
-          {{ text.length }} / {{ maxLength }}
-        </p>
+        <p class="mt-2 text-right text-xs text-app-muted">{{ text.length }} / {{ maxLength }}</p>
       </template>
 
       <template v-else>
@@ -73,7 +71,7 @@
         />
         <div v-else class="flex gap-2 overflow-x-auto">
           <div
-            v-for="(image, index) in images"
+            v-for="image in images"
             :key="image.preview"
             class="relative h-40 max-w-full shrink-0"
             :style="{ aspectRatio: `${image.width} / ${image.height}` }"
@@ -89,7 +87,7 @@
               size="sm"
               class="absolute top-2 right-2"
               title="Bild entfernen"
-              @click="removeImage(index)"
+              @click="removeImage(image)"
             >
               <AppIcon name="cross" alt="Bild entfernen" />
             </BaseButton>
@@ -102,10 +100,10 @@
             @select="addImages"
           />
         </div>
-        <p v-if="images.length > 1" class="text-xs text-swissfy-muted mt-1">
+        <p v-if="images.length > 1" class="text-xs text-app-muted mt-1">
           Alle Bilder werden im Format des ersten Bildes zugeschnitten.
         </p>
-        <p v-if="video" class="text-xs text-swissfy-muted mt-1">
+        <p v-if="video" class="text-xs text-app-muted mt-1">
           Das Video wird nach dem Posten verarbeitet und erscheint danach für andere.
         </p>
 
@@ -125,7 +123,7 @@
               #{{ hashtag }}
             </span>
           </div>
-          <p class="shrink-0 text-xs text-swissfy-muted">{{ text.length }} / {{ maxLength }}</p>
+          <p class="shrink-0 text-xs text-app-muted">{{ text.length }} / {{ maxLength }}</p>
         </div>
       </template>
 
@@ -137,7 +135,7 @@
         />
       </div>
 
-      <p v-if="error" class="text-error text-sm mt-4">{{ error }}</p>
+      <ErrorText :message="error" class="mt-4" />
 
       <label class="mt-4 flex items-center gap-3 text-sm">
         <input v-model="acceptedTerms" type="checkbox" class="size-8 shrink-0 accent-primary" />
@@ -152,7 +150,7 @@
       <p
         v-if="quota && kind === 'feed'"
         class="text-sm mt-4"
-        :class="quota.remaining ? 'text-swissfy-muted' : 'text-error'"
+        :class="quota.remaining ? 'text-app-muted' : 'text-error'"
       >
         {{
           quota.remaining
@@ -178,9 +176,11 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import without from 'lodash-es/without'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ImageDropzone from '@/components/common/ImageDropzone.vue'
 import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
@@ -205,6 +205,7 @@ export default {
     BaseFooter,
     ImageDropzone,
     VisibilityPicker,
+    ErrorText,
   },
   data() {
     return {
@@ -255,7 +256,7 @@ export default {
   },
   methods: {
     leave() {
-      if (window.history.state?.back) {
+      if (this.$router.options.history.state.back) {
         this.$router.back()
       } else {
         this.$router.replace(this.kind === 'story' ? '/profile' : '/')
@@ -321,9 +322,9 @@ export default {
         }
       }
     },
-    removeImage(index) {
-      URL.revokeObjectURL(this.images[index].preview)
-      this.images.splice(index, 1)
+    removeImage(image) {
+      URL.revokeObjectURL(image.preview)
+      this.images = without(this.images, image)
     },
     clearImages() {
       for (const image of this.images) URL.revokeObjectURL(image.preview)
@@ -339,7 +340,7 @@ export default {
       if (this.kind === 'story') {
         body.append('image', this.storyImage.blob, 'story')
       } else {
-        this.images.forEach((image, index) => body.append('images', image.blob, `image-${index}`))
+        this.images.forEach((image) => body.append('images', image.blob, 'image'))
         if (this.video) body.append('video', this.video.file)
       }
       return body

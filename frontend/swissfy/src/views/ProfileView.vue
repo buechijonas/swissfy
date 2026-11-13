@@ -21,7 +21,7 @@
       </BaseCard>
 
       <BaseCard v-else-if="error" class="p-6">
-        <p class="text-swissfy-muted">{{ error }}</p>
+        <p class="text-app-muted">{{ error }}</p>
       </BaseCard>
 
       <BaseCard v-else class="p-6">
@@ -64,12 +64,10 @@
           <div class="flex flex-col min-w-0">
             <span class="flex min-w-0 items-center gap-2">
               <CipherText v-if="!profile.can_view" :length="10" class="text-lg font-bold" />
-              <span v-else class="text-lg font-bold truncate">{{
-                fullName || profile.username
-              }}</span>
+              <span v-else class="text-lg font-bold truncate">{{ profile.display_name }}</span>
               <RoleBadge :role="profile.role" />
             </span>
-            <span class="text-swissfy-muted truncate">@{{ profile.username }}</span>
+            <span class="text-app-muted truncate">@{{ profile.username }}</span>
           </div>
           <BaseButton
             v-if="profile.is_self"
@@ -90,11 +88,11 @@
               class="flex flex-col items-center gap-2 hover:underline"
             >
               <span class="text-xl font-bold">{{ profile.follower_count }}</span>
-              <span class="text-swissfy-muted text-sm">Follower</span>
+              <span class="text-app-muted text-sm">Follower</span>
             </RouterLink>
             <template v-else>
               <CipherText class="text-xl font-bold" />
-              <span class="text-swissfy-muted text-sm">Follower</span>
+              <span class="text-app-muted text-sm">Follower</span>
             </template>
             <BaseButton
               v-if="!profile.is_self"
@@ -115,11 +113,11 @@
               class="flex flex-col items-center gap-2 hover:underline"
             >
               <span class="text-xl font-bold">{{ profile.following_count }}</span>
-              <span class="text-swissfy-muted text-sm">Gefolgt</span>
+              <span class="text-app-muted text-sm">Gefolgt</span>
             </RouterLink>
             <template v-else>
               <CipherText class="text-xl font-bold" />
-              <span class="text-swissfy-muted text-sm">Gefolgt</span>
+              <span class="text-app-muted text-sm">Gefolgt</span>
             </template>
             <BaseButton
               v-if="!profile.is_self"
@@ -140,11 +138,11 @@
               class="flex flex-col items-center gap-2 hover:underline"
             >
               <span class="text-xl font-bold">{{ profile.friend_count }}</span>
-              <span class="text-swissfy-muted text-sm">Freunde</span>
+              <span class="text-app-muted text-sm">Freunde</span>
             </RouterLink>
             <template v-else>
               <CipherText class="text-xl font-bold" />
-              <span class="text-swissfy-muted text-sm">Freunde</span>
+              <span class="text-app-muted text-sm">Freunde</span>
             </template>
             <BaseButton
               v-if="canRequestFriendship"
@@ -162,13 +160,13 @@
 
         <p
           v-if="!profile.can_view"
-          class="flex items-center justify-center gap-2 text-swissfy-muted text-sm mt-6"
+          class="flex items-center justify-center gap-2 text-app-muted text-sm mt-6"
         >
           <AppIcon name="lock" size="sm" />
           Dieses Profil ist privat.
         </p>
 
-        <p v-if="actionError" class="text-error text-sm mt-4 text-center">{{ actionError }}</p>
+        <ErrorText :message="actionError" class="mt-4 text-center" />
       </BaseCard>
 
       <template v-if="!loading && !error && tabs.length">
@@ -178,23 +176,23 @@
             {{ profile.biography }}
           </p>
           <dl v-if="profile.birthdate" class="flex justify-between gap-4">
-            <dt class="text-swissfy-muted">Geburtsdatum</dt>
+            <dt class="text-app-muted">Geburtsdatum</dt>
             <dd>{{ formatDate(profile.birthdate) }}</dd>
           </dl>
           <section v-for="favorite in favorites" :key="favorite.kind">
-            <h4 class="text-swissfy-muted mb-2">{{ favorite.label }}</h4>
+            <h4 class="text-app-muted mb-2">{{ favorite.label }}</h4>
             <ul class="grid grid-cols-3 gap-4">
               <li v-for="item in profile[favorite.field]" :key="item.id" class="min-w-0">
                 <FavoriteCover :item="item" :icon="favorite.icon" />
                 <p class="text-sm truncate mt-2" :title="item.title">{{ item.title }}</p>
-                <p v-if="item.year" class="text-xs text-swissfy-muted">{{ item.year }}</p>
+                <p v-if="item.year" class="text-xs text-app-muted">{{ item.year }}</p>
               </li>
             </ul>
           </section>
           <LibraryCredits v-if="favorites.length" />
           <p
             v-if="!profile.biography && !profile.birthdate && !favorites.length"
-            class="text-swissfy-muted"
+            class="text-app-muted"
           >
             Keine Angaben.
           </p>
@@ -249,12 +247,15 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
+import { mapStores } from 'pinia'
+import map from 'lodash-es/map'
 import { RouterLink } from 'vue-router'
 import AddButton from '@/components/common/AddButton.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
@@ -313,8 +314,6 @@ const ACTIVITIES = {
     emptyText: 'Noch keine Kommentare.',
   },
 }
-const toOptions = (entries) =>
-  Object.entries(entries).map(([value, { label, icon }]) => ({ value, label, icon }))
 const MODERATION_TABS = TABS.filter((tab) => ['tiles', 'activities', 'status'].includes(tab.key))
 
 export default {
@@ -340,6 +339,7 @@ export default {
     RoleBadge,
     StoryViewer,
     UserAvatar,
+    ErrorText,
   },
   data() {
     return {
@@ -351,12 +351,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useAuthStore),
     username() {
       return this.$route.params.username
     },
     ownProfile() {
       if (this.profile && !this.loading) return this.profile.is_self
-      return !this.username || this.username === useAuthStore().user?.username
+      return !this.username || this.username === this.authStore.user?.username
     },
     tabs() {
       if (!this.profile?.can_view) return this.profile?.can_view_warnings ? MODERATION_TABS : []
@@ -386,10 +387,10 @@ export default {
     },
     switcher() {
       if (this.timeline) {
-        return { param: 'activity', options: toOptions(ACTIVITIES), active: this.activity }
+        return { param: 'activity', options: this.toOptions(ACTIVITIES), active: this.activity }
       }
       if (this.activeTab === 'tiles' && this.availableMedia.length > 1) {
-        return { param: 'media', options: toOptions(MEDIA), active: this.media }
+        return { param: 'media', options: this.toOptions(MEDIA), active: this.media }
       }
       return null
     },
@@ -416,9 +417,6 @@ export default {
       if (p.is_following) return 'user-minus'
       return p.follow_requested ? 'clock' : 'user-add'
     },
-    fullName() {
-      return [this.profile.first_name, this.profile.last_name].filter(Boolean).join(' ')
-    },
     canRequestFriendship() {
       const p = this.profile
       return !p.is_self && !p.is_friend && p.is_following && p.follows_you
@@ -433,6 +431,9 @@ export default {
     },
   },
   methods: {
+    toOptions(entries) {
+      return map(entries, ({ label, icon }, value) => ({ value, label, icon }))
+    },
     connectionLink(connection) {
       return `/profile/${encodeURIComponent(this.profile.username)}/${connection}`
     },

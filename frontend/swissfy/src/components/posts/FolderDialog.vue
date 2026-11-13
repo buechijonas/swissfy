@@ -26,19 +26,20 @@
         Anlegen
       </BaseButton>
     </form>
-    <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
+    <ErrorText :message="error" class="mt-2" />
   </BaseDialog>
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import { useFoldersStore } from '@/stores/posts.js'
 
 export default {
   name: 'FolderDialog',
-  components: { AppIcon, BaseButton, BaseDialog },
+  components: { AppIcon, BaseButton, BaseDialog, ErrorText },
   emits: ['select'],
   data() {
     return {
