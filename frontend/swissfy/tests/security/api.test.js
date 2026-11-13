@@ -8,7 +8,7 @@ function respond(body, status = 200) {
 describe('api client', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', respond('{}'))
-    document.cookie = 'swissfy_csrftoken=token123'
+    document.cookie = 'swissfy_csrf=token123'
     document.cookie = 'csrftoken=wrong'
   })
 
