@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status
 from rest_framework.decorators import action
@@ -8,9 +9,10 @@ from rest_framework.response import Response
 from commons.exceptions import BadRequest
 from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
-from swissfy.accounts.roles import IsModerator
+from swissfy.accounts.roles import IsModerator, is_moderator
+from swissfy.notifications.models import Notification
 from swissfy.posts.models import Comment, Post
-from swissfy.posts.serializers import PostModelSerializer
+from swissfy.posts.serializers import CommentModelSerializer, PostModelSerializer
 from swissfy.posts.views.comments import (
     CommentDetailViewSet,
     CommentReplyListViewSet,
@@ -20,7 +22,6 @@ from swissfy.posts.views.comments import (
 from .models import AlreadyWarned, Report
 from .permissions import CanModerateAuthor, CanReportAuthor, CanViewWarnings, IsNotAuthor
 from .reviews import moderation_context, report_groups
-from .sanctions import issue_warning
 from .serializers import (
     ModerationDetailsSerializer,
     ModerationStatusSerializer,
@@ -38,18 +39,25 @@ class ReportViewSet(BaseViewSet):
 
     @action(detail=True, methods=["post"])
     def report(self, request, uuid):
-        self.get_object().report_by(request.user)
-        return Response({"reported": True})
+        target = self.get_object()
+        target.report_by(request.user)
+        return self.respond(target)
 
 
 class PostReportViewSet(ReportViewSet):
+    serializer_class = PostModelSerializer
+
     def get_queryset(self):
-        return Post.objects.apply_acl(self.request.user)
+        user = self.request.user
+        return Post.objects.apply_acl(user).with_details(user)
 
 
 class CommentReportViewSet(ReportViewSet):
+    serializer_class = CommentModelSerializer
+
     def get_queryset(self):
-        return Comment.objects.apply_acl(self.request.user)
+        user = self.request.user
+        return Comment.objects.apply_acl(user).with_details(user)
 
 
 class ReportQueueViewSet(BaseViewSet, mixins.ListModelMixin):
@@ -79,6 +87,7 @@ class ModerationActionsMixin:
 
     def reported_target(self):
         reported = self.model.objects.filter(reports__isnull=False).distinct()
+        reported = reported.with_moderation(self.request.user)
         target = get_object_or_404(reported, uuid=self.kwargs["uuid"])
         self.check_object_permissions(self.request, target)
         return target
@@ -89,6 +98,7 @@ class ModerationActionsMixin:
     @action(
         detail=True, methods=["post"], url_path="warnings", permission_classes=MODERATOR_OF_AUTHOR
     )
+    @transaction.atomic
     def warn(self, request, uuid):
         target = self.reported_target()
         if target.is_warned:
@@ -97,9 +107,15 @@ class ModerationActionsMixin:
         serializer.is_valid(raise_exception=True)
         reason = serializer.validated_data["reason"]
         try:
-            warning = issue_warning(target, request.user, reason)
+            warning = target.warn(request.user, reason)
         except AlreadyWarned:
             raise BadRequest(ALREADY_WARNED)
+        Notification.notify(warning.user, Notification.Kind.WARNING, warning=warning)
+        suspension = warning.suspend_if_needed()
+        if suspension:
+            Notification.notify(
+                suspension.user, Notification.Kind.SUSPENSION, suspension=suspension
+            )
         return Response(
             {"warning": WarningModelSerializer.read(warning).data, "report_count": 0},
             status=status.HTTP_201_CREATED,
@@ -118,7 +134,8 @@ class ReportedPostViewSet(ModerationActionsMixin, BaseViewSet, mixins.RetrieveMo
     model = Post
 
     def get_queryset(self):
-        return Post.objects.reported().with_details(self.request.user)
+        user = self.request.user
+        return Post.objects.reported().with_details(user).with_moderation(user)
 
     def retrieve(self, request, *args, **kwargs):
         post = self.get_object()
@@ -134,7 +151,8 @@ class ReportedCommentViewSet(ModerationActionsMixin, CommentDetailViewSet):
     model = Comment
 
     def get_queryset(self):
-        return Comment.objects.on_reported_posts().with_details(self.request.user)
+        user = self.request.user
+        return Comment.objects.on_reported_posts().with_details(user).with_moderation(user)
 
     def get_posts(self):
         return Post.objects.reported().with_details(self.request.user)
@@ -184,5 +202,5 @@ class StatusViewSet(BaseViewSet):
 
     @action(detail=True)
     def status(self, request, username):
-        context = self.get_serializer_context()
+        context = {**self.get_serializer_context(), "moderation": is_moderator(request.user)}
         return Response(ModerationStatusSerializer(self.get_object(), context=context).data)

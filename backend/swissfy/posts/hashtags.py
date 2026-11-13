@@ -11,6 +11,19 @@ def extract(text):
     return list(names)[:MAX_HASHTAGS]
 
 
+def split(text):
+    parts = []
+    start = 0
+    for match in PATTERN.finditer(text):
+        if match.start() > start:
+            parts.append({"start": start, "text": text[start : match.start()], "hashtag": None})
+        parts.append({"start": match.start(), "text": match[0], "hashtag": match[1].lower()})
+        start = match.end()
+    if start < len(text):
+        parts.append({"start": start, "text": text[start:], "hashtag": None})
+    return parts
+
+
 def normalize(name):
     return name.strip().lstrip("#").lower()
 

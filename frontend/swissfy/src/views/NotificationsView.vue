@@ -4,7 +4,7 @@
     class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
-      <BaseCard v-if="items.length" tag="ul" class="divide-y divide-swissfy-border">
+      <BaseCard v-if="items.length" tag="ul" class="divide-y divide-app-border">
         <li
           v-for="item in items"
           :key="item.id"
@@ -31,9 +31,7 @@
             <span v-else class="break-words" :class="KIND_COLORS[item.kind]">
               {{ item.message }}
             </span>
-            <span class="text-xs text-swissfy-muted">{{
-              formatRelativeTime(item.created_at)
-            }}</span>
+            <span class="text-xs text-app-muted">{{ formatRelativeTime(item.created_at) }}</span>
             <div v-if="item.request === 'pending'" class="mt-1 flex gap-2">
               <BaseButton
                 size="sm"
@@ -49,14 +47,14 @@
                 Ablehnen
               </BaseButton>
             </div>
-            <span v-else-if="item.request" class="text-xs text-swissfy-muted">
+            <span v-else-if="item.request" class="text-xs text-app-muted">
               {{ item.request === 'accepted' ? 'Angenommen' : 'Abgelehnt' }}
             </span>
           </div>
           <RouterLink
             v-if="item.link"
             :to="item.link"
-            class="flex shrink-0 self-center box-content p-2.5 -m-2.5 text-swissfy-muted hover:text-base-content"
+            class="flex shrink-0 self-center box-content p-2.5 -m-2.5 text-app-muted hover:text-base-content"
             title="Öffnen"
           >
             <AppIcon name="arrow-up-right-from-square" alt="Öffnen" class="size-6!" />
@@ -64,10 +62,10 @@
         </li>
       </BaseCard>
       <BaseCard v-else-if="!loading && !error" class="p-6">
-        <p class="text-swissfy-muted">Noch keine Benachrichtigungen.</p>
+        <p class="text-app-muted">Noch keine Benachrichtigungen.</p>
       </BaseCard>
 
-      <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
+      <ErrorText :message="error" class="mt-4 text-center" />
       <div v-if="loading" class="skeleton h-24 w-full mt-4"></div>
       <BaseButton v-else-if="next" class="mt-4" size="sm" block @click="load">
         <AppIcon name="down" />
@@ -79,11 +77,13 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import notificationsApi from '@/api/notifications.js'
@@ -109,6 +109,7 @@ const KIND_BUBBLES = {
 
 export default {
   name: 'NotificationsView',
+  mixins: [asyncActionMixin],
   components: {
     RouterLink,
     AppIcon,
@@ -117,6 +118,7 @@ export default {
     BaseCard,
     BaseFooter,
     UserAvatar,
+    ErrorText,
   },
   data() {
     return {
@@ -128,8 +130,6 @@ export default {
       unreadIds: new Set(),
       next: notificationsApi.listUrl(),
       loading: false,
-      busy: false,
-      error: null,
     }
   },
   async created() {
@@ -155,18 +155,9 @@ export default {
       }
     },
     async answer(item, state) {
-      this.busy = true
-      this.error = null
-      try {
-        const respond =
-          state === 'accepted' ? profilesApi.acceptRequest : profilesApi.declineRequest
-        await respond(item.kind, item.actor.username)
-        item.request = state
-      } catch (error) {
-        this.error = error.detail ?? 'Aktion fehlgeschlagen.'
-      } finally {
-        this.busy = false
-      }
+      const respond = state === 'accepted' ? profilesApi.acceptRequest : profilesApi.declineRequest
+      await this.runAction(() => respond(item.kind, item.actor.username), 'Aktion fehlgeschlagen.')
+      if (!this.error) item.request = state
     },
   },
 }

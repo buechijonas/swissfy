@@ -1,25 +1,26 @@
 <template>
   <div class="mb-10">
     <h3 class="text-xl my-4">Suchtprävention</h3>
-    <p class="text-swissfy-muted text-sm mb-4">
+    <p class="text-app-muted text-sm mb-4">
       Swissfy verzichtet standardmässig auf Funktionen, die dich länger am Bildschirm halten sollen.
       Du kannst sie hier bewusst einschalten. Gilt für dieses Gerät.
     </p>
-    <SettingCard
-      v-for="(toggle, index) in toggles"
-      :key="toggle.label"
-      :class="{ 'mt-4': index }"
-      :title="toggle.label"
-      :hint="toggle.hint"
-    >
-      <BaseSwitcher
-        class="flex-wrap justify-center gap-2 shrink-0"
-        size="sm"
-        :options="onOffOptions"
-        :active="toggle.setting.value"
-        @select="toggle.setting.value = $event"
-      />
-    </SettingCard>
+    <div class="flex flex-col gap-4">
+      <SettingCard
+        v-for="toggle in toggles"
+        :key="toggle.label"
+        :title="toggle.label"
+        :hint="toggle.hint"
+      >
+        <BaseSwitcher
+          class="flex-wrap justify-center gap-2 shrink-0"
+          size="sm"
+          :options="onOffOptions"
+          :active="toggle.setting.value"
+          @select="toggle.setting.value = $event"
+        />
+      </SettingCard>
+    </div>
   </div>
 </template>
 

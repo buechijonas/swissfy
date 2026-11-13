@@ -8,9 +8,9 @@ from django.utils import timezone
 from swissfy.accounts.models import UserProfile, get_or_create_profile
 from swissfy.accounts.roles import Role, role_of, set_role
 from swissfy.posts.models import Comment, Post
+from swissfy.social.models import Member
 
 from .models import AlreadyWarned, Reason, Report, Suspension, Warning
-from .sanctions import issue_warning, role_locked_until, suspend, suspend_if_needed
 
 User = get_user_model()
 
@@ -39,7 +39,7 @@ class ModerationTests(TestCase):
         self.assertEqual(self.report("posts", self.post).status_code, 403)
 
         self.as_user(self.jonas)
-        self.assertEqual(self.report("posts", self.post).json(), {"reported": True})
+        self.assertTrue(self.report("posts", self.post).json()["reported"])
         self.assertEqual(self.report("posts", self.post).status_code, 200)
         self.report("comments", self.comment)
         self.assertEqual(Report.objects.count(), 2)
@@ -363,7 +363,7 @@ class RoleLockTests(TestCase):
     def test_suspension_revokes_verification_and_locks_role(self):
         for _ in range(3):
             warning = self.warn()
-        suspend_if_needed(warning)
+        warning.suspend_if_needed()
         self.assertEqual(role_of(self.anna), Role.DEFAULT)
         self.assertEqual(self.change_role("verified").status_code, 403)
         users = self.client.get("/api/administration/users/", {"q": "anna"}).json()["results"]
@@ -371,13 +371,43 @@ class RoleLockTests(TestCase):
 
     def test_role_unlocks_once_warnings_expired_and_suspension_over(self):
         warning = self.warn(days_ago=100)
-        suspend(self.anna, warning, 0, timezone.now() - timedelta(days=100))
+        Suspension.start(self.anna, warning, 0, timezone.now() - timedelta(days=100))
         self.assertEqual(self.change_role("verified").status_code, 200)
 
     def test_lifetime_suspension_locks_forever(self):
         warning = self.warn(days_ago=200)
-        suspend(self.anna, warning, 4, timezone.now() - timedelta(days=200))
-        self.assertEqual(role_locked_until(self.anna), "forever")
+        Suspension.start(self.anna, warning, 4, timezone.now() - timedelta(days=200))
+        anna = Member.objects.with_role_lock().get(pk=self.anna.pk)
+        self.assertEqual(anna.role_lock, "forever")
+
+
+class SuspensionStatusTextTests(TestCase):
+    def setUp(self):
+        self.anna = User.objects.create(username="anna")
+        self.warning = Warning.objects.create(user=self.anna, reason=Reason.SPAM)
+
+    def suspension(self, starts_in, ends_in):
+        now = timezone.now()
+        ends_at = now + ends_in if ends_in is not None else None
+        return Suspension(user=self.anna, step=0, starts_at=now + starts_in, ends_at=ends_at)
+
+    def test_running_suspension_names_its_end(self):
+        suspension = self.suspension(timedelta(days=-1), timedelta(days=2))
+        self.assertTrue(suspension.status_text.startswith("Gesperrt bis "))
+        self.assertFalse(suspension.is_past)
+
+    def test_lifetime_suspension_is_permanent(self):
+        suspension = self.suspension(timedelta(days=-1), None)
+        self.assertEqual(suspension.status_text, "Dauerhaft gesperrt")
+
+    def test_queued_suspension_starts_after_the_running_one(self):
+        suspension = self.suspension(timedelta(days=1), None)
+        self.assertEqual(suspension.status_text, "Beginnt nach der laufenden Sperre, dauerhaft")
+
+    def test_ended_suspension_is_past(self):
+        suspension = self.suspension(timedelta(days=-5), timedelta(days=-1))
+        self.assertTrue(suspension.status_text.startswith("Abgelaufen am "))
+        self.assertTrue(suspension.is_past)
 
 
 class ModeratorReportedContentTests(TestCase):
@@ -419,7 +449,7 @@ class ModeratorReportedContentTests(TestCase):
     def test_suspension_directly_above_its_warning_in_timeline(self):
         anna = User.objects.create(username="anna")
         warnings = [Warning.objects.create(user=anna, reason="spam") for _ in range(3)]
-        suspend_if_needed(warnings[-1])
+        warnings[-1].suspend_if_needed()
         self.client.force_login(anna)
         events = self.client.get("/api/social/profiles/anna/status/").json()["events"]
         self.assertEqual(
@@ -435,7 +465,7 @@ class RepeatedWarningTests(TestCase):
         set_role(self.mod, Role.MODERATOR)
         self.post = Post.objects.create(author=anna, text="Hallo")
         Report.objects.create(reporter=self.mod, post=self.post)
-        issue_warning(self.post, self.mod, Reason.SPAM)
+        self.post.warn(self.mod, Reason.SPAM)
         self.client.force_login(self.mod)
 
     def test_warning_again_without_reason_says_already_warned(self):
@@ -454,17 +484,19 @@ class IssueWarningTests(TestCase):
         Report.objects.create(reporter=self.mod, post=self.post)
 
     def test_second_warning_for_the_same_post_is_rejected(self):
-        issue_warning(self.post, self.mod, Reason.SPAM)
+        self.post.warn(self.mod, Reason.SPAM)
 
         with self.assertRaises(AlreadyWarned):
-            issue_warning(self.post, self.mod, Reason.INSULT)
+            self.post.warn(self.mod, Reason.INSULT)
 
         self.assertEqual(Warning.objects.count(), 1)
 
     def test_failure_leaves_no_half_issued_warning(self):
-        with mock.patch("swissfy.moderation.sanctions.suspend_if_needed", side_effect=RuntimeError):
+        self.client.force_login(self.mod)
+        url = f"/api/moderation/posts/{self.post.uuid}/warnings/"
+        with mock.patch.object(Warning, "suspend_if_needed", side_effect=RuntimeError):
             with self.assertRaises(RuntimeError):
-                issue_warning(self.post, self.mod, Reason.SPAM)
+                self.client.post(url, {"reason": Reason.SPAM}, content_type="application/json")
 
         self.post.refresh_from_db()
         self.assertFalse(Warning.objects.exists())

@@ -2,9 +2,10 @@
   <div class="mb-10">
     <h3 class="my-4 text-xl">Darstellung</h3>
     <BaseCard
+      inset
       class="flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:justify-between sm:text-left"
     >
-      <p class="min-w-0 text-docs-muted">Erscheinungsbild der Oberfläche.</p>
+      <p class="min-w-0 text-app-muted">Erscheinungsbild der Oberfläche.</p>
       <div class="flex flex-wrap justify-center gap-2">
         <BaseButton
           v-for="option in THEME_OPTIONS"
@@ -23,9 +24,10 @@
   <div class="mb-10">
     <h3 class="my-4 text-xl">Barrierefreiheit</h3>
     <BaseCard
+      inset
       class="mb-4 flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:justify-between sm:text-left"
     >
-      <p class="min-w-0 text-docs-muted">Legasthenie</p>
+      <p class="min-w-0 text-app-muted">Legasthenie</p>
       <div class="flex flex-wrap justify-center gap-2">
         <BaseButton
           v-for="option in TOGGLE_OPTIONS"
@@ -40,9 +42,10 @@
       </div>
     </BaseCard>
     <BaseCard
+      inset
       class="flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:justify-between sm:text-left"
     >
-      <p class="min-w-0 text-docs-muted">Kontrastmodus</p>
+      <p class="min-w-0 text-app-muted">Kontrastmodus</p>
       <div class="flex flex-wrap justify-center gap-2">
         <BaseButton
           v-for="option in TOGGLE_OPTIONS"
@@ -60,9 +63,9 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import { contrastMode, dyslexiaFont, themeMode } from '@core/lib/appearance.js'
 
 const THEME_OPTIONS = [

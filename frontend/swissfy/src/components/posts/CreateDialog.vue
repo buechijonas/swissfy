@@ -9,15 +9,15 @@
       >
         <AppIcon :name="option.icon" class="size-6!" />
         <span class="text-base">{{ option.label }}</span>
-        <span class="text-xs font-normal text-swissfy-muted">{{ option.hint }}</span>
+        <span class="text-xs font-normal text-app-muted">{{ option.hint }}</span>
       </BaseButton>
     </div>
   </BaseDialog>
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 
 export default {

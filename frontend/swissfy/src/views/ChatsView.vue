@@ -7,13 +7,13 @@
       <BaseTabs class="mb-4" :tabs="tabs" :active="activeTab" />
       <BaseCard v-if="requests.length && !archive" class="mb-4">
         <h3 class="px-6 pt-4 pb-2 font-bold">Chat-Anfragen</h3>
-        <ul class="divide-y divide-swissfy-border">
+        <ul class="divide-y divide-app-border">
           <li v-for="user in requests" :key="user.username">
             <UserRow :user="user" :to="chatLink(user)" />
           </li>
         </ul>
       </BaseCard>
-      <BaseCard v-if="visibleConversations.length" tag="ul" class="divide-y divide-swissfy-border">
+      <BaseCard v-if="visibleConversations.length" tag="ul" class="divide-y divide-app-border">
         <li v-for="user in visibleConversations" :key="user.username" class="flex">
           <SwipeRow
             class="flex-1 min-w-0"
@@ -25,7 +25,7 @@
               <template v-if="user.last_message" #subtitle>
                 <span
                   class="flex items-center gap-1 min-w-0 text-sm"
-                  :class="user.unread ? 'font-bold text-base-content' : 'text-swissfy-muted'"
+                  :class="user.unread ? 'font-bold text-base-content' : 'text-app-muted'"
                 >
                   <CipherText v-if="previews[user.username] === null" :length="8" />
                   <span v-else class="truncate">{{ previews[user.username] }}</span>
@@ -36,14 +36,14 @@
                 </span>
               </template>
               <template v-else #subtitle>
-                <span class="text-swissfy-muted text-sm truncate">
+                <span class="text-app-muted text-sm truncate">
                   {{ user.pending ? 'Anfrage gesendet' : 'Noch keine Nachrichten' }}
                 </span>
               </template>
               <span
                 v-if="user.last_message"
                 class="text-xs"
-                :class="user.unread ? 'font-bold text-base-content' : 'text-swissfy-muted'"
+                :class="user.unread ? 'font-bold text-base-content' : 'text-app-muted'"
               >
                 {{ formatRelativeTime(user.last_message.created_at, now) }}
               </span>
@@ -52,7 +52,7 @@
           <BaseButton
             variant="ghost"
             shape="square"
-            class="hidden lg:inline-flex size-18 rounded-none border-0 border-l border-swissfy-border"
+            class="hidden lg:inline-flex size-18 rounded-none border-0 border-l border-app-border"
             :title="archiveLabel"
             @click="requestToggle(user)"
           >
@@ -61,7 +61,7 @@
         </li>
       </BaseCard>
       <BaseCard v-else-if="conversations" class="p-6">
-        <p class="text-swissfy-muted">{{ emptyText }}</p>
+        <p class="text-app-muted">{{ emptyText }}</p>
       </BaseCard>
       <div v-else class="flex flex-col gap-3">
         <div v-for="n in 3" :key="n" class="flex items-center gap-4 px-6 py-3">
@@ -87,10 +87,15 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
+import clockMixin from '@/mixins/clockMixin.js'
+import { mapStores } from 'pinia'
+import { useIntervalFn } from '@vueuse/core'
+import filter from 'lodash-es/filter'
+import map from 'lodash-es/map'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
@@ -114,6 +119,7 @@ const TABS = [
 
 export default {
   name: 'ChatsView',
+  mixins: [clockMixin],
   components: {
     AppIcon,
     BaseBreadcrumbs,
@@ -133,12 +139,12 @@ export default {
       requests: [],
       conversations: null,
       previews: {},
-      now: Date.now(),
       tabs: TABS,
       pendingArchive: null,
     }
   },
   computed: {
+    ...mapStores(useAuthStore),
     archive() {
       return this.$route.query.tab === 'archive'
     },
@@ -146,7 +152,7 @@ export default {
       return this.archive ? 'archive' : 'chats'
     },
     visibleConversations() {
-      return (this.conversations ?? []).filter((user) => user.archived === this.archive)
+      return filter(this.conversations, { archived: this.archive })
     },
     archiveIcon() {
       return this.archive ? 'archive-restore' : 'archive'
@@ -164,14 +170,13 @@ export default {
     },
   },
   async created() {
-    this.keys = await localKeys(useAuthStore().user.id)
+    this.refresher = useIntervalFn(this.load, REFRESH_INTERVAL, { immediate: false })
+    this.keys = await localKeys(this.authStore.user.id)
     await this.load()
-    this.refreshTimer = setInterval(() => this.load(), REFRESH_INTERVAL)
-    this.clockTimer = setInterval(() => (this.now = Date.now()), 30000)
+    this.refresher.resume()
   },
   beforeUnmount() {
-    clearInterval(this.refreshTimer)
-    clearInterval(this.clockTimer)
+    this.refresher.pause()
   },
   methods: {
     formatRelativeTime,
@@ -195,9 +200,8 @@ export default {
       this.now = Date.now()
     },
     syncUnread() {
-      useChatsStore().unread = this.conversations
-        .filter((user) => user.unread && !user.archived)
-        .map((user) => user.username)
+      const unread = filter(this.conversations, { unread: true, archived: false })
+      useChatsStore().unread = map(unread, 'username')
     },
     requestToggle(user) {
       if (user.archived) return this.toggleArchive(user)

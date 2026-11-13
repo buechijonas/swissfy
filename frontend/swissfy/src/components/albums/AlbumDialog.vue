@@ -9,7 +9,7 @@
         @keyup.enter="save"
       />
       <div v-if="album?.entries.length" class="flex min-h-0 flex-col gap-2">
-        <span class="text-sm text-swissfy-muted">Titelbild (optional)</span>
+        <span class="text-sm text-app-muted">Titelbild (optional)</span>
         <div class="grid max-h-72 grid-cols-3 gap-2 overflow-y-auto">
           <button
             v-for="entry in album.entries"
@@ -36,10 +36,10 @@
           </button>
         </div>
       </div>
-      <p v-else-if="album" class="text-sm text-swissfy-muted">
+      <p v-else-if="album" class="text-sm text-app-muted">
         Füge Posts zur Timeline hinzu, um eines davon als Titelbild zu wählen.
       </p>
-      <p v-if="error" class="text-error text-sm">{{ error }}</p>
+      <ErrorText :message="error" />
     </div>
     <template #actions>
       <BaseButton
@@ -71,29 +71,30 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import albumsApi from '@/api/albums.js'
 
 export default {
   name: 'AlbumDialog',
-  components: { AppIcon, BaseButton, BaseDialog },
+  mixins: [asyncActionMixin],
+  components: { AppIcon, BaseButton, BaseDialog, ErrorText },
   emits: ['saved', 'delete'],
   data() {
     return {
       album: null,
       name: '',
       cover: null,
-      error: null,
-      busy: false,
     }
   },
   methods: {
     open(album = null) {
       this.album = album
       this.name = album?.name ?? ''
-      this.cover = album?.entries.find((entry) => entry.post.thumbnail === album.cover)?.id ?? null
+      this.cover = album?.cover_entry ?? null
       this.error = null
       this.$refs.dialog.open()
     },
@@ -106,20 +107,17 @@ export default {
     },
     async save() {
       if (!this.name.trim() || this.busy) return
-      this.busy = true
-      this.error = null
-      try {
-        const name = this.name.trim()
-        const album = this.album
-          ? await albumsApi.update(this.album.id, { name, cover: this.cover })
-          : await albumsApi.create({ name })
-        this.$refs.dialog.close()
-        this.$emit('saved', album)
-      } catch (error) {
-        this.error = error.detail ?? 'Album konnte nicht gespeichert werden.'
-      } finally {
-        this.busy = false
-      }
+      const album = await this.runAction(
+        () => this.request(this.name.trim()),
+        'Album konnte nicht gespeichert werden.',
+      )
+      if (!album) return
+      this.$refs.dialog.close()
+      this.$emit('saved', album)
+    },
+    request(name) {
+      if (this.album) return albumsApi.update(this.album.id, { name, cover: this.cover })
+      return albumsApi.create({ name })
     },
   },
 }

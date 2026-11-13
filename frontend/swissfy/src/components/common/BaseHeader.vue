@@ -39,7 +39,7 @@
         <ul
           v-if="isMenuOpen"
           @click="isMenuOpen = false"
-          class="app-menu dropdown-content menu z-40 w-56 rounded-box border border-swissfy-border bg-base-100 p-1 text-base-content [--depth:0] [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)]"
+          class="app-menu dropdown-content menu z-40 w-56 rounded-box border border-app-border bg-base-100 p-1 text-base-content [--depth:0] [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)]"
         >
           <li>
             <RouterLink to="/settings" class="flex h-12 items-center gap-3">
@@ -59,7 +59,7 @@
               <span>{{ item.label }}</span>
             </RouterLink>
           </li>
-          <li class="mt-1 border-t border-swissfy-border pt-1">
+          <li class="mt-1 border-t border-app-border pt-1">
             <a :href="docsUrl" class="flex h-12 items-center gap-3">
               <AppIcon name="circle-book-open" class="size-6!" />
               <span>Dokumentation</span>
@@ -71,7 +71,7 @@
               <span>govex</span>
             </a>
           </li>
-          <li v-if="authStore.ready" class="mt-1 border-t border-swissfy-border pt-1">
+          <li v-if="authStore.ready" class="mt-1 border-t border-app-border pt-1">
             <RouterLink
               :to="authStore.isAuthenticated ? '/logout' : '/login'"
               class="flex h-12 items-center gap-3"
@@ -87,8 +87,9 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import govexLogo from '@core/assets/govex.svg'
 import { docsUrl, isListed, navigationItems } from '@/data/navigation.js'
 import { pageTitle } from '@/lib/title.js'
@@ -109,9 +110,7 @@ export default {
     }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
+    ...mapStores(useAuthStore),
     notificationsStore() {
       return useNotificationsStore()
     },
@@ -125,7 +124,7 @@ export default {
       return this.notificationsStore.unread ? 'Neue Benachrichtigungen' : 'Benachrichtigungen'
     },
     staffItems() {
-      return navigationItems.filter((item) => item.roles && isListed(item, this.authStore))
+      return navigationItems.filter((item) => item.permission && isListed(item, this.authStore))
     },
   },
   watch: {

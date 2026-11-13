@@ -7,8 +7,7 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from swissfy.accounts.models import get_or_create_profile
-from swissfy.moderation.models import Reason, Warning
-from swissfy.moderation.sanctions import suspend
+from swissfy.moderation.models import Reason, Suspension, Warning
 
 from .crypto import unwrap_message_key, wrap_message_key
 from .models import ChatKey, ChatRequest, Envelope, Message
@@ -63,17 +62,18 @@ class ChatSecurityTests(TestCase):
     def test_third_parties_cannot_read_a_conversation(self):
         self.assertEqual(self.send(self.payload()).status_code, 201)
         self.as_user(self.eve)
-        for username in ["anna", "jonas"]:
-            with self.subTest(username=username):
-                data = self.client.get(f"/api/chats/{username}/messages/").json()
-                self.assertEqual(data["messages"], [])
+        with_anna = self.client.get("/api/chats/anna/messages/").json()["messages"]
+        with_jonas = self.client.get("/api/chats/jonas/messages/").json()["messages"]
+        self.assertEqual((with_anna, with_jonas), ([], []))
         conversations = self.client.get("/api/chats/conversations/").json()
         self.assertEqual(conversations, [])
 
     def test_reading_marks_nothing_for_third_parties(self):
         self.send(self.payload())
         self.as_user(self.eve)
-        self.client.get("/api/chats/anna/messages/?read=1")
+        self.client.post(
+            "/api/chats/anna/receive/", {"read": True}, content_type="application/json"
+        )
         self.client.post("/api/chats/delivered/")
         message = Message.objects.get()
         self.assertIsNone(message.delivered_at)
@@ -95,11 +95,18 @@ class ChatSecurityTests(TestCase):
         self.assertEqual(self.send(self.payload()).status_code, 403)
         self.assertFalse(Message.objects.filter(sender=self.eve).exists())
 
-    def test_cannot_message_self_or_inactive_or_unknown_users(self):
+    def test_cannot_message_self(self):
+        self.assertEqual(self.send(self.payload(), "jonas").status_code, 404)
+
+    def test_cannot_message_inactive_users(self):
         User.objects.filter(pk=self.anna.pk).update(is_active=False)
-        for username in ["jonas", "anna", "nobody", "' OR 1=1--"]:
-            with self.subTest(username=username):
-                self.assertEqual(self.send(self.payload(), username).status_code, 404)
+        self.assertEqual(self.send(self.payload(), "anna").status_code, 404)
+
+    def test_cannot_message_unknown_users(self):
+        self.assertEqual(self.send(self.payload(), "nobody").status_code, 404)
+
+    def test_cannot_message_injected_usernames(self):
+        self.assertEqual(self.send(self.payload(), "' OR 1=1--").status_code, 404)
 
     def test_cannot_accept_requests_addressed_to_someone_else(self):
         ChatRequest.objects.create(sender=self.eve, recipient=self.anna)
@@ -132,15 +139,24 @@ class ChatSecurityTests(TestCase):
         self.client.post("/api/chats/anna/request/withdraw/")
         self.assertTrue(Message.objects.filter(sender=self.jonas).exists())
 
-    def test_envelopes_for_foreign_keys_are_rejected(self):
-        jonas_key = self.device_key(self.jonas)
-        anna_key = self.device_key(self.anna)
-        eve_key = self.device_key(self.eve)
-        for keys in [[jonas_key, anna_key, eve_key], [jonas_key, eve_key], [eve_key], []]:
-            with self.subTest(keys=[key.user.username for key in keys]):
-                response = self.send(self.payload(keys, message_key=False))
-                self.assertEqual(response.status_code, 409)
-        self.assertFalse(Envelope.objects.filter(key=eve_key).exists())
+    def assert_envelopes_rejected(self, *owners):
+        keys = {user.username: self.device_key(user) for user in (self.jonas, self.anna, self.eve)}
+        envelope_keys = [keys[owner.username] for owner in owners]
+        response = self.send(self.payload(envelope_keys, message_key=False))
+        self.assertEqual(response.status_code, 409)
+        self.assertFalse(Envelope.objects.filter(key=keys["eve"]).exists())
+
+    def test_envelopes_including_a_third_party_are_rejected(self):
+        self.assert_envelopes_rejected(self.jonas, self.anna, self.eve)
+
+    def test_envelopes_replacing_the_recipient_are_rejected(self):
+        self.assert_envelopes_rejected(self.jonas, self.eve)
+
+    def test_envelopes_only_for_a_third_party_are_rejected(self):
+        self.assert_envelopes_rejected(self.eve)
+
+    def test_message_without_envelopes_is_rejected(self):
+        self.assert_envelopes_rejected()
 
     def test_deactivated_keys_cannot_be_used(self):
         old = self.device_key(self.anna)
@@ -165,51 +181,74 @@ class ChatSecurityTests(TestCase):
 
     def test_suspended_users_cannot_chat(self):
         warning = Warning.objects.create(user=self.jonas, reason=Reason.values[0])
-        suspend(self.jonas, warning, 0, timezone.now())
+        Suspension.start(self.jonas, warning, 0, timezone.now())
         self.assertEqual(self.send(self.payload()).status_code, 403)
         self.assertEqual(self.client.post("/api/chats/eve/request/").status_code, 403)
 
-    def test_message_fields_are_validated(self):
-        cases = {
-            "ciphertext not base64": {"ciphertext": "not base64!"},
-            "ciphertext too long": {"ciphertext": "A" * 20004},
-            "iv too long": {"iv": "A" * 40},
-            "iv injection": {"iv": "' OR 1=1--"},
-            "ciphertext object": {"ciphertext": {"$gt": ""}},
-            "envelopes not a list": {"envelopes": "x"},
-        }
-        for name, overrides in cases.items():
-            with self.subTest(name):
-                self.assertEqual(self.send(self.payload(**overrides)).status_code, 400)
+    def assert_message_rejected(self, **overrides):
+        self.assertEqual(self.send(self.payload(**overrides)).status_code, 400)
 
-    def test_message_key_must_be_exactly_32_bytes(self):
-        for key in [
-            base64.b64encode(bytes(16)).decode(),
-            base64.b64encode(bytes(33)).decode(),
-            "not base64",
-            "",
-        ]:
-            with self.subTest(key=key):
-                response = self.send(self.payload() | {"message_key": key})
-                self.assertEqual(response.status_code, 400)
+    def test_ciphertext_must_be_base64(self):
+        self.assert_message_rejected(ciphertext="not base64!")
 
-    def test_public_keys_are_validated_and_stripped(self):
-        invalid = [
-            {"ecdh": {"kty": "RSA", "crv": "P-256", "x": "a", "y": "b"}, "kem": "a2Vt"},
-            {"ecdh": {"kty": "EC", "crv": "P-384", "x": "a", "y": "b"}, "kem": "a2Vt"},
-            {"ecdh": {"kty": "EC", "crv": "P-256", "x": 1, "y": "b"}, "kem": "a2Vt"},
-            {"ecdh": "x", "kem": "a2Vt"},
-            {"ecdh": PUBLIC_KEY["ecdh"], "kem": "!!"},
-            {"ecdh": PUBLIC_KEY["ecdh"], "kem": "A" * 3000},
-        ]
-        for public_key in invalid:
-            with self.subTest(public_key=str(public_key)[:60]):
-                response = self.client.put(
-                    "/api/chats/protection/",
-                    {"mode": "device", "key": {"public_key": public_key}},
-                    content_type="application/json",
-                )
-                self.assertEqual(response.status_code, 400)
+    def test_ciphertext_length_is_limited(self):
+        self.assert_message_rejected(ciphertext="A" * 20004)
+
+    def test_iv_length_is_limited(self):
+        self.assert_message_rejected(iv="A" * 40)
+
+    def test_iv_rejects_injections(self):
+        self.assert_message_rejected(iv="' OR 1=1--")
+
+    def test_ciphertext_must_be_a_string(self):
+        self.assert_message_rejected(ciphertext={"$gt": ""})
+
+    def test_envelopes_must_be_a_list(self):
+        self.assert_message_rejected(envelopes="x")
+
+    def assert_message_key_rejected(self, key):
+        response = self.send(self.payload() | {"message_key": key})
+        self.assertEqual(response.status_code, 400)
+
+    def test_short_message_key_is_rejected(self):
+        self.assert_message_key_rejected(base64.b64encode(bytes(16)).decode())
+
+    def test_long_message_key_is_rejected(self):
+        self.assert_message_key_rejected(base64.b64encode(bytes(33)).decode())
+
+    def test_message_key_must_be_base64(self):
+        self.assert_message_key_rejected("not base64")
+
+    def test_empty_message_key_is_rejected(self):
+        self.assert_message_key_rejected("")
+
+    def assert_public_key_rejected(self, ecdh, kem="a2Vt"):
+        response = self.client.put(
+            "/api/chats/protection/",
+            {"mode": "device", "key": {"public_key": {"ecdh": ecdh, "kem": kem}}},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_rsa_public_key_is_rejected(self):
+        self.assert_public_key_rejected({"kty": "RSA", "crv": "P-256", "x": "a", "y": "b"})
+
+    def test_other_curves_are_rejected(self):
+        self.assert_public_key_rejected({"kty": "EC", "crv": "P-384", "x": "a", "y": "b"})
+
+    def test_numeric_coordinates_are_rejected(self):
+        self.assert_public_key_rejected({"kty": "EC", "crv": "P-256", "x": 1, "y": "b"})
+
+    def test_ecdh_must_be_an_object(self):
+        self.assert_public_key_rejected("x")
+
+    def test_kem_must_be_base64(self):
+        self.assert_public_key_rejected(PUBLIC_KEY["ecdh"], kem="!!")
+
+    def test_kem_length_is_limited(self):
+        self.assert_public_key_rejected(PUBLIC_KEY["ecdh"], kem="A" * 3000)
+
+    def test_public_keys_are_stripped(self):
         extra = {**PUBLIC_KEY["ecdh"], "d": "private-part", "evil": "<script>"}
         self.client.put(
             "/api/chats/protection/",
@@ -268,19 +307,21 @@ class ServerKeyTests(TestCase):
         self.assertNotIn(key, bytes(message.server_key))
         self.assertEqual(unwrap_message_key(message), key)
 
-    def test_wrapped_key_is_bound_to_sender_and_recipient(self):
+    def assert_wrapped_key_unusable_for(self, sender, recipient):
         message = self.message(self.jonas, self.anna)
-        message.server_key = wrap_message_key(message, bytes(32))
-        for sender, recipient in [
-            (self.eve, self.anna),
-            (self.jonas, self.eve),
-            (self.anna, self.jonas),
-        ]:
-            with self.subTest(sender=sender.username, recipient=recipient.username):
-                moved = self.message(sender, recipient)
-                moved.server_key = message.server_key
-                with self.assertRaises(InvalidTag):
-                    unwrap_message_key(moved)
+        moved = self.message(sender, recipient)
+        moved.server_key = wrap_message_key(message, bytes(32))
+        with self.assertRaises(InvalidTag):
+            unwrap_message_key(moved)
+
+    def test_wrapped_key_is_bound_to_the_sender(self):
+        self.assert_wrapped_key_unusable_for(self.eve, self.anna)
+
+    def test_wrapped_key_is_bound_to_the_recipient(self):
+        self.assert_wrapped_key_unusable_for(self.jonas, self.eve)
+
+    def test_wrapped_key_is_bound_to_the_direction(self):
+        self.assert_wrapped_key_unusable_for(self.anna, self.jonas)
 
     def test_tampered_wrapped_key_is_rejected(self):
         message = self.message(self.jonas, self.anna)

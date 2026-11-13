@@ -1,32 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useTitle } from '@vueuse/core'
 
 import { useAuthStore } from '@/stores/auth.js'
-import { ADMINISTRATION_ROLES, MODERATION_ROLES, canAccess } from '@/data/navigation.js'
+import { canAccess } from '@/data/navigation.js'
 import { connectionTitle } from '@/data/connections.js'
 import { pageTitle } from '@/lib/title.js'
-import HomeView from '@/views/HomeView.vue'
-import SettingsView from '@/views/SettingsView.vue'
-import SearchView from '@/views/SearchView.vue'
-import ChatsView from '@/views/ChatsView.vue'
-import ChatView from '@/views/ChatView.vue'
-import PostView from '@/views/PostView.vue'
-import CommentView from '@/views/CommentView.vue'
-import ModerationView from '@/views/ModerationView.vue'
-import NotificationsView from '@/views/NotificationsView.vue'
-import AdministrationView from '@/views/AdministrationView.vue'
-import SavedView from '@/views/SavedView.vue'
-import ProfileView from '@/views/ProfileView.vue'
-import ConnectionsView from '@/views/ConnectionsView.vue'
-import AlbumView from '@/views/AlbumView.vue'
-import UploadView from '@/views/UploadView.vue'
-import ReelsView from '@/views/ReelsView.vue'
-import HashtagView from '@/views/HashtagView.vue'
-import ImpressumView from '@/views/legal/ImpressumView.vue'
-import PrivacyView from '@/views/legal/PrivacyView.vue'
-import TermsView from '@/views/legal/TermsView.vue'
-import DisclaimerView from '@/views/legal/DisclaimerView.vue'
-import LoginView from '@/views/auth/LoginView.vue'
-import LogoutView from '@/views/auth/LogoutView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,49 +13,49 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
       meta: { title: 'Startseite', activeNavigation: 'dashboard' },
     },
     {
       path: '/reels',
       name: 'reels',
-      component: ReelsView,
+      component: () => import('@/views/ReelsView.vue'),
       meta: { title: 'Seeds', activeNavigation: 'reels', requiresAuth: true },
     },
     {
       path: '/search',
       name: 'search',
-      component: SearchView,
+      component: () => import('@/views/SearchView.vue'),
       meta: { title: 'Suchen', activeNavigation: 'search', requiresAuth: true },
     },
     {
       path: '/chats',
       name: 'chats',
-      component: ChatsView,
+      component: () => import('@/views/ChatsView.vue'),
       meta: { title: 'Chats', activeNavigation: 'chats', requiresAuth: true },
     },
     {
       path: '/chats/:username',
       name: 'chat',
-      component: ChatView,
+      component: () => import('@/views/ChatView.vue'),
       meta: { title: 'Chat', activeNavigation: 'chats', requiresAuth: true },
     },
     {
       path: '/posts/:id([0-9a-f-]{36})',
       name: 'post',
-      component: PostView,
+      component: () => import('@/views/PostView.vue'),
       meta: { title: 'Feed', requiresAuth: true },
     },
     {
       path: '/comments/:id([0-9a-f-]{36})',
       name: 'comment',
-      component: CommentView,
+      component: () => import('@/views/CommentView.vue'),
       meta: { title: 'Kommentar', requiresAuth: true },
     },
     {
       path: '/notifications',
       name: 'notifications',
-      component: NotificationsView,
+      component: () => import('@/views/NotificationsView.vue'),
       meta: {
         title: 'Benachrichtigungen',
         activeNavigation: 'notifications',
@@ -87,89 +65,89 @@ const router = createRouter({
     {
       path: '/moderation',
       name: 'moderation',
-      component: ModerationView,
+      component: () => import('@/views/ModerationView.vue'),
       meta: {
         title: 'Moderation',
         activeNavigation: 'moderation',
         requiresAuth: true,
-        roles: MODERATION_ROLES,
+        permission: 'moderate',
       },
     },
     {
       path: '/moderation/posts/:id([0-9a-f-]{36})',
       name: 'moderation-post',
-      component: PostView,
+      component: () => import('@/views/PostView.vue'),
       props: { moderation: true },
       meta: {
         title: 'Moderation',
         activeNavigation: 'moderation',
         requiresAuth: true,
-        roles: MODERATION_ROLES,
+        permission: 'moderate',
       },
     },
     {
       path: '/moderation/comments/:id([0-9a-f-]{36})',
       name: 'moderation-comment',
-      component: CommentView,
+      component: () => import('@/views/CommentView.vue'),
       props: { moderation: true },
       meta: {
         title: 'Moderation',
         activeNavigation: 'moderation',
         requiresAuth: true,
-        roles: MODERATION_ROLES,
+        permission: 'moderate',
       },
     },
     {
       path: '/administration',
       name: 'administration',
-      component: AdministrationView,
+      component: () => import('@/views/AdministrationView.vue'),
       meta: {
         title: 'Administration',
         activeNavigation: 'administration',
         requiresAuth: true,
-        roles: ADMINISTRATION_ROLES,
+        permission: 'administrate',
       },
     },
     {
       path: '/saved',
       name: 'saved',
-      component: SavedView,
+      component: () => import('@/views/SavedView.vue'),
       meta: { title: 'Gespeichert', activeNavigation: 'saved', requiresAuth: true },
     },
     {
       path: '/profile',
       name: 'profile',
-      component: ProfileView,
+      component: () => import('@/views/ProfileView.vue'),
       meta: { title: 'Profil', activeNavigation: 'profile', requiresAuth: true },
     },
     {
       path: '/profile/:username',
       name: 'user-profile',
-      component: ProfileView,
+      component: () => import('@/views/ProfileView.vue'),
       meta: { title: 'Profil', requiresAuth: true },
     },
     {
       path: '/profile/:username/:connection(followers|following|friends)',
       name: 'user-connections',
-      component: ConnectionsView,
+      component: () => import('@/views/ConnectionsView.vue'),
       meta: { title: connectionTitle, requiresAuth: true },
     },
     {
       path: '/profile/:username/albums/:id([0-9a-f-]{36})',
       name: 'user-album',
-      component: AlbumView,
+      component: () => import('@/views/AlbumView.vue'),
       meta: { title: 'Album', requiresAuth: true },
     },
     {
       path: '/profile/:username/reels/:id([0-9a-f-]{36})',
       name: 'user-reels',
-      component: ReelsView,
+      component: () => import('@/views/ReelsView.vue'),
       meta: { title: 'Seeds', requiresAuth: true },
     },
     {
       path: '/upload/:kind(feed|story)',
       name: 'upload',
-      component: UploadView,
+      component: () => import('@/views/UploadView.vue'),
       meta: {
         title: (route) => (route.params.kind === 'story' ? 'Neue Story' : 'Neuer Feed'),
         requiresAuth: true,
@@ -178,55 +156,55 @@ const router = createRouter({
     {
       path: '/hashtags/:name',
       name: 'hashtag',
-      component: HashtagView,
+      component: () => import('@/views/HashtagView.vue'),
       meta: { title: 'Hashtag', activeNavigation: 'search', requiresAuth: true },
     },
     {
       path: '/hashtags/:name/reels/:id([0-9a-f-]{36})',
       name: 'hashtag-reels',
-      component: ReelsView,
+      component: () => import('@/views/ReelsView.vue'),
       meta: { title: 'Seeds', requiresAuth: true },
     },
     {
       path: '/impressum',
       name: 'impressum',
-      component: ImpressumView,
+      component: () => import('@/views/legal/ImpressumView.vue'),
       meta: { title: 'Impressum' },
     },
     {
       path: '/privacy',
       name: 'privacy',
-      component: PrivacyView,
+      component: () => import('@/views/legal/PrivacyView.vue'),
       meta: { title: 'Datenschutzerklärung' },
     },
     {
       path: '/terms',
       name: 'terms',
-      component: TermsView,
+      component: () => import('@/views/legal/TermsView.vue'),
       meta: { title: 'Nutzungsrichtlinien' },
     },
     {
       path: '/disclaimer',
       name: 'disclaimer',
-      component: DisclaimerView,
+      component: () => import('@/views/legal/DisclaimerView.vue'),
       meta: { title: 'Haftungsausschluss' },
     },
     {
       path: '/login',
       name: 'login',
-      component: LoginView,
+      component: () => import('@/views/auth/LoginView.vue'),
       meta: { title: 'Anmelden' },
     },
     {
       path: '/logout',
       name: 'logout',
-      component: LogoutView,
+      component: () => import('@/views/auth/LogoutView.vue'),
       meta: { title: 'Abmelden' },
     },
     {
       path: '/settings',
       name: 'settings',
-      component: SettingsView,
+      component: () => import('@/views/SettingsView.vue'),
       meta: { title: 'Einstellungen', activeNavigation: 'settings' },
     },
   ],
@@ -266,9 +244,11 @@ router.beforeEach((to) => {
   return true
 })
 
+const documentTitle = useTitle()
+
 router.afterEach((to) => {
   const title = pageTitle(to)
-  document.title = title ? `${title} – Swissfy` : 'Swissfy'
+  documentTitle.value = title ? `${title} – Swissfy` : 'Swissfy'
 })
 
 export default router

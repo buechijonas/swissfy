@@ -1,7 +1,7 @@
 <template>
   <BaseDialog ref="dialog" :title="step === 'select' ? 'Posts auswählen' : 'Datum festlegen'">
     <div v-if="step === 'select'" class="min-h-0 overflow-y-auto max-h-96">
-      <p v-if="!available.length && !loading && !next" class="text-swissfy-muted">
+      <p v-if="!available.length && !loading && !next" class="text-app-muted">
         Keine weiteren Feeds oder Seeds zum Hinzufügen.
       </p>
       <div class="grid grid-cols-3 gap-2">
@@ -58,7 +58,7 @@
       </li>
     </ul>
 
-    <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
+    <ErrorText :message="error" class="mt-2" />
 
     <template #actions>
       <template v-if="step === 'select'">
@@ -91,8 +91,10 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import albumsApi from '@/api/albums.js'
 import api, { nextPage } from '@core/api/client.js'
@@ -100,7 +102,8 @@ import postsApi from '@/api/posts.js'
 
 export default {
   name: 'AddPostsDialog',
-  components: { AppIcon, BaseButton, BaseDialog },
+  mixins: [asyncActionMixin],
+  components: { AppIcon, BaseButton, BaseDialog, ErrorText },
   props: {
     album: { type: Object, required: true },
   },
@@ -112,8 +115,6 @@ export default {
       next: null,
       selected: [],
       loading: false,
-      busy: false,
-      error: null,
     }
   },
   computed: {
@@ -154,22 +155,18 @@ export default {
         : [...this.selected, { post, date: '', title: '' }]
     },
     async save() {
-      this.busy = true
-      this.error = null
-      try {
-        const entries = this.selected.map((item) => ({
-          post: item.post.id,
-          date: item.date || null,
-          title: item.title.trim(),
-        }))
-        const album = await albumsApi.addEntries(this.album.id, entries)
-        this.$refs.dialog.close()
-        this.$emit('saved', album)
-      } catch (error) {
-        this.error = error.detail ?? 'Posts konnten nicht hinzugefügt werden.'
-      } finally {
-        this.busy = false
-      }
+      const entries = this.selected.map((item) => ({
+        post: item.post.id,
+        date: item.date || null,
+        title: item.title.trim(),
+      }))
+      const album = await this.runAction(
+        () => albumsApi.addEntries(this.album.id, entries),
+        'Posts konnten nicht hinzugefügt werden.',
+      )
+      if (!album) return
+      this.$refs.dialog.close()
+      this.$emit('saved', album)
     },
   },
 }

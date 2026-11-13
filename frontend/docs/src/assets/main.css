@@ -1,5 +1,7 @@
 @import 'tailwindcss' source('..');
 @import '../../../core/src/assets/dyslexia.css';
+@import '../../../core/src/assets/theme.css';
+@source '../../../core/src';
 @plugin "daisyui";
 
 @plugin "daisyui/theme" {
@@ -25,8 +27,6 @@
 @theme {
   --font-display: 'Manrope', sans-serif;
   --color-docs-title: #202c46;
-  --color-docs-muted: #a8b3bf;
-  --color-docs-border: #e3e5e8;
 }
 
 html,
@@ -36,34 +36,16 @@ body {
 
 [data-theme='dark'] {
   --color-docs-title: #c9d1e3;
-  --color-docs-muted: #8b96a3;
-  --color-docs-border: #3a3f4a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --color-docs-title: #c9d1e3;
-    --color-docs-muted: #8b96a3;
-    --color-docs-border: #3a3f4a;
-  }
-}
-
-[data-contrast='on'] {
-  --color-docs-border: #8a97a5;
-}
-
-[data-theme='dark'][data-contrast='on'] {
-  --color-docs-border: #6b7482;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme])[data-contrast='on'] {
-    --color-docs-border: #6b7482;
   }
 }
 
 [data-contrast='on'] .btn {
-  border-color: var(--color-docs-border);
+  border-color: var(--color-app-border);
 }
 
 [data-contrast='on'] .btn-primary {

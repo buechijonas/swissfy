@@ -1,25 +1,22 @@
 <template>
   <BaseCard
-    ref="list"
+    v-bounds="storeList"
+    v-pointer-drag="{ grab, move: drag, release, cancel }"
     role="tablist"
     class="app-tabs tabs relative flex-nowrap overflow-x-auto px-2 [scrollbar-width:none]"
     :class="{ 'is-dragging': dragging, 'is-scrollable': scrollable }"
-    @pointerdown="grab"
-    @pointermove="drag"
-    @pointerup="release"
-    @pointercancel="cancel"
     @dragstart.prevent
   >
     <span
       v-if="bubble"
-      ref="bubble"
+      v-wobble="wobbles"
       class="app-bubble"
       :style="{ left: `${bubble.left}px`, width: `${bubble.width}px`, '--stretch': stretch }"
     />
     <RouterLink
       v-for="tab in tabs"
       :key="tab.key"
-      ref="links"
+      v-bounds="(box) => storeBox(tab.key, box)"
       role="tab"
       class="tab relative h-12 shrink-0 whitespace-nowrap border-y-2 border-t-transparent"
       :class="[
@@ -39,106 +36,51 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
-import { wobble } from '@/lib/bubble.js'
-import { design } from '@/lib/preferences.js'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseCard from '@core/components/BaseCard.vue'
+import bounds from '@/directives/bounds.js'
+import pointerDrag from '@/directives/pointerDrag.js'
+import wobble from '@/directives/wobble.js'
+import bubbleNavigationMixin from '@/mixins/bubbleNavigationMixin.js'
 
 export default {
   name: 'BaseTabs',
   components: { RouterLink, AppIcon, BaseCard },
+  directives: { bounds, pointerDrag, wobble },
+  mixins: [bubbleNavigationMixin],
   props: {
     tabs: { type: Array, required: true },
     active: { type: String, required: true },
   },
   data() {
-    return {
-      bubble: null,
-      dragging: false,
-      scrollable: false,
-      stretch: 1,
-      last: null,
-      observer: null,
-    }
+    return { list: null }
   },
   computed: {
-    activeIndex() {
-      return this.tabs.findIndex((tab) => tab.key === this.active)
+    activeKey() {
+      return this.active
     },
-  },
-  watch: {
-    activeIndex() {
-      this.$nextTick(() => {
-        this.placeBubble()
-        wobble(this.$refs.bubble)
-      })
+    scrollable() {
+      return Boolean(this.list) && this.list.scrollWidth > this.list.clientWidth
     },
-  },
-  mounted() {
-    this.placeBubble()
-    this.observer = new ResizeObserver(() => this.placeBubble())
-    this.observer.observe(this.$refs.list.$el)
-  },
-  beforeUnmount() {
-    this.observer.disconnect()
+    trackWidth() {
+      return this.list.scrollWidth
+    },
   },
   methods: {
     tabLink(tab) {
       return { query: { tab: tab.key } }
     },
-    linkAt(index) {
-      return this.$refs.links?.[index]?.$el
+    storeList(box) {
+      this.list = box
     },
-    indexAt(x) {
-      return this.tabs.findIndex((_, i) => {
-        const { left, right } = this.linkAt(i).getBoundingClientRect()
-        return x >= left && x <= right
-      })
+    canGrab(x) {
+      return !this.scrollable || this.keyAt(x) === this.active
     },
-    placeBubble() {
-      const list = this.$refs.list.$el
-      this.scrollable = list.scrollWidth > list.clientWidth
-      const link = this.linkAt(this.activeIndex)
-      this.bubble = link && { left: link.offsetLeft, width: link.offsetWidth }
+    dragWidth(x) {
+      return this.boxes[this.keyAt(x) ?? this.active].width
     },
-    grab(event) {
-      if (design.value !== 'glass') return
-      if (this.scrollable && !this.linkAt(this.activeIndex)?.contains(event.target)) return
-      this.dragging = true
-      this.last = null
-      event.currentTarget.setPointerCapture(event.pointerId)
-      this.drag(event)
-    },
-    drag(event) {
-      if (!this.dragging) return
-      const list = this.$refs.list.$el
-      const index = this.indexAt(event.clientX)
-      const width = this.linkAt(index === -1 ? this.activeIndex : index).offsetWidth
-      const x = event.clientX - list.getBoundingClientRect().left + list.scrollLeft
-      const left = Math.min(Math.max(x - width / 2, 0), list.scrollWidth - width)
-      this.bubble = { left, width }
-      if (this.last) {
-        const speed =
-          Math.abs(event.clientX - this.last.x) / (event.timeStamp - this.last.time || 1)
-        this.stretch = 1 + Math.min(speed * 0.3, 0.45)
-      }
-      this.last = { x: event.clientX, time: event.timeStamp }
-    },
-    cancel() {
-      this.dragging = false
-      this.stretch = 1
-      this.placeBubble()
-    },
-    release(event) {
-      if (!this.dragging) return
-      this.dragging = false
-      this.stretch = 1
-      const index = this.indexAt(event.clientX)
-      if (index === -1) return this.placeBubble()
-      const link = this.linkAt(index)
-      this.bubble = { left: link.offsetLeft, width: link.offsetWidth }
-      if (index === this.activeIndex) wobble(this.$refs.bubble)
-      this.$router.replace(this.tabLink(this.tabs[index]))
+    select(key) {
+      this.$router.replace(this.tabLink({ key }))
     },
   },
 }

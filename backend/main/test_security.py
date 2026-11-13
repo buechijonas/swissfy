@@ -115,26 +115,30 @@ class Fixtures(TestCase):
 
 class AuthenticationRequiredTests(Fixtures):
     def test_every_private_endpoint_rejects_anonymous_requests(self):
-        for path, name in self.api_routes():
-            if name in PUBLIC:
-                continue
-            for method in ["get", *UNSAFE]:
-                with self.subTest(path=path, method=method):
-                    response = self.client.generic(method.upper(), path)
-                    self.assertIn(response.status_code, (401, 403, 405))
+        open_endpoints = [
+            (method, path)
+            for path, name in self.api_routes()
+            if name not in PUBLIC
+            for method in ["get", *UNSAFE]
+            if self.client.generic(method.upper(), path).status_code not in (401, 403, 405)
+        ]
+        self.assertEqual(open_endpoints, [])
 
     def test_public_endpoints_leak_nothing_to_anonymous_users(self):
         self.assertEqual(self.client.get("/api/auth/me/").json(), {"user": None})
         self.assertEqual(self.client.get("/api/health/").json(), {"status": "ok"})
 
+    def unsigned_post(self, path):
+        return self.client.post(path, {"sub": "x"}, content_type="application/json")
+
     def test_signed_endpoints_reject_unsigned_requests(self):
-        for path, name in self.api_routes():
-            if name not in SIGNED:
-                continue
-            with self.subTest(path=path):
-                response = self.client.post(path, {"sub": "x"}, content_type="application/json")
-                self.assertEqual(response.status_code, 403)
-                self.assertTrue(User.objects.filter(username="anna").exists())
+        accepted = [
+            path
+            for path, name in self.api_routes()
+            if name in SIGNED and self.unsigned_post(path).status_code != 403
+        ]
+        self.assertEqual(accepted, [])
+        self.assertTrue(User.objects.filter(username="anna").exists())
 
     def test_inactive_users_are_locked_out(self):
         self.anna.is_active = False
@@ -142,22 +146,29 @@ class AuthenticationRequiredTests(Fixtures):
         self.client.force_login(self.anna)
         self.assertEqual(self.client.get("/api/posts/").status_code, 403)
 
-    def test_admin_endpoints_need_admin_role(self):
-        for role in [Role.DEFAULT, Role.VERIFIED, Role.SUPPORT, Role.MODERATOR]:
-            set_role(self.anna, role)
-            self.client.force_login(self.anna)
-            for path in [
-                "/api/administration/roles/",
-                "/api/administration/users/",
-            ]:
-                with self.subTest(role=role, path=path):
-                    self.assertEqual(self.client.get(path).status_code, 403)
-            response = self.client.patch(
-                "/api/administration/users/jonas/",
-                {"role": "admin"},
-                content_type="application/json",
-            )
-            self.assertEqual(response.status_code, 403)
+    def assert_admin_endpoints_forbidden(self, role):
+        set_role(self.anna, role)
+        self.client.force_login(self.anna)
+        self.assertEqual(self.client.get("/api/administration/roles/").status_code, 403)
+        self.assertEqual(self.client.get("/api/administration/users/").status_code, 403)
+        response = self.client.patch(
+            "/api/administration/users/jonas/",
+            {"role": "admin"},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_default_users_cannot_use_admin_endpoints(self):
+        self.assert_admin_endpoints_forbidden(Role.DEFAULT)
+
+    def test_verified_users_cannot_use_admin_endpoints(self):
+        self.assert_admin_endpoints_forbidden(Role.VERIFIED)
+
+    def test_support_cannot_use_admin_endpoints(self):
+        self.assert_admin_endpoints_forbidden(Role.SUPPORT)
+
+    def test_moderators_cannot_use_admin_endpoints(self):
+        self.assert_admin_endpoints_forbidden(Role.MODERATOR)
 
     def test_django_admin_needs_staff(self):
         self.client.force_login(self.anna)
@@ -172,16 +183,18 @@ class CsrfTests(Fixtures):
         self.client = Client(enforce_csrf_checks=True)
         self.client.force_login(self.anna)
 
+    def json_request(self, method, path):
+        return self.client.generic(method.upper(), path, "{}", content_type="application/json")
+
     def test_every_unsafe_request_needs_a_csrf_token(self):
-        for path, name in self.api_routes():
-            if name in SIGNED:
-                continue
-            for method in UNSAFE:
-                with self.subTest(path=path, method=method):
-                    response = self.client.generic(
-                        method.upper(), path, "{}", content_type="application/json"
-                    )
-                    self.assertIn(response.status_code, (403, 405))
+        unprotected = [
+            (method, path)
+            for path, name in self.api_routes()
+            if name not in SIGNED
+            for method in UNSAFE
+            if self.json_request(method, path).status_code not in (403, 405)
+        ]
+        self.assertEqual(unprotected, [])
 
     def test_forged_csrf_token_is_rejected(self):
         self.client.cookies[settings.CSRF_COOKIE_NAME] = "a" * 32
@@ -225,54 +238,75 @@ class InjectionTests(Fixtures):
         with transaction.atomic():
             return self.client.get(path, data)
 
-    def assert_safe(self, response):
-        self.assertLess(response.status_code, 500)
-        self.assertNotIn(b"Traceback", response.content)
+    def is_safe(self, response):
+        return response.status_code < 500 and b"Traceback" not in response.content
         self.assertNotIn(b"syntax error", response.content)
         self.assertNotIn(b"psycopg", response.content)
 
     def test_query_parameters_are_never_interpreted(self):
         users = User.objects.count()
-        for path, name in self.api_routes():
-            if name in PUBLIC:
-                continue
-            for param in QUERY_PARAMS:
-                for payload in INJECTIONS:
-                    with self.subTest(path=path, param=param, payload=payload[:40]):
-                        self.assert_safe(self.request(path, {param: payload}))
+        unsafe = [
+            (path, param, payload)
+            for path, name in self.api_routes()
+            if name not in PUBLIC
+            for param in QUERY_PARAMS
+            for payload in INJECTIONS
+            if not self.is_safe(self.request(path, {param: payload}))
+        ]
+        self.assertEqual(unsafe, [])
         self.assertEqual(User.objects.count(), users)
+
+    def path_with(self, route, payload):
+        path = route.replace("<str:username>", payload).replace("<str:name>", payload)
+        return "/" + path.replace("<str:field>", payload)
 
     def test_path_parameters_are_never_interpreted(self):
         templates = [route for route, _ in routes() if "<str:" in route]
-        for route in templates:
-            for payload in INJECTIONS:
-                if "/" in payload or "\x00" in payload or "%" in payload:
-                    continue
-                path = "/" + route.replace("<str:username>", payload).replace(
-                    "<str:name>", payload
-                ).replace("<str:field>", payload)
-                with self.subTest(route=route, payload=payload[:40]):
-                    self.assert_safe(self.request(path))
+        payloads = [
+            payload
+            for payload in INJECTIONS
+            if "/" not in payload and "\x00" not in payload and "%" not in payload
+        ]
+        unsafe = [
+            (route, payload)
+            for route in templates
+            for payload in payloads
+            if not self.is_safe(self.request(self.path_with(route, payload)))
+        ]
+        self.assertEqual(unsafe, [])
         self.assertTrue(User.objects.filter(username="jonas").exists())
 
-    def test_search_does_not_match_sql_wildcards(self):
-        for payload in ["%", "_", "%%", "' OR '1'='1"]:
-            with self.subTest(payload=payload):
-                response = self.client.get("/api/social/profiles/", {"q": payload * 2})
-                self.assertEqual(response.json()["results"], [])
+    def assert_search_finds_nothing(self, payload):
+        response = self.client.get("/api/social/profiles/", {"q": payload * 2})
+        self.assertEqual(response.json()["results"], [])
+
+    def test_search_ignores_percent_wildcard(self):
+        self.assert_search_finds_nothing("%")
+
+    def test_search_ignores_underscore_wildcard(self):
+        self.assert_search_finds_nothing("_")
+
+    def test_search_ignores_double_percent_wildcard(self):
+        self.assert_search_finds_nothing("%%")
+
+    def test_search_ignores_sql_or_clause(self):
+        self.assert_search_finds_nothing("' OR '1'='1")
+
+    def post_comment(self, text):
+        return self.client.post(
+            f"/api/posts/{self.post.uuid}/comments/",
+            {"text": text},
+            content_type="application/json",
+        )
+
+    def stored_text(self, text):
+        response = self.post_comment(text)
+        return response.json()["text"] if response.status_code == 201 else None
 
     def test_json_bodies_with_injections_are_stored_verbatim(self):
-        for payload in INJECTIONS:
-            if "\x00" in payload:
-                continue
-            with self.subTest(payload=payload[:40]):
-                response = self.client.post(
-                    f"/api/posts/{self.post.uuid}/comments/",
-                    {"text": payload[:500]},
-                    content_type="application/json",
-                )
-                self.assertEqual(response.status_code, 201)
-                self.assertEqual(response.json()["text"], payload[:500])
+        payloads = [payload[:500] for payload in INJECTIONS if "\x00" not in payload]
+        altered = [payload for payload in payloads if self.stored_text(payload) != payload]
+        self.assertEqual(altered, [])
 
     def test_null_bytes_in_bodies_are_rejected(self):
         response = self.client.post(
@@ -282,15 +316,17 @@ class InjectionTests(Fixtures):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_wrong_json_types_are_rejected(self):
-        for value in [{"$gt": ""}, ["a"], None, True]:
-            with self.subTest(value=value):
-                response = self.client.post(
-                    f"/api/posts/{self.post.uuid}/comments/",
-                    {"text": value},
-                    content_type="application/json",
-                )
-                self.assertEqual(response.status_code, 400)
+    def test_object_as_text_is_rejected(self):
+        self.assertEqual(self.post_comment({"$gt": ""}).status_code, 400)
+
+    def test_list_as_text_is_rejected(self):
+        self.assertEqual(self.post_comment(["a"]).status_code, 400)
+
+    def test_null_as_text_is_rejected(self):
+        self.assertEqual(self.post_comment(None).status_code, 400)
+
+    def test_boolean_as_text_is_rejected(self):
+        self.assertEqual(self.post_comment(True).status_code, 400)
 
 
 class MalformedRequestTests(Fixtures):
@@ -301,10 +337,29 @@ class MalformedRequestTests(Fixtures):
     def put_raw(self, body, content_type="application/json"):
         return self.client.put("/api/chats/protection/", body, content_type=content_type)
 
-    def test_broken_json_is_a_client_error(self):
-        for body in ["{", "[", '{"mode": }', "\xff\xfe", "null", "1", '"x"', "[]"]:
-            with self.subTest(body=body):
-                self.assertEqual(self.put_raw(body).status_code, 400)
+    def test_unclosed_object_is_a_client_error(self):
+        self.assertEqual(self.put_raw("{").status_code, 400)
+
+    def test_unclosed_array_is_a_client_error(self):
+        self.assertEqual(self.put_raw("[").status_code, 400)
+
+    def test_missing_value_is_a_client_error(self):
+        self.assertEqual(self.put_raw('{"mode": }').status_code, 400)
+
+    def test_invalid_utf8_is_a_client_error(self):
+        self.assertEqual(self.put_raw("\xff\xfe").status_code, 400)
+
+    def test_json_null_is_a_client_error(self):
+        self.assertEqual(self.put_raw("null").status_code, 400)
+
+    def test_json_number_is_a_client_error(self):
+        self.assertEqual(self.put_raw("1").status_code, 400)
+
+    def test_json_string_is_a_client_error(self):
+        self.assertEqual(self.put_raw('"x"').status_code, 400)
+
+    def test_json_array_is_a_client_error(self):
+        self.assertEqual(self.put_raw("[]").status_code, 400)
 
     def test_deeply_nested_json_is_a_client_error(self):
         self.assertEqual(self.put_raw("[" * 100_000 + "]" * 100_000).status_code, 400)
@@ -313,23 +368,39 @@ class MalformedRequestTests(Fixtures):
         body = json.dumps({"mode": "standard", "padding": "a" * (3 * 1024 * 1024)})
         self.assertIn(self.put_raw(body).status_code, (400, 413))
 
-    def test_unsupported_content_types_are_rejected(self):
-        for content_type in ["application/xml", "text/yaml", "application/x-python-pickle"]:
-            with self.subTest(content_type=content_type):
-                response = self.put_raw("<mode>standard</mode>", content_type=content_type)
-                self.assertEqual(response.status_code, 415)
+    def put_with_content_type(self, content_type):
+        return self.put_raw("<mode>standard</mode>", content_type=content_type)
 
-    def test_foreign_host_headers_are_rejected(self):
-        for host in ["evil.example", "localhost.evil.example", "localhost:8000@evil.example"]:
-            with self.subTest(host=host):
-                response = self.client.get("/api/health/", headers={"Host": host})
-                self.assertEqual(response.status_code, 400)
+    def test_xml_is_rejected(self):
+        self.assertEqual(self.put_with_content_type("application/xml").status_code, 415)
 
-    def test_unknown_methods_are_rejected(self):
-        for method in ["TRACE", "PROPFIND", "CONNECT"]:
-            with self.subTest(method=method):
-                response = self.client.generic(method, "/api/posts/")
-                self.assertIn(response.status_code, (403, 405))
+    def test_yaml_is_rejected(self):
+        self.assertEqual(self.put_with_content_type("text/yaml").status_code, 415)
+
+    def test_pickle_is_rejected(self):
+        response = self.put_with_content_type("application/x-python-pickle")
+        self.assertEqual(response.status_code, 415)
+
+    def get_health_from(self, host):
+        return self.client.get("/api/health/", headers={"Host": host})
+
+    def test_foreign_host_is_rejected(self):
+        self.assertEqual(self.get_health_from("evil.example").status_code, 400)
+
+    def test_foreign_subdomain_of_localhost_is_rejected(self):
+        self.assertEqual(self.get_health_from("localhost.evil.example").status_code, 400)
+
+    def test_host_with_credentials_trick_is_rejected(self):
+        self.assertEqual(self.get_health_from("localhost:8000@evil.example").status_code, 400)
+
+    def test_trace_is_rejected(self):
+        self.assertIn(self.client.generic("TRACE", "/api/posts/").status_code, (403, 405))
+
+    def test_propfind_is_rejected(self):
+        self.assertIn(self.client.generic("PROPFIND", "/api/posts/").status_code, (403, 405))
+
+    def test_connect_is_rejected(self):
+        self.assertIn(self.client.generic("CONNECT", "/api/posts/").status_code, (403, 405))
 
     def test_server_errors_do_not_leak_details(self):
         response = self.client.get(f"/api/posts/{uuid4()}/")
@@ -399,22 +470,35 @@ class ProductionSettingsTests(TestCase):
         loaded = json.loads(result.stdout)
         self.assertEqual((loaded["debug"], loaded["session"], loaded["csrf"]), (False, True, True))
 
+    def refuses_to_start_without(self, missing):
+        result = self.load_settings(**{missing: None})
+        return result.returncode != 0 and "ImproperlyConfigured" in result.stderr
+
     def test_production_refuses_to_start_without_secrets(self):
-        for missing in PRODUCTION_ENV:
-            if missing == "DJANGO_DEBUG":
-                continue
-            with self.subTest(missing=missing):
-                result = self.load_settings(**{missing: None})
-                self.assertNotEqual(result.returncode, 0)
-                self.assertIn("ImproperlyConfigured", result.stderr)
+        secrets = [key for key in PRODUCTION_ENV if key != "DJANGO_DEBUG"]
+        optional = [key for key in secrets if not self.refuses_to_start_without(key)]
+        self.assertEqual(optional, [])
 
     def test_production_never_falls_back_to_the_dev_chat_key(self):
         result = self.load_settings(CHAT_ENCRYPTION_KEY=None)
         self.assertNotEqual(result.returncode, 0)
 
-    def test_debug_is_off_unless_explicitly_enabled(self):
-        for value in ["false", "False", "0", "no", ""]:
-            with self.subTest(value=value):
-                result = self.load_settings(DJANGO_DEBUG=value)
-                self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertFalse(json.loads(result.stdout)["debug"])
+    def assert_debug_off(self, value):
+        result = self.load_settings(DJANGO_DEBUG=value)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(json.loads(result.stdout)["debug"])
+
+    def test_debug_is_off_for_false(self):
+        self.assert_debug_off("false")
+
+    def test_debug_is_off_for_capitalized_false(self):
+        self.assert_debug_off("False")
+
+    def test_debug_is_off_for_zero(self):
+        self.assert_debug_off("0")
+
+    def test_debug_is_off_for_no(self):
+        self.assert_debug_off("no")
+
+    def test_debug_is_off_for_empty_value(self):
+        self.assert_debug_off("")

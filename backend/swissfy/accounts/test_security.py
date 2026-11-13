@@ -88,30 +88,38 @@ class LoginFlowTests(TestCase):
         self.callback({"sub": "s1", "preferred_username": "jonas"}, state)
         self.assertNotEqual(self.client.session.session_key, before)
 
-    def test_callback_never_redirects_off_site(self):
-        for extra in [
-            "&next=https://evil.example",
-            "&redirect_uri=https://evil.example",
-            "&return_to=//evil.example",
-        ]:
-            with self.subTest(extra=extra):
-                _, state = self.start_login()
-                response = self.callback(
-                    {"sub": "s1", "preferred_username": "jonas"}, state, extra=extra
-                )
-                self.assertEqual(response["Location"], "http://frontend/")
+    def assert_callback_stays_on_site(self, extra):
+        _, state = self.start_login()
+        response = self.callback({"sub": "s1", "preferred_username": "jonas"}, state, extra=extra)
+        self.assertEqual(response["Location"], "http://frontend/")
+
+    def test_callback_ignores_next_parameter(self):
+        self.assert_callback_stays_on_site("&next=https://evil.example")
+
+    def test_callback_ignores_redirect_uri_parameter(self):
+        self.assert_callback_stays_on_site("&redirect_uri=https://evil.example")
+
+    def test_callback_ignores_return_to_parameter(self):
+        self.assert_callback_stays_on_site("&return_to=//evil.example")
 
     def test_login_returns_to_the_docs_when_started_there(self):
         _, state = self.start_login(query="?next=http://docs")
         response = self.callback({"sub": "s1", "preferred_username": "jonas"}, state)
         self.assertEqual(response["Location"], "http://docs/")
 
-    def test_login_only_returns_to_known_frontends(self):
-        for target in ["https://evil.example", "//evil.example", "http://docs.evil.example"]:
-            with self.subTest(target=target):
-                _, state = self.start_login(query=f"?next={target}")
-                response = self.callback({"sub": "s1", "preferred_username": "jonas"}, state)
-                self.assertEqual(response["Location"], "http://frontend/")
+    def assert_login_returns_to_frontend(self, target):
+        _, state = self.start_login(query=f"?next={target}")
+        response = self.callback({"sub": "s1", "preferred_username": "jonas"}, state)
+        self.assertEqual(response["Location"], "http://frontend/")
+
+    def test_login_never_returns_to_foreign_site(self):
+        self.assert_login_returns_to_frontend("https://evil.example")
+
+    def test_login_never_returns_to_protocol_relative_url(self):
+        self.assert_login_returns_to_frontend("//evil.example")
+
+    def test_login_never_returns_to_look_alike_docs_domain(self):
+        self.assert_login_returns_to_frontend("http://docs.evil.example")
 
     def test_govex_error_parameter_is_not_reflected(self):
         self.start_login()
@@ -248,10 +256,9 @@ class WebhookTests(TestCase):
         self.assertTrue(User.objects.filter(pk=self.jonas.pk, username="jonas").exists())
 
     def test_missing_or_odd_sub_deletes_nobody(self):
-        for sub in [None, "", [], {}, 0, False, ["s1"], {"$ne": None}]:
-            with self.subTest(sub=sub):
-                self.assertEqual(self.deleted({"sub": sub}).status_code, 204)
-                self.assert_untouched()
+        odd_subs = [None, "", [], {}, 0, False, ["s1"], {"$ne": None}]
+        unexpected = [sub for sub in odd_subs if self.deleted({"sub": sub}).status_code != 204]
+        self.assertEqual(unexpected, [])
         self.assertEqual(self.deleted({}).status_code, 204)
         self.assert_untouched()
 
@@ -260,17 +267,24 @@ class WebhookTests(TestCase):
         self.assert_untouched()
 
     def test_forged_signatures_are_rejected(self):
-        for secret in ["wrong", "", SECRET.upper(), SECRET + " "]:
-            with self.subTest(secret=secret):
-                self.assertEqual(self.deleted({"sub": "s1"}, secret=secret).status_code, 403)
+        forged = ["wrong", "", SECRET.upper(), SECRET + " "]
+        accepted = [
+            secret
+            for secret in forged
+            if self.deleted({"sub": "s1"}, secret=secret).status_code != 403
+        ]
+        self.assertEqual(accepted, [])
         self.assert_untouched()
 
     def test_expired_and_future_timestamps_are_rejected(self):
         now = int(time.time())
-        for timestamp in [now - 301, now + 301, 1, 10**12]:
-            with self.subTest(timestamp=timestamp):
-                response = self.deleted({"sub": "s1"}, timestamp=timestamp)
-                self.assertEqual(response.status_code, 403)
+        outdated = [now - 301, now + 301, 1, 10**12]
+        accepted = [
+            timestamp
+            for timestamp in outdated
+            if self.deleted({"sub": "s1"}, timestamp=timestamp).status_code != 403
+        ]
+        self.assertEqual(accepted, [])
         self.assert_untouched()
 
     def test_signature_is_bound_to_the_body(self):
@@ -285,32 +299,38 @@ class WebhookTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assert_untouched()
 
-    def test_missing_headers_are_rejected(self):
-        for headers in [
-            {},
-            {"X-Govex-Timestamp": str(int(time.time()))},
-            {"X-Govex-Signature": "a"},
-        ]:
-            with self.subTest(headers=headers):
-                response = self.client.post(
-                    "/api/auth/oidc/account-deleted/",
-                    b'{"sub": "s1"}',
-                    content_type="application/json",
-                    headers=headers,
-                )
-                self.assertEqual(response.status_code, 403)
+    def delete_with_headers(self, headers):
+        return self.client.post(
+            "/api/auth/oidc/account-deleted/",
+            b'{"sub": "s1"}',
+            content_type="application/json",
+            headers=headers,
+        )
+
+    def test_request_without_headers_is_rejected(self):
+        self.assertEqual(self.delete_with_headers({}).status_code, 403)
+        self.assert_untouched()
+
+    def test_request_without_signature_is_rejected(self):
+        response = self.delete_with_headers({"X-Govex-Timestamp": str(int(time.time()))})
+        self.assertEqual(response.status_code, 403)
+        self.assert_untouched()
+
+    def test_request_without_timestamp_is_rejected(self):
+        self.assertEqual(self.delete_with_headers({"X-Govex-Signature": "a"}).status_code, 403)
         self.assert_untouched()
 
     def test_non_numeric_timestamps_are_rejected(self):
-        for timestamp in ["-1", "1e9", " 1", "abc", "١٢٣"]:
-            with self.subTest(timestamp=timestamp):
-                response = self.client.post(
-                    "/api/auth/oidc/account-deleted/",
-                    b'{"sub": "s1"}',
-                    content_type="application/json",
-                    headers={"X-Govex-Timestamp": timestamp, "X-Govex-Signature": "a"},
-                )
-                self.assertEqual(response.status_code, 403)
+        non_numeric = ["-1", "1e9", " 1", "abc", "١٢٣"]
+        accepted = [
+            timestamp
+            for timestamp in non_numeric
+            if self.delete_with_headers(
+                {"X-Govex-Timestamp": timestamp, "X-Govex-Signature": "a"}
+            ).status_code
+            != 403
+        ]
+        self.assertEqual(accepted, [])
 
     def test_get_is_not_allowed(self):
         self.assertEqual(self.client.get("/api/auth/oidc/account-deleted/").status_code, 405)
@@ -350,10 +370,13 @@ class AccountEndpointTests(TestCase):
         self.assertNotIn("pbkdf2", str(user))
 
     def test_consent_endpoint_only_accepts_known_fields(self):
-        for field in ["is_superuser", "user", "id", "user_id", "__class__", "save", "pk"]:
-            with self.subTest(field=field):
-                response = self.client.post(f"/api/auth/consent/{field}/")
-                self.assertEqual(response.status_code, 404)
+        unknown = ["is_superuser", "user", "id", "user_id", "__class__", "save", "pk"]
+        accepted = [
+            field
+            for field in unknown
+            if self.client.post(f"/api/auth/consent/{field}/").status_code != 404
+        ]
+        self.assertEqual(accepted, [])
         self.anna.refresh_from_db()
         self.assertFalse(self.anna.is_superuser)
 
@@ -373,10 +396,12 @@ class AccountEndpointTests(TestCase):
 
 
 class RoleTests(TestCase):
+    def grants_django_admin(self, user, role):
+        set_role(user, role)
+        user.refresh_from_db()
+        return user.is_staff or user.is_superuser
+
     def test_roles_do_not_grant_django_admin(self):
         user = User.objects.create(username="anna")
-        for role in Role:
-            with self.subTest(role=role):
-                set_role(user, role)
-                user.refresh_from_db()
-                self.assertFalse(user.is_staff or user.is_superuser)
+        staff_roles = [role for role in Role if self.grants_django_admin(user, role)]
+        self.assertEqual(staff_roles, [])

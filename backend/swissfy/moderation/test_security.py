@@ -45,31 +45,47 @@ class ModerationAccessTests(TestCase):
             ("post", f"/api/moderation/comments/{self.comment.uuid}/dismiss/", {}),
         ]
 
-    def test_non_moderators_cannot_moderate(self):
-        for role in [Role.DEFAULT, Role.VERIFIED, Role.SUPPORT]:
-            set_role(self.eve, role)
-            self.as_user(self.eve)
-            for method, url, data in self.moderation_urls():
-                with self.subTest(role=role, url=url):
-                    response = self.client.generic(
-                        method.upper(), url, json.dumps(data), content_type="application/json"
-                    )
-                    self.assertEqual(response.status_code, 403)
+    def moderate(self, method, url, data):
+        return self.client.generic(
+            method.upper(), url, json.dumps(data), content_type="application/json"
+        )
+
+    def assert_cannot_moderate(self, role):
+        set_role(self.eve, role)
+        self.as_user(self.eve)
+        allowed = [
+            url
+            for method, url, data in self.moderation_urls()
+            if self.moderate(method, url, data).status_code != 403
+        ]
+        self.assertEqual(allowed, [])
         self.assertFalse(Warning.objects.exists())
         self.assertFalse(Report.objects.filter(resolved_at__isnull=False).exists())
 
-    def test_moderators_cannot_act_on_admin_content(self):
+    def test_default_users_cannot_moderate(self):
+        self.assert_cannot_moderate(Role.DEFAULT)
+
+    def test_verified_users_cannot_moderate(self):
+        self.assert_cannot_moderate(Role.VERIFIED)
+
+    def test_support_cannot_moderate(self):
+        self.assert_cannot_moderate(Role.SUPPORT)
+
+    def act_on_admin_post(self, action):
+        url = f"/api/moderation/posts/{self.admin_post.uuid}/{action}/"
+        return self.client.post(url, {"reason": "insult"}, content_type="application/json")
+
+    def test_moderators_cannot_warn_admins(self):
         self.as_user(self.mod)
-        for url in [
-            f"/api/moderation/posts/{self.admin_post.uuid}/warnings/",
-            f"/api/moderation/posts/{self.admin_post.uuid}/dismiss/",
-        ]:
-            with self.subTest(url=url):
-                response = self.client.post(
-                    url, {"reason": "insult"}, content_type="application/json"
-                )
-                self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.act_on_admin_post("warnings").status_code, 403)
         self.assertFalse(Warning.objects.filter(user=self.admin).exists())
+
+    def test_moderators_cannot_dismiss_reports_on_admin_content(self):
+        self.as_user(self.mod)
+        self.assertEqual(self.act_on_admin_post("dismiss").status_code, 403)
+
+    def test_admin_content_is_not_in_the_moderator_queue(self):
+        self.as_user(self.mod)
         queue = self.client.get("/api/moderation/reports/").content.decode()
         self.assertNotIn(str(self.admin_post.uuid), queue)
 
@@ -78,16 +94,20 @@ class ModerationAccessTests(TestCase):
         response = self.client.post(f"/api/posts/{self.admin_post.uuid}/report/")
         self.assertEqual(response.status_code, 403)
 
+    def warn_with_reason(self, reason):
+        return self.client.post(
+            f"/api/moderation/posts/{self.post.uuid}/warnings/",
+            {"reason": reason},
+            content_type="application/json",
+        )
+
     def test_warning_reason_must_be_known(self):
         self.as_user(self.mod)
-        for reason in ["", "spam'--", None, ["insult"], {"$ne": ""}, "x" * 100]:
-            with self.subTest(reason=reason):
-                response = self.client.post(
-                    f"/api/moderation/posts/{self.post.uuid}/warnings/",
-                    {"reason": reason},
-                    content_type="application/json",
-                )
-                self.assertEqual(response.status_code, 400)
+        unknown = ["", "spam'--", None, ["insult"], {"$ne": ""}, "x" * 100]
+        accepted = [
+            reason for reason in unknown if self.warn_with_reason(reason).status_code != 400
+        ]
+        self.assertEqual(accepted, [])
         self.assertFalse(Warning.objects.exists())
 
     def test_unreported_content_cannot_be_warned(self):
@@ -123,12 +143,19 @@ class AdministrationTests(TestCase):
             f"/api/administration/users/{username}/", data, content_type="application/json"
         )
 
-    def test_moderators_cannot_grant_roles(self):
+    def test_moderators_cannot_promote_themselves(self):
         self.client.force_login(self.mod)
-        for target, role in [("mod", "admin"), ("anna", "moderator"), ("boss", "default")]:
-            with self.subTest(target=target, role=role):
-                self.assertEqual(self.patch(target, {"role": role}).status_code, 403)
+        self.assertEqual(self.patch("mod", {"role": "admin"}).status_code, 403)
         self.assertEqual(role_of(self.mod), Role.MODERATOR)
+
+    def test_moderators_cannot_promote_others(self):
+        self.client.force_login(self.mod)
+        self.assertEqual(self.patch("anna", {"role": "moderator"}).status_code, 403)
+        self.assertEqual(role_of(self.anna), Role.DEFAULT)
+
+    def test_moderators_cannot_demote_admins(self):
+        self.client.force_login(self.mod)
+        self.assertEqual(self.patch("boss", {"role": "default"}).status_code, 403)
         self.assertEqual(role_of(self.admin), Role.ADMIN)
 
     def test_admins_cannot_change_their_own_role(self):
@@ -137,9 +164,11 @@ class AdministrationTests(TestCase):
 
     def test_role_must_be_known(self):
         self.client.force_login(self.admin)
-        for role in ["superuser", "Admin", "root", "", None, ["admin"], {"$ne": ""}]:
-            with self.subTest(role=role):
-                self.assertEqual(self.patch("anna", {"role": role}).status_code, 400)
+        unknown = ["superuser", "Admin", "root", "", None, ["admin"], {"$ne": ""}]
+        accepted = [
+            role for role in unknown if self.patch("anna", {"role": role}).status_code != 400
+        ]
+        self.assertEqual(accepted, [])
         self.assertEqual(role_of(self.anna), Role.DEFAULT)
 
     def test_other_fields_cannot_be_changed(self):

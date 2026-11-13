@@ -6,7 +6,7 @@
       >
         <div class="min-w-0">
           <p>{{ label }}</p>
-          <p class="text-swissfy-muted text-sm mt-1">Wähle bis zu {{ max }}.</p>
+          <p class="text-app-muted text-sm mt-1">Wähle bis zu {{ max }}.</p>
         </div>
         <BaseButton
           class="shrink-0"
@@ -28,12 +28,7 @@
             variant="error"
             outline
             :disabled="disabled"
-            @click="
-              $emit(
-                'update',
-                ids.filter((id) => id !== item.id),
-              )
-            "
+            @click="$emit('update', without(ids, item.id))"
           >
             <AppIcon name="trash" />
             Entfernen
@@ -44,10 +39,10 @@
 
     <BaseDialog ref="dialog" :title="`${label} suchen`" box-class="max-w-2xl h-[80dvh]">
       <label class="input w-full shrink-0">
-        <AppIcon name="search" class="text-swissfy-muted" />
+        <AppIcon name="search" class="text-app-muted" />
         <input
-          ref="input"
           v-model="query"
+          autofocus
           type="search"
           class="grow"
           :placeholder="placeholder"
@@ -56,11 +51,11 @@
         />
       </label>
       <div class="mt-4 flex-1 min-h-0 overflow-y-auto">
-        <p v-if="error" class="text-error text-sm text-center">{{ error }}</p>
+        <ErrorText v-if="error" :message="error" class="text-center" />
         <div v-else-if="loading" class="grid grid-cols-3 sm:grid-cols-4 gap-4">
           <div v-for="n in 8" :key="n" class="skeleton aspect-2/3 w-full"></div>
         </div>
-        <p v-else-if="query.trim() && !results.length" class="text-swissfy-muted text-center">
+        <p v-else-if="query.trim() && !results.length" class="text-app-muted text-center">
           Nichts gefunden.
         </p>
         <ul v-else class="grid grid-cols-3 sm:grid-cols-4 gap-4">
@@ -73,7 +68,7 @@
             >
               <FavoriteCover :item="item" :icon="icon" />
               <span class="text-sm truncate w-full" :title="item.title">{{ item.title }}</span>
-              <span v-if="item.year" class="text-xs text-swissfy-muted">{{ item.year }}</span>
+              <span v-if="item.year" class="text-xs text-app-muted">{{ item.year }}</span>
             </button>
           </li>
         </ul>
@@ -84,9 +79,13 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import debounce from 'lodash-es/debounce'
+import map from 'lodash-es/map'
+import without from 'lodash-es/without'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import FavoriteCover from '@/components/settings/FavoriteCover.vue'
 import LibraryCredits from '@/components/settings/LibraryCredits.vue'
@@ -96,7 +95,15 @@ const DEBOUNCE_MS = 300
 
 export default {
   name: 'FavoritePicker',
-  components: { AppIcon, BaseButton, BaseCard, BaseDialog, FavoriteCover, LibraryCredits },
+  components: {
+    AppIcon,
+    BaseButton,
+    BaseCard,
+    BaseDialog,
+    FavoriteCover,
+    LibraryCredits,
+    ErrorText,
+  },
   props: {
     kind: { type: String, required: true },
     label: { type: String, required: true },
@@ -117,12 +124,12 @@ export default {
   },
   computed: {
     ids() {
-      return this.items.map((item) => item.id)
+      return map(this.items, 'id')
     },
   },
   watch: {
     query(query) {
-      clearTimeout(this.timer)
+      this.debouncedSearch.cancel()
       this.error = null
       if (!query.trim()) {
         this.results = []
@@ -130,17 +137,20 @@ export default {
         return
       }
       this.loading = true
-      this.timer = setTimeout(() => this.search(query.trim()), DEBOUNCE_MS)
+      this.debouncedSearch(query.trim())
     },
   },
+  created() {
+    this.debouncedSearch = debounce(this.search, DEBOUNCE_MS)
+  },
   beforeUnmount() {
-    clearTimeout(this.timer)
+    this.debouncedSearch.cancel()
   },
   methods: {
+    without,
     openDialog() {
       this.query = ''
       this.$refs.dialog.open()
-      this.$nextTick(() => this.$refs.input.focus())
     },
     async search(query) {
       try {

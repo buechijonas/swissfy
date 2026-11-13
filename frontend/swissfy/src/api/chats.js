@@ -23,6 +23,9 @@ export default {
   keys(username) {
     return api.get(chatPath(username, 'keys'))
   },
+  receive(username, read) {
+    return api.post(chatPath(username, 'receive'), { read })
+  },
   messages(username, params) {
     return api.get(chatPath(username, 'messages'), params)
   },

@@ -31,7 +31,7 @@
       <ul
         v-if="isMenuOpen"
         @click="isMenuOpen = false"
-        class="dropdown-content menu z-40 w-56 rounded-box border border-docs-border bg-base-100 p-1 [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)]"
+        class="dropdown-content menu z-40 w-56 rounded-box border border-app-border bg-base-100 p-1 [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)]"
       >
         <li>
           <RouterLink
@@ -50,7 +50,7 @@
         <li
           v-for="(target, index) in switches"
           :key="target.url"
-          :class="{ 'mt-1 border-t border-docs-border pt-1': index === 0 }"
+          :class="{ 'mt-1 border-t border-app-border pt-1': index === 0 }"
         >
           <a :href="target.url" class="flex h-12 items-center gap-3">
             <img src="/icons/icon.svg" alt="" class="size-6" />
@@ -63,7 +63,7 @@
             <span>govex</span>
           </a>
         </li>
-        <li v-if="authStore.ready" class="mt-1 border-t border-docs-border pt-1">
+        <li v-if="authStore.ready" class="mt-1 border-t border-app-border pt-1">
           <button
             v-if="authStore.isAuthenticated"
             type="button"
@@ -90,7 +90,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import govexLogo from '@core/assets/govex.svg'
 import { useAuthStore } from '@/stores/auth.js'
 

@@ -11,9 +11,10 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
 import AuthPage from '@/components/layout/AuthPage.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
@@ -23,9 +24,7 @@ export default {
     return { done: false }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
+    ...mapStores(useAuthStore),
   },
   async mounted() {
     try {

@@ -29,7 +29,7 @@
         </BaseButton>
         <DeleteButton @click="$refs.confirm.open()" />
       </div>
-      <p v-if="folderError" class="text-error text-sm mb-4">{{ folderError }}</p>
+      <ErrorText :message="folderError" class="mb-4" />
 
       <PostList
         :key="activeFolder"
@@ -51,7 +51,7 @@
       placeholder="Name"
       @keyup.enter="saveFolder"
     />
-    <p v-if="folderError" class="text-error text-sm mt-2">{{ folderError }}</p>
+    <ErrorText :message="folderError" class="mt-2" />
     <template #actions>
       <BaseButton @click="$refs.folderDialog.close()">
         <AppIcon name="cross" />
@@ -72,10 +72,11 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
 import AddButton from '@/components/common/AddButton.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
@@ -96,6 +97,7 @@ export default {
     ConfirmDialog,
     DeleteButton,
     PostList,
+    ErrorText,
   },
   data() {
     return {

@@ -5,12 +5,13 @@ export async function compressImage(file) {
   try {
     const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
     const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height))
-    const canvas = document.createElement('canvas')
-    canvas.width = Math.round(bitmap.width * scale)
-    canvas.height = Math.round(bitmap.height * scale)
+    const canvas = new OffscreenCanvas(
+      Math.round(bitmap.width * scale),
+      Math.round(bitmap.height * scale),
+    )
     canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height)
     bitmap.close()
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', QUALITY))
+    const blob = await canvas.convertToBlob({ type: 'image/webp', quality: QUALITY })
     return blob && blob.size < file.size ? blob : file
   } catch {
     return file

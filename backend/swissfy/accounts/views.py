@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from commons.views import BaseViewSet
+from swissfy.social.models import Member
 
 from . import devices
 from .consent import push_to_govex
@@ -17,6 +18,7 @@ from .serializers import ConsentModelSerializer, DeviceTokenModelSerializer, Use
 class AuthViewSet(BaseViewSet):
 
     def user_data(self, user):
+        user = Member.objects.select_related("profile").annotate_visibility(user).get(pk=user.pk)
         return UserModelSerializer.read(user, context=self.get_serializer_context()).data
 
     def device_token(self):

@@ -1,7 +1,5 @@
-export function itemAt(event, attribute) {
-  const target = document.elementFromPoint(event.clientX, event.clientY)?.closest(`[${attribute}]`)
-  return target?.getAttribute(attribute) ?? null
-}
+import isEqual from 'lodash-es/isEqual'
+import map from 'lodash-es/map'
 
 export function moveItem(items, id, overId) {
   const from = items.findIndex((item) => item.id === id)
@@ -13,5 +11,5 @@ export function moveItem(items, id, overId) {
 }
 
 export function sameOrder(a, b) {
-  return a.map((item) => item.id).join() === b.map((item) => item.id).join()
+  return isEqual(map(a, 'id'), map(b, 'id'))
 }

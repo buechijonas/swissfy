@@ -5,6 +5,16 @@
   <RouterLink v-else-if="to" :to="to" :class="classes">
     <slot />
   </RouterLink>
+  <label v-else-if="accept" :class="[classes, { 'btn-disabled': disabled }]">
+    <input
+      v-files="(files) => $emit('files', files)"
+      type="file"
+      :accept="accept"
+      :disabled="disabled"
+      class="sr-only"
+    />
+    <slot />
+  </label>
   <button v-else :type="type" :disabled="disabled" :class="classes">
     <slot />
   </button>
@@ -12,7 +22,8 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import { url } from '@/lib/link.js'
+import files from '@core/directives/files.js'
+import { url } from '@core/lib/link.js'
 
 const VARIANT_CLASSES = {
   neutral: '',
@@ -35,6 +46,7 @@ const SHAPE_CLASSES = {
 export default {
   name: 'BaseButton',
   components: { RouterLink },
+  directives: { files },
   props: {
     variant: { type: String, default: 'neutral' },
     outline: { type: Boolean, default: false },
@@ -47,7 +59,9 @@ export default {
     rel: { type: String, default: null },
     type: { type: String, default: 'button' },
     disabled: { type: Boolean, default: false },
+    accept: { type: String, default: null },
   },
+  emits: ['files'],
   computed: {
     classes() {
       return [

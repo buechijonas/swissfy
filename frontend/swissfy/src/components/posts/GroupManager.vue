@@ -1,6 +1,6 @@
 <template>
   <BaseCard class="p-6">
-    <p class="text-swissfy-muted text-sm mb-4">
+    <p class="text-app-muted text-sm mb-4">
       Mit Gruppen bestimmst du, wer einen Feed sieht. Nur du siehst deine Gruppen.
     </p>
     <form class="flex gap-2" @submit.prevent="createGroup">
@@ -12,7 +12,7 @@
     </form>
   </BaseCard>
 
-  <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
+  <ErrorText :message="error" class="mt-4 text-center" />
 
   <BaseCard v-for="group in groups" :key="group.id" class="p-6 mt-4 flex flex-col gap-3">
     <div class="flex items-center gap-2">
@@ -31,7 +31,7 @@
           <AppIcon name="cross" size="sm" />
         </button>
       </span>
-      <span v-if="!group.members.length" class="text-sm text-swissfy-muted">Noch niemand.</span>
+      <span v-if="!group.members.length" class="text-sm text-app-muted">Noch niemand.</span>
     </div>
     <form class="flex gap-2" @submit.prevent="addMember(group)">
       <input v-model="drafts[group.id]" class="input input-sm flex-1" placeholder="Benutzername" />
@@ -50,22 +50,24 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import { useGroupsStore } from '@/stores/posts.js'
 
 export default {
   name: 'GroupManager',
-  components: { AppIcon, BaseButton, BaseCard, ConfirmDialog, DeleteButton },
+  mixins: [asyncActionMixin],
+  components: { AppIcon, BaseButton, BaseCard, ConfirmDialog, DeleteButton, ErrorText },
   data() {
     return {
       newName: '',
       drafts: {},
       pendingDelete: null,
-      error: null,
     }
   },
   computed: {
@@ -81,14 +83,8 @@ export default {
   },
   methods: {
     async run(action) {
-      this.error = null
-      try {
-        await action()
-        return true
-      } catch (error) {
-        this.error = error.message
-        return false
-      }
+      await this.runAction(action)
+      return !this.error
     },
     async createGroup() {
       if (await this.run(() => this.groupsStore.create({ name: this.newName, members: [] }))) {

@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import UserList from '@/components/common/UserList.vue'
 import storiesApi from '@/api/stories.js'

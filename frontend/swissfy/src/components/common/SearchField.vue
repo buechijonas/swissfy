@@ -1,6 +1,6 @@
 <template>
   <label class="input w-full mb-4 max-lg:hidden">
-    <AppIcon name="search" class="text-swissfy-muted" />
+    <AppIcon name="search" class="text-app-muted" />
     <input
       v-model="term"
       type="search"
@@ -12,10 +12,10 @@
   <BaseDialog ref="dialog" title="Suchen">
     <form id="search-dialog-form" @submit.prevent="submitDialog">
       <label class="input w-full">
-        <AppIcon name="search" class="text-swissfy-muted" />
+        <AppIcon name="search" class="text-app-muted" />
         <input
-          ref="dialogInput"
           v-model="draft"
+          autofocus
           type="search"
           class="grow"
           :placeholder="placeholder"
@@ -38,8 +38,9 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import debounce from 'lodash-es/debounce'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import { useAddButtonStore } from '@/stores/addButton.js'
 
@@ -59,15 +60,18 @@ export default {
   },
   watch: {
     term(term) {
-      clearTimeout(this.timer)
-      if (term.trim() === (this.$route.query.q ?? '')) return
-      this.timer = setTimeout(() => this.search(term), DEBOUNCE_MS)
+      if (term.trim() === (this.$route.query.q ?? '')) {
+        this.debouncedSearch.cancel()
+        return
+      }
+      this.debouncedSearch(term)
     },
   },
   beforeCreate() {
     this.owner = Symbol('SearchField')
   },
   created() {
+    this.debouncedSearch = debounce(this.search, DEBOUNCE_MS)
     useAddButtonStore().show(this.owner, {
       label: 'Suchen',
       icon: 'search',
@@ -76,7 +80,7 @@ export default {
     })
   },
   beforeUnmount() {
-    clearTimeout(this.timer)
+    this.debouncedSearch.cancel()
     useAddButtonStore().hide(this.owner)
   },
   methods: {
@@ -86,7 +90,6 @@ export default {
     openDialog() {
       this.draft = this.term
       this.$refs.dialog.open()
-      this.$nextTick(() => this.$refs.dialogInput.focus())
     },
     submitDialog() {
       this.term = this.draft.trim()

@@ -3,14 +3,14 @@
     <div v-if="entry" class="flex flex-col gap-4">
       <img :src="entry.post.thumbnail" alt="" class="size-24 object-cover bg-base-200" />
       <label class="flex flex-col gap-1">
-        <span class="text-sm text-swissfy-muted">Datum (optional)</span>
+        <span class="text-sm text-app-muted">Datum (optional)</span>
         <input v-model="date" type="date" class="input w-full" />
       </label>
       <label class="flex flex-col gap-1">
-        <span class="text-sm text-swissfy-muted">Titel (optional)</span>
+        <span class="text-sm text-app-muted">Titel (optional)</span>
         <input v-model="title" class="input w-full" maxlength="50" @keyup.enter="save" />
       </label>
-      <p v-if="error" class="text-error text-sm">{{ error }}</p>
+      <ErrorText :message="error" />
     </div>
     <template #actions>
       <BaseButton
@@ -37,22 +37,23 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import albumsApi from '@/api/albums.js'
 
 export default {
   name: 'EntryDialog',
-  components: { AppIcon, BaseButton, BaseDialog },
+  mixins: [asyncActionMixin],
+  components: { AppIcon, BaseButton, BaseDialog, ErrorText },
   emits: ['saved'],
   data() {
     return {
       entry: null,
       date: '',
       title: '',
-      busy: false,
-      error: null,
     }
   },
   methods: {
@@ -64,17 +65,10 @@ export default {
       this.$refs.dialog.open()
     },
     async request(action) {
-      this.busy = true
-      this.error = null
-      try {
-        const album = await action()
-        this.$refs.dialog.close()
-        this.$emit('saved', album)
-      } catch (error) {
-        this.error = error.detail ?? 'Eintrag konnte nicht gespeichert werden.'
-      } finally {
-        this.busy = false
-      }
+      const album = await this.runAction(action, 'Eintrag konnte nicht gespeichert werden.')
+      if (!album) return
+      this.$refs.dialog.close()
+      this.$emit('saved', album)
     },
     save() {
       const body = { date: this.date || null, title: this.title.trim() }

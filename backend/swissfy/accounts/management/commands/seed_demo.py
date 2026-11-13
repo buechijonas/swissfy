@@ -17,10 +17,8 @@ from swissfy.accounts.models import AVATAR_CHOICES, UserConsent, UserProfile
 from swissfy.accounts.roles import Role, set_role
 from swissfy.chats.crypto import wrap_message_key
 from swissfy.chats.models import ChatRequest, Message
-from swissfy.moderation.models import WARNING_EXPIRY, Reason, Report, Warning
-from swissfy.moderation.sanctions import suspend
+from swissfy.moderation.models import WARNING_EXPIRY, Reason, Report, Suspension, Warning
 from swissfy.notifications.models import Notification
-from swissfy.notifications.notify import sync_expired_warnings
 from swissfy.posts import images
 from swissfy.posts.models import (
     Comment,
@@ -336,12 +334,17 @@ class Command(BaseCommand):
         Warning.objects.filter(pk=warning.pk).update(created_at=created_at)
         return warning
 
+    def suspend(self, user, warning, step, starts_at):
+        suspension = Suspension.start(user, warning, step, starts_at)
+        Notification.notify(user, Notification.Kind.SUSPENSION, suspension=suspension)
+        return suspension
+
     def warnings_then_suspension(self, user, step, starts_days_ago):
         warnings = [self.warn(user, starts_days_ago + offset) for offset in (2, 1, 0)]
         for _ in range(step):
             warnings.append(self.warn(user, starts_days_ago))
         start = self.now - timedelta(days=starts_days_ago)
-        return suspend(user, warnings[-1], step, start)
+        return self.suspend(user, warnings[-1], step, start)
 
     def create_sanctions(self, users):
         expired = WARNING_EXPIRY.days + 10
@@ -361,7 +364,7 @@ class Command(BaseCommand):
                 case "suspended_with_queue":
                     first = self.warnings_then_suspension(user, 0, 1)
                     queued = self.warn(user, 0)
-                    suspend(user, queued, 1, first.ends_at)
+                    self.suspend(user, queued, 1, first.ends_at)
                 case "suspension_ended":
                     self.warnings_then_suspension(user, 0, 40)
                 case "suspended_month":
@@ -419,4 +422,4 @@ class Command(BaseCommand):
                 created_at=issued_at, read_at=issued_at if issued_at < read_before else None
             )
         for user in users:
-            sync_expired_warnings(user)
+            Notification.objects.sync_expired_warnings(user)

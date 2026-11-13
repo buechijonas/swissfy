@@ -21,7 +21,7 @@
       </BaseCard>
 
       <BaseCard v-else-if="error" class="p-6">
-        <p class="text-swissfy-muted">{{ error }}</p>
+        <p class="text-app-muted">{{ error }}</p>
       </BaseCard>
 
       <template v-else>
@@ -35,13 +35,13 @@
             />
             <div
               v-else
-              class="flex size-24 shrink-0 items-center justify-center rounded-box bg-base-200 text-swissfy-muted"
+              class="flex size-24 shrink-0 items-center justify-center rounded-box bg-base-200 text-app-muted"
             >
               <AppIcon name="gallery" class="size-8!" />
             </div>
             <div class="flex-1 min-w-0">
               <h2 class="truncate text-xl font-semibold">{{ album.name }}</h2>
-              <RouterLink :to="profileLink" class="text-sm text-swissfy-muted">
+              <RouterLink :to="profileLink" class="text-sm text-app-muted">
                 {{ album.owner }}
               </RouterLink>
             </div>
@@ -57,7 +57,7 @@
           </div>
         </BaseCard>
 
-        <p v-if="actionError" class="text-error text-sm text-center">{{ actionError }}</p>
+        <ErrorText :message="actionError" class="text-center" />
 
         <AlbumTimeline
           :entries="album.entries"
@@ -82,16 +82,18 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
+import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
 import AddPostsDialog from '@/components/albums/AddPostsDialog.vue'
 import AlbumDialog from '@/components/albums/AlbumDialog.vue'
 import AlbumTimeline from '@/components/albums/AlbumTimeline.vue'
 import EntryDialog from '@/components/albums/EntryDialog.vue'
 import AddButton from '@/components/common/AddButton.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import albumsApi from '@/api/albums.js'
@@ -112,6 +114,7 @@ export default {
     BaseCard,
     BaseFooter,
     ConfirmDialog,
+    ErrorText,
   },
   data() {
     return {
@@ -121,13 +124,14 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useAuthStore),
     username() {
       return this.$route.params.username
     },
     ownAlbum() {
       if (this.error) return false
       if (this.album) return this.album.is_own
-      return this.username === useAuthStore().user?.username
+      return this.username === this.authStore.user?.username
     },
     profileLink() {
       return `/profile/${encodeURIComponent(this.username)}`

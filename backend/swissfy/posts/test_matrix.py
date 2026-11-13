@@ -56,28 +56,37 @@ class AudienceMatrix(TestCase):
         )
 
 
+def expected_status(profile, audience, relation):
+    return 200 if can_see(profile, audience, relation) else 404
+
+
 class PostVisibilityMatrixTests(AudienceMatrix):
-    def check(self, profile, audience, relation, expected):
+    def post_status(self, profile, audience, relation):
         self.set_profile(profile)
         post = Post.objects.create(author=self.author, text="Hallo", visibility=audience)
         if audience == "groups":
             post.groups.add(self.group)
-        viewer = self.viewer(relation)
-        self.client.force_login(viewer)
+        self.client.force_login(self.viewer(relation))
         status = self.client.get(f"/api/posts/{post.uuid}/").status_code
-        self.assertEqual(status, 200 if expected else 404)
+        User.objects.exclude(pk=self.author.pk).delete()
+        return status
 
     def test_every_combination(self):
-        for profile, audience, relation in product(PROFILES, AUDIENCES, RELATIONS):
-            with self.subTest(profile=profile, audience=audience, relation=relation):
-                self.check(profile, audience, relation, can_see(profile, audience, relation))
-                User.objects.exclude(pk=self.author.pk).delete()
+        wrong = [
+            (profile, audience, relation)
+            for profile, audience, relation in product(PROFILES, AUDIENCES, RELATIONS)
+            if self.post_status(profile, audience, relation)
+            != expected_status(profile, audience, relation)
+        ]
+        self.assertEqual(wrong, [])
 
     def test_global_posts_ignore_profile_and_relation(self):
-        for profile, relation in product(PROFILES, RELATIONS):
-            with self.subTest(profile=profile, relation=relation):
-                self.check(profile, "global", relation, True)
-                User.objects.exclude(pk=self.author.pk).delete()
+        hidden = [
+            (profile, relation)
+            for profile, relation in product(PROFILES, RELATIONS)
+            if self.post_status(profile, "global", relation) != 200
+        ]
+        self.assertEqual(hidden, [])
 
 
 class StoryVisibilityMatrixTests(AudienceMatrix):
@@ -85,43 +94,54 @@ class StoryVisibilityMatrixTests(AudienceMatrix):
         self.client.force_login(viewer)
         return self.client.get("/api/social/profiles/author/").json()["stories"]
 
-    def test_every_combination(self):
-        for profile, audience, relation in product(PROFILES, AUDIENCES, RELATIONS):
-            with self.subTest(profile=profile, audience=audience, relation=relation):
-                self.set_profile(profile)
-                Story.objects.all().delete()
-                story = Story.objects.create(
-                    author=self.author, image="s.webp", visibility=audience
-                )
-                if audience == "groups":
-                    story.groups.add(self.group)
-                seen = self.stories_seen_by(self.viewer(relation))
-                self.assertEqual(len(seen), 1 if can_see(profile, audience, relation) else 0)
-                User.objects.exclude(pk=self.author.pk).delete()
+    def sees_story(self, profile, audience, relation):
+        self.set_profile(profile)
+        Story.objects.all().delete()
+        story = Story.objects.create(author=self.author, image="s.webp", visibility=audience)
+        if audience == "groups":
+            story.groups.add(self.group)
+        seen = self.stories_seen_by(self.viewer(relation))
+        User.objects.exclude(pk=self.author.pk).delete()
+        return len(seen) == 1
 
-    def test_global_stories_stored_directly_are_not_widened(self):
+    def test_every_combination(self):
+        wrong = [
+            (profile, audience, relation)
+            for profile, audience, relation in product(PROFILES, AUDIENCES, RELATIONS)
+            if self.sees_story(profile, audience, relation) != can_see(profile, audience, relation)
+        ]
+        self.assertEqual(wrong, [])
+
+    def test_global_stories_stored_directly_are_hidden_from_strangers(self):
         Story.objects.create(author=self.author, image="s.webp", visibility="global")
-        for relation in ("stranger", "follower"):
-            with self.subTest(relation=relation):
-                self.assertEqual(self.stories_seen_by(self.viewer(relation)), [])
+        self.assertEqual(self.stories_seen_by(self.viewer("stranger")), [])
+
+    def test_global_stories_stored_directly_are_hidden_from_followers(self):
+        Story.objects.create(author=self.author, image="s.webp", visibility="global")
+        self.assertEqual(self.stories_seen_by(self.viewer("follower")), [])
 
 
 class RepostMatrixTests(AudienceMatrix):
-    def test_repost_reaches_followers_only_within_the_audience(self):
-        for profile, audience, relation in product(PROFILES, AUDIENCES, RELATIONS[:4]):
-            with self.subTest(profile=profile, audience=audience, relation=relation):
-                self.set_profile(profile)
-                post = Post.objects.create(author=self.author, text="Teilen", visibility=audience)
-                if audience == "groups":
-                    post.groups.add(self.group)
-                reposter = User.objects.create(username="reposter")
-                Repost.objects.create(user=reposter, post=post)
-                viewer = self.viewer(relation)
-                Follow.objects.create(follower=viewer, following=reposter)
+    def repost_in_feed(self, profile, audience, relation):
+        self.set_profile(profile)
+        post = Post.objects.create(author=self.author, text="Teilen", visibility=audience)
+        if audience == "groups":
+            post.groups.add(self.group)
+        reposter = User.objects.create(username="reposter")
+        Repost.objects.create(user=reposter, post=post)
+        viewer = self.viewer(relation)
+        Follow.objects.create(follower=viewer, following=reposter)
+        self.client.force_login(viewer)
+        feed = self.client.get("/api/posts/").json()["results"]
+        User.objects.exclude(pk=self.author.pk).delete()
+        Post.objects.all().delete()
+        return str(post.uuid) in [item["id"] for item in feed]
 
-                self.client.force_login(viewer)
-                feed = self.client.get("/api/posts/").json()["results"]
-                in_feed = str(post.uuid) in [item["id"] for item in feed]
-                self.assertEqual(in_feed, can_see(profile, audience, relation))
-                User.objects.exclude(pk=self.author.pk).delete()
-                Post.objects.all().delete()
+    def test_repost_reaches_followers_only_within_the_audience(self):
+        wrong = [
+            (profile, audience, relation)
+            for profile, audience, relation in product(PROFILES, AUDIENCES, RELATIONS[:4])
+            if self.repost_in_feed(profile, audience, relation)
+            != can_see(profile, audience, relation)
+        ]
+        self.assertEqual(wrong, [])

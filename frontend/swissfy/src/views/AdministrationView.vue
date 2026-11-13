@@ -6,7 +6,7 @@
     <div class="mx-auto w-full max-w-150 pt-4">
       <div class="flex flex-wrap gap-2 mb-4">
         <label class="input min-w-0 flex-1">
-          <AppIcon name="search" class="text-swissfy-muted" />
+          <AppIcon name="search" class="text-app-muted" />
           <input
             v-model="term"
             type="search"
@@ -23,37 +23,33 @@
         </select>
       </div>
 
-      <BaseCard v-if="users.length" tag="ul" class="divide-y divide-swissfy-border">
+      <BaseCard v-if="users.length" tag="ul" class="divide-y divide-app-border">
         <li v-for="user in users" :key="user.username" class="flex items-center gap-4 px-6 py-3">
           <UserAvatar class="size-12" :user="user" />
           <RouterLink :to="profileLink(user)" class="flex min-w-0 flex-1 flex-col">
             <span class="flex min-w-0 items-center gap-2">
-              <span class="font-bold truncate">{{ fullName(user) || user.username }}</span>
+              <span class="font-bold truncate">{{ user.display_name }}</span>
               <RoleBadge :role="user.badge" />
             </span>
-            <span class="text-swissfy-muted text-sm truncate">@{{ user.username }}</span>
+            <span class="text-app-muted text-sm truncate">@{{ user.username }}</span>
             <span v-if="user.role_locked_until" class="text-error text-xs">
               {{ lockText(user) }}
             </span>
           </RouterLink>
-          <select
-            class="select select-sm w-auto"
-            :value="user.role"
+          <RoleSelect
+            :role="user.role"
+            :roles="roles"
             :disabled="user.is_self || !!user.role_locked_until || saving === user.username"
             :title="user.is_self ? 'Deine eigene Rolle kannst du nicht ändern.' : 'Rolle'"
-            @change="changeRole(user, $event.target.value)"
-          >
-            <option v-for="role in roles" :key="role.value" :value="role.value">
-              {{ role.label }}
-            </option>
-          </select>
+            @change="(role) => changeRole(user, role)"
+          />
         </li>
       </BaseCard>
       <BaseCard v-else-if="!loading && !error" class="p-6">
-        <p class="text-swissfy-muted">Keine User gefunden.</p>
+        <p class="text-app-muted">Keine User gefunden.</p>
       </BaseCard>
 
-      <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
+      <ErrorText :message="error" class="mt-4 text-center" />
       <div v-if="loading" class="skeleton h-24 w-full mt-4"></div>
       <BaseButton v-else-if="next" class="mt-4" size="sm" block @click="load">
         <AppIcon name="down" />
@@ -65,11 +61,14 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
+import debounce from 'lodash-es/debounce'
+import RoleSelect from '@/components/administration/RoleSelect.vue'
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
@@ -88,7 +87,9 @@ export default {
     BaseCard,
     BaseFooter,
     RoleBadge,
+    RoleSelect,
     UserAvatar,
+    ErrorText,
   },
   data() {
     return {
@@ -106,10 +107,7 @@ export default {
   },
   watch: {
     term(term) {
-      clearTimeout(this.timer)
-      this.timer = setTimeout(() => {
-        this.query = term.trim()
-      }, DEBOUNCE_MS)
+      this.debouncedQuery(term.trim())
     },
     query() {
       this.reload()
@@ -119,16 +117,14 @@ export default {
     },
   },
   async created() {
+    this.debouncedQuery = debounce((query) => (this.query = query), DEBOUNCE_MS)
     this.roles = await administrationApi.roles().catch(() => [])
     this.reload()
   },
   beforeUnmount() {
-    clearTimeout(this.timer)
+    this.debouncedQuery.cancel()
   },
   methods: {
-    fullName(user) {
-      return [user.first_name, user.last_name].filter(Boolean).join(' ')
-    },
     lockText(user) {
       if (user.role_locked_until === 'forever') return 'Rolle dauerhaft gesperrt'
       return `Rolle gesperrt bis ${formatDate(user.role_locked_until)}`

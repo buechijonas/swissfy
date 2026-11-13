@@ -115,7 +115,7 @@ describe('StoryViewer', () => {
 
   it('closes on escape', async () => {
     const wrapper = await mountViewer([story('a')])
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
     await wrapper.vm.$nextTick()
     expect(wrapper.find('img[alt="Story"]').exists()).toBe(false)
   })

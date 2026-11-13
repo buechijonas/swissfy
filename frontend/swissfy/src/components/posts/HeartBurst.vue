@@ -1,37 +1,26 @@
 <template>
-  <Transition
-    enter-from-class="scale-50 opacity-0"
-    leave-to-class="scale-125 opacity-0"
-    enter-active-class="transition duration-200"
-    leave-active-class="transition duration-300"
+  <span
+    v-if="burst"
+    :key="burst"
+    class="pointer-events-none absolute top-1/2 left-1/2 z-10 -mt-12 -ml-12 animate-heart-burst"
+    @animationend.self="burst = 0"
   >
-    <AppIcon
-      v-if="visible"
-      name="heart-filled"
-      class="pointer-events-none absolute top-1/2 left-1/2 z-10 -mt-12 -ml-12 size-24! text-error drop-shadow-lg"
-    />
-  </Transition>
+    <AppIcon name="heart-filled" class="size-24! text-error drop-shadow-lg" />
+  </span>
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
-
-const VISIBLE_MS = 600
+import AppIcon from '@core/components/AppIcon.vue'
 
 export default {
   name: 'HeartBurst',
   components: { AppIcon },
   data() {
-    return { visible: false }
-  },
-  beforeUnmount() {
-    clearTimeout(this.timer)
+    return { burst: 0 }
   },
   methods: {
     show() {
-      clearTimeout(this.timer)
-      this.visible = true
-      this.timer = setTimeout(() => (this.visible = false), VISIBLE_MS)
+      this.burst += 1
     },
   },
 }

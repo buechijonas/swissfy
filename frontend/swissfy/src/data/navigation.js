@@ -3,17 +3,18 @@ import { useNotificationsStore } from '@/stores/notifications.js'
 
 export const docsUrl = import.meta.env.VITE_DOCS_URL ?? 'https://docs.swissfy.ch'
 
-export const MODERATION_ROLES = ['moderator', 'admin']
-export const ADMINISTRATION_ROLES = ['admin']
+export function isPermitted(item, authStore) {
+  return !item.permission || Boolean(authStore.user?.permissions[item.permission])
+}
 
 export function canAccess(item, authStore) {
   if (item.requiresAuth && !authStore.isAuthenticated) return false
-  return !item.roles || item.roles.includes(authStore.user?.role)
+  return isPermitted(item, authStore)
 }
 
 export function isListed(item, authStore) {
   if (item.hiddenForGuests && !authStore.isAuthenticated) return false
-  return !item.roles || item.roles.includes(authStore.user?.role)
+  return isPermitted(item, authStore)
 }
 
 export function isLocked(item, authStore) {
@@ -72,7 +73,7 @@ export const navigationItems = [
     to: '/moderation',
     divider: true,
     requiresAuth: true,
-    roles: MODERATION_ROLES,
+    permission: 'moderate',
   },
   {
     key: 'administration',
@@ -80,6 +81,6 @@ export const navigationItems = [
     icon: 'tie',
     to: '/administration',
     requiresAuth: true,
-    roles: ADMINISTRATION_ROLES,
+    permission: 'administrate',
   },
 ]

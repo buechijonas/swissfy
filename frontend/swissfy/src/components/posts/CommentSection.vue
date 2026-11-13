@@ -4,14 +4,14 @@
       <slot name="composer">
         <CommentForm v-model="draft" :placeholder="placeholder" :sending="sending" @submit="add" />
       </slot>
-      <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
+      <ErrorText :message="error" class="mt-2" />
     </template>
     <BaseCard v-if="comments.length || $slots.head" :class="{ 'mt-4': !nested }">
       <slot name="head" />
       <div v-if="nested" class="relative pl-15 pr-4 py-3">
         <span
           v-if="comments.length"
-          class="absolute left-8 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-swissfy-border"
+          class="absolute left-8 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-app-border"
         ></span>
         <slot name="composer">
           <CommentForm
@@ -21,20 +21,19 @@
             @submit="add"
           />
         </slot>
-        <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
+        <ErrorText :message="error" class="mt-2" />
       </div>
       <ul v-if="nested">
-        <li v-for="(comment, index) in comments" :key="comment.id">
+        <li v-for="comment in comments" :key="comment.id" class="group/thread">
           <CommentItem
             :comment="comment"
             :depth="1"
-            :sibling-below="index < comments.length - 1"
             :moderation="moderation"
             @delete="confirmRemove"
           />
         </li>
       </ul>
-      <ul v-else class="divide-y divide-swissfy-border">
+      <ul v-else class="divide-y divide-app-border">
         <li v-for="comment in comments" :key="comment.id">
           <CommentItem
             :comment="comment"
@@ -52,7 +51,7 @@
             <RouterLink
               v-if="comment.reply_count > 1"
               :to="commentLink(comment, moderation)"
-              class="block pl-15 pb-3 text-sm text-swissfy-muted link"
+              class="block pl-15 pb-3 text-sm text-app-muted link"
             >
               Alle {{ comment.reply_count }} Antworten anzeigen
             </RouterLink>
@@ -74,10 +73,11 @@
 </template>
 
 <script>
+import ErrorText from '@core/components/ErrorText.vue'
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import CommentForm from '@/components/posts/CommentForm.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
@@ -94,6 +94,7 @@ export default {
     ConfirmDialog,
     CommentForm,
     CommentItem,
+    ErrorText,
   },
   props: {
     url: { type: String, required: true },

@@ -28,14 +28,14 @@ async function mountAlbums(editable) {
 }
 
 function albumIds(wrapper) {
-  return wrapper.findAll('[data-album]').map((tile) => tile.attributes('data-album'))
+  return wrapper.findAllComponents(RouterLinkStub).map((link) => link.props('to').split('/').at(-1))
 }
 
-async function dragOnto(wrapper, handle, target) {
-  handle.element.setPointerCapture = () => {}
-  document.elementFromPoint = () => target.element
+async function dragOnto(handle, target) {
+  handle.element.releasePointerCapture = () => {}
   await handle.trigger('pointerdown', { pointerId: 1 })
-  await handle.trigger('pointermove')
+  target.element.parentElement.dispatchEvent(new Event('pointerenter'))
+  await flushPromises()
 }
 
 function entry(id) {
@@ -54,7 +54,6 @@ function entry(id) {
 
 afterEach(() => {
   vi.unstubAllGlobals()
-  document.elementFromPoint = undefined
   document.body.innerHTML = ''
 })
 
@@ -73,8 +72,8 @@ describe('ProfileAlbums', () => {
 
   it('saves the dragged album order', async () => {
     const { wrapper, fetch } = await mountAlbums(true)
-    const handle = wrapper.findAll('[title="Verschieben"]')[0]
-    await dragOnto(wrapper, handle, wrapper.findAll('[data-album]')[1])
+    const [handle, target] = wrapper.findAll('[title="Verschieben"]')
+    await dragOnto(handle, target)
     expect(albumIds(wrapper)).toEqual(['a2', 'a1'])
 
     await handle.trigger('pointerup')

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { path, url } from '@/lib/link.js'
+import { path, url } from '@core/lib/link.js'
 
 describe('url', () => {
   it.each(['https://swissfy.ch', 'http://example.com/a?b=c', 'mailto:hallo@swissfy.ch'])(

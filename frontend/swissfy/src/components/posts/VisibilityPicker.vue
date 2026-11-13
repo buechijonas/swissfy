@@ -12,7 +12,7 @@
       {{ option.label }}
     </BaseButton>
   </div>
-  <p v-if="visibility === 'global'" class="mt-3 text-sm text-swissfy-muted">
+  <p v-if="visibility === 'global'" class="mt-3 text-sm text-app-muted">
     Erscheint bei allen im Feed auf der Startseite, auch bei Leuten, die dir nicht folgen.
   </p>
   <div v-if="visibility === 'groups'" class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -22,14 +22,14 @@
       class="flex min-w-0 items-center gap-3 text-sm"
     >
       <input
-        :checked="groups.includes(group.id)"
+        v-model="selectedGroups"
+        :value="group.id"
         type="checkbox"
         class="size-8 shrink-0 accent-primary"
-        @change="toggleGroup(group.id, $event.target.checked)"
       />
       <span class="truncate">{{ group.name }}</span>
     </label>
-    <p v-if="!groupList.length" class="col-span-full text-sm text-swissfy-muted">
+    <p v-if="!groupList.length" class="col-span-full text-sm text-app-muted">
       Du hast noch keine Gruppen.
       <RouterLink to="/settings?tab=groups" class="link">Gruppen anlegen</RouterLink>
     </p>
@@ -37,10 +37,10 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
-import { ADMINISTRATION_ROLES } from '@/data/navigation.js'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useGroupsStore } from '@/stores/posts.js'
 
@@ -66,8 +66,17 @@ export default {
     }
   },
   computed: {
-    isAdmin() {
-      return ADMINISTRATION_ROLES.includes(useAuthStore().user?.role)
+    ...mapStores(useAuthStore),
+    selectedGroups: {
+      get() {
+        return this.groups
+      },
+      set(groups) {
+        this.$emit('update:groups', groups)
+      },
+    },
+    canPostGlobally() {
+      return Boolean(this.authStore.user?.permissions.post_globally)
     },
     gridClass() {
       const columns = this.shownOptions.filter((option) => !option.adminOnly).length
@@ -75,18 +84,12 @@ export default {
     },
     shownOptions() {
       return this.options.filter((option) => {
-        if (option.adminOnly) return this.allowPublic && this.allowGlobal && this.isAdmin
+        if (option.adminOnly) return this.allowPublic && this.allowGlobal && this.canPostGlobally
         return this.allowPublic || option.value !== 'public'
       })
     },
     groupList() {
       return useGroupsStore().items ?? []
-    },
-  },
-  methods: {
-    toggleGroup(id, checked) {
-      const groups = this.groups.filter((group) => group !== id)
-      this.$emit('update:groups', checked ? [...groups, id] : groups)
     },
   },
 }

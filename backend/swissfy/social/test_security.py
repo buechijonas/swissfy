@@ -5,8 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from swissfy.accounts.models import UserProfile, get_or_create_profile
-from swissfy.moderation.models import Reason, Warning
-from swissfy.moderation.sanctions import suspend
+from swissfy.moderation.models import Reason, Suspension, Warning
 from swissfy.notifications.models import Notification
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
@@ -32,11 +31,13 @@ class PrivacyTests(TestCase):
         anna = next(user for user in listed if user["username"] == "anna")
         self.assertNotIn("first_name", anna)
 
+    def finds_someone(self, query):
+        return self.client.get("/api/social/profiles/", {"q": query}).json()["results"] != []
+
     def test_search_does_not_reveal_hidden_names(self):
-        for query in ["Geheim", "geh", "Anna Geh", "nna Gehei"]:
-            with self.subTest(query=query):
-                results = self.client.get("/api/social/profiles/", {"q": query}).json()["results"]
-                self.assertEqual(results, [])
+        queries = ["Geheim", "geh", "Anna Geh", "nna Gehei"]
+        revealing = [query for query in queries if self.finds_someone(query)]
+        self.assertEqual(revealing, [])
 
     def test_birthdate_is_hidden_unless_shared(self):
         profile = get_or_create_profile(self.anna)
@@ -82,7 +83,7 @@ class PrivacyTests(TestCase):
 
     def test_suspended_users_are_hidden(self):
         warning = Warning.objects.create(user=self.anna, reason=Reason.INSULT)
-        suspend(self.anna, warning, 0, timezone.now())
+        Suspension.start(self.anna, warning, 0, timezone.now())
         self.assertEqual(self.client.get("/api/social/profiles/anna/").status_code, 404)
         usernames = [
             u["username"] for u in self.client.get("/api/social/profiles/").json()["results"]

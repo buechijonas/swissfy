@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import AppIcon from '@/components/common/AppIcon.vue'
+import AppIcon from '@core/components/AppIcon.vue'
 
 export default {
   name: 'MessageStatus',

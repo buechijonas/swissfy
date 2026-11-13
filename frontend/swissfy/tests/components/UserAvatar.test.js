@@ -28,11 +28,11 @@ describe('UserAvatar', () => {
   it.each([
     [false, false, []],
     [true, false, ['ring-primary']],
-    [true, true, ['ring-swissfy-muted']],
+    [true, true, ['ring-app-muted']],
     [false, true, []],
   ])('ring=%s seen=%s', (storyRing, storySeen, expected) => {
     const result = classes({ user: {}, storyRing, storySeen })
-    for (const ring of ['ring-primary', 'ring-swissfy-muted']) {
+    for (const ring of ['ring-primary', 'ring-app-muted']) {
       expect(result.includes(ring)).toBe(expected.includes(ring))
     }
   })

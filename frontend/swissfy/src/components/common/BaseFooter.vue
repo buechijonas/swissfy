@@ -2,24 +2,19 @@
   <footer
     class="app-footer sticky bottom-0 mt-auto h-(--footer-height) pb-[env(safe-area-inset-bottom)] w-full shrink-0 border-t border-solid lg:hidden"
     :class="
-      dark
-        ? 'app-footer-dark bg-black border-white/15 text-white'
-        : 'bg-base-100 border-swissfy-border'
+      dark ? 'app-footer-dark bg-black border-white/15 text-white' : 'bg-base-100 border-app-border'
     "
   >
     <nav
-      ref="bar"
+      v-bounds="storeBar"
+      v-pointer-drag="{ grab, move: drag, release, cancel }"
       class="app-footer-bar relative flex h-full items-center justify-evenly"
       :class="{ 'is-dragging': dragging }"
-      @pointerdown="grab"
-      @pointermove="drag"
-      @pointerup="release"
-      @pointercancel="cancel"
       @dragstart.prevent
     >
       <span
         v-if="bubble"
-        ref="bubble"
+        v-wobble="wobbles"
         class="app-bubble"
         :style="{ left: `${bubble.left}px`, width: `${bubble.width}px`, '--stretch': stretch }"
       />
@@ -27,12 +22,12 @@
         :is="isLocked(item) ? 'span' : RouterLink"
         v-for="item in footerItems"
         :key="item.key"
-        ref="links"
+        v-bounds="(box) => storeBox(item.key, box)"
         v-bind="isLocked(item) ? { 'aria-disabled': 'true' } : { to: item.to }"
         class="relative flex h-full items-center px-4 border-y-2 border-t-transparent"
         :class="[
           $route.meta.activeNavigation === item.key ? 'border-b-current' : 'border-b-transparent',
-          { 'cursor-not-allowed text-swissfy-muted': isLocked(item) },
+          { 'cursor-not-allowed text-app-muted': isLocked(item) },
         ]"
       >
         <UserAvatar
@@ -56,112 +51,69 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
-import AppIcon from '@/components/common/AppIcon.vue'
+import filter from 'lodash-es/filter'
+import find from 'lodash-es/find'
+import head from 'lodash-es/head'
+import AppIcon from '@core/components/AppIcon.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import { isListed, isLocked, navigationItems } from '@/data/navigation.js'
+import bounds from '@/directives/bounds.js'
+import pointerDrag from '@/directives/pointerDrag.js'
+import wobble from '@/directives/wobble.js'
 import { avatarSrc } from '@/lib/avatar.js'
-import { wobble } from '@/lib/bubble.js'
-import { design } from '@/lib/preferences.js'
+import bubbleNavigationMixin from '@/mixins/bubbleNavigationMixin.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'BaseFooter',
   components: { RouterLink, AppIcon, UserAvatar },
+  directives: { bounds, pointerDrag, wobble },
+  mixins: [bubbleNavigationMixin],
   props: {
     dark: { type: Boolean, default: false },
   },
   data() {
     return {
       RouterLink,
-      bubble: null,
-      dragging: false,
-      stretch: 1,
-      last: null,
+      bar: null,
     }
   },
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
+    ...mapStores(useAuthStore),
     footerItems() {
-      return navigationItems.filter((item) => item.footer && isListed(item, this.authStore))
+      return filter(navigationItems, (item) => item.footer && isListed(item, this.authStore))
     },
     hasAvatar() {
       return Boolean(avatarSrc(this.authStore.user))
     },
-    activeIndex() {
-      return this.footerItems.findIndex((item) => item.key === this.$route.meta.activeNavigation)
+    activeKey() {
+      return this.$route.meta.activeNavigation
     },
-  },
-  watch: {
-    activeIndex() {
-      this.$nextTick(() => {
-        this.placeBubble()
-        this.wobble()
-      })
+    trackWidth() {
+      return this.bar.width
     },
-  },
-  mounted() {
-    this.placeBubble()
-    window.addEventListener('resize', this.placeBubble)
-  },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.placeBubble)
   },
   methods: {
     isLocked(item) {
       return isLocked(item, this.authStore)
     },
-    linkAt(index) {
-      const link = this.$refs.links?.[index]
-      return link?.$el ?? link
+    storeBar(box) {
+      this.bar = box
     },
-    placeBubble() {
-      const link = this.linkAt(this.activeIndex)
-      this.bubble = link && { left: link.offsetLeft, width: link.offsetWidth }
+    itemOf(key) {
+      return find(this.footerItems, { key })
     },
-    wobble() {
-      wobble(this.$refs.bubble)
+    dragWidth() {
+      return this.boxes[head(this.footerItems).key].width
     },
-    grab(event) {
-      if (design.value !== 'glass') return
-      this.dragging = true
-      this.last = null
-      event.currentTarget.setPointerCapture(event.pointerId)
-      this.drag(event)
+    canSelect(key) {
+      const item = this.itemOf(key)
+      return Boolean(item) && !this.isLocked(item)
     },
-    drag(event) {
-      if (!this.dragging) return
-      const bar = this.$refs.bar.getBoundingClientRect()
-      const width = this.linkAt(0).offsetWidth
-      const left = Math.min(Math.max(event.clientX - bar.left - width / 2, 0), bar.width - width)
-      this.bubble = { left, width }
-      if (this.last) {
-        const speed =
-          Math.abs(event.clientX - this.last.x) / (event.timeStamp - this.last.time || 1)
-        this.stretch = 1 + Math.min(speed * 0.3, 0.45)
-      }
-      this.last = { x: event.clientX, time: event.timeStamp }
-    },
-    cancel() {
-      this.dragging = false
-      this.stretch = 1
-      this.placeBubble()
-    },
-    release(event) {
-      if (!this.dragging) return
-      this.dragging = false
-      this.stretch = 1
-      const index = this.footerItems.findIndex((_, i) => {
-        const { left, right } = this.linkAt(i).getBoundingClientRect()
-        return event.clientX >= left && event.clientX <= right
-      })
-      if (index === -1 || this.isLocked(this.footerItems[index])) return this.placeBubble()
-      const link = this.linkAt(index)
-      this.bubble = { left: link.offsetLeft, width: link.offsetWidth }
-      if (index === this.activeIndex) this.wobble()
-      this.$router.push(this.footerItems[index].to)
+    select(key) {
+      this.$router.push(this.itemOf(key).to)
     },
   },
 }

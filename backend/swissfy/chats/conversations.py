@@ -59,10 +59,6 @@ class Conversation:
         return self.chat_request is None or self.chat_request.is_accepted
 
     @property
-    def show_read(self):
-        return self.user.profile.read_receipts and self.partner.profile.read_receipts
-
-    @property
     def request_state(self):
         return self.chat_request and self.chat_request.state_for(self.user)
 
@@ -110,8 +106,9 @@ class Conversation:
         return reversed(messages.order_by("-id")[:PAGE_SIZE])
 
     def statuses(self):
-        own = self.messages.filter(sender=self.user).order_by("-id")[:PAGE_SIZE]
-        return {message.pk: message.status_for(self.show_read) for message in own}
+        own = self.messages.filter(sender=self.user).with_status(self.user)
+        own = own.order_by("-id")[:PAGE_SIZE]
+        return {message.pk: message.status for message in own}
 
     def send(self, data):
         message = Message(

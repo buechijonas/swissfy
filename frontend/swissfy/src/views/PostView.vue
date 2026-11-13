@@ -7,7 +7,7 @@
     >
       <div class="mx-auto w-full max-w-150 sm:pt-4">
         <BaseCard v-if="error" class="p-6">
-          <p class="text-swissfy-muted">{{ error }}</p>
+          <p class="text-app-muted">{{ error }}</p>
         </BaseCard>
         <div v-else-if="!post" class="skeleton h-96 w-full"></div>
         <template v-else>
@@ -16,6 +16,7 @@
             detail
             edge-to-edge
             :moderation="moderation"
+            @update="post = $event"
             @deleted="$router.push('/')"
           />
           <CommentSection
@@ -38,7 +39,7 @@
 
 <script>
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseCard from '@/components/common/BaseCard.vue'
+import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ModerationPanel from '@/components/moderation/ModerationPanel.vue'
 import CommentSection from '@/components/posts/CommentSection.vue'

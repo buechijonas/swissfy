@@ -9,11 +9,13 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
+import { iconSource } from './assets/icons.js'
 import router from './router'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+app.provide('iconSource', iconSource)
 
 app.mount('#app')

@@ -11,7 +11,16 @@ from swissfy.accounts.roles import Role, set_role
 from swissfy.chats.models import ChatRequest, Message
 from swissfy.moderation.models import Reason, Suspension, Warning
 from swissfy.notifications.models import Notification
-from swissfy.posts.models import Comment, Like, Post, Repost, Story, StoryView
+from swissfy.posts.models import (
+    Album,
+    AlbumEntry,
+    Comment,
+    Like,
+    Post,
+    Repost,
+    Story,
+    StoryView,
+)
 from swissfy.social.models import Follow, FollowRequest
 
 User = get_user_model()
@@ -112,6 +121,22 @@ class QueryScalingTests(TestCase):
             Story.objects.create(author=User.objects.get(username="author1"), image="s.webp")
         large = self.queries("/api/social/profiles/author1/")
         self.assertLessEqual(large - small, 0, f"profile grows from {small} to {large} queries")
+
+    def add_albums(self, owner, count):
+        for _ in range(count):
+            post = Post.objects.create(author=owner, text="Cover", thumbnail="c.webp")
+            album = Album.objects.create(owner=owner, name=f"Album {Album.objects.count()}")
+            album.cover = AlbumEntry.objects.create(album=album, post=post)
+            album.save(update_fields=["cover"])
+
+    def test_albums_with_covers(self):
+        self.add_authors(1)
+        author = User.objects.get(username="author1")
+        self.add_albums(author, 2)
+        small = self.queries("/api/posts/users/author1/albums/")
+        self.add_albums(author, 10)
+        large = self.queries("/api/posts/users/author1/albums/")
+        self.assertEqual(small, large, f"albums grow from {small} to {large} queries")
 
 
 class LargeDataTests(TestCase):
