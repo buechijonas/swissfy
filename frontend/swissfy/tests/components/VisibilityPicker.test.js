@@ -21,6 +21,10 @@ function labels(wrapper) {
   return wrapper.findAll('button').map((button) => button.text())
 }
 
+const MEMBER = { permissions: { moderate: false, administrate: false, post_globally: false } }
+const MODERATOR = { permissions: { moderate: true, administrate: false, post_globally: false } }
+const ADMIN = { permissions: { moderate: true, administrate: true, post_globally: true } }
+
 describe('VisibilityPicker', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -28,21 +32,11 @@ describe('VisibilityPicker', () => {
   })
 
   it.each([
-    ['default', {}, { role: 'default' }, ['Alle', 'Follower', 'Freunde', 'Gruppen']],
-    ['admin', {}, { role: 'admin' }, ['Alle', 'Follower', 'Freunde', 'Gruppen', 'Global']],
-    ['moderator', {}, { role: 'moderator' }, ['Alle', 'Follower', 'Freunde', 'Gruppen']],
-    [
-      'admin story',
-      { allowGlobal: false },
-      { role: 'admin' },
-      ['Alle', 'Follower', 'Freunde', 'Gruppen'],
-    ],
-    [
-      'admin picture',
-      { allowPublic: false },
-      { role: 'admin' },
-      ['Follower', 'Freunde', 'Gruppen'],
-    ],
+    ['default', {}, MEMBER, ['Alle', 'Follower', 'Freunde', 'Gruppen']],
+    ['admin', {}, ADMIN, ['Alle', 'Follower', 'Freunde', 'Gruppen', 'Global']],
+    ['moderator', {}, MODERATOR, ['Alle', 'Follower', 'Freunde', 'Gruppen']],
+    ['admin story', { allowGlobal: false }, ADMIN, ['Alle', 'Follower', 'Freunde', 'Gruppen']],
+    ['admin picture', { allowPublic: false }, ADMIN, ['Follower', 'Freunde', 'Gruppen']],
     ['logged out', {}, null, ['Alle', 'Follower', 'Freunde', 'Gruppen']],
   ])('shows the right options for %s', (_, props, user, expected) => {
     useAuthStore().user = user
@@ -56,7 +50,7 @@ describe('VisibilityPicker', () => {
   })
 
   it('explains global posts', () => {
-    useAuthStore().user = { role: 'admin' }
+    useAuthStore().user = ADMIN
     expect(mountPicker({ visibility: 'global' }).text()).toContain('Erscheint bei allen')
   })
 

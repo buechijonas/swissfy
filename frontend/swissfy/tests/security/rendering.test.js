@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { mount, RouterLinkStub } from '@vue/test-utils'
-import BaseButton from '@/components/common/BaseButton.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import PostText from '@/components/posts/PostText.vue'
 import LoginView from '@/views/auth/LoginView.vue'
-import { extractHashtags, hashtagLink, splitHashtags } from '@/lib/hashtags.js'
+import { extractHashtags, hashtagLink } from '@/lib/hashtags.js'
 
 const PAYLOADS = [
   '<script>alert(1)</script>',
@@ -13,16 +13,24 @@ const PAYLOADS = [
   '{{ constructor.constructor("alert(1)")() }}',
 ]
 
-function mountPostText(text) {
+function mountPostText(...parts) {
   return mount(PostText, {
-    props: { text },
+    props: { parts },
     global: { stubs: { RouterLink: RouterLinkStub } },
   })
 }
 
+function textPart(text) {
+  return { start: 0, text, hashtag: null }
+}
+
 describe('PostText', () => {
   it.each(PAYLOADS)('renders %s as text', (payload) => {
-    const wrapper = mountPostText(`Hallo ${payload} #swiss`)
+    const wrapper = mountPostText(textPart(`Hallo ${payload} `), {
+      start: 7 + payload.length,
+      text: '#swiss',
+      hashtag: 'swiss',
+    })
     expect(wrapper.find('script').exists()).toBe(false)
     expect(wrapper.find('img').exists()).toBe(false)
     expect(wrapper.find('svg').exists()).toBe(false)
@@ -31,12 +39,12 @@ describe('PostText', () => {
   })
 
   it('does not evaluate template syntax in user text', () => {
-    const wrapper = mountPostText('{{ 7 * 7 }}')
+    const wrapper = mountPostText(textPart('{{ 7 * 7 }}'))
     expect(wrapper.text()).toBe('{{ 7 * 7 }}')
   })
 
   it('links hashtags only to the hashtag route', () => {
-    const wrapper = mountPostText('#swiss')
+    const wrapper = mountPostText({ start: 0, text: '#Swiss', hashtag: 'swiss' })
     expect(wrapper.findComponent(RouterLinkStub).props('to')).toBe('/hashtags/swiss')
   })
 })
@@ -53,17 +61,6 @@ describe('hashtags', () => {
       'a',
       'javascript',
     ])
-  })
-
-  it('caps hashtag length', () => {
-    const [part] = splitHashtags(`#${'a'.repeat(60)}`)
-    expect(part.hashtag).toHaveLength(50)
-  })
-
-  it('handles huge input without catastrophic backtracking', () => {
-    const start = performance.now()
-    splitHashtags('#'.repeat(50000) + 'a'.repeat(50000))
-    expect(performance.now() - start).toBeLessThan(1000)
   })
 })
 
