@@ -40,7 +40,7 @@ async function request(url, { method = 'GET', body } = {}) {
     credentials: 'include',
     headers: {
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-      ...(method !== 'GET' ? { 'X-CSRFToken': getCookie('swissfy_csrftoken') } : {}),
+      ...(method !== 'GET' ? { 'X-CSRFToken': getCookie('swissfy_csrf') } : {}),
     },
   }
   if (body !== undefined) options.body = isFormData ? body : JSON.stringify(body)
