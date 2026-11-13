@@ -69,9 +69,13 @@ class ChatTests(TestCase):
             f"/api/chats/{username}/messages/", payload, content_type="application/json"
         )
 
+    def receive(self, username="anna", read=False):
+        url = f"/api/chats/{username}/receive/"
+        return self.client.post(url, {"read": read}, content_type="application/json")
+
     def messages(self, username="anna", read=False):
-        url = f"/api/chats/{username}/messages/" + ("?read=true" if read else "")
-        return self.client.get(url).json()["messages"]
+        self.receive(username, read)
+        return self.client.get(f"/api/chats/{username}/messages/").json()["messages"]
 
     def statuses(self, username="anna"):
         return self.client.get(f"/api/chats/{username}/messages/").json()["statuses"]
@@ -439,7 +443,7 @@ class ChatRequestTests(TestCase):
         self.assertEqual((last["sender"], last["message_key"]), ("anna", MESSAGE_KEY))
         self.assertIsNone(last["status"])
         self.assertTrue(conversations[0]["unread"])
-        self.client.get("/api/chats/anna/messages/?read=true")
+        self.receive("anna")
         self.assertFalse(self.client.get("/api/chats/conversations/").json()[0]["unread"])
 
         self.send("eve")
@@ -447,6 +451,10 @@ class ChatRequestTests(TestCase):
         self.assertEqual([user["username"] for user in conversations], ["eve", "anna"])
         self.assertEqual(conversations[0]["last_message"]["status"], "sent")
         self.assertFalse(conversations[0]["unread"])
+
+    def receive(self, username):
+        url = f"/api/chats/{username}/receive/"
+        return self.client.post(url, {"read": True}, content_type="application/json")
 
     def unread(self):
         return sorted(self.client.post("/api/chats/delivered/").json()["unread"])
@@ -467,7 +475,7 @@ class ChatRequestTests(TestCase):
 
         self.client.force_login(self.jonas)
         self.assertEqual(self.unread(), ["anna", "eve"])
-        self.client.get("/api/chats/anna/messages/?read=true")
+        self.receive("anna")
         self.assertEqual(self.unread(), ["eve"])
 
     def archived(self):

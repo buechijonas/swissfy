@@ -14,7 +14,6 @@ from PIL import Image
 from swissfy.accounts.models import UserProfile, get_or_create_profile
 from swissfy.accounts.roles import Role, set_role
 from swissfy.moderation.models import Reason, Suspension, Warning
-from swissfy.moderation.sanctions import suspend
 from swissfy.social.models import Follow, Friendship
 
 from .models import (
@@ -96,55 +95,65 @@ class PrivateContentTests(SecurityTestCase):
 
     def test_strangers_cannot_reach_private_posts_or_media(self):
         self.as_user(self.eve)
-        for kind, post in self.posts.items():
-            for url in self.private_urls(post):
-                with self.subTest(kind=kind, url=url):
-                    self.assertEqual(self.client.get(url).status_code, 404)
+        reachable = [
+            url
+            for post in self.posts.values()
+            for url in self.private_urls(post)
+            if self.client.get(url).status_code != 404
+        ]
+        self.assertEqual(reachable, [])
+
+    def interactions(self, post):
+        return [
+            ("post", f"/api/posts/{post.uuid}/like/", {}),
+            ("put", f"/api/posts/{post.uuid}/save/", {}),
+            ("post", f"/api/posts/{post.uuid}/comments/", {"text": "hi"}),
+            ("post", f"/api/posts/{post.uuid}/report/", {}),
+            ("delete", f"/api/posts/{post.uuid}/", {}),
+        ]
+
+    def interact(self, method, url, data):
+        return self.client.generic(
+            method.upper(), url, json.dumps(data), content_type="application/json"
+        )
 
     def test_strangers_cannot_interact_with_private_posts(self):
         self.as_user(self.eve)
-        for kind, post in self.posts.items():
-            actions = [
-                ("post", f"/api/posts/{post.uuid}/like/", {}),
-                ("put", f"/api/posts/{post.uuid}/save/", {}),
-                ("post", f"/api/posts/{post.uuid}/comments/", {"text": "hi"}),
-                ("post", f"/api/posts/{post.uuid}/report/", {}),
-                ("delete", f"/api/posts/{post.uuid}/", {}),
-            ]
-            for method, url, data in actions:
-                with self.subTest(kind=kind, url=url, method=method):
-                    response = self.client.generic(
-                        method.upper(), url, json.dumps(data), content_type="application/json"
-                    )
-                    self.assertEqual(response.status_code, 404)
+        allowed = [
+            (method, url)
+            for post in self.posts.values()
+            for method, url, data in self.interactions(post)
+            if self.interact(method, url, data).status_code != 404
+        ]
+        self.assertEqual(allowed, [])
         self.assertEqual(Comment.objects.filter(author=self.eve).count(), 0)
 
     def test_private_posts_do_not_leak_through_lists(self):
         self.as_user(self.eve)
         Follow.objects.create(follower=self.eve, following=self.anna)
         hidden = {str(post.uuid) for post in self.posts.values() if post.visibility != "followers"}
-        for url in [
+        lists = [
             "/api/posts/",
             "/api/posts/users/anna/",
             "/api/posts/reels/",
             "/api/posts/users/anna/activities/",
             "/api/posts/users/anna/activities/?comments=1",
             "/api/posts/saved/",
-        ]:
-            with self.subTest(url=url):
-                content = self.client.get(url).content.decode()
-                for uuid in hidden:
-                    self.assertNotIn(uuid, content)
+        ]
+        leaks = [
+            (url, uuid)
+            for url in lists
+            for uuid in hidden
+            if uuid in self.client.get(url).content.decode()
+        ]
+        self.assertEqual(leaks, [])
 
     def test_private_comments_do_not_leak(self):
         comment = self.secret
         self.as_user(self.eve)
-        for url in [
-            f"/api/comments/{comment.uuid}/",
-            f"/api/comments/{comment.uuid}/replies/",
-        ]:
-            with self.subTest(url=url):
-                self.assertEqual(self.client.get(url).status_code, 404)
+        self.assertEqual(self.client.get(f"/api/comments/{comment.uuid}/").status_code, 404)
+        replies = self.client.get(f"/api/comments/{comment.uuid}/replies/")
+        self.assertEqual(replies.status_code, 404)
         response = self.client.put(
             f"/api/comments/{comment.uuid}/vote/", {"value": 1}, content_type="application/json"
         )
@@ -189,13 +198,13 @@ class PrivateContentTests(SecurityTestCase):
     def test_media_is_never_served_from_a_public_path(self):
         image = PostImage.objects.first()
         self.client.logout()
-        for url in [
+        paths = [
             f"/media/{image.file.name}",
             f"/{image.file.name}",
             f"/api/posts/{self.posts['friends'].uuid}/images/0/",
-        ]:
-            with self.subTest(url=url):
-                self.assertIn(self.client.get(url).status_code, (403, 404))
+        ]
+        served = [path for path in paths if self.client.get(path).status_code not in (403, 404)]
+        self.assertEqual(served, [])
 
 
 class OwnershipTests(SecurityTestCase):
@@ -255,15 +264,17 @@ class OwnershipTests(SecurityTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def vote(self, value):
+        return self.client.put(
+            f"/api/comments/{self.comment.uuid}/vote/",
+            {"value": value},
+            content_type="application/json",
+        )
+
     def test_cannot_vote_on_own_comment_or_with_odd_values(self):
-        for value in [2, -2, 100, "1", 1.5, None, [1], {"$gt": 0}]:
-            with self.subTest(value=value):
-                response = self.client.put(
-                    f"/api/comments/{self.comment.uuid}/vote/",
-                    {"value": value},
-                    content_type="application/json",
-                )
-                self.assertEqual(response.status_code, 400)
+        odd_values = [2, -2, 100, "1", 1.5, None, [1], {"$gt": 0}]
+        accepted = [value for value in odd_values if self.vote(value).status_code != 400]
+        self.assertEqual(accepted, [])
         self.client.force_login(self.anna)
         response = self.client.put(
             f"/api/comments/{self.comment.uuid}/vote/",
@@ -327,10 +338,14 @@ class MassAssignmentTests(SecurityTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_visibility_must_be_a_known_value(self):
-        for visibility in ["everyone", "admin", "' OR 1=1", "PUBLIC", " public"]:
-            with self.subTest(visibility=visibility):
-                response = self.client.post("/api/posts/", {"text": "x", "visibility": visibility})
-                self.assertEqual(response.status_code, 400)
+        unknown = ["everyone", "admin", "' OR 1=1", "PUBLIC", " public"]
+        accepted = [
+            visibility
+            for visibility in unknown
+            if self.client.post("/api/posts/", {"text": "x", "visibility": visibility}).status_code
+            != 400
+        ]
+        self.assertEqual(accepted, [])
 
     def test_hashtags_per_post_are_capped(self):
         text = " ".join(f"#tag{i}" for i in range(100))
@@ -342,20 +357,23 @@ class ImageUploadTests(SecurityTestCase):
     def upload(self, *files):
         return self.client.post("/api/posts/", {"text": "x", "images": list(files)})
 
+    def upload_format(self, format, content_type="image/png"):
+        return self.upload(file_upload(f"x.{format.lower()}", image_bytes(format), content_type))
+
     def test_rejects_formats_outside_the_allowlist(self):
-        for format in ["TIFF", "BMP", "ICO", "PPM", "TGA", "PCX", "SGI", "IM"]:
-            with self.subTest(format=format):
-                response = self.upload(
-                    file_upload(f"x.{format.lower()}", image_bytes(format), "image/png")
-                )
-                self.assertEqual(response.status_code, 400)
+        exotic = ["TIFF", "BMP", "ICO", "PPM", "TGA", "PCX", "SGI", "IM"]
+        accepted = [format for format in exotic if self.upload_format(format).status_code != 400]
+        self.assertEqual(accepted, [])
         self.assertFalse(Post.objects.exists())
 
     def test_accepts_common_formats(self):
-        for format in ["JPEG", "PNG", "WEBP", "GIF"]:
-            with self.subTest(format=format):
-                response = self.upload(file_upload("x", image_bytes(format)))
-                self.assertEqual(response.status_code, 201, response.content)
+        common = ["JPEG", "PNG", "WEBP", "GIF"]
+        rejected = [
+            format
+            for format in common
+            if self.upload(file_upload("x", image_bytes(format))).status_code != 201
+        ]
+        self.assertEqual(rejected, [])
 
     def test_rejects_svg_with_script(self):
         svg = b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
@@ -363,17 +381,19 @@ class ImageUploadTests(SecurityTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_rejects_html_and_scripts_disguised_as_images(self):
-        for name, data in [
+        disguised = [
             ("x.jpg", b"<html><script>alert(1)</script></html>"),
             ("x.png", b"#!/bin/sh\nrm -rf /"),
             ("x.gif", b"GIF89a<script>alert(1)</script>"),
             ("x.jpg", b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 1 1\n"),
             ("x.jpg", b""),
-        ]:
-            with self.subTest(name=name, data=data[:20]):
-                self.assertEqual(
-                    self.upload(file_upload(name, data, "image/jpeg")).status_code, 400
-                )
+        ]
+        accepted = [
+            (name, data[:20])
+            for name, data in disguised
+            if self.upload(file_upload(name, data, "image/jpeg")).status_code != 400
+        ]
+        self.assertEqual(accepted, [])
 
     def test_polyglot_payload_is_stripped_by_reencoding(self):
         payload = b"<script>alert(document.cookie)</script>"
@@ -396,15 +416,22 @@ class ImageUploadTests(SecurityTestCase):
         response = self.upload(file_upload("bomb.png", data.getvalue(), "image/png"))
         self.assertEqual(response.status_code, 400)
 
-    def test_upload_names_cannot_traverse_paths(self):
-        for name in ["../../../../app/main/settings.py", "/etc/passwd", "..\\..\\x.jpg"]:
-            with self.subTest(name=name):
-                upload = file_upload(name, image_bytes("JPEG"), "image/jpeg")
-                post = Post.objects.get(uuid=self.upload(upload).json()["id"])
-                stored = post.images.first().file.name
-                self.assertNotIn("..", stored)
-                self.assertTrue(stored.endswith(".webp"))
-                self.assertTrue(Path(post.images.first().file.path).is_relative_to(MEDIA))
+    def assert_upload_stays_in_media(self, name):
+        upload = file_upload(name, image_bytes("JPEG"), "image/jpeg")
+        post = Post.objects.get(uuid=self.upload(upload).json()["id"])
+        stored = post.images.first().file
+        self.assertNotIn("..", stored.name)
+        self.assertTrue(stored.name.endswith(".webp"))
+        self.assertTrue(Path(stored.path).is_relative_to(MEDIA))
+
+    def test_relative_upload_names_cannot_traverse_paths(self):
+        self.assert_upload_stays_in_media("../../../../app/main/settings.py")
+
+    def test_absolute_upload_names_cannot_escape_media(self):
+        self.assert_upload_stays_in_media("/etc/passwd")
+
+    def test_windows_upload_names_cannot_traverse_paths(self):
+        self.assert_upload_stays_in_media("..\\..\\x.jpg")
 
     def test_rejects_too_many_images(self):
         files = [file_upload(f"{i}.jpg", image_bytes("JPEG"), "image/jpeg") for i in range(11)]
@@ -439,35 +466,42 @@ class VideoUploadTests(SecurityTestCase):
         self.assertEqual(response.status_code, 400, response.content)
         self.assertFalse(Post.objects.filter(video_status__in=["processing", "ready"]).exists())
 
-    def test_rejects_hls_playlists_pointing_at_local_files(self):
-        for target in [f"file://{self.segment}", str(self.segment)]:
-            with self.subTest(target=target):
-                self.assert_rejected(self.upload("evil.m3u8", self.playlist(target)))
+    def accepts_playlist(self, target):
+        return self.upload("evil.m3u8", self.playlist(target)).status_code != 400
+
+    def test_rejects_hls_playlists_pointing_at_file_urls(self):
+        self.assert_rejected(self.upload("evil.m3u8", self.playlist(f"file://{self.segment}")))
+
+    def test_rejects_hls_playlists_pointing_at_local_paths(self):
+        self.assert_rejected(self.upload("evil.m3u8", self.playlist(str(self.segment))))
 
     def test_rejects_hls_playlists_pointing_at_internal_hosts(self):
-        for target in [
+        internal = [
             "http://db:5432/x.ts",
             "http://169.254.169.254/latest/meta-data.ts",
             "http://localhost:8000/api/health/x.ts",
             "gopher://localhost:6379/x.ts",
-        ]:
-            with self.subTest(target=target):
-                self.assert_rejected(self.upload("evil.m3u8", self.playlist(target)))
+        ]
+        accepted = [target for target in internal if self.accepts_playlist(target)]
+        self.assertEqual(accepted, [])
+        self.assertFalse(Post.objects.filter(video_status__in=["processing", "ready"]).exists())
 
     def test_rejects_concat_scripts(self):
         script = f"ffconcat version 1.0\n{PADDING}file '{self.segment}'\n".encode()
         self.assert_rejected(self.upload("evil.ffconcat", script))
         self.assert_rejected(self.upload("evil.mp4", script))
 
-    def test_rejects_non_video_files(self):
-        for name, data in [
-            ("x.mp4", b"not a video"),
-            ("x.mp4", image_bytes("PNG")),
-            ("x.mp4", b"<script>alert(1)</script>"),
-            ("x.mp4", b"\x00" * 1024),
-        ]:
-            with self.subTest(name=name):
-                self.assert_rejected(self.upload(name, data))
+    def test_rejects_text_as_video(self):
+        self.assert_rejected(self.upload("x.mp4", b"not a video"))
+
+    def test_rejects_image_as_video(self):
+        self.assert_rejected(self.upload("x.mp4", image_bytes("PNG")))
+
+    def test_rejects_script_as_video(self):
+        self.assert_rejected(self.upload("x.mp4", b"<script>alert(1)</script>"))
+
+    def test_rejects_null_bytes_as_video(self):
+        self.assert_rejected(self.upload("x.mp4", b"\x00" * 1024))
 
     def test_accepts_real_videos(self):
         response = self.client.post("/api/posts/", {"text": "x", "video": video_upload(1)})
@@ -493,7 +527,7 @@ class VideoRangeTests(SecurityTestCase):
         return b"".join(response.streaming_content)
 
     def test_malformed_ranges_never_crash(self):
-        for header in [
+        malformed = [
             "bytes=abc",
             "bytes=-",
             "bytes=--1",
@@ -504,9 +538,9 @@ class VideoRangeTests(SecurityTestCase):
             "bytes=-99999999999999999999999",
             "bytes=\x00",
             "bytes= 1-2",
-        ]:
-            with self.subTest(header=header):
-                self.assertLess(self.get(header).status_code, 500)
+        ]
+        crashing = [header for header in malformed if self.get(header).status_code >= 500]
+        self.assertEqual(crashing, [])
 
     def test_ranges_stay_inside_the_file(self):
         self.assertEqual(self.body(self.get("bytes=2-4")), b"234")
@@ -548,23 +582,29 @@ class StorySecurityTests(SecurityTestCase):
         self.assertGreater(story.created_at.year, 2000)
         self.assertNotEqual(str(story.uuid), "00000000-0000-0000-0000-000000000000")
 
-    def test_invalid_stories_are_rejected(self):
-        cases = {
-            "no image": {"text": "Hallo"},
-            "html image": {
-                "image": file_upload("x.png", b"<script>alert(1)</script>", "image/png")
-            },
-            "svg image": {
-                "image": file_upload("x.svg", b"<svg onload=alert(1)/>", "image/svg+xml"),
-            },
-            "too long text": {"image": image_upload(), "text": "x" * 201},
-            "unknown visibility": {"image": image_upload(), "visibility": "everyone"},
-            "groups without group": {"image": image_upload(), "visibility": "groups"},
-        }
-        for name, data in cases.items():
-            with self.subTest(name):
-                self.assertEqual(self.client.post("/api/stories/", data).status_code, 400)
+    def assert_story_rejected(self, data):
+        self.assertEqual(self.client.post("/api/stories/", data).status_code, 400)
         self.assertFalse(Story.objects.exists())
+
+    def test_story_without_image_is_rejected(self):
+        self.assert_story_rejected({"text": "Hallo"})
+
+    def test_story_with_html_image_is_rejected(self):
+        upload = file_upload("x.png", b"<script>alert(1)</script>", "image/png")
+        self.assert_story_rejected({"image": upload})
+
+    def test_story_with_svg_image_is_rejected(self):
+        upload = file_upload("x.svg", b"<svg onload=alert(1)/>", "image/svg+xml")
+        self.assert_story_rejected({"image": upload})
+
+    def test_story_text_length_is_limited(self):
+        self.assert_story_rejected({"image": image_upload(), "text": "x" * 201})
+
+    def test_story_visibility_must_be_known(self):
+        self.assert_story_rejected({"image": image_upload(), "visibility": "everyone"})
+
+    def test_story_for_groups_needs_a_group(self):
+        self.assert_story_rejected({"image": image_upload(), "visibility": "groups"})
 
     def test_cannot_share_story_with_foreign_groups(self):
         foreign = ContactGroup.objects.create(owner=self.eve, name="Fremd")
@@ -577,17 +617,21 @@ class StorySecurityTests(SecurityTestCase):
     def test_strangers_cannot_reach_private_stories(self):
         story = self.create_story(visibility="friends")
         self.as_user(self.eve)
-        for method, path in [
+        actions = [
             ("get", "image/"),
             ("post", "view/"),
             ("post", "like/"),
             ("delete", "like/"),
             ("get", "viewers/"),
             ("delete", ""),
-        ]:
-            with self.subTest(method=method, path=path):
-                response = self.client.generic(method.upper(), f"/api/stories/{story.uuid}/{path}")
-                self.assertEqual(response.status_code, 404)
+        ]
+        reachable = [
+            (method, path)
+            for method, path in actions
+            if self.client.generic(method.upper(), f"/api/stories/{story.uuid}/{path}").status_code
+            != 404
+        ]
+        self.assertEqual(reachable, [])
         self.assertFalse(StoryView.objects.exists())
         self.assertFalse(StoryLike.objects.exists())
 
@@ -604,7 +648,7 @@ class StorySecurityTests(SecurityTestCase):
         story = self.create_story()
         self.as_user(self.jonas)
         warning = Warning.objects.create(user=self.anna, reason=Reason.INSULT)
-        suspend(self.anna, warning, 0, timezone.now())
+        Suspension.start(self.anna, warning, 0, timezone.now())
         self.assertEqual(self.client.get(f"/api/stories/{story.uuid}/image/").status_code, 404)
 
         Suspension.objects.all().delete()
@@ -614,14 +658,19 @@ class StorySecurityTests(SecurityTestCase):
 
 
 class RepostSecurityTests(SecurityTestCase):
-    def test_cannot_repost_posts_out_of_reach(self):
-        hidden = Post.objects.create(author=self.eve, text="geheim", visibility="friends")
-        blocked = Post.objects.create(author=self.eve, text="gesperrt", hidden_at=timezone.now())
-        for post in (hidden, blocked):
-            with self.subTest(post=post.text):
-                response = self.client.post(f"/api/posts/{post.uuid}/repost/")
-                self.assertEqual(response.status_code, 404)
+    def assert_cannot_repost(self, post):
+        self.assertEqual(self.client.post(f"/api/posts/{post.uuid}/repost/").status_code, 404)
         self.assertFalse(Repost.objects.exists())
+
+    def test_cannot_repost_posts_outside_the_audience(self):
+        self.assert_cannot_repost(
+            Post.objects.create(author=self.eve, text="geheim", visibility="friends")
+        )
+
+    def test_cannot_repost_blocked_posts(self):
+        self.assert_cannot_repost(
+            Post.objects.create(author=self.eve, text="gesperrt", hidden_at=timezone.now())
+        )
 
     def test_reposting_twice_keeps_one_repost(self):
         post = Post.objects.create(author=self.eve, text="Hallo")
@@ -641,8 +690,10 @@ class GlobalVisibilityTests(SecurityTestCase):
         response = self.client.post("/api/posts/", {"text": "an alle", "visibility": "global"})
         self.assertEqual(response.status_code, 400)
         post = self.create_post()
-        response = self.client.patch(
-            f"/api/posts/{post.uuid}/", {"visibility": "global"}, content_type="application/json"
+        response = self.client.put(
+            f"/api/posts/{post.uuid}/audience/",
+            {"visibility": "global"},
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         post.refresh_from_db()

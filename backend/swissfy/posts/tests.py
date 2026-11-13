@@ -3,6 +3,7 @@ import json
 import shutil
 import subprocess
 import tempfile
+import time
 from datetime import timedelta
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from swissfy.accounts.models import get_or_create_profile
 from swissfy.accounts.roles import Role, set_role
 from swissfy.social.models import Follow, Friendship
 
+from . import hashtags
 from .models import (
     Album,
     Comment,
@@ -174,14 +176,16 @@ class PostTests(TestCase):
         group.members.add(self.jonas)
 
         self.as_user(self.jonas)
-        response = self.client.patch(
-            f"/api/posts/{post}/", {"visibility": "friends"}, content_type="application/json"
+        response = self.client.put(
+            f"/api/posts/{post}/audience/",
+            {"visibility": "friends"},
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
         self.as_user(self.anna)
-        response = self.client.patch(
-            f"/api/posts/{post}/",
+        response = self.client.put(
+            f"/api/posts/{post}/audience/",
             {"visibility": "groups", "groups": [group.pk]},
             content_type="application/json",
         )
@@ -193,8 +197,10 @@ class PostTests(TestCase):
         self.assertEqual(self.visible_ids(), [])
 
         self.as_user(self.anna)
-        response = self.client.patch(
-            f"/api/posts/{post}/", {"visibility": "public"}, content_type="application/json"
+        response = self.client.put(
+            f"/api/posts/{post}/audience/",
+            {"visibility": "public"},
+            content_type="application/json",
         )
         self.assertEqual(response.json()["groups"], [])
         self.as_user(self.eve)
@@ -208,8 +214,8 @@ class PostTests(TestCase):
             {"visibility": "groups", "groups": [foreign.pk]},
             {},
         ):
-            response = self.client.patch(
-                f"/api/posts/{post}/", data, content_type="application/json"
+            response = self.client.put(
+                f"/api/posts/{post}/audience/", data, content_type="application/json"
             )
             self.assertEqual(response.status_code, 400)
 
@@ -241,8 +247,8 @@ class PostTests(TestCase):
 
         own = self.post().json()["id"]
         set_role(self.anna, Role.DEFAULT)
-        response = self.client.patch(
-            f"/api/posts/{own}/", {"visibility": "global"}, content_type="application/json"
+        response = self.client.put(
+            f"/api/posts/{own}/audience/", {"visibility": "global"}, content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
 
@@ -285,7 +291,8 @@ class PostTests(TestCase):
 
         self.as_user(self.anna)
         response = self.client.post(f"/api/posts/{post.uuid}/repost/")
-        self.assertEqual(response.json(), {"reposted": True, "reposter": None})
+        data = response.json()
+        self.assertEqual((data["reposted"], data["reposter"]), (True, None))
 
         self.as_user(self.jonas)
         feed = self.client.get("/api/posts/").json()["results"]
@@ -353,7 +360,8 @@ class PostTests(TestCase):
         self.as_user(self.jonas)
         self.client.post(f"/api/posts/{post}/like/")
         response = self.client.post(f"/api/posts/{post}/like/")
-        self.assertEqual(response.json(), {"liked": True, "like_count": "1"})
+        data = response.json()
+        self.assertEqual((data["liked"], data["like_count"]), (True, "1"))
         data = self.client.get(f"/api/posts/{post}/").json()
         self.assertEqual((data["like_count"], data["liked"]), ("1", True))
         self.client.delete(f"/api/posts/{post}/like/")
@@ -381,6 +389,10 @@ class PostTests(TestCase):
             f"/api/comments/{comment}/vote/", {"value": value}, content_type="application/json"
         )
 
+    def vote_state(self, comment, value):
+        data = self.vote(comment, value).json()
+        return data["score"], data["my_vote"]
+
     def test_comment_votes(self):
         post = self.post().json()["id"]
         comment = self.client.post(f"/api/posts/{post}/comments/", {"text": "Hallo"}).json()
@@ -388,12 +400,12 @@ class PostTests(TestCase):
         self.assertEqual(self.vote(comment["id"], 1).status_code, 403)
 
         self.as_user(self.jonas)
-        self.assertEqual(self.vote(comment["id"], 1).json(), {"score": "1", "my_vote": 1})
-        self.assertEqual(self.vote(comment["id"], -1).json(), {"score": "-1", "my_vote": -1})
+        self.assertEqual(self.vote_state(comment["id"], 1), ("1", 1))
+        self.assertEqual(self.vote_state(comment["id"], -1), ("-1", -1))
         self.assertEqual(self.vote(comment["id"], 2).status_code, 400)
         self.as_user(self.eve)
-        self.assertEqual(self.vote(comment["id"], -1).json(), {"score": "-2", "my_vote": -1})
-        self.assertEqual(self.vote(comment["id"], 0).json(), {"score": "-1", "my_vote": 0})
+        self.assertEqual(self.vote_state(comment["id"], -1), ("-2", -1))
+        self.assertEqual(self.vote_state(comment["id"], 0), ("-1", 0))
 
         data = self.client.get(f"/api/posts/{post}/comments/").json()["results"][0]
         self.assertEqual((data["score"], data["my_vote"], data["can_vote"]), ("-1", 0, True))
@@ -656,6 +668,31 @@ class HashtagTests(TestCase):
         self.post("Ferien in #Zürich und #zürich, #Berg-Tour ##double")
         post = Post.objects.get()
         self.assertEqual(sorted(post.hashtags.values_list("name", flat=True)), ["berg", "zürich"])
+
+    def test_post_text_is_split_into_hashtag_parts(self):
+        post = self.post("Ferien in #Zürich!")
+        parts = self.client.get(f"/api/posts/{post}/").json()["text_parts"]
+        self.assertEqual(
+            parts,
+            [
+                {"start": 0, "text": "Ferien in ", "hashtag": None},
+                {"start": 10, "text": "#Zürich", "hashtag": "zürich"},
+                {"start": 17, "text": "!", "hashtag": None},
+            ],
+        )
+
+    def test_hashtag_parts_are_capped_in_length(self):
+        first, rest = hashtags.split(f"#{'a' * 60}")
+        self.assertEqual((len(first["hashtag"]), rest["text"]), (50, "a" * 10))
+
+    def test_hashtag_parts_ignore_markup(self):
+        parts = hashtags.split("#ok<script>")
+        self.assertEqual([part["hashtag"] for part in parts], ["ok", None])
+
+    def test_huge_text_is_split_without_catastrophic_backtracking(self):
+        start = time.perf_counter()
+        hashtags.split("#" * 50000 + "a" * 50000)
+        self.assertLess(time.perf_counter() - start, 1)
 
     def test_search_finds_hashtags_with_visible_posts(self):
         self.post("#zürich")
@@ -969,6 +1006,15 @@ class AlbumTests(TestCase):
         self.send("patch", url, {"cover": first["id"]})
         self.client.delete(f"/api/album-entries/{first['id']}/")
         self.assertIsNone(self.detail(album)["cover"])
+
+    def test_cover_entry_names_the_chosen_entry(self):
+        album = self.album()
+        entry = self.add(album, {"post": self.feed()}).json()["entries"][0]
+        url = f"/api/albums/{album['id']}/"
+        self.assertEqual(
+            self.send("patch", url, {"cover": entry["id"]}).json()["cover_entry"], entry["id"]
+        )
+        self.assertIsNone(self.send("patch", url, {"cover": None}).json()["cover_entry"])
 
     def test_cover_must_belong_to_the_album(self):
         album, other = self.album(), self.album("Familie")

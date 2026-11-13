@@ -18,6 +18,7 @@ from django.utils import timezone
 from .consent import attested_status, sign, status_of
 from .models import DeviceToken, UserConsent, UserProfile
 from .oidc import create_user
+from .roles import Role, set_role
 
 User = get_user_model()
 
@@ -301,3 +302,29 @@ class ProfileInvariantTests(TestCase):
     def test_govex_login_creates_a_user_with_profile(self):
         user = create_user("s1", "anna", "anna@example.com")
         self.assertTrue(UserProfile.objects.filter(user=user, govex_sub="s1").exists())
+
+
+class PermissionTests(TestCase):
+    def permissions_of(self, role):
+        user = User.objects.create(username="anna")
+        set_role(user, role)
+        self.client.force_login(user)
+        return self.client.get("/api/auth/me/").json()["user"]["permissions"]
+
+    def test_default_users_have_no_special_permissions(self):
+        self.assertEqual(
+            self.permissions_of(Role.DEFAULT),
+            {"moderate": False, "administrate": False, "post_globally": False},
+        )
+
+    def test_moderators_may_moderate(self):
+        self.assertEqual(
+            self.permissions_of(Role.MODERATOR),
+            {"moderate": True, "administrate": False, "post_globally": False},
+        )
+
+    def test_admins_may_do_everything(self):
+        self.assertEqual(
+            self.permissions_of(Role.ADMIN),
+            {"moderate": True, "administrate": True, "post_globally": True},
+        )

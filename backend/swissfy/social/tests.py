@@ -54,6 +54,7 @@ class ProfileTests(TestCase):
             data["results"][0],
             {
                 "username": "anna",
+                "display_name": "anna",
                 "first_name": "",
                 "last_name": "",
                 "avatar": "",
@@ -652,11 +653,14 @@ class AboutTests(TestCase):
         with mock.patch("swissfy.social.library.fetch", return_value={"621": app}):
             self.assertEqual(self.patch({"favorite_games": ["621"]}).status_code, 400)
 
+    def serves_cover(self, path):
+        response = self.client.get(f"/api/social/covers/{path}")
+        return library.cover_urls(path) != [] or response.status_code != 404
+
     def test_cover_only_from_known_sources(self):
-        for path in ["imdb/../x", "evil/x", "imdb/a.jpg", "imdb/a/b", "steam/abc", "steam/1/x"]:
-            with self.subTest(path=path):
-                self.assertEqual(library.cover_urls(path), [])
-                self.assertEqual(self.client.get(f"/api/social/covers/{path}").status_code, 404)
+        unknown = ["imdb/../x", "evil/x", "imdb/a.jpg", "imdb/a/b", "steam/abc", "steam/1/x"]
+        served = [path for path in unknown if self.serves_cover(path)]
+        self.assertEqual(served, [])
 
     def test_steam_cover_falls_back_to_header(self):
         missing = mock.Mock(raise_for_status=mock.Mock(side_effect=library.requests.HTTPError))

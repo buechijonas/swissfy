@@ -29,6 +29,12 @@ def sees_private(audience, relation):
     )
 
 
+def expected_access(audience, relation):
+    if sees_private(audience, relation):
+        return "private", True
+    return "public", False
+
+
 @override_settings(MEDIA_ROOT=MEDIA)
 class PictureMatrixTests(TestCase):
     @classmethod
@@ -60,27 +66,30 @@ class PictureMatrixTests(TestCase):
             set_role(user, Role.ADMIN)
         return user
 
+    def shown_picture(self, relation):
+        self.client.force_login(self.viewer(relation))
+        picture = self.client.get("/api/social/profiles/owner/").json()["picture"] or ""
+        private = self.client.get("/api/social/profiles/owner/pictures/private/")
+        User.objects.exclude(pk=self.owner.pk).delete()
+        kind = "private" if "/private/" in picture else "public" if "/public/" in picture else None
+        return kind, private.status_code != 404
+
+    def private_picture_access(self, audience, relation):
+        self.profile.private_picture = self.private_name
+        self.profile.private_picture_visibility = audience
+        self.profile.save()
+        self.profile.private_picture_groups.set([self.group])
+        return self.shown_picture(relation)
+
     def test_every_combination(self):
-        for audience, relation in product(AUDIENCES, RELATIONS):
-            with self.subTest(audience=audience, relation=relation):
-                self.profile.private_picture = self.private_name
-                self.profile.private_picture_visibility = audience
-                self.profile.save()
-                self.profile.private_picture_groups.set([self.group])
-
-                self.client.force_login(self.viewer(relation))
-                picture = self.client.get("/api/social/profiles/owner/").json()["picture"]
-                private = self.client.get("/api/social/profiles/owner/pictures/private/")
-
-                expected = sees_private(audience, relation)
-                self.assertIn("/private/" if expected else "/public/", picture)
-                self.assertEqual(private.status_code != 404, expected)
-                User.objects.exclude(pk=self.owner.pk).delete()
+        wrong = [
+            (audience, relation)
+            for audience, relation in product(AUDIENCES, RELATIONS)
+            if self.private_picture_access(audience, relation)
+            != expected_access(audience, relation)
+        ]
+        self.assertEqual(wrong, [])
 
     def test_without_private_picture_everyone_sees_the_public_one(self):
-        for relation in RELATIONS:
-            with self.subTest(relation=relation):
-                self.client.force_login(self.viewer(relation))
-                picture = self.client.get("/api/social/profiles/owner/").json()["picture"]
-                self.assertIn("/public/", picture)
-                User.objects.exclude(pk=self.owner.pk).delete()
+        wrong = [relation for relation in RELATIONS if self.shown_picture(relation)[0] != "public"]
+        self.assertEqual(wrong, [])
