@@ -6,9 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from commons.views import BaseViewSet, CreateModelMixin
-from main.numbers import compact_number
 from swissfy.notifications.models import Notification
-from swissfy.notifications.notify import notify
 
 from ..models import Comment, CommentVote, Post
 from ..permissions import IsAuthor, IsNotSuspended
@@ -17,7 +15,7 @@ from .pagination import OldestFirst
 
 
 def notify_comment(comment):
-    notify(
+    Notification.notify(
         comment.post.author,
         Notification.Kind.COMMENT,
         actor=comment.author,
@@ -29,7 +27,7 @@ def notify_comment(comment):
 def post_summary(post, visible, context):
     if post.pk in visible:
         return PostModelSerializer.summary(visible[post.pk], context=context).data
-    return post.unavailable
+    return PostModelSerializer.unavailable(post).data
 
 
 class PostCommentListViewSet(BaseViewSet, mixins.ListModelMixin):
@@ -114,7 +112,7 @@ class CommentDetailViewSet(BaseViewSet, mixins.RetrieveModelMixin):
                     (
                         self.get_serializer(visible[pk]).data
                         if pk in visible
-                        else ancestors[pk].unavailable
+                        else CommentModelSerializer.unavailable(ancestors[pk]).data
                     )
                     for pk in ids
                 ],
@@ -146,7 +144,7 @@ class CommentViewSet(CommentDetailViewSet, mixins.DestroyModelMixin):
     @action(detail=True, methods=["put"])
     def vote(self, request, uuid):
         comment = self.get_object()
-        if comment.author_id == request.user.pk:
+        if not comment.can_vote:
             raise PermissionDenied("Du kannst nicht über eigene Kommentare abstimmen.")
         serializer = CommentModelSerializer.vote(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -157,5 +155,4 @@ class CommentViewSet(CommentDetailViewSet, mixins.DestroyModelMixin):
             votes.update_or_create(user=request.user, comment=comment, defaults={"value": value})
         else:
             votes.delete()
-        comment = self.get_queryset().get(pk=comment.pk)
-        return Response({"score": compact_number(comment.score), "my_vote": comment.my_vote})
+        return self.respond(comment)

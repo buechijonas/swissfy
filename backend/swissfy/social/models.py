@@ -1,14 +1,28 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, Value, When
+from django.db.models import (
+    Case,
+    CharField,
+    Exists,
+    F,
+    IntegerField,
+    Max,
+    OuterRef,
+    Q,
+    Subquery,
+    Value,
+    When,
+)
+from django.utils import timezone
 
 from commons.models import BaseModel, BaseQuerySet, boolean, count_of
 from swissfy.accounts.models import UserProfile
 from swissfy.accounts.roles import NAME_ORDERING, is_admin, is_moderator, with_role_rank
-from swissfy.moderation.models import Suspension
+from swissfy.moderation.models import LOCKED_FOREVER, WARNING_EXPIRY, Suspension, Warning
 
 Visibility = UserProfile.Visibility
+PictureAudience = UserProfile.PictureAudience
 MIN_QUERY_LENGTH = 2
 
 
@@ -146,6 +160,30 @@ def viewable_by_relations():
     )
 
 
+def private_picture_shared():
+    return (
+        Q(profile__private_picture_visibility=PictureAudience.FOLLOWERS, viewer_follows=True)
+        | Q(profile__private_picture_visibility=PictureAudience.FRIENDS, viewer_is_friend=True)
+        | Q(
+            profile__private_picture_visibility=PictureAudience.GROUPS, viewer_in_picture_group=True
+        )
+    )
+
+
+def shown_picture(private_visible):
+    return Case(
+        When(private_visible & ~Q(profile__private_picture=""), then=Value("private")),
+        When(~Q(profile__public_picture=""), then=Value("public")),
+        default=Value(None),
+        output_field=CharField(),
+    )
+
+
+def latest(queryset, field):
+    values = queryset.order_by().values("user").annotate(latest=Max(field)).values("latest")
+    return Subquery(values[:1])
+
+
 class MemberQuerySet(BaseQuerySet):
     def apply_acl(self, user, action="read"):
         members = self.filter(is_active=True)
@@ -169,14 +207,32 @@ class MemberQuerySet(BaseQuerySet):
         return self.filter(pk__in=connections[kind])
 
     def annotate_visibility(self, viewer):
+        if viewer.is_anonymous:
+            return self.annotate(
+                viewer_follows=Value(False),
+                viewer_is_friend=Value(False),
+                viewer_can_view=boolean(Q(profile__profile_visibility=Visibility.PUBLIC)),
+                viewer_sees_private_picture=Value(False),
+                shown_picture=Value(None, output_field=CharField()),
+            )
         member = OuterRef("pk")
         members = self.annotate(
             viewer_follows=Exists(Follow.objects.filter(follower=viewer, following=member)),
             viewer_is_friend=Exists(Friendship.objects.filter(user=viewer, friend=member)),
+            viewer_in_picture_group=Exists(
+                UserProfile.objects.filter(user=member, private_picture_groups__members=viewer)
+            ),
         )
         if is_admin(viewer):
-            return members.annotate(viewer_can_view=Value(True))
-        return members.annotate(viewer_can_view=boolean(viewable_by_relations() | Q(pk=viewer.pk)))
+            members = members.annotate(
+                viewer_can_view=Value(True), viewer_sees_private_picture=Value(True)
+            )
+        else:
+            members = members.annotate(
+                viewer_can_view=boolean(viewable_by_relations() | Q(pk=viewer.pk)),
+                viewer_sees_private_picture=boolean(private_picture_shared() | Q(pk=viewer.pk)),
+            )
+        return members.annotate(shown_picture=shown_picture(Q(viewer_sees_private_picture=True)))
 
     def with_viewer_relations(self, viewer):
         return self.select_related("profile").prefetch_related("groups").annotate_visibility(viewer)
@@ -242,6 +298,17 @@ class MemberQuerySet(BaseQuerySet):
             full_name |= Q(first_name__iexact=last, last_name__iexact=first)
         return Member.objects.filter(full_name).values("pk")
 
+    def with_role_lock(self, now=None):
+        now = now or timezone.now()
+        suspensions = Suspension.objects.filter(user=OuterRef("pk"))
+        warnings = Warning.objects.filter(user=OuterRef("pk")).active(now)
+        return self.annotate(
+            has_suspension=Exists(suspensions),
+            locked_forever=Exists(suspensions.filter(ends_at__isnull=True)),
+            latest_suspension_end=latest(suspensions.filter(ends_at__gt=now), "ends_at"),
+            latest_warning_at=latest(warnings, "created_at"),
+        )
+
     def can_view(self, viewer, member):
         members = self.filter(pk=member.pk).annotate_visibility(viewer)
         return members.values_list("viewer_can_view", flat=True).get()
@@ -252,3 +319,28 @@ class Member(get_user_model()):
 
     class Meta:
         proxy = True
+
+    @property
+    def display_name(self):
+        return self.get_full_name() or self.username
+
+    @property
+    def visible_name(self):
+        return self.display_name if self.viewer_can_view else self.username
+
+    @property
+    def story_seen(self):
+        return self.has_story and not self.has_unseen_story
+
+    @property
+    def media(self):
+        return {"pictures": self.has_pictures, "reels": self.has_reels}
+
+    @property
+    def role_lock(self):
+        if not self.has_suspension:
+            return None
+        if self.locked_forever:
+            return LOCKED_FOREVER
+        warning_expiry = self.latest_warning_at and self.latest_warning_at + WARNING_EXPIRY
+        return max(filter(None, [self.latest_suspension_end, warning_expiry]), default=None)

@@ -6,7 +6,7 @@ from commons.serializers import BaseModelSerializer
 from swissfy.accounts.fields import RoleBadgeField
 from swissfy.accounts.models import UserProfile
 from swissfy.posts import images
-from swissfy.posts.models import ContactGroup, Post, Story
+from swissfy.posts.models import ContactGroup
 from swissfy.posts.serializers import StoryModelSerializer
 
 from . import library
@@ -25,12 +25,14 @@ class ProfileModelSerializer(BaseModelSerializer):
         picture = PictureField()
         role = RoleBadgeField()
         can_view = serializers.BooleanField(source="viewer_can_view", read_only=True)
+        display_name = serializers.CharField(source="visible_name", read_only=True)
         hidden_fields = HIDDEN_LIST_FIELDS
 
         class Meta(BaseModelSerializer.read.Meta):
             model = User
             fields = [
                 "username",
+                "display_name",
                 "first_name",
                 "last_name",
                 "avatar",
@@ -53,6 +55,7 @@ class ProfileModelSerializer(BaseModelSerializer):
             model = User
             fields = [
                 "username",
+                "display_name",
                 "first_name",
                 "last_name",
                 "avatar",
@@ -77,14 +80,15 @@ class ProfileModelSerializer(BaseModelSerializer):
         )
         can_chat = serializers.BooleanField(read_only=True)
         can_view_warnings = serializers.BooleanField(read_only=True)
-        media = serializers.SerializerMethodField()
-        stories = serializers.SerializerMethodField()
+        media = serializers.ReadOnlyField()
+        stories = StoryModelSerializer.read(source="visible_stories", many=True, read_only=True)
         hidden_fields = HIDDEN_PROFILE_FIELDS
 
         class Meta(BaseModelSerializer.read.Meta):
             model = User
             fields = [
                 "username",
+                "display_name",
                 "first_name",
                 "last_name",
                 "avatar",
@@ -106,19 +110,6 @@ class ProfileModelSerializer(BaseModelSerializer):
                 "stories",
                 "can_view",
             ]
-
-        @property
-        def viewer(self):
-            return self.context["request"].user
-
-        def get_stories(self, obj):
-            stories = Story.objects.apply_acl(self.viewer).filter(author=obj).order_by("created_at")
-            stories = stories.with_details(self.viewer)
-            return StoryModelSerializer.read(stories, many=True, context=self.context).data
-
-        def get_media(self, obj):
-            posts = Post.objects.apply_acl(self.viewer).filter(author=obj)
-            return {"pictures": posts.images().exists(), "reels": posts.videos().exists()}
 
         def to_representation(self, obj):
             data = super().to_representation(obj)

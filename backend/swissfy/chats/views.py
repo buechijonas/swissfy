@@ -119,17 +119,22 @@ class ConversationViewSet(BaseViewSet):
         conversation = self.get_conversation()
         query = MessageModelSerializer.query(data=request.query_params)
         query.is_valid(raise_exception=True)
-        conversation.receive(query.validated_data["read"])
         page = conversation.page(query.validated_data.get("after"))
-        context = {"viewer": request.user, "show_read": conversation.show_read}
         return Response(
             {
-                "messages": MessageModelSerializer.read(page, many=True, context=context).data,
+                "messages": MessageModelSerializer.read(page, many=True).data,
                 "statuses": conversation.statuses(),
                 "chat_request": conversation.request_state,
                 "can_request": conversation.can_request,
             }
         )
+
+    @action(detail=True, methods=["post"])
+    def receive(self, request, username):
+        receipt = MessageModelSerializer.receipt(data=request.data)
+        receipt.is_valid(raise_exception=True)
+        self.get_conversation().receive(receipt.validated_data["read"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @messages.mapping.post
     @transaction.atomic

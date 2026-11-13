@@ -89,7 +89,8 @@ class MessageModelSerializer(BaseModelSerializer):
         sender = serializers.CharField(source="sender.username", read_only=True)
         envelopes = serializers.JSONField(source="envelope_data", read_only=True)
         message_key = serializers.CharField(read_only=True, allow_null=True)
-        status = serializers.SerializerMethodField()
+        status = serializers.CharField(read_only=True, allow_null=True)
+        is_own = serializers.BooleanField(read_only=True)
 
         class Meta(BaseModelSerializer.read.Meta):
             model = Message
@@ -102,12 +103,8 @@ class MessageModelSerializer(BaseModelSerializer):
                 "envelopes",
                 "message_key",
                 "status",
+                "is_own",
             ]
-
-        def get_status(self, obj):
-            if obj.sender_id != self.context["viewer"].pk:
-                return None
-            return obj.status_for(self.context["show_read"])
 
     class write(serializers.Serializer):
         ciphertext = base64_field(20000)
@@ -126,6 +123,8 @@ class MessageModelSerializer(BaseModelSerializer):
 
     class query(serializers.Serializer):
         after = serializers.IntegerField(required=False)
+
+    class receipt(serializers.Serializer):
         read = serializers.BooleanField(default=False)
 
 
@@ -144,10 +143,6 @@ class ConversationSerializer(ProfileModelSerializer.list):
             "pending",
         ]
 
-    @property
-    def viewer(self):
-        return self.context["request"].user
-
     def message_of(self, partner):
         return self.context["messages"].get(partner.last_message_id)
 
@@ -155,6 +150,4 @@ class ConversationSerializer(ProfileModelSerializer.list):
         message = self.message_of(partner)
         if message is None:
             return None
-        show_read = self.viewer.profile.read_receipts and partner.profile.read_receipts
-        context = {"viewer": self.viewer, "show_read": show_read}
-        return MessageModelSerializer.read(message, context=context).data
+        return MessageModelSerializer.read(message).data

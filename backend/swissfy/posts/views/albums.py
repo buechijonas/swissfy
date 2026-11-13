@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from commons.views import BaseViewSet
 from swissfy.social.models import Member
 
-from ..models import Album, AlbumEntry, Post
+from ..models import Album, AlbumEntry, Post, authors_for
 from ..permissions import IsNotSuspended
 from ..serializers import AlbumEntryModelSerializer, AlbumModelSerializer
 
@@ -36,15 +36,18 @@ def apply_order(items, values, field):
 class AlbumResponseMixin:
     def album_response(self, album, status_code=status.HTTP_200_OK):
         context = self.get_serializer_context()
-        entries = album.entries.filter(
-            post__in=Post.objects.apply_acl(self.request.user).values("pk")
-        ).order_by(F("date").asc(nulls_last=True), "position", "id")
+        viewer = self.request.user
+        album = Album.objects.with_details(viewer).get(pk=album.pk)
+        entries = (
+            album.entries.filter(post__in=Post.objects.apply_acl(viewer).values("pk"))
+            .select_related("post")
+            .prefetch_related(authors_for(viewer, "post__author"))
+            .order_by(F("date").asc(nulls_last=True), "position", "id")
+        )
         data = {
             **AlbumModelSerializer.read(album, context=context).data,
             "owner": album.owner.username,
-            "entries": AlbumEntryModelSerializer.read(
-                entries.select_related("post__author__profile"), many=True, context=context
-            ).data,
+            "entries": AlbumEntryModelSerializer.read(entries, many=True, context=context).data,
         }
         return Response(data, status=status_code)
 
@@ -59,7 +62,7 @@ class UserAlbumViewSet(BaseViewSet):
         owner = get_object_or_404(User.objects.select_related("profile"), username=username)
         if not Member.objects.can_view(request.user, owner):
             raise PermissionDenied("Diese Alben sind nicht sichtbar.")
-        albums = owner.albums.select_related("cover__post")
+        albums = owner.albums.with_details(request.user)
         return Response(self.get_serializer(albums, many=True).data)
 
 
@@ -84,7 +87,7 @@ class AlbumViewSet(AlbumResponseMixin, BaseViewSet):
     def order(self, request):
         albums = apply_order(request.user.albums.all(), request.data.get("albums"), "albums")
         Album.objects.bulk_update(albums, ["position"])
-        albums = request.user.albums.select_related("cover__post")
+        albums = request.user.albums.with_details(request.user)
         return Response(
             AlbumModelSerializer.read(albums, many=True, context=self.get_serializer_context()).data
         )

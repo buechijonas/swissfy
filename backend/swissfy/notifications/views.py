@@ -1,3 +1,5 @@
+from functools import wraps
+
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -6,8 +8,16 @@ from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
 
 from .models import Notification
-from .notify import syncs_expired_warnings
 from .serializers import NotificationModelSerializer
+
+
+def syncs_expired_warnings(view_action):
+    @wraps(view_action)
+    def wrapper(self, request, *args, **kwargs):
+        Notification.objects.sync_expired_warnings(request.user)
+        return view_action(self, request, *args, **kwargs)
+
+    return wrapper
 
 
 class NotificationViewSet(BaseViewSet, mixins.ListModelMixin):
@@ -15,7 +25,8 @@ class NotificationViewSet(BaseViewSet, mixins.ListModelMixin):
     pagination_class = NextPagePagination
 
     def get_queryset(self):
-        return Notification.objects.apply_acl(self.request.user).with_details()
+        user = self.request.user
+        return Notification.objects.apply_acl(user).with_details(user)
 
     @syncs_expired_warnings
     def list(self, request, *args, **kwargs):

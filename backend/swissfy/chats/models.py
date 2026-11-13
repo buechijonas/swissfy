@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Exists, OuterRef, Prefetch, Q, Value
+from django.db.models import Case, CharField, Exists, OuterRef, Prefetch, Q, Value, When
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -143,8 +143,19 @@ class MessageQuerySet(BaseQuerySet):
 
     def for_reader(self, reader):
         envelopes = Envelope.objects.filter(key__user=reader)
-        return self.select_related("sender").prefetch_related(
+        messages = self.select_related("sender").prefetch_related(
             Prefetch("envelopes", queryset=envelopes)
+        )
+        return messages.with_status(reader).annotate(is_own=boolean(Q(sender=reader)))
+
+    def with_status(self, reader):
+        statuses = [When(~Q(sender=reader), then=Value(None))]
+        if reader.profile.read_receipts:
+            read = Q(read_at__isnull=False, recipient__profile__read_receipts=True)
+            statuses.append(When(read, then=Value("read")))
+        statuses.append(When(delivered_at__isnull=False, then=Value("delivered")))
+        return self.annotate(
+            status=Case(*statuses, default=Value("sent"), output_field=CharField())
         )
 
     def mark_delivered(self):
@@ -220,13 +231,6 @@ class Message(BaseModel):
         if self.server_key is None:
             return None
         return base64.b64encode(unwrap_message_key(self)).decode()
-
-    def status_for(self, show_read):
-        if self.read_at and show_read:
-            return "read"
-        if self.delivered_at:
-            return "delivered"
-        return "sent"
 
 
 class Envelope(BaseModel):

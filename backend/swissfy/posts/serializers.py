@@ -3,10 +3,9 @@ from rest_framework import serializers
 
 from commons.fields import CompactNumberField
 from commons.serializers import BaseModelSerializer, UUIDModelSerializer
-from main.numbers import compact_number
-from swissfy.accounts.models import UserProfile
-from swissfy.accounts.roles import is_admin, is_moderator, outranks, role_badge
-from swissfy.social.pictures import PictureField, cached_relations
+from swissfy.accounts.roles import is_admin, role_badge
+from swissfy.moderation.models import Suspension
+from swissfy.social.pictures import PictureField
 
 from . import hashtags, images, videos
 from .models import (
@@ -25,18 +24,28 @@ from .models import (
 User = get_user_model()
 
 
+class HashtagTextField(serializers.Field):
+    def __init__(self, **kwargs):
+        super().__init__(source="text", read_only=True, **kwargs)
+
+    def to_representation(self, text):
+        return hashtags.split(text)
+
+
 class AuthorModelSerializer(BaseModelSerializer):
     class read(BaseModelSerializer.read):
+        display_name = serializers.CharField(read_only=True)
         avatar = serializers.CharField(source="profile.avatar", read_only=True)
         picture = PictureField()
         role = serializers.SerializerMethodField()
-        has_story = serializers.SerializerMethodField()
-        story_seen = serializers.SerializerMethodField()
+        has_story = serializers.BooleanField(read_only=True)
+        story_seen = serializers.BooleanField(read_only=True)
 
         class Meta(BaseModelSerializer.read.Meta):
             model = User
             fields = [
                 "username",
+                "display_name",
                 "first_name",
                 "last_name",
                 "avatar",
@@ -47,60 +56,36 @@ class AuthorModelSerializer(BaseModelSerializer):
             ]
 
         def get_role(self, obj):
-            return role_badge(obj) if self.profile_visible(obj) else None
-
-        def story_authors(self):
-            if "story_authors" not in self.context:
-                viewer = self.context["request"].user
-                if viewer.is_anonymous:
-                    return set(), set()
-                stories = Story.objects.apply_acl(viewer)
-                unseen = stories.exclude(views__user=viewer)
-                self.context["story_authors"] = (
-                    set(stories.values_list("author_id", flat=True)),
-                    set(unseen.values_list("author_id", flat=True)),
-                )
-            return self.context["story_authors"]
-
-        def get_has_story(self, obj):
-            return obj.pk in self.story_authors()[0]
-
-        def get_story_seen(self, obj):
-            authors, unseen = self.story_authors()
-            return obj.pk in authors and obj.pk not in unseen
-
-        def profile_visible(self, obj):
-            viewer = self.context["request"].user
-            if obj == viewer or is_admin(viewer):
-                return True
-            relations = cached_relations(self.context)
-            visibility = obj.profile.profile_visibility
-            Visibility = UserProfile.Visibility
-            return (
-                visibility == Visibility.PUBLIC
-                or (visibility == Visibility.FOLLOWERS and obj.pk in relations["following"])
-                or obj.pk in relations["friends"]
-            )
+            return role_badge(obj) if obj.viewer_can_view else None
 
 
 class ModeratedSerializerMixin(serializers.Serializer):
     hidden = serializers.BooleanField(source="is_hidden", read_only=True)
     reported = serializers.BooleanField(read_only=True)
-    can_report = serializers.SerializerMethodField()
+    can_report = serializers.BooleanField(read_only=True)
+    moderated_actions = ["can_report"]
 
-    @property
-    def moderating(self):
-        return self.context.get("moderation", False)
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        if self.context.get("moderation", False):
+            for moderated_action in self.moderated_actions:
+                data[moderated_action] = False
+        return data
 
-    def is_author(self, obj):
-        return obj.author_id == self.context["request"].user.pk
 
-    def get_can_report(self, obj):
-        viewer = self.context["request"].user
-        if viewer.is_anonymous:
-            return False
-        protected = is_moderator(viewer) and outranks(obj.author, viewer)
-        return not self.moderating and not self.is_author(obj) and not protected
+class UnavailableSerializer(UUIDModelSerializer.read):
+    label = None
+    unavailable = serializers.SerializerMethodField()
+
+    class Meta(UUIDModelSerializer.read.Meta):
+        fields = UUIDModelSerializer.read.Meta.fields + ["unavailable"]
+
+    def get_unavailable(self, obj):
+        if obj.is_hidden:
+            return f"Dieser {self.label} wurde gesperrt."
+        if Suspension.objects.running().filter(user=obj.author_id).exists():
+            return "Der User wurde gesperrt und ist nicht sichtbar."
+        return f"Dieser {self.label} ist nicht sichtbar."
 
 
 class AudienceSerializerMixin:
@@ -150,6 +135,7 @@ class PostModelSerializer(UUIDModelSerializer):
         images = PostImageModelSerializer.read(many=True, read_only=True)
         video = serializers.CharField(source="video_url", read_only=True)
         thumbnail = serializers.CharField(source="thumbnail_url", read_only=True)
+        text_parts = HashtagTextField()
         aspect_ratio = serializers.FloatField(read_only=True)
         list_aspect_ratio = serializers.FloatField(read_only=True)
         like_count = CompactNumberField()
@@ -159,13 +145,14 @@ class PostModelSerializer(UUIDModelSerializer):
         reposter = serializers.CharField(read_only=True)
         saved = serializers.BooleanField(read_only=True)
         saved_folder = serializers.IntegerField(read_only=True)
-        is_own = serializers.SerializerMethodField()
+        is_own = serializers.BooleanField(read_only=True)
 
         class Meta(UUIDModelSerializer.read.Meta):
             model = Post
             fields = UUIDModelSerializer.read.Meta.fields + [
                 "author",
                 "text",
+                "text_parts",
                 "images",
                 "video",
                 "video_status",
@@ -187,9 +174,6 @@ class PostModelSerializer(UUIDModelSerializer):
                 "reported",
                 "can_report",
             ]
-
-        def get_is_own(self, obj):
-            return self.is_author(obj)
 
         def to_representation(self, obj):
             data = super().to_representation(obj)
@@ -221,6 +205,12 @@ class PostModelSerializer(UUIDModelSerializer):
         class Meta(UUIDModelSerializer.read.Meta):
             model = Post
             fields = UUIDModelSerializer.read.Meta.fields + ["author", "thumbnail", "video"]
+
+    class unavailable(UnavailableSerializer):
+        label = "Feed"
+
+        class Meta(UnavailableSerializer.Meta):
+            model = Post
 
     class audience(AudienceSerializerMixin, BaseModelSerializer.write):
         class Meta(BaseModelSerializer.write.Meta):
@@ -290,10 +280,10 @@ class StoryModelSerializer(UUIDModelSerializer):
     class read(UUIDModelSerializer.read):
         image = serializers.CharField(source="image_url", read_only=True)
         expires_at = serializers.DateTimeField(read_only=True)
-        is_own = serializers.SerializerMethodField()
+        is_own = serializers.BooleanField(read_only=True)
         liked = serializers.BooleanField(read_only=True)
-        like_count = serializers.SerializerMethodField()
-        view_count = serializers.SerializerMethodField()
+        like_count = CompactNumberField()
+        view_count = CompactNumberField()
         seen = serializers.BooleanField(read_only=True)
 
         class Meta(UUIDModelSerializer.read.Meta):
@@ -309,15 +299,6 @@ class StoryModelSerializer(UUIDModelSerializer):
                 "view_count",
                 "seen",
             ]
-
-        def get_is_own(self, obj):
-            return obj.author_id == self.context["request"].user.pk
-
-        def get_like_count(self, obj):
-            return compact_number(obj.like_total) if self.get_is_own(obj) else None
-
-        def get_view_count(self, obj):
-            return compact_number(obj.view_total) if self.get_is_own(obj) else None
 
     class write(AudienceSerializerMixin, BaseModelSerializer.write):
         image = serializers.FileField(write_only=True)
@@ -365,8 +346,9 @@ class CommentModelSerializer(UUIDModelSerializer):
         score = CompactNumberField()
         my_vote = serializers.IntegerField(read_only=True)
         latest_reply = serializers.SerializerMethodField()
-        can_delete = serializers.SerializerMethodField()
-        can_vote = serializers.SerializerMethodField()
+        can_delete = serializers.BooleanField(source="is_own", read_only=True)
+        can_vote = serializers.BooleanField(read_only=True)
+        moderated_actions = ["can_report", "can_delete", "can_vote"]
 
         class Meta(UUIDModelSerializer.read.Meta):
             model = Comment
@@ -394,11 +376,11 @@ class CommentModelSerializer(UUIDModelSerializer):
                 return None
             return CommentModelSerializer.read(obj.latest_reply, context=self.context).data
 
-        def get_can_delete(self, obj):
-            return not self.moderating and self.is_author(obj)
+    class unavailable(UnavailableSerializer):
+        label = "Kommentar"
 
-        def get_can_vote(self, obj):
-            return not self.moderating and not self.is_author(obj)
+        class Meta(UnavailableSerializer.Meta):
+            model = Comment
 
     class write(BaseModelSerializer.write):
         class Meta(BaseModelSerializer.write.Meta):
@@ -454,28 +436,19 @@ class ContactGroupModelSerializer(BaseModelSerializer):
 
 class AlbumModelSerializer(UUIDModelSerializer):
     class read(UUIDModelSerializer.read):
-        cover = serializers.SerializerMethodField()
-        is_own = serializers.SerializerMethodField()
+        cover = serializers.CharField(source="cover_url", read_only=True)
+        cover_entry = serializers.UUIDField(read_only=True, allow_null=True)
+        is_own = serializers.BooleanField(read_only=True)
 
         class Meta(UUIDModelSerializer.read.Meta):
             model = Album
             fields = UUIDModelSerializer.read.Meta.fields + [
                 "name",
                 "cover",
+                "cover_entry",
                 "created_at",
                 "is_own",
             ]
-
-        def get_cover(self, album):
-            if album.cover is None:
-                return None
-            viewer = self.context["request"].user
-            if not Post.objects.apply_acl(viewer).filter(pk=album.cover.post_id).exists():
-                return None
-            return album.cover.post.thumbnail_url
-
-        def get_is_own(self, album):
-            return album.owner_id == self.context["request"].user.pk
 
     class write(BaseModelSerializer.write):
         cover = serializers.SlugRelatedField(

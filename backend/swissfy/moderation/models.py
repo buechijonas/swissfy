@@ -5,9 +5,10 @@ from django.conf import settings
 from django.db import IntegrityError, models
 from django.db.models import Count, Max, Q
 from django.utils import timezone
+from django.utils.formats import date_format
 
 from commons.models import BaseModel, BaseQuerySet
-from swissfy.accounts.roles import Role, is_admin
+from swissfy.accounts.roles import Role, is_admin, role_of, set_role
 
 
 class Reason(models.TextChoices):
@@ -77,6 +78,8 @@ SUSPENSION_STEPS = [
     (timedelta(days=365), "1 Jahr"),
     (None, "Lebenslang"),
 ]
+WARNINGS_BEFORE_SUSPENSION = 3
+LOCKED_FOREVER = "forever"
 
 ONE_TARGET = Q(post__isnull=False, comment__isnull=True) | Q(
     post__isnull=True, comment__isnull=False
@@ -203,6 +206,10 @@ class Warning(BaseModel):
         return self.expires_at <= timezone.now()
 
     @property
+    def is_past(self):
+        return self.is_expired
+
+    @property
     def target_label(self):
         if self.comment_id:
             return "Kommentar"
@@ -214,6 +221,17 @@ class Warning(BaseModel):
             return f"/moderation/comments/{self.comment.uuid}"
         return f"/moderation/posts/{self.post.uuid}" if self.post_id else None
 
+    def suspend_if_needed(self):
+        now = timezone.now()
+        count = Warning.objects.filter(user=self.user).active(now).count()
+        if count < WARNINGS_BEFORE_SUSPENSION:
+            return None
+        starts_at = Suspension.objects.filter(user=self.user).lifted_at(now)
+        if starts_at is None:
+            return None
+        step = min(count - WARNINGS_BEFORE_SUSPENSION, len(SUSPENSION_STEPS) - 1)
+        return Suspension.start(self.user, self, step, starts_at)
+
 
 class SuspensionQuerySet(BaseQuerySet):
     def running(self, now=None):
@@ -222,6 +240,11 @@ class SuspensionQuerySet(BaseQuerySet):
 
     def pending(self, now=None):
         return self.filter(Q(ends_at__isnull=True) | Q(ends_at__gt=now or timezone.now()))
+
+    def lifted_at(self, now=None):
+        now = now or timezone.now()
+        ends = list(self.pending(now).values_list("ends_at", flat=True))
+        return None if None in ends else max(ends, default=now)
 
 
 class Suspension(BaseModel):
@@ -242,6 +265,20 @@ class Suspension(BaseModel):
         ordering = ["-starts_at"]
         indexes = [models.Index(fields=["user", "ends_at"], name="suspension_user_end")]
 
+    @classmethod
+    def start(cls, user, warning, step, starts_at):
+        duration = SUSPENSION_STEPS[step][0]
+        suspension = cls.objects.create(
+            user=user,
+            warning=warning,
+            step=step,
+            starts_at=starts_at,
+            ends_at=starts_at + duration if duration else None,
+        )
+        if role_of(user) == Role.VERIFIED:
+            set_role(user, Role.DEFAULT)
+        return suspension
+
     @property
     def duration_label(self):
         return SUSPENSION_STEPS[self.step][1]
@@ -256,3 +293,18 @@ class Suspension(BaseModel):
         if self.starts_at > now:
             return "scheduled"
         return "ended" if self.ends_at and self.ends_at <= now else "active"
+
+    @property
+    def is_past(self):
+        return self.state == "ended"
+
+    @property
+    def status_text(self):
+        until = date_format(timezone.localtime(self.ends_at), "j. F Y") if self.ends_at else None
+        if self.state == "ended":
+            return f"Abgelaufen am {until}"
+        if self.state == "scheduled":
+            if until:
+                return f"Beginnt nach der laufenden Sperre, bis {until}"
+            return "Beginnt nach der laufenden Sperre, dauerhaft"
+        return f"Gesperrt bis {until}" if until else "Dauerhaft gesperrt"

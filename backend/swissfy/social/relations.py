@@ -1,6 +1,5 @@
 from commons.exceptions import BadRequest
 from swissfy.notifications.models import Notification
-from swissfy.notifications.notify import notify, resolve_request, withdraw
 
 from .models import Follow, FollowRequest, FriendRequest, Friendship
 
@@ -24,14 +23,14 @@ def follow(viewer, target):
         _, created = Follow.objects.get_or_create(follower=viewer, following=target)
         kind = Kind.FOLLOW
     if created:
-        notify(target, kind, actor=viewer)
+        Notification.notify(target, kind, actor=viewer)
 
 
 def unfollow(viewer, target):
     Follow.objects.filter(follower=viewer, following=target).delete()
-    withdraw(target, Kind.FOLLOW, viewer)
+    Notification.objects.withdraw(target, Kind.FOLLOW, viewer)
     FollowRequest.objects.filter(follower=viewer, following=target).delete()
-    withdraw(target, Kind.FOLLOW_REQUEST, viewer, resolution="")
+    Notification.objects.withdraw(target, Kind.FOLLOW_REQUEST, viewer, resolution="")
 
 
 def send_friend_request(viewer, target):
@@ -41,12 +40,12 @@ def send_friend_request(viewer, target):
         raise BadRequest("Ihr seid bereits befreundet.")
     _, created = FriendRequest.objects.get_or_create(sender=viewer, receiver=target)
     if created:
-        notify(target, Kind.FRIEND_REQUEST, actor=viewer)
+        Notification.notify(target, Kind.FRIEND_REQUEST, actor=viewer)
 
 
 def decide_follow_request(follow_request, accepted):
     resolution = Resolution.ACCEPTED if accepted else Resolution.DECLINED
-    resolve_request(
+    Notification.objects.resolve_request(
         follow_request.following, Kind.FOLLOW_REQUEST, follow_request.follower, resolution
     )
     if accepted:
@@ -57,7 +56,9 @@ def decide_follow_request(follow_request, accepted):
 
 def decide_friend_request(friend_request, accepted):
     resolution = Resolution.ACCEPTED if accepted else Resolution.DECLINED
-    resolve_request(friend_request.receiver, Kind.FRIEND_REQUEST, friend_request.sender, resolution)
+    Notification.objects.resolve_request(
+        friend_request.receiver, Kind.FRIEND_REQUEST, friend_request.sender, resolution
+    )
     if accepted:
         friend_request.accept()
     else:

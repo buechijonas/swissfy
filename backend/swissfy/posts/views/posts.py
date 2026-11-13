@@ -4,19 +4,16 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import OuterRef, Subquery
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, status
+from rest_framework import mixins
 from rest_framework.decorators import action
-from rest_framework.exceptions import Throttled
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from commons.exceptions import BadRequest
-from commons.views import BaseViewSet, CreateModelMixin, UpdateModelMixin
-from main.numbers import compact_number
+from commons.views import BaseViewSet, CreateModelMixin
 from main.parsers import JSONParser
 from swissfy.notifications.models import Notification
-from swissfy.notifications.notify import notify, withdraw
 
 from ..models import (
     POSTS_PER_DAY,
@@ -27,7 +24,7 @@ from ..models import (
     SavedFolder,
     SavedPost,
 )
-from ..permissions import IsAuthor, IsNotSuspended
+from ..permissions import HasPostQuota, IsAuthor, IsNotSuspended
 from ..serializers import PostModelSerializer
 from .pagination import FeedOrder, NewestFirst, SavedOrder
 
@@ -47,7 +44,6 @@ class PostViewSet(
     mixins.ListModelMixin,
     CreateModelMixin,
     mixins.RetrieveModelMixin,
-    UpdateModelMixin,
     mixins.DestroyModelMixin,
 ):
     serializer_class = PostModelSerializer
@@ -57,8 +53,8 @@ class PostViewSet(
     pagination_class = NewestFirst
     pagination_action_classes = {"list": FeedOrder, "saved": SavedOrder}
     permission_action_classes = {
-        "create": [IsAuthenticated, IsNotSuspended],
-        "partial_update": [IsAuthenticated, IsAuthor],
+        "create": [IsAuthenticated, IsNotSuspended, HasPostQuota],
+        "audience": [IsAuthenticated, IsAuthor],
         "destroy": [IsAuthenticated, IsAuthor],
     }
 
@@ -68,28 +64,23 @@ class PostViewSet(
         return posts.with_details(user)
 
     def get_serializer_class(self):
-        if self.action == "partial_update":
+        if self.action == "audience":
             return PostModelSerializer.audience
         return super().get_serializer_class()
-
-    def check_quota(self):
-        if not PostCreation.objects.remaining(self.request.user):
-            raise Throttled(detail=f"Du kannst höchstens {POSTS_PER_DAY} Feeds pro Tag erstellen.")
 
     def perform_create(self, serializer):
         with transaction.atomic():
             User.objects.select_for_update().get(pk=self.request.user.pk)
-            self.check_quota()
+            self.check_permissions(self.request)
             PostCreation.objects.filter(author=self.request.user).stale().delete()
             PostCreation.objects.create(author=self.request.user)
             return serializer.save()
 
-    def create(self, request, *args, **kwargs):
-        self.check_quota()
-        return super().create(request, *args, **kwargs)
-
-    def partial_update(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    @action(detail=True, methods=["put"])
+    def audience(self, request, uuid):
+        serializer = self.get_serializer(self.get_object(), data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return self.respond(serializer.save())
 
     @action(detail=False)
     def quota(self, request):
@@ -129,48 +120,43 @@ class PostViewSet(
         post = self.get_object()
         _, created = Like.objects.get_or_create(user=request.user, post=post)
         if created:
-            notify(post.author, Notification.Kind.LIKE, actor=request.user, post=post)
-        return self.like_state(post, True)
+            Notification.notify(post.author, Notification.Kind.LIKE, actor=request.user, post=post)
+        return self.respond(post)
 
     @like.mapping.delete
     def unlike(self, request, uuid):
         post = self.get_object()
         Like.objects.filter(user=request.user, post=post).delete()
-        withdraw(post.author, Notification.Kind.LIKE, request.user, post=post)
-        return self.like_state(post, False)
-
-    def like_state(self, post, liked):
-        return Response({"liked": liked, "like_count": compact_number(post.likes.count())})
+        Notification.objects.withdraw(post.author, Notification.Kind.LIKE, request.user, post=post)
+        return self.respond(post)
 
     @action(detail=True, methods=["post"])
     def repost(self, request, uuid):
         post = self.get_object()
-        if post.author == request.user:
+        if post.is_own:
             raise BadRequest("Du kannst deine eigenen Feeds nicht reposten.")
         Repost.objects.get_or_create(user=request.user, post=post)
-        return self.repost_state(post)
+        return self.respond(post)
 
     @repost.mapping.delete
     def unrepost(self, request, uuid):
         post = self.get_object()
         Repost.objects.filter(user=request.user, post=post).delete()
-        return self.repost_state(post)
-
-    def repost_state(self, post):
-        post = self.get_queryset().get(pk=post.pk)
-        return Response({"reposted": post.reposted, "reposter": post.reposter})
+        return self.respond(post)
 
     @action(detail=True, methods=["put"])
     def save(self, request, uuid):
         folder = request.data.get("folder")
         if folder is not None:
             folder = get_object_or_404(SavedFolder, pk=folder, owner=request.user)
+        post = self.get_object()
         SavedPost.objects.update_or_create(
-            user=request.user, post=self.get_object(), defaults={"folder": folder}
+            user=request.user, post=post, defaults={"folder": folder}
         )
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.respond(post)
 
     @save.mapping.delete
     def unsave(self, request, uuid):
-        SavedPost.objects.filter(user=request.user, post=self.get_object()).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        post = self.get_object()
+        SavedPost.objects.filter(user=request.user, post=post).delete()
+        return self.respond(post)

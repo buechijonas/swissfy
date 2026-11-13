@@ -4,7 +4,8 @@ from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 
 from commons.models import BaseModel, BaseQuerySet
-from swissfy.moderation.models import Suspension, Warning
+from swissfy.moderation.models import WARNING_EXPIRY, Suspension, Warning
+from swissfy.posts.models import authors_for
 from swissfy.social.models import Follow, FollowRequest, FriendRequest, Friendship
 
 PREVIEW_LENGTH = 80
@@ -28,27 +29,44 @@ class NotificationQuerySet(BaseQuerySet):
     def unread(self):
         return self.filter(read_at=None)
 
-    def with_details(self):
+    def with_details(self, user):
         actor, recipient = OuterRef("actor"), OuterRef("recipient")
-        return (
-            self.select_related(
-                "recipient", "actor__profile", "post", "comment", "warning", "suspension"
-            )
-            .prefetch_related("actor__groups")
-            .annotate(
-                follow_pending=Exists(
-                    FollowRequest.objects.filter(follower=actor, following=recipient)
-                ),
-                follow_accepted=Exists(Follow.objects.filter(follower=actor, following=recipient)),
-                friend_pending=Exists(
-                    FriendRequest.objects.filter(sender=actor, receiver=recipient)
-                ),
-                friend_accepted=Exists(Friendship.objects.filter(user=recipient, friend=actor)),
-            )
+        details = self.select_related("recipient", "post", "comment", "warning", "suspension")
+        return details.prefetch_related(authors_for(user, "actor")).annotate(
+            follow_pending=Exists(
+                FollowRequest.objects.filter(follower=actor, following=recipient)
+            ),
+            follow_accepted=Exists(Follow.objects.filter(follower=actor, following=recipient)),
+            friend_pending=Exists(FriendRequest.objects.filter(sender=actor, receiver=recipient)),
+            friend_accepted=Exists(Friendship.objects.filter(user=recipient, friend=actor)),
         )
 
     def mark_read(self):
         return self.unread().update(read_at=timezone.now())
+
+    def withdraw(self, recipient, kind, actor, **targets):
+        return self.filter(recipient=recipient, kind=kind, actor=actor, **targets).delete()
+
+    def resolve_request(self, recipient, kind, actor, resolution):
+        requests = self.filter(recipient=recipient, actor=actor, kind=kind, resolution="")
+        return requests.update(resolution=resolution)
+
+    def sync_expired_warnings(self, user):
+        now = timezone.now()
+        notified = self.filter(warning=OuterRef("pk"), kind=Notification.Kind.WARNING_EXPIRED)
+        expired = Warning.objects.filter(user=user, created_at__lte=now - WARNING_EXPIRY)
+        return self.bulk_create(
+            [
+                Notification(
+                    recipient=user,
+                    kind=Notification.Kind.WARNING_EXPIRED,
+                    warning=warning,
+                    created_at=warning.created_at + WARNING_EXPIRY,
+                )
+                for warning in expired.exclude(Exists(notified))
+            ],
+            ignore_conflicts=True,
+        )
 
 
 class Notification(BaseModel):
@@ -98,6 +116,12 @@ class Notification(BaseModel):
                 name="one_expiry_notification_per_warning",
             ),
         ]
+
+    @classmethod
+    def notify(cls, recipient, kind, actor=None, **targets):
+        if actor is not None and actor.pk == recipient.pk:
+            return None
+        return cls.objects.create(recipient=recipient, kind=kind, actor=actor, **targets)
 
     @property
     def is_read(self):

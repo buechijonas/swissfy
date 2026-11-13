@@ -11,12 +11,12 @@ from commons.exceptions import BadRequest
 from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
 from swissfy.chats.models import annotate_chat_availability
-from swissfy.posts.models import Story, StoryLike, StoryView, story_cutoff
+from swissfy.posts.models import Story, StoryLike, StoryView, story_cutoff, with_profile_media
 from swissfy.posts.views.media import serve_image
 
 from . import library, relations
 from .models import FollowRequest, FriendRequest, Member
-from .pictures import KINDS, picture_file, sees_private, viewer_relations
+from .pictures import KINDS, picture_file
 from .serializers import (
     ProfileModelSerializer,
     ProfileSettingsModelSerializer,
@@ -49,7 +49,10 @@ class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
             return self.ranked(Member.objects.exclude(pk=viewer.pk))
         if self.action in CONNECTIONS:
             return self.ranked(Member.objects.connected_to(self.action, self.connected()))
-        return annotate_chat_availability(Member.objects.annotate_profile_details(viewer), viewer)
+        members = annotate_chat_availability(
+            Member.objects.annotate_profile_details(viewer), viewer
+        )
+        return with_profile_media(members, viewer)
 
     def ranked(self, members):
         viewer = self.request.user
@@ -63,7 +66,8 @@ class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
         return target
 
     def get_object(self):
-        members = Member.objects.apply_acl(self.request.user)
+        viewer = self.request.user
+        members = Member.objects.apply_acl(viewer).annotate_visibility(viewer)
         return get_object_or_404(members, username=self.kwargs["username"])
 
     def respond(self, user):
@@ -115,9 +119,7 @@ class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
     def picture(self, request, username, kind):
         target = self.get_object()
         file = picture_file(target.profile, checked_kind(kind))
-        if kind == "private" and not sees_private(
-            target.profile, request.user, viewer_relations(request.user, [target])
-        ):
+        if kind == "private" and not target.viewer_sees_private_picture:
             file = None
         if not file:
             return Response(status=status.HTTP_404_NOT_FOUND)

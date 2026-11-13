@@ -8,7 +8,7 @@ from commons.models import boolean
 from commons.serializers import BaseModelSerializer
 from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
-from swissfy.moderation.sanctions import annotate_role_lock, role_lock, role_locked_until
+from swissfy.social.models import Member
 from swissfy.social.pictures import PictureField
 
 from .fields import RoleBadgeField, RoleField
@@ -17,27 +17,21 @@ from .roles import USER_ORDERING, IsAdmin, Role, set_role, with_role_rank
 User = get_user_model()
 
 
-class RoleLockField(serializers.Field):
-    def __init__(self, **kwargs):
-        super().__init__(source="*", read_only=True, **kwargs)
-
-    def to_representation(self, user):
-        return role_lock(user)
-
-
 class AdminUserModelSerializer(BaseModelSerializer):
     class read(BaseModelSerializer.read):
+        display_name = serializers.CharField(read_only=True)
         avatar = serializers.CharField(source="profile.avatar", read_only=True)
         picture = PictureField()
         role = RoleField(read_only=True)
         badge = RoleBadgeField()
-        role_locked_until = RoleLockField()
+        role_locked_until = serializers.ReadOnlyField(source="role_lock")
         is_self = serializers.BooleanField(read_only=True)
 
         class Meta(BaseModelSerializer.read.Meta):
             model = User
             fields = [
                 "username",
+                "display_name",
                 "first_name",
                 "last_name",
                 "avatar",
@@ -56,9 +50,9 @@ class AdminUserModelSerializer(BaseModelSerializer):
             fields = ["role"]
 
         def validate(self, data):
-            if self.instance == self.context["request"].user:
+            if self.instance.is_self:
                 raise PermissionDenied("Du kannst deine eigene Rolle nicht ändern.")
-            if role_locked_until(self.instance):
+            if self.instance.role_lock:
                 raise PermissionDenied(
                     "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt "
                     "und Sperren abgelaufen sind."
@@ -95,13 +89,15 @@ class AdminUserViewSet(BaseViewSet, mixins.ListModelMixin):
     lookup_field = "username"
 
     def get_queryset(self):
-        users = (
-            User.objects.filter(is_active=True)
+        viewer = self.request.user
+        return (
+            Member.objects.filter(is_active=True)
             .select_related("profile")
             .prefetch_related("groups")
-            .annotate(is_self=boolean(Q(pk=self.request.user.pk)))
+            .annotate_visibility(viewer)
+            .with_role_lock()
+            .annotate(is_self=boolean(Q(pk=viewer.pk)))
         )
-        return annotate_role_lock(users)
 
     def filter_queryset(self, users):
         params = self.request.query_params
