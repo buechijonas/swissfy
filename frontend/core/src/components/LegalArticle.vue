@@ -1,6 +1,8 @@
 <template>
   <article class="mx-auto flex w-full max-w-200 flex-1 flex-col gap-12 px-6 pt-4 pb-16">
-    <h1 class="font-display text-5xl font-bold tracking-tighter">{{ title }}</h1>
+    <slot name="title">
+      <h1 class="font-display text-5xl font-bold tracking-tighter">{{ title }}</h1>
+    </slot>
     <div class="flex max-w-150 flex-col gap-10">
       <template v-if="contract">
         <p v-if="contract.notice" class="text-app-muted italic">{{ contract.notice }}</p>
