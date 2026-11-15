@@ -10,7 +10,7 @@ CURL="curlimages/curl:8.11.1"
 failures=0
 
 cleanup() {
-  docker rm -f swissfy-test-backend swissfy-test-origin swissfy-test-anubis swissfy-test-edge >/dev/null 2>&1 || true
+  docker rm -f swissfy-test-backend swissfy-test-events swissfy-test-media swissfy-test-origin swissfy-test-anubis swissfy-test-edge >/dev/null 2>&1 || true
   docker network rm "$NETWORK" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -62,6 +62,10 @@ cleanup
 docker network create "$NETWORK" >/dev/null
 docker run -d --name swissfy-test-backend --network "$NETWORK" --network-alias backend "$CADDY" \
   caddy respond --listen :8000 --header "X-Stub: backend" "backend {http.request.uri}" >/dev/null
+docker run -d --name swissfy-test-events --network "$NETWORK" --network-alias events "$CADDY" \
+  caddy respond --listen :8000 --header "Content-Type: text/event-stream" "events {http.request.uri} $(printf ': %.0s' {1..400})" >/dev/null
+docker run -d --name swissfy-test-media --network "$NETWORK" --network-alias media "$CADDY" \
+  caddy respond --listen :8000 "media {http.request.uri}" >/dev/null
 docker run -d --name swissfy-test-origin --network "$NETWORK" --network-alias origin "$IMAGE" >/dev/null
 docker run -d --name swissfy-test-anubis --network "$NETWORK" --network-alias anubis "$CADDY" \
   caddy reverse-proxy --from :3000 --to origin:80 >/dev/null
@@ -106,6 +110,23 @@ echo "==> API is routed to the backend"
 check "api" "^backend /api/health/" "$(edge https://swissfy.test/api/health/)"
 check "django admin" "^backend /django-admin/" "$(edge https://swissfy.test/django-admin/)"
 check "static" "^backend /static/x.css" "$(edge https://swissfy.test/static/x.css)"
+
+echo "==> Server-sent events go to the events service uncompressed"
+check "events" "^events /api/events/" "$(edge https://swissfy.test/api/events/)"
+events_headers="$(edge -D - -o /dev/null -H "Accept-Encoding: gzip" https://swissfy.test/api/events/)"
+check_absent "events not compressed" "^content-encoding:" "$events_headers"
+check "other events paths stay on the backend" "^backend /api/events/x" "$(edge https://swissfy.test/api/events/x)"
+
+echo "==> Media goes to the media service"
+uuid="0b6f3f1e-6f1a-4c7e-9a43-5d1b7e2f9c10"
+check "post image" "^media /api/posts/$uuid/images/0/" "$(edge "https://swissfy.test/api/posts/$uuid/images/0/")"
+check "post video" "^media /api/posts/$uuid/video/" "$(edge "https://swissfy.test/api/posts/$uuid/video/")"
+check "post thumbnail" "^media /api/posts/$uuid/thumbnail/" "$(edge "https://swissfy.test/api/posts/$uuid/thumbnail/")"
+check "story image" "^media /api/stories/$uuid/image/" "$(edge "https://swissfy.test/api/stories/$uuid/image/")"
+check "profile picture" "^media /api/profiles/anna/pictures/public/" "$(edge https://swissfy.test/api/profiles/anna/pictures/public/)"
+check "library cover" "^media /api/covers/" "$(edge https://swissfy.test/api/covers/x.jpg)"
+check "post details stay on the backend" "^backend /api/posts/$uuid/" "$(edge "https://swissfy.test/api/posts/$uuid/")"
+check "media changes stay on the backend" "^backend /api/profiles/me/pictures/public/" "$(edge -X DELETE https://swissfy.test/api/profiles/me/pictures/public/)"
 
 echo "==> No files outside the build are reachable"
 for path in \
