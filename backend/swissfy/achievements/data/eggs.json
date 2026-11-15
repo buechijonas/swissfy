@@ -1,0 +1,3383 @@
+[
+  {
+    "key": "stay_at_your_house",
+    "title": {
+      "de": "I Really Want to Stay at Your House",
+      "en": "I Really Want to Stay at Your House",
+      "fr": "I Really Want to Stay at Your House",
+      "it": "I Really Want to Stay at Your House",
+      "rm": "I Really Want to Stay at Your House",
+      "es": "I Really Want to Stay at Your House",
+      "zh-hans": "I Really Want to Stay at Your House"
+    },
+    "quote": {
+      "de": "I really want to stay at your house",
+      "en": "I really want to stay at your house",
+      "fr": "I really want to stay at your house",
+      "it": "I really want to stay at your house",
+      "rm": "I really want to stay at your house",
+      "es": "I really want to stay at your house",
+      "zh-hans": "I really want to stay at your house"
+    },
+    "source": {
+      "de": "Cyberpunk: Edgerunners",
+      "en": "Cyberpunk: Edgerunners",
+      "fr": "Cyberpunk: Edgerunners",
+      "it": "Cyberpunk: Edgerunners",
+      "rm": "Cyberpunk: Edgerunners",
+      "es": "Cyberpunk: Edgerunners",
+      "zh-hans": "赛博朋克：边缘行者"
+    },
+    "phrases": [
+      "i really want to stay at your house"
+    ]
+  },
+  {
+    "key": "wake_up_samurai",
+    "title": {
+      "de": "We Have a City to Burn",
+      "en": "We Have a City to Burn",
+      "fr": "We Have a City to Burn",
+      "it": "We Have a City to Burn",
+      "rm": "We Have a City to Burn",
+      "es": "We Have a City to Burn",
+      "zh-hans": "我们有座城要烧"
+    },
+    "quote": {
+      "de": "Wake the fuck up, Samurai",
+      "en": "Wake the fuck up, Samurai",
+      "fr": "Wake the fuck up, Samurai",
+      "it": "Wake the fuck up, Samurai",
+      "rm": "Wake the fuck up, Samurai",
+      "es": "Wake the fuck up, Samurai",
+      "zh-hans": "Wake the fuck up, Samurai"
+    },
+    "source": {
+      "de": "Cyberpunk 2077",
+      "en": "Cyberpunk 2077",
+      "fr": "Cyberpunk 2077",
+      "it": "Cyberpunk 2077",
+      "rm": "Cyberpunk 2077",
+      "es": "Cyberpunk 2077",
+      "zh-hans": "赛博朋克 2077"
+    },
+    "phrases": [
+      "wake the fuck up samurai",
+      "wake up samurai"
+    ]
+  },
+  {
+    "key": "restless_dreams",
+    "title": {
+      "de": "Ruhelose Träume",
+      "en": "Restless Dreams",
+      "fr": "Rêves agités",
+      "it": "Sogni inquieti",
+      "rm": "Siemis malpaschs",
+      "es": "Sueños inquietos",
+      "zh-hans": "不安的梦"
+    },
+    "quote": {
+      "de": "In my restless dreams, I see that town",
+      "en": "In my restless dreams, I see that town",
+      "fr": "In my restless dreams, I see that town",
+      "it": "In my restless dreams, I see that town",
+      "rm": "In my restless dreams, I see that town",
+      "es": "In my restless dreams, I see that town",
+      "zh-hans": "In my restless dreams, I see that town"
+    },
+    "source": {
+      "de": "Silent Hill 2",
+      "en": "Silent Hill 2",
+      "fr": "Silent Hill 2",
+      "it": "Silent Hill 2",
+      "rm": "Silent Hill 2",
+      "es": "Silent Hill 2",
+      "zh-hans": "寂静岭 2"
+    },
+    "phrases": [
+      "in my restless dreams",
+      "in meinen ruhelosen träumen"
+    ]
+  },
+  {
+    "key": "jill_sandwich",
+    "title": {
+      "de": "Jill-Sandwich",
+      "en": "Jill Sandwich",
+      "fr": "Sandwich à la Jill",
+      "it": "Panino alla Jill",
+      "rm": "Sandwich da Jill",
+      "es": "Sándwich de Jill",
+      "zh-hans": "吉尔三明治"
+    },
+    "quote": {
+      "de": "You were almost a Jill sandwich!",
+      "en": "You were almost a Jill sandwich!",
+      "fr": "You were almost a Jill sandwich!",
+      "it": "You were almost a Jill sandwich!",
+      "rm": "You were almost a Jill sandwich!",
+      "es": "You were almost a Jill sandwich!",
+      "zh-hans": "You were almost a Jill sandwich!"
+    },
+    "source": {
+      "de": "Resident Evil",
+      "en": "Resident Evil",
+      "fr": "Resident Evil",
+      "it": "Resident Evil",
+      "rm": "Resident Evil",
+      "es": "Resident Evil",
+      "zh-hans": "生化危机"
+    },
+    "phrases": [
+      "jill sandwich"
+    ]
+  },
+  {
+    "key": "ricktatorship",
+    "title": {
+      "de": "Ricktatorship",
+      "en": "Ricktatorship",
+      "fr": "Ricktature",
+      "it": "Ricktatura",
+      "rm": "Ricktatura",
+      "es": "Ricktadura",
+      "zh-hans": "瑞克独裁"
+    },
+    "quote": {
+      "de": "This isn't a democracy anymore",
+      "en": "This isn't a democracy anymore",
+      "fr": "Ce n'est plus une démocratie",
+      "it": "Questa non è più una democrazia",
+      "rm": "Quai n'è betg pli ina democrazia",
+      "es": "Esto ya no es una democracia",
+      "zh-hans": "这里不再是民主了"
+    },
+    "source": {
+      "de": "The Walking Dead",
+      "en": "The Walking Dead",
+      "fr": "The Walking Dead",
+      "it": "The Walking Dead",
+      "rm": "The Walking Dead",
+      "es": "The Walking Dead",
+      "zh-hans": "行尸走肉"
+    },
+    "phrases": [
+      "this isn't a democracy anymore",
+      "das ist keine demokratie mehr"
+    ]
+  },
+  {
+    "key": "ill_be_back",
+    "title": {
+      "de": "I'll Be Back",
+      "en": "I'll Be Back",
+      "fr": "I'll Be Back",
+      "it": "I'll Be Back",
+      "rm": "I'll Be Back",
+      "es": "I'll Be Back",
+      "zh-hans": "我会回来的"
+    },
+    "quote": {
+      "de": "I'll be back",
+      "en": "I'll be back",
+      "fr": "I'll be back",
+      "it": "I'll be back",
+      "rm": "I'll be back",
+      "es": "Volveré",
+      "zh-hans": "I'll be back"
+    },
+    "source": {
+      "de": "Terminator",
+      "en": "Terminator",
+      "fr": "Terminator",
+      "it": "Terminator",
+      "rm": "Terminator",
+      "es": "Terminator",
+      "zh-hans": "终结者"
+    },
+    "phrases": [
+      "i'll be back"
+    ]
+  },
+  {
+    "key": "hasta_la_vista",
+    "title": {
+      "de": "Hasta la vista, Baby",
+      "en": "Hasta la vista, Baby",
+      "fr": "Hasta la vista, baby",
+      "it": "Hasta la vista, baby",
+      "rm": "Hasta la vista, baby",
+      "es": "Hasta la vista, baby",
+      "zh-hans": "Hasta la vista, baby"
+    },
+    "quote": {
+      "de": "Hasta la vista, Baby",
+      "en": "Hasta la vista, Baby",
+      "fr": "Hasta la vista, baby",
+      "it": "Hasta la vista, baby",
+      "rm": "Hasta la vista, baby",
+      "es": "Hasta la vista, baby",
+      "zh-hans": "Hasta la vista, baby"
+    },
+    "source": {
+      "de": "Terminator 2",
+      "en": "Terminator 2",
+      "fr": "Terminator 2",
+      "it": "Terminator 2",
+      "rm": "Terminator 2",
+      "es": "Terminator 2",
+      "zh-hans": "终结者 2"
+    },
+    "phrases": [
+      "hasta la vista baby"
+    ]
+  },
+  {
+    "key": "may_the_force",
+    "title": {
+      "de": "Jedi-Ritter",
+      "en": "Jedi Knight",
+      "fr": "Chevalier Jedi",
+      "it": "Cavaliere Jedi",
+      "rm": "Cavalier Jedi",
+      "es": "Caballero Jedi",
+      "zh-hans": "绝地武士"
+    },
+    "quote": {
+      "de": "Möge die Macht mit dir sein",
+      "en": "May the Force be with you",
+      "fr": "Que la Force soit avec toi",
+      "it": "Che la Forza sia con te",
+      "rm": "La Forza saja cun tai",
+      "es": "Que la Fuerza te acompañe",
+      "zh-hans": "愿原力与你同在"
+    },
+    "source": {
+      "de": "Star Wars",
+      "en": "Star Wars",
+      "fr": "Star Wars",
+      "it": "Star Wars",
+      "rm": "Star Wars",
+      "es": "Star Wars",
+      "zh-hans": "星球大战"
+    },
+    "phrases": [
+      "may the force be with you",
+      "möge die macht mit dir sein"
+    ]
+  },
+  {
+    "key": "your_father",
+    "title": {
+      "de": "Familienzusammenführung",
+      "en": "Family Reunion",
+      "fr": "Réunion de famille",
+      "it": "Riunione di famiglia",
+      "rm": "Reuniun da famiglia",
+      "es": "Reunión familiar",
+      "zh-hans": "家庭团聚"
+    },
+    "quote": {
+      "de": "Ich bin dein Vater",
+      "en": "I am your father",
+      "fr": "Je suis ton père",
+      "it": "Io sono tuo padre",
+      "rm": "Jau sun tes bab",
+      "es": "Yo soy tu padre",
+      "zh-hans": "我是你父亲"
+    },
+    "source": {
+      "de": "Star Wars: Das Imperium schlägt zurück",
+      "en": "Star Wars: The Empire Strikes Back",
+      "fr": "Star Wars : L'Empire contre-attaque",
+      "it": "Star Wars: L'Impero colpisce ancora",
+      "rm": "Star Wars: L'Imperi dat enavos",
+      "es": "Star Wars: El Imperio contraataca",
+      "zh-hans": "星球大战：帝国反击战"
+    },
+    "phrases": [
+      "i am your father",
+      "ich bin dein vater"
+    ]
+  },
+  {
+    "key": "shall_not_pass",
+    "title": {
+      "de": "Du kannst nicht vorbei!",
+      "en": "You Shall Not Pass!",
+      "fr": "Vous ne passerez pas !",
+      "it": "Tu non puoi passare!",
+      "rm": "Ti na pos betg passar!",
+      "es": "¡No puedes pasar!",
+      "zh-hans": "你不能过去！"
+    },
+    "quote": {
+      "de": "Du kannst nicht vorbei!",
+      "en": "You shall not pass!",
+      "fr": "Vous ne passerez pas !",
+      "it": "Tu non puoi passare!",
+      "rm": "Ti na pos betg passar!",
+      "es": "¡No puedes pasar!",
+      "zh-hans": "你不能过去！"
+    },
+    "source": {
+      "de": "Der Herr der Ringe",
+      "en": "The Lord of the Rings",
+      "fr": "Le Seigneur des anneaux",
+      "it": "Il Signore degli Anelli",
+      "rm": "Il Signur dals anels",
+      "es": "El Señor de los Anillos",
+      "zh-hans": "指环王"
+    },
+    "phrases": [
+      "you shall not pass",
+      "du kannst nicht vorbei"
+    ]
+  },
+  {
+    "key": "precious",
+    "title": {
+      "de": "Mein Schaaatz",
+      "en": "My Preciousss",
+      "fr": "Mon précieuuux",
+      "it": "Il mio tesssoro",
+      "rm": "Mes stgaziii",
+      "es": "Mi tesssoro",
+      "zh-hans": "我的宝贝贝贝"
+    },
+    "quote": {
+      "de": "Mein Schatz",
+      "en": "My precious",
+      "fr": "Mon précieux",
+      "it": "Il mio tesoro",
+      "rm": "Mes stgazi",
+      "es": "Mi tesoro",
+      "zh-hans": "我的宝贝"
+    },
+    "source": {
+      "de": "Der Herr der Ringe",
+      "en": "The Lord of the Rings",
+      "fr": "Le Seigneur des anneaux",
+      "it": "Il Signore degli Anelli",
+      "rm": "Il Signur dals anels",
+      "es": "El Señor de los Anillos",
+      "zh-hans": "指环王"
+    },
+    "phrases": [
+      "my precious",
+      "mein schatz",
+      "mein schaaatz"
+    ]
+  },
+  {
+    "key": "winter_is_coming",
+    "title": {
+      "de": "Haus Stark",
+      "en": "House Stark",
+      "fr": "Maison Stark",
+      "it": "Casa Stark",
+      "rm": "Chasa Stark",
+      "es": "Casa Stark",
+      "zh-hans": "史塔克家族"
+    },
+    "quote": {
+      "de": "Der Winter naht",
+      "en": "Winter is coming",
+      "fr": "L'hiver vient",
+      "it": "L'inverno sta arrivando",
+      "rm": "L'enviern vegn",
+      "es": "Se acerca el invierno",
+      "zh-hans": "凛冬将至"
+    },
+    "source": {
+      "de": "Game of Thrones",
+      "en": "Game of Thrones",
+      "fr": "Game of Thrones",
+      "it": "Il Trono di Spade",
+      "rm": "Game of Thrones",
+      "es": "Juego de tronos",
+      "zh-hans": "权力的游戏"
+    },
+    "phrases": [
+      "winter is coming",
+      "der winter naht"
+    ]
+  },
+  {
+    "key": "know_nothing",
+    "title": {
+      "de": "Jon Schnee",
+      "en": "Jon Snow",
+      "fr": "Jon Snow",
+      "it": "Jon Snow",
+      "rm": "Jon Snow",
+      "es": "Jon Nieve",
+      "zh-hans": "琼恩·雪诺"
+    },
+    "quote": {
+      "de": "Du weisst nichts, Jon Schnee",
+      "en": "You know nothing, Jon Snow",
+      "fr": "Tu ne sais rien, Jon Snow",
+      "it": "Non sai niente, Jon Snow",
+      "rm": "Ti na sas nagut, Jon Snow",
+      "es": "No sabes nada, Jon Nieve",
+      "zh-hans": "你什么都不懂，琼恩·雪诺"
+    },
+    "source": {
+      "de": "Game of Thrones",
+      "en": "Game of Thrones",
+      "fr": "Game of Thrones",
+      "it": "Il Trono di Spade",
+      "rm": "Game of Thrones",
+      "es": "Juego de tronos",
+      "zh-hans": "权力的游戏"
+    },
+    "phrases": [
+      "you know nothing jon snow",
+      "du weisst nichts jon schnee"
+    ]
+  },
+  {
+    "key": "no_spoon",
+    "title": {
+      "de": "Es gibt keinen Löffel",
+      "en": "There Is No Spoon",
+      "fr": "Il n'y a pas de cuillère",
+      "it": "Il cucchiaio non esiste",
+      "rm": "I na dat nagin tschadun",
+      "es": "No hay cuchara",
+      "zh-hans": "勺子并不存在"
+    },
+    "quote": {
+      "de": "Es gibt keinen Löffel",
+      "en": "There is no spoon",
+      "fr": "Il n'y a pas de cuillère",
+      "it": "Il cucchiaio non esiste",
+      "rm": "I na dat nagin tschadun",
+      "es": "No hay cuchara",
+      "zh-hans": "勺子并不存在"
+    },
+    "source": {
+      "de": "Matrix",
+      "en": "The Matrix",
+      "fr": "Matrix",
+      "it": "Matrix",
+      "rm": "Matrix",
+      "es": "Matrix",
+      "zh-hans": "黑客帝国"
+    },
+    "phrases": [
+      "there is no spoon",
+      "es gibt keinen löffel"
+    ]
+  },
+  {
+    "key": "cake_is_a_lie",
+    "title": {
+      "de": "Portal-Wahrheit",
+      "en": "Portal Truth",
+      "fr": "Vérité de Portal",
+      "it": "Verità di Portal",
+      "rm": "Vardad da Portal",
+      "es": "Verdad de Portal",
+      "zh-hans": "传送门真相"
+    },
+    "quote": {
+      "de": "The cake is a lie",
+      "en": "The cake is a lie",
+      "fr": "The cake is a lie",
+      "it": "The cake is a lie",
+      "rm": "The cake is a lie",
+      "es": "The cake is a lie",
+      "zh-hans": "The cake is a lie"
+    },
+    "source": {
+      "de": "Portal",
+      "en": "Portal",
+      "fr": "Portal",
+      "it": "Portal",
+      "rm": "Portal",
+      "es": "Portal",
+      "zh-hans": "传送门"
+    },
+    "phrases": [
+      "the cake is a lie",
+      "der kuchen ist eine lüge"
+    ]
+  },
+  {
+    "key": "dangerous_alone",
+    "title": {
+      "de": "Nimm das hier mit",
+      "en": "Take This",
+      "fr": "Prends ceci",
+      "it": "Prendi questo",
+      "rm": "Prenda quai",
+      "es": "Toma esto",
+      "zh-hans": "拿着这个"
+    },
+    "quote": {
+      "de": "It's dangerous to go alone! Take this.",
+      "en": "It's dangerous to go alone! Take this.",
+      "fr": "It's dangerous to go alone! Take this.",
+      "it": "It's dangerous to go alone! Take this.",
+      "rm": "It's dangerous to go alone! Take this.",
+      "es": "It's dangerous to go alone! Take this.",
+      "zh-hans": "It's dangerous to go alone! Take this."
+    },
+    "source": {
+      "de": "The Legend of Zelda",
+      "en": "The Legend of Zelda",
+      "fr": "The Legend of Zelda",
+      "it": "The Legend of Zelda",
+      "rm": "The Legend of Zelda",
+      "es": "The Legend of Zelda",
+      "zh-hans": "塞尔达传说"
+    },
+    "phrases": [
+      "it's dangerous to go alone",
+      "es ist gefährlich allein zu gehen"
+    ]
+  },
+  {
+    "key": "another_castle",
+    "title": {
+      "de": "Falsches Schloss",
+      "en": "Wrong Castle",
+      "fr": "Mauvais château",
+      "it": "Castello sbagliato",
+      "rm": "Chastè fallà",
+      "es": "Castillo equivocado",
+      "zh-hans": "找错城堡"
+    },
+    "quote": {
+      "de": "Die Prinzessin ist in einem anderen Schloss",
+      "en": "Our princess is in another castle",
+      "fr": "Notre princesse est dans un autre château",
+      "it": "La principessa è in un altro castello",
+      "rm": "La princessa è en in auter chastè",
+      "es": "La princesa está en otro castillo",
+      "zh-hans": "公主在另一座城堡里"
+    },
+    "source": {
+      "de": "Super Mario Bros.",
+      "en": "Super Mario Bros.",
+      "fr": "Super Mario Bros.",
+      "it": "Super Mario Bros.",
+      "rm": "Super Mario Bros.",
+      "es": "Super Mario Bros.",
+      "zh-hans": "超级马力欧兄弟"
+    },
+    "phrases": [
+      "the princess is in another castle",
+      "die prinzessin ist in einem anderen schloss"
+    ]
+  },
+  {
+    "key": "war_never_changes",
+    "title": {
+      "de": "Krieg bleibt immer gleich",
+      "en": "War Never Changes",
+      "fr": "La guerre ne change jamais",
+      "it": "La guerra non cambia mai",
+      "rm": "La guerra na sa mida mai",
+      "es": "La guerra nunca cambia",
+      "zh-hans": "战争从未改变"
+    },
+    "quote": {
+      "de": "War. War never changes.",
+      "en": "War. War never changes.",
+      "fr": "War. War never changes.",
+      "it": "War. War never changes.",
+      "rm": "War. War never changes.",
+      "es": "War. War never changes.",
+      "zh-hans": "War. War never changes."
+    },
+    "source": {
+      "de": "Fallout",
+      "en": "Fallout",
+      "fr": "Fallout",
+      "it": "Fallout",
+      "rm": "Fallout",
+      "es": "Fallout",
+      "zh-hans": "辐射"
+    },
+    "phrases": [
+      "war never changes",
+      "krieg bleibt immer gleich"
+    ]
+  },
+  {
+    "key": "would_you_kindly",
+    "title": {
+      "de": "Would You Kindly",
+      "en": "Would You Kindly",
+      "fr": "Would You Kindly",
+      "it": "Would You Kindly",
+      "rm": "Would You Kindly",
+      "es": "Would You Kindly",
+      "zh-hans": "Would You Kindly"
+    },
+    "quote": {
+      "de": "Would you kindly …",
+      "en": "Would you kindly …",
+      "fr": "Would you kindly …",
+      "it": "Would you kindly …",
+      "rm": "Would you kindly …",
+      "es": "Would you kindly …",
+      "zh-hans": "Would you kindly …"
+    },
+    "source": {
+      "de": "BioShock",
+      "en": "BioShock",
+      "fr": "BioShock",
+      "it": "BioShock",
+      "rm": "BioShock",
+      "es": "BioShock",
+      "zh-hans": "生化奇兵"
+    },
+    "phrases": [
+      "would you kindly"
+    ]
+  },
+  {
+    "key": "all_your_base",
+    "title": {
+      "de": "Zero Wing",
+      "en": "Zero Wing",
+      "fr": "Zero Wing",
+      "it": "Zero Wing",
+      "rm": "Zero Wing",
+      "es": "Zero Wing",
+      "zh-hans": "零翼"
+    },
+    "quote": {
+      "de": "All your base are belong to us",
+      "en": "All your base are belong to us",
+      "fr": "All your base are belong to us",
+      "it": "All your base are belong to us",
+      "rm": "All your base are belong to us",
+      "es": "All your base are belong to us",
+      "zh-hans": "All your base are belong to us"
+    },
+    "source": {
+      "de": "Zero Wing",
+      "en": "Zero Wing",
+      "fr": "Zero Wing",
+      "it": "Zero Wing",
+      "rm": "Zero Wing",
+      "es": "Zero Wing",
+      "zh-hans": "零翼"
+    },
+    "phrases": [
+      "all your base are belong to us"
+    ]
+  },
+  {
+    "key": "proletarier",
+    "title": {
+      "de": "Genosse",
+      "en": "Comrade",
+      "fr": "Camarade",
+      "it": "Compagno",
+      "rm": "Camerat",
+      "es": "Camarada",
+      "zh-hans": "同志"
+    },
+    "quote": {
+      "de": "Proletarier aller Länder, vereinigt euch!",
+      "en": "Workers of the world, unite!",
+      "fr": "Prolétaires de tous les pays, unissez-vous !",
+      "it": "Proletari di tutto il mondo, unitevi!",
+      "rm": "Proletaris da tut ils pajais, unì vus!",
+      "es": "¡Proletarios de todos los países, uníos!",
+      "zh-hans": "全世界无产者，联合起来！"
+    },
+    "source": {
+      "de": "Das Kommunistische Manifest",
+      "en": "The Communist Manifesto",
+      "fr": "Le Manifeste du parti communiste",
+      "it": "Il Manifesto del Partito Comunista",
+      "rm": "Il manifest communist",
+      "es": "El manifiesto comunista",
+      "zh-hans": "共产党宣言"
+    },
+    "phrases": [
+      "proletarier aller länder vereinigt euch",
+      "workers of the world unite"
+    ]
+  },
+  {
+    "key": "unus_pro_omnibus",
+    "title": {
+      "de": "Unus pro omnibus",
+      "en": "Unus pro omnibus",
+      "fr": "Unus pro omnibus",
+      "it": "Unus pro omnibus",
+      "rm": "Unus pro omnibus",
+      "es": "Unus pro omnibus",
+      "zh-hans": "Unus pro omnibus"
+    },
+    "quote": {
+      "de": "Einer für alle, alle für einen",
+      "en": "One for all, all for one",
+      "fr": "Un pour tous, tous pour un",
+      "it": "Uno per tutti, tutti per uno",
+      "rm": "In per tuts, tuts per in",
+      "es": "Uno para todos, todos para uno",
+      "zh-hans": "人人为我，我为人人"
+    },
+    "source": {
+      "de": "Wahlspruch der Schweiz",
+      "en": "Motto of Switzerland",
+      "fr": "Devise de la Suisse",
+      "it": "Motto della Svizzera",
+      "rm": "Motto da la Svizra",
+      "es": "Lema de Suiza",
+      "zh-hans": "瑞士格言"
+    },
+    "phrases": [
+      "einer für alle alle für einen",
+      "unus pro omnibus"
+    ]
+  },
+  {
+    "key": "yes_we_can",
+    "title": {
+      "de": "Wahlkampf-Rhetoriker",
+      "en": "Campaign Orator",
+      "fr": "Orateur de campagne",
+      "it": "Oratore da campagna",
+      "rm": "Oratur da campagna",
+      "es": "Orador de campaña",
+      "zh-hans": "竞选演说家"
+    },
+    "quote": {
+      "de": "Yes we can",
+      "en": "Yes we can",
+      "fr": "Yes we can",
+      "it": "Yes we can",
+      "rm": "Yes we can",
+      "es": "Yes we can",
+      "zh-hans": "Yes we can"
+    },
+    "source": {
+      "de": "US-Wahlkampf 2008",
+      "en": "US election campaign 2008",
+      "fr": "Campagne présidentielle américaine 2008",
+      "it": "Campagna elettorale USA 2008",
+      "rm": "Campagna electorala dals Stadis Unids 2008",
+      "es": "Campaña electoral de EE. UU. 2008",
+      "zh-hans": "2008 年美国大选"
+    },
+    "phrases": [
+      "yes we can"
+    ]
+  },
+  {
+    "key": "heres_johnny",
+    "title": {
+      "de": "Here's Johnny!",
+      "en": "Here's Johnny!",
+      "fr": "Here's Johnny!",
+      "it": "Here's Johnny!",
+      "rm": "Here's Johnny!",
+      "es": "Here's Johnny!",
+      "zh-hans": "Here's Johnny!"
+    },
+    "quote": {
+      "de": "Here's Johnny!",
+      "en": "Here's Johnny!",
+      "fr": "Here's Johnny!",
+      "it": "Here's Johnny!",
+      "rm": "Here's Johnny!",
+      "es": "Here's Johnny!",
+      "zh-hans": "Here's Johnny!"
+    },
+    "source": {
+      "de": "Shining",
+      "en": "The Shining",
+      "fr": "Shining",
+      "it": "Shining",
+      "rm": "Shining",
+      "es": "El resplandor",
+      "zh-hans": "闪灵"
+    },
+    "phrases": [
+      "here's johnny"
+    ]
+  },
+  {
+    "key": "dead_people",
+    "title": {
+      "de": "Sechster Sinn",
+      "en": "Sixth Sense",
+      "fr": "Sixième Sens",
+      "it": "Il sesto senso",
+      "rm": "Il sisavel senn",
+      "es": "El sexto sentido",
+      "zh-hans": "第六感"
+    },
+    "quote": {
+      "de": "Ich sehe tote Menschen",
+      "en": "I see dead people",
+      "fr": "Je vois des gens qui sont morts",
+      "it": "Vedo la gente morta",
+      "rm": "Jau ves persunas mortas",
+      "es": "En ocasiones veo muertos",
+      "zh-hans": "我看见死人"
+    },
+    "source": {
+      "de": "The Sixth Sense",
+      "en": "The Sixth Sense",
+      "fr": "Sixième Sens",
+      "it": "Il sesto senso",
+      "rm": "The Sixth Sense",
+      "es": "El sexto sentido",
+      "zh-hans": "灵异第六感"
+    },
+    "phrases": [
+      "i see dead people",
+      "ich sehe tote menschen"
+    ]
+  },
+  {
+    "key": "box_of_chocolates",
+    "title": {
+      "de": "Lauf, Forrest, lauf!",
+      "en": "Run, Forrest, Run!",
+      "fr": "Cours, Forrest, cours !",
+      "it": "Corri, Forrest, corri!",
+      "rm": "Curra, Forrest, curra!",
+      "es": "¡Corre, Forrest, corre!",
+      "zh-hans": "跑啊，福雷斯特，跑！"
+    },
+    "quote": {
+      "de": "Das Leben ist wie eine Schachtel Pralinen",
+      "en": "Life is like a box of chocolates",
+      "fr": "La vie, c'est comme une boîte de chocolats",
+      "it": "La vita è come una scatola di cioccolatini",
+      "rm": "La vita è sco ina stgatla da pralinas",
+      "es": "La vida es como una caja de bombones",
+      "zh-hans": "人生就像一盒巧克力"
+    },
+    "source": {
+      "de": "Forrest Gump",
+      "en": "Forrest Gump",
+      "fr": "Forrest Gump",
+      "it": "Forrest Gump",
+      "rm": "Forrest Gump",
+      "es": "Forrest Gump",
+      "zh-hans": "阿甘正传"
+    },
+    "phrases": [
+      "life is like a box of chocolates",
+      "das leben ist wie eine schachtel pralinen"
+    ]
+  },
+  {
+    "key": "houston",
+    "title": {
+      "de": "Ground Control",
+      "en": "Ground Control",
+      "fr": "Contrôle au sol",
+      "it": "Controllo a terra",
+      "rm": "Controlla a terra",
+      "es": "Control de tierra",
+      "zh-hans": "地面控制"
+    },
+    "quote": {
+      "de": "Houston, wir haben ein Problem",
+      "en": "Houston, we have a problem",
+      "fr": "Houston, nous avons un problème",
+      "it": "Houston, abbiamo un problema",
+      "rm": "Houston, nus avain in problem",
+      "es": "Houston, tenemos un problema",
+      "zh-hans": "休斯敦，我们有麻烦了"
+    },
+    "source": {
+      "de": "Apollo 13",
+      "en": "Apollo 13",
+      "fr": "Apollo 13",
+      "it": "Apollo 13",
+      "rm": "Apollo 13",
+      "es": "Apolo 13",
+      "zh-hans": "阿波罗 13 号"
+    },
+    "phrases": [
+      "houston we have a problem",
+      "houston wir haben ein problem"
+    ]
+  },
+  {
+    "key": "baby_in_a_corner",
+    "title": {
+      "de": "Nobody Puts Baby in a Corner",
+      "en": "Nobody Puts Baby in a Corner",
+      "fr": "Nobody Puts Baby in a Corner",
+      "it": "Nobody Puts Baby in a Corner",
+      "rm": "Nobody Puts Baby in a Corner",
+      "es": "Nobody Puts Baby in a Corner",
+      "zh-hans": "Nobody Puts Baby in a Corner"
+    },
+    "quote": {
+      "de": "Mein Baby gehört zu mir!",
+      "en": "Nobody puts Baby in a corner",
+      "fr": "On ne laisse pas Bébé dans un coin",
+      "it": "Nessuno può mettere Baby in un angolo",
+      "rm": "Nagin na metta Baby en in chantun",
+      "es": "Nadie arrincona a Baby",
+      "zh-hans": "没人能把宝贝冷落在角落"
+    },
+    "source": {
+      "de": "Dirty Dancing",
+      "en": "Dirty Dancing",
+      "fr": "Dirty Dancing",
+      "it": "Dirty Dancing",
+      "rm": "Dirty Dancing",
+      "es": "Dirty Dancing",
+      "zh-hans": "辣身舞"
+    },
+    "phrases": [
+      "nobody puts baby in a corner",
+      "mein baby gehört zu mir"
+    ]
+  },
+  {
+    "key": "schwein_pfeift",
+    "title": {
+      "de": "Kultspruch-Archäologe",
+      "en": "Catchphrase Archaeologist",
+      "fr": "Archéologue de répliques cultes",
+      "it": "Archeologo delle battute cult",
+      "rm": "Archeolog da detgas",
+      "es": "Arqueólogo de frases de culto",
+      "zh-hans": "经典台词考古学家"
+    },
+    "quote": {
+      "de": "Ich glaub, mein Schwein pfeift!",
+      "en": "Ich glaub, mein Schwein pfeift!",
+      "fr": "Ich glaub, mein Schwein pfeift!",
+      "it": "Ich glaub, mein Schwein pfeift!",
+      "rm": "Ich glaub, mein Schwein pfeift!",
+      "es": "Ich glaub, mein Schwein pfeift!",
+      "zh-hans": "Ich glaub, mein Schwein pfeift!"
+    },
+    "source": {
+      "de": "Deutscher Kultspruch",
+      "en": "German catchphrase",
+      "fr": "Réplique culte allemande",
+      "it": "Battuta cult tedesca",
+      "rm": "Detga tudestga da cult",
+      "es": "Frase de culto alemana",
+      "zh-hans": "德国经典台词"
+    },
+    "phrases": [
+      "ich glaub mein schwein pfeift"
+    ]
+  },
+  {
+    "key": "say_my_name",
+    "title": {
+      "de": "Heisenberg",
+      "en": "Heisenberg",
+      "fr": "Heisenberg",
+      "it": "Heisenberg",
+      "rm": "Heisenberg",
+      "es": "Heisenberg",
+      "zh-hans": "海森堡"
+    },
+    "quote": {
+      "de": "Say my name.",
+      "en": "Say my name.",
+      "fr": "Say my name.",
+      "it": "Say my name.",
+      "rm": "Say my name.",
+      "es": "Say my name.",
+      "zh-hans": "Say my name."
+    },
+    "source": {
+      "de": "Breaking Bad",
+      "en": "Breaking Bad",
+      "fr": "Breaking Bad",
+      "it": "Breaking Bad",
+      "rm": "Breaking Bad",
+      "es": "Breaking Bad",
+      "zh-hans": "绝命毒师"
+    },
+    "phrases": [
+      "say my name",
+      "i am the one who knocks"
+    ]
+  },
+  {
+    "key": "how_you_doin",
+    "title": {
+      "de": "How You Doin'?",
+      "en": "How You Doin'?",
+      "fr": "How You Doin'?",
+      "it": "How You Doin'?",
+      "rm": "How You Doin'?",
+      "es": "How You Doin'?",
+      "zh-hans": "How You Doin'?"
+    },
+    "quote": {
+      "de": "How you doin'?",
+      "en": "How you doin'?",
+      "fr": "How you doin'?",
+      "it": "How you doin'?",
+      "rm": "How you doin'?",
+      "es": "How you doin'?",
+      "zh-hans": "How you doin'?"
+    },
+    "source": {
+      "de": "Friends",
+      "en": "Friends",
+      "fr": "Friends",
+      "it": "Friends",
+      "rm": "Friends",
+      "es": "Friends",
+      "zh-hans": "老友记"
+    },
+    "phrases": [
+      "how you doin"
+    ]
+  },
+  {
+    "key": "bazinga",
+    "title": {
+      "de": "Bazinga!",
+      "en": "Bazinga!",
+      "fr": "Bazinga!",
+      "it": "Bazinga!",
+      "rm": "Bazinga!",
+      "es": "Bazinga!",
+      "zh-hans": "Bazinga!"
+    },
+    "quote": {
+      "de": "Bazinga!",
+      "en": "Bazinga!",
+      "fr": "Bazinga!",
+      "it": "Bazinga!",
+      "rm": "Bazinga!",
+      "es": "Bazinga!",
+      "zh-hans": "Bazinga!"
+    },
+    "source": {
+      "de": "The Big Bang Theory",
+      "en": "The Big Bang Theory",
+      "fr": "The Big Bang Theory",
+      "it": "The Big Bang Theory",
+      "rm": "The Big Bang Theory",
+      "es": "The Big Bang Theory",
+      "zh-hans": "生活大爆炸"
+    },
+    "phrases": [
+      "bazinga"
+    ]
+  },
+  {
+    "key": "lion_and_lamb",
+    "title": {
+      "de": "Löwe & Lamm",
+      "en": "Lion & Lamb",
+      "fr": "Le lion et l'agneau",
+      "it": "Il leone e l'agnello",
+      "rm": "Liun ed agnè",
+      "es": "El león y la oveja",
+      "zh-hans": "狮子与羔羊"
+    },
+    "quote": {
+      "de": "Und so verliebte sich der Löwe in das Lamm",
+      "en": "And so the lion fell in love with the lamb",
+      "fr": "Et ainsi le lion tomba amoureux de l'agneau",
+      "it": "E così il leone si innamorò dell'agnello",
+      "rm": "Ed uschia è il liun s'inamurà da l'agnè",
+      "es": "Y así fue como el león se enamoró de la oveja",
+      "zh-hans": "于是狮子爱上了羔羊"
+    },
+    "source": {
+      "de": "Twilight",
+      "en": "Twilight",
+      "fr": "Twilight",
+      "it": "Twilight",
+      "rm": "Twilight",
+      "es": "Crepúsculo",
+      "zh-hans": "暮光之城"
+    },
+    "phrases": [
+      "and so the lion fell in love with the lamb",
+      "und so verliebte sich der löwe in das lamm"
+    ]
+  },
+  {
+    "key": "who_did_this",
+    "title": {
+      "de": "Who Did This to You?",
+      "en": "Who Did This to You?",
+      "fr": "Who Did This to You?",
+      "it": "Who Did This to You?",
+      "rm": "Who Did This to You?",
+      "es": "Who Did This to You?",
+      "zh-hans": "Who Did This to You?"
+    },
+    "quote": {
+      "de": "Who did this to you?",
+      "en": "Who did this to you?",
+      "fr": "Who did this to you?",
+      "it": "Who did this to you?",
+      "rm": "Who did this to you?",
+      "es": "Who did this to you?",
+      "zh-hans": "Who did this to you?"
+    },
+    "source": {
+      "de": "Dark Romance",
+      "en": "Dark Romance",
+      "fr": "Dark Romance",
+      "it": "Dark Romance",
+      "rm": "Dark Romance",
+      "es": "Dark Romance",
+      "zh-hans": "黑暗浪漫"
+    },
+    "phrases": [
+      "who did this to you",
+      "wer hat dir das angetan"
+    ]
+  },
+  {
+    "key": "touch_her",
+    "title": {
+      "de": "Touch Her and Die",
+      "en": "Touch Her and Die",
+      "fr": "Touch Her and Die",
+      "it": "Touch Her and Die",
+      "rm": "Touch Her and Die",
+      "es": "Touch Her and Die",
+      "zh-hans": "Touch Her and Die"
+    },
+    "quote": {
+      "de": "Touch her and die.",
+      "en": "Touch her and die.",
+      "fr": "Touch her and die.",
+      "it": "Touch her and die.",
+      "rm": "Touch her and die.",
+      "es": "Touch her and die.",
+      "zh-hans": "Touch her and die."
+    },
+    "source": {
+      "de": "Dark Romance",
+      "en": "Dark Romance",
+      "fr": "Dark Romance",
+      "it": "Dark Romance",
+      "rm": "Dark Romance",
+      "es": "Dark Romance",
+      "zh-hans": "黑暗浪漫"
+    },
+    "phrases": [
+      "touch her and die",
+      "fass sie an und du stirbst"
+    ]
+  },
+  {
+    "key": "nolite_te_bastardes",
+    "title": {
+      "de": "Nolite te bastardes carborundorum",
+      "en": "Nolite te bastardes carborundorum",
+      "fr": "Nolite te bastardes carborundorum",
+      "it": "Nolite te bastardes carborundorum",
+      "rm": "Nolite te bastardes carborundorum",
+      "es": "Nolite te bastardes carborundorum",
+      "zh-hans": "Nolite te bastardes carborundorum"
+    },
+    "quote": {
+      "de": "Nolite te bastardes carborundorum",
+      "en": "Nolite te bastardes carborundorum",
+      "fr": "Nolite te bastardes carborundorum",
+      "it": "Nolite te bastardes carborundorum",
+      "rm": "Nolite te bastardes carborundorum",
+      "es": "Nolite te bastardes carborundorum",
+      "zh-hans": "Nolite te bastardes carborundorum"
+    },
+    "source": {
+      "de": "The Handmaid's Tale",
+      "en": "The Handmaid's Tale",
+      "fr": "La Servante écarlate",
+      "it": "Il racconto dell'ancella",
+      "rm": "The Handmaid's Tale",
+      "es": "El cuento de la criada",
+      "zh-hans": "使女的故事"
+    },
+    "phrases": [
+      "nolite te bastardes carborundorum"
+    ]
+  },
+  {
+    "key": "under_his_eye",
+    "title": {
+      "de": "Under His Eye",
+      "en": "Under His Eye",
+      "fr": "Sous Son Œil",
+      "it": "Sia lodato",
+      "rm": "Sut Ses egl",
+      "es": "Bajo Su Ojo",
+      "zh-hans": "在祂眼下"
+    },
+    "quote": {
+      "de": "Unter Seinem Auge",
+      "en": "Under His Eye",
+      "fr": "Sous Son Œil",
+      "it": "Sotto il Suo Occhio",
+      "rm": "Sut Ses egl",
+      "es": "Bajo Su Ojo",
+      "zh-hans": "在祂眼下"
+    },
+    "source": {
+      "de": "The Handmaid's Tale",
+      "en": "The Handmaid's Tale",
+      "fr": "La Servante écarlate",
+      "it": "Il racconto dell'ancella",
+      "rm": "The Handmaid's Tale",
+      "es": "El cuento de la criada",
+      "zh-hans": "使女的故事"
+    },
+    "phrases": [
+      "under his eye",
+      "unter seinem auge"
+    ]
+  },
+  {
+    "key": "blessed_be_the_fruit",
+    "title": {
+      "de": "Gesegnet sei die Frucht",
+      "en": "Blessed Be the Fruit",
+      "fr": "Béni soit le fruit",
+      "it": "Sia benedetto il frutto",
+      "rm": "Benedì saja il fritg",
+      "es": "Bendito sea el fruto",
+      "zh-hans": "愿果实蒙福"
+    },
+    "quote": {
+      "de": "Gesegnet sei die Frucht",
+      "en": "Blessed be the fruit",
+      "fr": "Béni soit le fruit",
+      "it": "Sia benedetto il frutto",
+      "rm": "Benedì saja il fritg",
+      "es": "Bendito sea el fruto",
+      "zh-hans": "愿果实蒙福"
+    },
+    "source": {
+      "de": "The Handmaid's Tale",
+      "en": "The Handmaid's Tale",
+      "fr": "La Servante écarlate",
+      "it": "Il racconto dell'ancella",
+      "rm": "The Handmaid's Tale",
+      "es": "El cuento de la criada",
+      "zh-hans": "使女的故事"
+    },
+    "phrases": [
+      "blessed be the fruit",
+      "gesegnet sei die frucht"
+    ]
+  },
+  {
+    "key": "big_brother",
+    "title": {
+      "de": "Gedankenpolizei",
+      "en": "Thought Police",
+      "fr": "Police de la pensée",
+      "it": "Psicopolizia",
+      "rm": "Polizia dals patratgs",
+      "es": "Policía del Pensamiento",
+      "zh-hans": "思想警察"
+    },
+    "quote": {
+      "de": "Big Brother is watching you",
+      "en": "Big Brother is watching you",
+      "fr": "Big Brother vous regarde",
+      "it": "Il Grande Fratello ti guarda",
+      "rm": "Big Brother ta guarda",
+      "es": "El Gran Hermano te vigila",
+      "zh-hans": "老大哥在看着你"
+    },
+    "source": {
+      "de": "George Orwell: 1984",
+      "en": "George Orwell: 1984",
+      "fr": "George Orwell : 1984",
+      "it": "George Orwell: 1984",
+      "rm": "George Orwell: 1984",
+      "es": "George Orwell: 1984",
+      "zh-hans": "乔治·奥威尔：一九八四"
+    },
+    "phrases": [
+      "big brother is watching you",
+      "der grosse bruder sieht dich"
+    ]
+  },
+  {
+    "key": "war_is_peace",
+    "title": {
+      "de": "Neusprech",
+      "en": "Newspeak",
+      "fr": "Novlangue",
+      "it": "Neolingua",
+      "rm": "Neolinguatg",
+      "es": "Neolengua",
+      "zh-hans": "新话"
+    },
+    "quote": {
+      "de": "Krieg ist Frieden. Freiheit ist Sklaverei. Unwissenheit ist Stärke.",
+      "en": "War is peace. Freedom is slavery. Ignorance is strength.",
+      "fr": "La guerre, c'est la paix. La liberté, c'est l'esclavage. L'ignorance, c'est la force.",
+      "it": "La guerra è pace. La libertà è schiavitù. L'ignoranza è forza.",
+      "rm": "Guerra è pasch. Libertad è sclavitid. Ignoranza è forza.",
+      "es": "La guerra es la paz. La libertad es la esclavitud. La ignorancia es la fuerza.",
+      "zh-hans": "战争即和平。自由即奴役。无知即力量。"
+    },
+    "source": {
+      "de": "George Orwell: 1984",
+      "en": "George Orwell: 1984",
+      "fr": "George Orwell : 1984",
+      "it": "George Orwell: 1984",
+      "rm": "George Orwell: 1984",
+      "es": "George Orwell: 1984",
+      "zh-hans": "乔治·奥威尔：一九八四"
+    },
+    "phrases": [
+      "war is peace",
+      "krieg ist frieden"
+    ]
+  },
+  {
+    "key": "two_plus_two",
+    "title": {
+      "de": "Doppeldenk",
+      "en": "Doublethink",
+      "fr": "Doublepensée",
+      "it": "Bispensiero",
+      "rm": "Dubel patratg",
+      "es": "Doblepensar",
+      "zh-hans": "双重思想"
+    },
+    "quote": {
+      "de": "2 + 2 = 5",
+      "en": "2 + 2 = 5",
+      "fr": "2 + 2 = 5",
+      "it": "2 + 2 = 5",
+      "rm": "2 + 2 = 5",
+      "es": "2 + 2 = 5",
+      "zh-hans": "2 + 2 = 5"
+    },
+    "source": {
+      "de": "George Orwell: 1984",
+      "en": "George Orwell: 1984",
+      "fr": "George Orwell : 1984",
+      "it": "George Orwell: 1984",
+      "rm": "George Orwell: 1984",
+      "es": "George Orwell: 1984",
+      "zh-hans": "乔治·奥威尔：一九八四"
+    },
+    "phrases": [
+      "2 2 5",
+      "zwei plus zwei ist fünf",
+      "two plus two makes five"
+    ]
+  },
+  {
+    "key": "more_equal",
+    "title": {
+      "de": "Farm der Tiere",
+      "en": "Animal Farm",
+      "fr": "La Ferme des animaux",
+      "it": "La fattoria degli animali",
+      "rm": "La fattoria dals animals",
+      "es": "Rebelión en la granja",
+      "zh-hans": "动物农场"
+    },
+    "quote": {
+      "de": "Alle Tiere sind gleich, aber manche sind gleicher",
+      "en": "All animals are equal, but some animals are more equal than others",
+      "fr": "Tous les animaux sont égaux, mais certains sont plus égaux que d'autres",
+      "it": "Tutti gli animali sono uguali, ma alcuni sono più uguali degli altri",
+      "rm": "Tut ils animals èn eguals, ma intgins èn pli eguals che auters",
+      "es": "Todos los animales son iguales, pero algunos son más iguales que otros",
+      "zh-hans": "所有动物生而平等，但有些动物比其他动物更平等"
+    },
+    "source": {
+      "de": "George Orwell: Farm der Tiere",
+      "en": "George Orwell: Animal Farm",
+      "fr": "George Orwell : La Ferme des animaux",
+      "it": "George Orwell: La fattoria degli animali",
+      "rm": "George Orwell: La fattoria dals animals",
+      "es": "George Orwell: Rebelión en la granja",
+      "zh-hans": "乔治·奥威尔：动物农场"
+    },
+    "phrases": [
+      "all animals are equal but some animals are more equal",
+      "manche sind gleicher"
+    ]
+  },
+  {
+    "key": "omae_wa_mou",
+    "title": {
+      "de": "Omae wa mou shindeiru",
+      "en": "Omae wa mou shindeiru",
+      "fr": "Omae wa mou shindeiru",
+      "it": "Omae wa mou shindeiru",
+      "rm": "Omae wa mou shindeiru",
+      "es": "Omae wa mou shindeiru",
+      "zh-hans": "Omae wa mou shindeiru"
+    },
+    "quote": {
+      "de": "Omae wa mou shindeiru",
+      "en": "Omae wa mou shindeiru",
+      "fr": "Omae wa mou shindeiru",
+      "it": "Omae wa mou shindeiru",
+      "rm": "Omae wa mou shindeiru",
+      "es": "Omae wa mou shindeiru",
+      "zh-hans": "Omae wa mou shindeiru"
+    },
+    "source": {
+      "de": "Fist of the North Star",
+      "en": "Fist of the North Star",
+      "fr": "Ken le Survivant",
+      "it": "Ken il guerriero",
+      "rm": "Fist of the North Star",
+      "es": "El puño de la estrella del norte",
+      "zh-hans": "北斗神拳"
+    },
+    "phrases": [
+      "omae wa mou shindeiru"
+    ]
+  },
+  {
+    "key": "over_9000",
+    "title": {
+      "de": "It's Over 9000!",
+      "en": "It's Over 9000!",
+      "fr": "It's Over 9000!",
+      "it": "It's Over 9000!",
+      "rm": "It's Over 9000!",
+      "es": "It's Over 9000!",
+      "zh-hans": "It's Over 9000!"
+    },
+    "quote": {
+      "de": "It's over 9000!",
+      "en": "It's over 9000!",
+      "fr": "It's over 9000!",
+      "it": "It's over 9000!",
+      "rm": "It's over 9000!",
+      "es": "It's over 9000!",
+      "zh-hans": "It's over 9000!"
+    },
+    "source": {
+      "de": "Dragon Ball Z",
+      "en": "Dragon Ball Z",
+      "fr": "Dragon Ball Z",
+      "it": "Dragon Ball Z",
+      "rm": "Dragon Ball Z",
+      "es": "Dragon Ball Z",
+      "zh-hans": "龙珠 Z"
+    },
+    "phrases": [
+      "it's over 9000",
+      "über 9000"
+    ]
+  },
+  {
+    "key": "dattebayo",
+    "title": {
+      "de": "Dattebayo!",
+      "en": "Dattebayo!",
+      "fr": "Dattebayo!",
+      "it": "Dattebayo!",
+      "rm": "Dattebayo!",
+      "es": "Dattebayo!",
+      "zh-hans": "我说到做到！"
+    },
+    "quote": {
+      "de": "Ich werde Hokage, echt jetzt!",
+      "en": "I'm gonna be Hokage, believe it!",
+      "fr": "Je deviendrai Hokage, crois-moi !",
+      "it": "Diventerò Hokage, credici!",
+      "rm": "Jau vegn Hokage, propi!",
+      "es": "¡Voy a ser Hokage, de veras!",
+      "zh-hans": "我要成为火影，我说到做到！"
+    },
+    "source": {
+      "de": "Naruto",
+      "en": "Naruto",
+      "fr": "Naruto",
+      "it": "Naruto",
+      "rm": "Naruto",
+      "es": "Naruto",
+      "zh-hans": "火影忍者"
+    },
+    "phrases": [
+      "dattebayo",
+      "echt jetzt"
+    ]
+  },
+  {
+    "key": "plus_ultra",
+    "title": {
+      "de": "Plus Ultra!",
+      "en": "Plus Ultra!",
+      "fr": "Plus Ultra!",
+      "it": "Plus Ultra!",
+      "rm": "Plus Ultra!",
+      "es": "Plus Ultra!",
+      "zh-hans": "Plus Ultra!"
+    },
+    "quote": {
+      "de": "Plus Ultra!",
+      "en": "Plus Ultra!",
+      "fr": "Plus Ultra!",
+      "it": "Plus Ultra!",
+      "rm": "Plus Ultra!",
+      "es": "Plus Ultra!",
+      "zh-hans": "Plus Ultra!"
+    },
+    "source": {
+      "de": "My Hero Academia",
+      "en": "My Hero Academia",
+      "fr": "My Hero Academia",
+      "it": "My Hero Academia",
+      "rm": "My Hero Academia",
+      "es": "My Hero Academia",
+      "zh-hans": "我的英雄学院"
+    },
+    "phrases": [
+      "plus ultra"
+    ]
+  },
+  {
+    "key": "shinzou_wo_sasageyo",
+    "title": {
+      "de": "Shinzou wo Sasageyo!",
+      "en": "Shinzou wo Sasageyo!",
+      "fr": "Shinzou wo Sasageyo!",
+      "it": "Shinzou wo Sasageyo!",
+      "rm": "Shinzou wo Sasageyo!",
+      "es": "Shinzou wo Sasageyo!",
+      "zh-hans": "献出心脏！"
+    },
+    "quote": {
+      "de": "Weiht eure Herzen!",
+      "en": "Dedicate your hearts!",
+      "fr": "Offrez vos cœurs !",
+      "it": "Offrite i vostri cuori!",
+      "rm": "Dedichai voss cors!",
+      "es": "¡Entregad vuestros corazones!",
+      "zh-hans": "献出你们的心脏！"
+    },
+    "source": {
+      "de": "Attack on Titan",
+      "en": "Attack on Titan",
+      "fr": "L'Attaque des Titans",
+      "it": "L'attacco dei giganti",
+      "rm": "Attack on Titan",
+      "es": "Ataque a los Titanes",
+      "zh-hans": "进击的巨人"
+    },
+    "phrases": [
+      "shinzou wo sasageyo",
+      "dedicate your hearts",
+      "weiht eure herzen"
+    ]
+  },
+  {
+    "key": "i_am_justice",
+    "title": {
+      "de": "Kira",
+      "en": "Kira",
+      "fr": "Kira",
+      "it": "Kira",
+      "rm": "Kira",
+      "es": "Kira",
+      "zh-hans": "基拉"
+    },
+    "quote": {
+      "de": "Ich bin die Gerechtigkeit!",
+      "en": "I am justice!",
+      "fr": "Je suis la justice !",
+      "it": "Io sono la giustizia!",
+      "rm": "Jau sun la giustia!",
+      "es": "¡Yo soy la justicia!",
+      "zh-hans": "我就是正义！"
+    },
+    "source": {
+      "de": "Death Note",
+      "en": "Death Note",
+      "fr": "Death Note",
+      "it": "Death Note",
+      "rm": "Death Note",
+      "es": "Death Note",
+      "zh-hans": "死亡笔记"
+    },
+    "phrases": [
+      "i am justice",
+      "ich bin die gerechtigkeit"
+    ]
+  },
+  {
+    "key": "pirate_king",
+    "title": {
+      "de": "Strohhut",
+      "en": "Straw Hat",
+      "fr": "Chapeau de paille",
+      "it": "Cappello di paglia",
+      "rm": "Chapè da strom",
+      "es": "Sombrero de paja",
+      "zh-hans": "草帽"
+    },
+    "quote": {
+      "de": "Ich werde König der Piraten!",
+      "en": "I'm gonna be King of the Pirates!",
+      "fr": "Je serai le roi des pirates !",
+      "it": "Diventerò il re dei pirati!",
+      "rm": "Jau vegn il retg dals pirats!",
+      "es": "¡Seré el Rey de los Piratas!",
+      "zh-hans": "我是要成为海贼王的男人！"
+    },
+    "source": {
+      "de": "One Piece",
+      "en": "One Piece",
+      "fr": "One Piece",
+      "it": "One Piece",
+      "rm": "One Piece",
+      "es": "One Piece",
+      "zh-hans": "海贼王"
+    },
+    "phrases": [
+      "i'm gonna be king of the pirates",
+      "ich werde der könig der piraten",
+      "ich werde könig der piraten"
+    ]
+  },
+  {
+    "key": "moon_punish",
+    "title": {
+      "de": "Im Namen des Mondes",
+      "en": "In the Name of the Moon",
+      "fr": "Au nom de la lune",
+      "it": "In nome della luna",
+      "rm": "En il num da la glina",
+      "es": "En el nombre de la luna",
+      "zh-hans": "代表月亮"
+    },
+    "quote": {
+      "de": "Im Namen des Mondes werde ich dich bestrafen!",
+      "en": "In the name of the Moon, I will punish you!",
+      "fr": "Au nom de la lune, je vais te punir !",
+      "it": "In nome della luna, ti punirò!",
+      "rm": "En il num da la glina vegn jau a ta chastiar!",
+      "es": "¡En el nombre de la luna, te castigaré!",
+      "zh-hans": "我要代表月亮消灭你！"
+    },
+    "source": {
+      "de": "Sailor Moon",
+      "en": "Sailor Moon",
+      "fr": "Sailor Moon",
+      "it": "Sailor Moon",
+      "rm": "Sailor Moon",
+      "es": "Sailor Moon",
+      "zh-hans": "美少女战士"
+    },
+    "phrases": [
+      "im namen des mondes",
+      "in the name of the moon"
+    ]
+  },
+  {
+    "key": "gotta_catch",
+    "title": {
+      "de": "Pokédex komplett",
+      "en": "Pokédex Complete",
+      "fr": "Pokédex complet",
+      "it": "Pokédex completo",
+      "rm": "Pokédex cumplet",
+      "es": "Pokédex completa",
+      "zh-hans": "图鉴完成"
+    },
+    "quote": {
+      "de": "Gotta catch 'em all!",
+      "en": "Gotta catch 'em all!",
+      "fr": "Attrapez-les tous !",
+      "it": "Acchiappali tutti!",
+      "rm": "Piglia els tuts!",
+      "es": "¡Hazte con todos!",
+      "zh-hans": "全部收服！"
+    },
+    "source": {
+      "de": "Pokémon",
+      "en": "Pokémon",
+      "fr": "Pokémon",
+      "it": "Pokémon",
+      "rm": "Pokémon",
+      "es": "Pokémon",
+      "zh-hans": "宝可梦"
+    },
+    "phrases": [
+      "gotta catch em all",
+      "schnapp sie dir alle"
+    ]
+  },
+  {
+    "key": "solemnly_swear",
+    "title": {
+      "de": "Rumtreiber",
+      "en": "Marauders",
+      "fr": "Maraudeurs",
+      "it": "Malandrini",
+      "rm": "Marodaders",
+      "es": "Merodeadores",
+      "zh-hans": "掠夺者"
+    },
+    "quote": {
+      "de": "Ich schwöre feierlich, ich bin ein Tunichtgut",
+      "en": "I solemnly swear that I am up to no good",
+      "fr": "Je jure solennellement que mes intentions sont mauvaises",
+      "it": "Giuro solennemente di non avere buone intenzioni",
+      "rm": "Jau engir solennamain che jau hai mo tschanc en il chau",
+      "es": "Juro solemnemente que mis intenciones no son buenas",
+      "zh-hans": "我庄严宣誓我不干好事"
+    },
+    "source": {
+      "de": "Harry Potter",
+      "en": "Harry Potter",
+      "fr": "Harry Potter",
+      "it": "Harry Potter",
+      "rm": "Harry Potter",
+      "es": "Harry Potter",
+      "zh-hans": "哈利·波特"
+    },
+    "phrases": [
+      "i solemnly swear that i am up to no good",
+      "ich schwöre feierlich dass ich ein tunichtgut bin"
+    ]
+  },
+  {
+    "key": "expecto_patronum",
+    "title": {
+      "de": "Expecto Patronum",
+      "en": "Expecto Patronum",
+      "fr": "Expecto Patronum",
+      "it": "Expecto Patronum",
+      "rm": "Expecto Patronum",
+      "es": "Expecto Patronum",
+      "zh-hans": "呼神护卫"
+    },
+    "quote": {
+      "de": "Expecto Patronum!",
+      "en": "Expecto Patronum!",
+      "fr": "Expecto Patronum !",
+      "it": "Expecto Patronum!",
+      "rm": "Expecto Patronum!",
+      "es": "¡Expecto Patronum!",
+      "zh-hans": "呼神护卫！"
+    },
+    "source": {
+      "de": "Harry Potter",
+      "en": "Harry Potter",
+      "fr": "Harry Potter",
+      "it": "Harry Potter",
+      "rm": "Harry Potter",
+      "es": "Harry Potter",
+      "zh-hans": "哈利·波特"
+    },
+    "phrases": [
+      "expecto patronum"
+    ]
+  },
+  {
+    "key": "odds_in_your_favor",
+    "title": {
+      "de": "Tribut",
+      "en": "Tribute",
+      "fr": "Tribut",
+      "it": "Tributo",
+      "rm": "Tribut",
+      "es": "Tributo",
+      "zh-hans": "贡品"
+    },
+    "quote": {
+      "de": "Möge das Glück stets mit euch sein",
+      "en": "May the odds be ever in your favor",
+      "fr": "Puisse le sort vous être favorable",
+      "it": "Possa la buona sorte essere sempre a vostro favore",
+      "rm": "La fortuna saja adina cun vus",
+      "es": "Que la suerte esté siempre de vuestra parte",
+      "zh-hans": "愿好运永远与你同在"
+    },
+    "source": {
+      "de": "Die Tribute von Panem",
+      "en": "The Hunger Games",
+      "fr": "Hunger Games",
+      "it": "Hunger Games",
+      "rm": "The Hunger Games",
+      "es": "Los juegos del hambre",
+      "zh-hans": "饥饿游戏"
+    },
+    "phrases": [
+      "may the odds be ever in your favor",
+      "möge das glück stets mit euch sein"
+    ]
+  },
+  {
+    "key": "friends_dont_lie",
+    "title": {
+      "de": "Friends Don't Lie",
+      "en": "Friends Don't Lie",
+      "fr": "Friends Don't Lie",
+      "it": "Friends Don't Lie",
+      "rm": "Friends Don't Lie",
+      "es": "Friends Don't Lie",
+      "zh-hans": "朋友不说谎"
+    },
+    "quote": {
+      "de": "Freunde lügen nicht",
+      "en": "Friends don't lie",
+      "fr": "Les amis ne mentent pas",
+      "it": "Gli amici non mentono",
+      "rm": "Amis na mentan betg",
+      "es": "Los amigos no mienten",
+      "zh-hans": "朋友不说谎"
+    },
+    "source": {
+      "de": "Stranger Things",
+      "en": "Stranger Things",
+      "fr": "Stranger Things",
+      "it": "Stranger Things",
+      "rm": "Stranger Things",
+      "es": "Stranger Things",
+      "zh-hans": "怪奇物语"
+    },
+    "phrases": [
+      "friends don't lie",
+      "freunde lügen nicht"
+    ]
+  },
+  {
+    "key": "thats_what_she_said",
+    "title": {
+      "de": "That's What She Said",
+      "en": "That's What She Said",
+      "fr": "That's What She Said",
+      "it": "That's What She Said",
+      "rm": "That's What She Said",
+      "es": "That's What She Said",
+      "zh-hans": "That's What She Said"
+    },
+    "quote": {
+      "de": "That's what she said",
+      "en": "That's what she said",
+      "fr": "That's what she said",
+      "it": "That's what she said",
+      "rm": "That's what she said",
+      "es": "That's what she said",
+      "zh-hans": "That's what she said"
+    },
+    "source": {
+      "de": "The Office",
+      "en": "The Office",
+      "fr": "The Office",
+      "it": "The Office",
+      "rm": "The Office",
+      "es": "The Office",
+      "zh-hans": "办公室"
+    },
+    "phrases": [
+      "that's what she said"
+    ]
+  },
+  {
+    "key": "spanish_inquisition",
+    "title": {
+      "de": "Niemand erwartet sie",
+      "en": "Nobody Expects It",
+      "fr": "Personne ne s'y attend",
+      "it": "Nessuno se l'aspetta",
+      "rm": "Nagin na spetga quai",
+      "es": "Nadie se la espera",
+      "zh-hans": "没人料到"
+    },
+    "quote": {
+      "de": "Niemand erwartet die Spanische Inquisition!",
+      "en": "Nobody expects the Spanish Inquisition!",
+      "fr": "Personne ne s'attend à l'Inquisition espagnole !",
+      "it": "Nessuno si aspetta l'Inquisizione spagnola!",
+      "rm": "Nagin na spetga l'Inquisiziun spagnola!",
+      "es": "¡Nadie espera la Inquisición española!",
+      "zh-hans": "没人料到西班牙宗教裁判所！"
+    },
+    "source": {
+      "de": "Monty Python",
+      "en": "Monty Python",
+      "fr": "Monty Python",
+      "it": "Monty Python",
+      "rm": "Monty Python",
+      "es": "Monty Python",
+      "zh-hans": "巨蟒剧团"
+    },
+    "phrases": [
+      "nobody expects the spanish inquisition",
+      "niemand erwartet die spanische inquisition"
+    ]
+  },
+  {
+    "key": "fight_club",
+    "title": {
+      "de": "Erste Regel",
+      "en": "First Rule",
+      "fr": "Première règle",
+      "it": "Prima regola",
+      "rm": "Emprima regla",
+      "es": "Primera regla",
+      "zh-hans": "第一条规则"
+    },
+    "quote": {
+      "de": "Die erste Regel des Fight Club lautet: Ihr verliert kein Wort über den Fight Club",
+      "en": "The first rule of Fight Club is: you do not talk about Fight Club",
+      "fr": "La première règle du Fight Club est : il est interdit de parler du Fight Club",
+      "it": "Prima regola del Fight Club: non parlate mai del Fight Club",
+      "rm": "L'emprima regla dal Fight Club: Vus na discurris betg dal Fight Club",
+      "es": "La primera regla del club de la lucha es: no se habla del club de la lucha",
+      "zh-hans": "搏击俱乐部的第一条规则：不许谈论搏击俱乐部"
+    },
+    "source": {
+      "de": "Fight Club",
+      "en": "Fight Club",
+      "fr": "Fight Club",
+      "it": "Fight Club",
+      "rm": "Fight Club",
+      "es": "El club de la lucha",
+      "zh-hans": "搏击俱乐部"
+    },
+    "phrases": [
+      "the first rule of fight club",
+      "die erste regel des fight club"
+    ]
+  },
+  {
+    "key": "king_of_the_world",
+    "title": {
+      "de": "König der Welt",
+      "en": "King of the World",
+      "fr": "Roi du monde",
+      "it": "Re del mondo",
+      "rm": "Retg dal mund",
+      "es": "Rey del mundo",
+      "zh-hans": "世界之王"
+    },
+    "quote": {
+      "de": "Ich bin der König der Welt!",
+      "en": "I'm the king of the world!",
+      "fr": "Je suis le roi du monde !",
+      "it": "Sono il re del mondo!",
+      "rm": "Jau sun il retg dal mund!",
+      "es": "¡Soy el rey del mundo!",
+      "zh-hans": "我是世界之王！"
+    },
+    "source": {
+      "de": "Titanic",
+      "en": "Titanic",
+      "fr": "Titanic",
+      "it": "Titanic",
+      "rm": "Titanic",
+      "es": "Titanic",
+      "zh-hans": "泰坦尼克号"
+    },
+    "phrases": [
+      "i'm the king of the world",
+      "ich bin der könig der welt"
+    ]
+  },
+  {
+    "key": "to_infinity",
+    "title": {
+      "de": "Bis zur Unendlichkeit",
+      "en": "To Infinity",
+      "fr": "Vers l'infini",
+      "it": "Verso l'infinito",
+      "rm": "Fin a l'infinit",
+      "es": "Hasta el infinito",
+      "zh-hans": "飞向宇宙"
+    },
+    "quote": {
+      "de": "Bis zur Unendlichkeit und noch viel weiter!",
+      "en": "To infinity and beyond!",
+      "fr": "Vers l'infini et au-delà !",
+      "it": "Verso l'infinito e oltre!",
+      "rm": "Fin a l'infinit e vinavant!",
+      "es": "¡Hasta el infinito y más allá!",
+      "zh-hans": "飞向宇宙，浩瀚无垠！"
+    },
+    "source": {
+      "de": "Toy Story",
+      "en": "Toy Story",
+      "fr": "Toy Story",
+      "it": "Toy Story",
+      "rm": "Toy Story",
+      "es": "Toy Story",
+      "zh-hans": "玩具总动员"
+    },
+    "phrases": [
+      "to infinity and beyond",
+      "bis zur unendlichkeit und noch viel weiter"
+    ]
+  },
+  {
+    "key": "ich_bin_bereit",
+    "title": {
+      "de": "Ich bin bereit!",
+      "en": "I'm Ready!",
+      "fr": "Je suis prêt !",
+      "it": "Sono pronto!",
+      "rm": "Jau sun pront!",
+      "es": "¡Estoy listo!",
+      "zh-hans": "我准备好了！"
+    },
+    "quote": {
+      "de": "Ich bin bereit!",
+      "en": "I'm ready!",
+      "fr": "Je suis prêt !",
+      "it": "Sono pronto!",
+      "rm": "Jau sun pront!",
+      "es": "¡Estoy listo!",
+      "zh-hans": "我准备好了！"
+    },
+    "source": {
+      "de": "SpongeBob Schwammkopf",
+      "en": "SpongeBob SquarePants",
+      "fr": "Bob l'éponge",
+      "it": "SpongeBob",
+      "rm": "SpongeBob",
+      "es": "Bob Esponja",
+      "zh-hans": "海绵宝宝"
+    },
+    "phrases": [
+      "ich bin bereit ich bin bereit",
+      "i'm ready i'm ready"
+    ]
+  },
+  {
+    "key": "ay_caramba",
+    "title": {
+      "de": "Ay, caramba!",
+      "en": "Ay, caramba!",
+      "fr": "Ay, caramba!",
+      "it": "Ay, caramba!",
+      "rm": "Ay, caramba!",
+      "es": "¡Ay, caramba!",
+      "zh-hans": "Ay, caramba!"
+    },
+    "quote": {
+      "de": "Ay, caramba!",
+      "en": "Ay, caramba!",
+      "fr": "Ay, caramba!",
+      "it": "Ay, caramba!",
+      "rm": "Ay, caramba!",
+      "es": "¡Ay, caramba!",
+      "zh-hans": "Ay, caramba!"
+    },
+    "source": {
+      "de": "Die Simpsons",
+      "en": "The Simpsons",
+      "fr": "Les Simpson",
+      "it": "I Simpson",
+      "rm": "Ils Simpsons",
+      "es": "Los Simpson",
+      "zh-hans": "辛普森一家"
+    },
+    "phrases": [
+      "ay caramba"
+    ]
+  },
+  {
+    "key": "arrow_in_the_knee",
+    "title": {
+      "de": "Pfeil im Knie",
+      "en": "Arrow in the Knee",
+      "fr": "Flèche dans le genou",
+      "it": "Freccia nel ginocchio",
+      "rm": "Frizza en il schanugl",
+      "es": "Flecha en la rodilla",
+      "zh-hans": "膝盖中箭"
+    },
+    "quote": {
+      "de": "… dann habe ich einen Pfeil ins Knie bekommen",
+      "en": "… then I took an arrow in the knee",
+      "fr": "… puis j'ai pris une flèche dans le genou",
+      "it": "… poi ho preso una freccia nel ginocchio",
+      "rm": "… e lura hai jau survegnì ina frizza en il schanugl",
+      "es": "… hasta que me hirieron en la rodilla con una flecha",
+      "zh-hans": "……直到我的膝盖中了一箭"
+    },
+    "source": {
+      "de": "The Elder Scrolls V: Skyrim",
+      "en": "The Elder Scrolls V: Skyrim",
+      "fr": "The Elder Scrolls V: Skyrim",
+      "it": "The Elder Scrolls V: Skyrim",
+      "rm": "The Elder Scrolls V: Skyrim",
+      "es": "The Elder Scrolls V: Skyrim",
+      "zh-hans": "上古卷轴 5：天际"
+    },
+    "phrases": [
+      "arrow in the knee",
+      "pfeil ins knie"
+    ]
+  },
+  {
+    "key": "praise_the_sun",
+    "title": {
+      "de": "Lobet die Sonne",
+      "en": "Praise the Sun",
+      "fr": "Louez le soleil",
+      "it": "Lode al sole",
+      "rm": "Ludà saja il sulegl",
+      "es": "Alabado sea el sol",
+      "zh-hans": "赞美太阳"
+    },
+    "quote": {
+      "de": "Praise the Sun!",
+      "en": "Praise the Sun!",
+      "fr": "Praise the Sun!",
+      "it": "Praise the Sun!",
+      "rm": "Praise the Sun!",
+      "es": "Praise the Sun!",
+      "zh-hans": "Praise the Sun!"
+    },
+    "source": {
+      "de": "Dark Souls",
+      "en": "Dark Souls",
+      "fr": "Dark Souls",
+      "it": "Dark Souls",
+      "rm": "Dark Souls",
+      "es": "Dark Souls",
+      "zh-hans": "黑暗之魂"
+    },
+    "phrases": [
+      "praise the sun",
+      "lobet die sonne"
+    ]
+  },
+  {
+    "key": "rise_and_shine",
+    "title": {
+      "de": "Mr. Freeman",
+      "en": "Mr. Freeman",
+      "fr": "M. Freeman",
+      "it": "Signor Freeman",
+      "rm": "Signur Freeman",
+      "es": "Señor Freeman",
+      "zh-hans": "弗里曼先生"
+    },
+    "quote": {
+      "de": "Rise and shine, Mister Freeman",
+      "en": "Rise and shine, Mister Freeman",
+      "fr": "Rise and shine, Mister Freeman",
+      "it": "Rise and shine, Mister Freeman",
+      "rm": "Rise and shine, Mister Freeman",
+      "es": "Rise and shine, Mister Freeman",
+      "zh-hans": "Rise and shine, Mister Freeman"
+    },
+    "source": {
+      "de": "Half-Life 2",
+      "en": "Half-Life 2",
+      "fr": "Half-Life 2",
+      "it": "Half-Life 2",
+      "rm": "Half-Life 2",
+      "es": "Half-Life 2",
+      "zh-hans": "半条命 2"
+    },
+    "phrases": [
+      "rise and shine mister freeman",
+      "rise and shine mr freeman"
+    ]
+  },
+  {
+    "key": "winds_howling",
+    "title": {
+      "de": "Hexer",
+      "en": "Witcher",
+      "fr": "Sorceleur",
+      "it": "Strigo",
+      "rm": "Striun",
+      "es": "Brujo",
+      "zh-hans": "猎魔人"
+    },
+    "quote": {
+      "de": "Wind's howling.",
+      "en": "Wind's howling.",
+      "fr": "Wind's howling.",
+      "it": "Wind's howling.",
+      "rm": "Wind's howling.",
+      "es": "Wind's howling.",
+      "zh-hans": "Wind's howling."
+    },
+    "source": {
+      "de": "The Witcher 3",
+      "en": "The Witcher 3",
+      "fr": "The Witcher 3",
+      "it": "The Witcher 3",
+      "rm": "The Witcher 3",
+      "es": "The Witcher 3",
+      "zh-hans": "巫师 3"
+    },
+    "phrases": [
+      "wind's howling"
+    ]
+  },
+  {
+    "key": "hold_the_door",
+    "title": {
+      "de": "Hodor",
+      "en": "Hodor",
+      "fr": "Hodor",
+      "it": "Hodor",
+      "rm": "Hodor",
+      "es": "Hodor",
+      "zh-hans": "阿多"
+    },
+    "quote": {
+      "de": "Hold the door!",
+      "en": "Hold the door!",
+      "fr": "Hold the door!",
+      "it": "Hold the door!",
+      "rm": "Hold the door!",
+      "es": "Hold the door!",
+      "zh-hans": "Hold the door!"
+    },
+    "source": {
+      "de": "Game of Thrones",
+      "en": "Game of Thrones",
+      "fr": "Game of Thrones",
+      "it": "Il Trono di Spade",
+      "rm": "Game of Thrones",
+      "es": "Juego de tronos",
+      "zh-hans": "权力的游戏"
+    },
+    "phrases": [
+      "hold the door",
+      "hodor"
+    ]
+  },
+  {
+    "key": "i_have_a_dream",
+    "title": {
+      "de": "I Have a Dream",
+      "en": "I Have a Dream",
+      "fr": "I Have a Dream",
+      "it": "I Have a Dream",
+      "rm": "I Have a Dream",
+      "es": "I Have a Dream",
+      "zh-hans": "我有一个梦想"
+    },
+    "quote": {
+      "de": "I have a dream",
+      "en": "I have a dream",
+      "fr": "I have a dream",
+      "it": "I have a dream",
+      "rm": "I have a dream",
+      "es": "I have a dream",
+      "zh-hans": "I have a dream"
+    },
+    "source": {
+      "de": "Martin Luther King Jr.",
+      "en": "Martin Luther King Jr.",
+      "fr": "Martin Luther King Jr.",
+      "it": "Martin Luther King Jr.",
+      "rm": "Martin Luther King Jr.",
+      "es": "Martin Luther King Jr.",
+      "zh-hans": "马丁·路德·金"
+    },
+    "phrases": [
+      "i have a dream"
+    ]
+  },
+  {
+    "key": "tear_down_this_wall",
+    "title": {
+      "de": "Mauerspecht",
+      "en": "Wall Pecker",
+      "fr": "Pic-mur",
+      "it": "Picchiamuro",
+      "rm": "Pitgamir",
+      "es": "Picamuros",
+      "zh-hans": "拆墙者"
+    },
+    "quote": {
+      "de": "Tear down this wall!",
+      "en": "Tear down this wall!",
+      "fr": "Tear down this wall!",
+      "it": "Tear down this wall!",
+      "rm": "Tear down this wall!",
+      "es": "Tear down this wall!",
+      "zh-hans": "Tear down this wall!"
+    },
+    "source": {
+      "de": "Berlin 1987",
+      "en": "Berlin 1987",
+      "fr": "Berlin 1987",
+      "it": "Berlino 1987",
+      "rm": "Berlin 1987",
+      "es": "Berlín 1987",
+      "zh-hans": "柏林 1987"
+    },
+    "phrases": [
+      "tear down this wall"
+    ]
+  },
+  {
+    "key": "wir_sind_das_volk",
+    "title": {
+      "de": "Wir sind das Volk",
+      "en": "We Are the People",
+      "fr": "Nous sommes le peuple",
+      "it": "Noi siamo il popolo",
+      "rm": "Nus essan il pievel",
+      "es": "Somos el pueblo",
+      "zh-hans": "我们是人民"
+    },
+    "quote": {
+      "de": "Wir sind das Volk!",
+      "en": "We are the people!",
+      "fr": "Wir sind das Volk!",
+      "it": "Wir sind das Volk!",
+      "rm": "Wir sind das Volk!",
+      "es": "Wir sind das Volk!",
+      "zh-hans": "Wir sind das Volk!"
+    },
+    "source": {
+      "de": "Montagsdemonstrationen 1989",
+      "en": "Monday demonstrations 1989",
+      "fr": "Manifestations du lundi 1989",
+      "it": "Manifestazioni del lunedì 1989",
+      "rm": "Demonstraziuns dal glindesdi 1989",
+      "es": "Manifestaciones de los lunes 1989",
+      "zh-hans": "1989 年周一示威"
+    },
+    "phrases": [
+      "wir sind das volk"
+    ]
+  },
+  {
+    "key": "spider_monkey",
+    "title": {
+      "de": "Spider Monkey",
+      "en": "Spider Monkey",
+      "fr": "Spider Monkey",
+      "it": "Spider Monkey",
+      "rm": "Spider Monkey",
+      "es": "Spider Monkey",
+      "zh-hans": "Spider Monkey"
+    },
+    "quote": {
+      "de": "Hold on tight, spider monkey",
+      "en": "Hold on tight, spider monkey",
+      "fr": "Hold on tight, spider monkey",
+      "it": "Hold on tight, spider monkey",
+      "rm": "Hold on tight, spider monkey",
+      "es": "Hold on tight, spider monkey",
+      "zh-hans": "Hold on tight, spider monkey"
+    },
+    "source": {
+      "de": "Twilight",
+      "en": "Twilight",
+      "fr": "Twilight",
+      "it": "Twilight",
+      "rm": "Twilight",
+      "es": "Crepúsculo",
+      "zh-hans": "暮光之城"
+    },
+    "phrases": [
+      "hold on tight spider monkey"
+    ]
+  },
+  {
+    "key": "you_are_mine",
+    "title": {
+      "de": "Besessen",
+      "en": "Obsessed",
+      "fr": "Obsédé",
+      "it": "Ossessionato",
+      "rm": "Obsess",
+      "es": "Obsesionado",
+      "zh-hans": "痴迷"
+    },
+    "quote": {
+      "de": "Du gehörst mir. Nur mir.",
+      "en": "You're mine. Only mine.",
+      "fr": "Tu es à moi. Rien qu'à moi.",
+      "it": "Sei mia. Solo mia.",
+      "rm": "Ti es mia. Mo mia.",
+      "es": "Eres mía. Solo mía.",
+      "zh-hans": "你是我的。只属于我。"
+    },
+    "source": {
+      "de": "Dark Romance",
+      "en": "Dark Romance",
+      "fr": "Dark Romance",
+      "it": "Dark Romance",
+      "rm": "Dark Romance",
+      "es": "Dark Romance",
+      "zh-hans": "黑暗浪漫"
+    },
+    "phrases": [
+      "du gehörst mir nur mir",
+      "you're mine only mine"
+    ]
+  },
+  {
+    "key": "beauty_saves",
+    "title": {
+      "de": "Der Idiot",
+      "en": "The Idiot",
+      "fr": "L'Idiot",
+      "it": "L'idiota",
+      "rm": "L'idiot",
+      "es": "El idiota",
+      "zh-hans": "白痴"
+    },
+    "quote": {
+      "de": "Schönheit wird die Welt retten",
+      "en": "Beauty will save the world",
+      "fr": "La beauté sauvera le monde",
+      "it": "La bellezza salverà il mondo",
+      "rm": "La bellezza vegn a salvar il mund",
+      "es": "La belleza salvará el mundo",
+      "zh-hans": "美将拯救世界"
+    },
+    "source": {
+      "de": "Fjodor Dostojewski: Der Idiot",
+      "en": "Fyodor Dostoevsky: The Idiot",
+      "fr": "Fiodor Dostoïevski : L'Idiot",
+      "it": "Fëdor Dostoevskij: L'idiota",
+      "rm": "Fjodor Dostojewski: L'idiot",
+      "es": "Fiódor Dostoyevski: El idiota",
+      "zh-hans": "陀思妥耶夫斯基：白痴"
+    },
+    "phrases": [
+      "beauty will save the world",
+      "schönheit wird die welt retten"
+    ]
+  },
+  {
+    "key": "everything_permitted",
+    "title": {
+      "de": "Karamasow",
+      "en": "Karamazov",
+      "fr": "Karamazov",
+      "it": "Karamazov",
+      "rm": "Karamasow",
+      "es": "Karamázov",
+      "zh-hans": "卡拉马佐夫"
+    },
+    "quote": {
+      "de": "Wenn es keinen Gott gibt, ist alles erlaubt",
+      "en": "If there is no God, everything is permitted",
+      "fr": "Si Dieu n'existe pas, tout est permis",
+      "it": "Se Dio non esiste, tutto è permesso",
+      "rm": "Sch'i na dat nagin Dieu, è tut permess",
+      "es": "Si Dios no existe, todo está permitido",
+      "zh-hans": "如果没有上帝，一切都是允许的"
+    },
+    "source": {
+      "de": "Fjodor Dostojewski: Die Brüder Karamasow",
+      "en": "Fyodor Dostoevsky: The Brothers Karamazov",
+      "fr": "Fiodor Dostoïevski : Les Frères Karamazov",
+      "it": "Fëdor Dostoevskij: I fratelli Karamazov",
+      "rm": "Fjodor Dostojewski: Ils frars Karamasow",
+      "es": "Fiódor Dostoyevski: Los hermanos Karamázov",
+      "zh-hans": "陀思妥耶夫斯基：卡拉马佐夫兄弟"
+    },
+    "phrases": [
+      "ist alles erlaubt",
+      "everything is permitted"
+    ]
+  },
+  {
+    "key": "tremble_creature",
+    "title": {
+      "de": "Raskolnikow",
+      "en": "Raskolnikov",
+      "fr": "Raskolnikov",
+      "it": "Raskol'nikov",
+      "rm": "Raskolnikow",
+      "es": "Raskólnikov",
+      "zh-hans": "拉斯柯尔尼科夫"
+    },
+    "quote": {
+      "de": "Bin ich eine zitternde Kreatur oder habe ich das Recht?",
+      "en": "Am I a trembling creature or do I have the right?",
+      "fr": "Suis-je une créature tremblante ou ai-je le droit ?",
+      "it": "Sono una creatura tremante o ho il diritto?",
+      "rm": "Sun jau ina creatira tremblanta u hai jau il dretg?",
+      "es": "¿Soy una criatura temblorosa o tengo derecho?",
+      "zh-hans": "我是一只发抖的虫子，还是我有权利？"
+    },
+    "source": {
+      "de": "Fjodor Dostojewski: Schuld und Sühne",
+      "en": "Fyodor Dostoevsky: Crime and Punishment",
+      "fr": "Fiodor Dostoïevski : Crime et Châtiment",
+      "it": "Fëdor Dostoevskij: Delitto e castigo",
+      "rm": "Fjodor Dostojewski: Delict e chasti",
+      "es": "Fiódor Dostoyevski: Crimen y castigo",
+      "zh-hans": "陀思妥耶夫斯基：罪与罚"
+    },
+    "phrases": [
+      "zitternde kreatur",
+      "trembling creature"
+    ]
+  },
+  {
+    "key": "gregor_samsa",
+    "title": {
+      "de": "Verwandlung",
+      "en": "Metamorphosis",
+      "fr": "Métamorphose",
+      "it": "Metamorfosi",
+      "rm": "Metamorfosa",
+      "es": "Metamorfosis",
+      "zh-hans": "变形记"
+    },
+    "quote": {
+      "de": "Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte …",
+      "en": "As Gregor Samsa awoke one morning from uneasy dreams …",
+      "fr": "Un matin, au sortir de rêves agités, Gregor Samsa s'éveilla …",
+      "it": "Gregor Samsa, svegliatosi una mattina da sogni agitati …",
+      "rm": "Cura che Gregor Samsa è sa sveglià ina damaun da siemis malpaschs …",
+      "es": "Cuando Gregor Samsa se despertó una mañana tras un sueño intranquilo …",
+      "zh-hans": "一天早晨，格里高尔·萨姆沙从不安的睡梦中醒来……"
+    },
+    "source": {
+      "de": "Franz Kafka: Die Verwandlung",
+      "en": "Franz Kafka: The Metamorphosis",
+      "fr": "Franz Kafka : La Métamorphose",
+      "it": "Franz Kafka: La metamorfosi",
+      "rm": "Franz Kafka: La metamorfosa",
+      "es": "Franz Kafka: La metamorfosis",
+      "zh-hans": "卡夫卡：变形记"
+    },
+    "phrases": [
+      "gregor samsa",
+      "ungeheueren ungeziefer"
+    ]
+  },
+  {
+    "key": "cage_bird",
+    "title": {
+      "de": "Kafkaesk",
+      "en": "Kafkaesque",
+      "fr": "Kafkaïen",
+      "it": "Kafkiano",
+      "rm": "Kafkaesc",
+      "es": "Kafkiano",
+      "zh-hans": "卡夫卡式"
+    },
+    "quote": {
+      "de": "Ein Käfig ging einen Vogel suchen",
+      "en": "A cage went in search of a bird",
+      "fr": "Une cage partit à la recherche d'un oiseau",
+      "it": "Una gabbia andò in cerca di un uccello",
+      "rm": "Ina chabgia è ida a tschertgar in utschè",
+      "es": "Una jaula salió en busca de un pájaro",
+      "zh-hans": "一只笼子去寻找一只鸟"
+    },
+    "source": {
+      "de": "Franz Kafka",
+      "en": "Franz Kafka",
+      "fr": "Franz Kafka",
+      "it": "Franz Kafka",
+      "rm": "Franz Kafka",
+      "es": "Franz Kafka",
+      "zh-hans": "卡夫卡"
+    },
+    "phrases": [
+      "ein käfig ging einen vogel suchen",
+      "a cage went in search of a bird"
+    ]
+  },
+  {
+    "key": "axe_frozen_sea",
+    "title": {
+      "de": "Die Axt",
+      "en": "The Axe",
+      "fr": "La hache",
+      "it": "L'ascia",
+      "rm": "La sigir",
+      "es": "El hacha",
+      "zh-hans": "斧头"
+    },
+    "quote": {
+      "de": "Ein Buch muss die Axt sein für das gefrorene Meer in uns",
+      "en": "A book must be the axe for the frozen sea within us",
+      "fr": "Un livre doit être la hache qui brise la mer gelée en nous",
+      "it": "Un libro dev'essere l'ascia per il mare gelato dentro di noi",
+      "rm": "In cudesch sto esser la sigir per la mar schelada en nus",
+      "es": "Un libro debe ser el hacha que rompa el mar helado que llevamos dentro",
+      "zh-hans": "一本书必须是劈开我们内心冰封之海的斧头"
+    },
+    "source": {
+      "de": "Franz Kafka",
+      "en": "Franz Kafka",
+      "fr": "Franz Kafka",
+      "it": "Franz Kafka",
+      "rm": "Franz Kafka",
+      "es": "Franz Kafka",
+      "zh-hans": "卡夫卡"
+    },
+    "phrases": [
+      "die axt sein für das gefrorene meer",
+      "axe for the frozen sea"
+    ]
+  },
+  {
+    "key": "before_the_law",
+    "title": {
+      "de": "Vor dem Gesetz",
+      "en": "Before the Law",
+      "fr": "Devant la loi",
+      "it": "Davanti alla legge",
+      "rm": "Davant la lescha",
+      "es": "Ante la ley",
+      "zh-hans": "法的门前"
+    },
+    "quote": {
+      "de": "Vor dem Gesetz steht ein Türhüter",
+      "en": "Before the law sits a gatekeeper",
+      "fr": "Devant la loi se tient un gardien",
+      "it": "Davanti alla legge sta un guardiano",
+      "rm": "Davant la lescha stat in portier",
+      "es": "Ante la ley hay un guardián",
+      "zh-hans": "法的门前站着一个守门人"
+    },
+    "source": {
+      "de": "Franz Kafka: Der Process",
+      "en": "Franz Kafka: The Trial",
+      "fr": "Franz Kafka : Le Procès",
+      "it": "Franz Kafka: Il processo",
+      "rm": "Franz Kafka: Il process",
+      "es": "Franz Kafka: El proceso",
+      "zh-hans": "卡夫卡：审判"
+    },
+    "phrases": [
+      "vor dem gesetz steht ein türhüter",
+      "before the law sits a gatekeeper"
+    ]
+  },
+  {
+    "key": "god_is_dead",
+    "title": {
+      "de": "Übermensch",
+      "en": "Übermensch",
+      "fr": "Surhomme",
+      "it": "Superuomo",
+      "rm": "Surum",
+      "es": "Superhombre",
+      "zh-hans": "超人"
+    },
+    "quote": {
+      "de": "Gott ist tot",
+      "en": "God is dead",
+      "fr": "Dieu est mort",
+      "it": "Dio è morto",
+      "rm": "Dieu è mort",
+      "es": "Dios ha muerto",
+      "zh-hans": "上帝已死"
+    },
+    "source": {
+      "de": "Friedrich Nietzsche",
+      "en": "Friedrich Nietzsche",
+      "fr": "Friedrich Nietzsche",
+      "it": "Friedrich Nietzsche",
+      "rm": "Friedrich Nietzsche",
+      "es": "Friedrich Nietzsche",
+      "zh-hans": "尼采"
+    },
+    "phrases": [
+      "gott ist tot",
+      "god is dead"
+    ]
+  },
+  {
+    "key": "abyss",
+    "title": {
+      "de": "Blick in den Abgrund",
+      "en": "Gazing into the Abyss",
+      "fr": "Regarder l'abîme",
+      "it": "Guardare nell'abisso",
+      "rm": "Guardar en l'abiss",
+      "es": "Mirar al abismo",
+      "zh-hans": "凝视深渊"
+    },
+    "quote": {
+      "de": "Wenn du lange in einen Abgrund blickst, blickt der Abgrund auch in dich hinein",
+      "en": "If you gaze long into an abyss, the abyss also gazes into you",
+      "fr": "Quand tu regardes longtemps l'abîme, l'abîme regarde aussi en toi",
+      "it": "Se guardi a lungo nell'abisso, anche l'abisso guarda dentro di te",
+      "rm": "Sche ti guardas ditg en in abiss, guarda l'abiss er en tai",
+      "es": "Cuando miras largo tiempo al abismo, el abismo también mira dentro de ti",
+      "zh-hans": "当你长久凝视深渊时，深渊也在凝视你"
+    },
+    "source": {
+      "de": "Friedrich Nietzsche",
+      "en": "Friedrich Nietzsche",
+      "fr": "Friedrich Nietzsche",
+      "it": "Friedrich Nietzsche",
+      "rm": "Friedrich Nietzsche",
+      "es": "Friedrich Nietzsche",
+      "zh-hans": "尼采"
+    },
+    "phrases": [
+      "blickt der abgrund auch in dich",
+      "the abyss also gazes into you",
+      "the abyss gazes also into you"
+    ]
+  },
+  {
+    "key": "know_nothing_socrates",
+    "title": {
+      "de": "Sokratiker",
+      "en": "Socratic",
+      "fr": "Socratique",
+      "it": "Socratico",
+      "rm": "Socratic",
+      "es": "Socrático",
+      "zh-hans": "苏格拉底式"
+    },
+    "quote": {
+      "de": "Ich weiss, dass ich nichts weiss",
+      "en": "I know that I know nothing",
+      "fr": "Je sais que je ne sais rien",
+      "it": "So di non sapere",
+      "rm": "Jau sai che jau na sai nagut",
+      "es": "Solo sé que no sé nada",
+      "zh-hans": "我唯一知道的就是我一无所知"
+    },
+    "source": {
+      "de": "Sokrates",
+      "en": "Socrates",
+      "fr": "Socrate",
+      "it": "Socrate",
+      "rm": "Socrates",
+      "es": "Sócrates",
+      "zh-hans": "苏格拉底"
+    },
+    "phrases": [
+      "ich weiss dass ich nichts weiss",
+      "i know that i know nothing"
+    ]
+  },
+  {
+    "key": "cogito",
+    "title": {
+      "de": "Cogito ergo sum",
+      "en": "Cogito ergo sum",
+      "fr": "Cogito ergo sum",
+      "it": "Cogito ergo sum",
+      "rm": "Cogito ergo sum",
+      "es": "Cogito ergo sum",
+      "zh-hans": "我思故我在"
+    },
+    "quote": {
+      "de": "Ich denke, also bin ich",
+      "en": "I think, therefore I am",
+      "fr": "Je pense, donc je suis",
+      "it": "Penso, dunque sono",
+      "rm": "Jau pens, pia sun jau",
+      "es": "Pienso, luego existo",
+      "zh-hans": "我思故我在"
+    },
+    "source": {
+      "de": "René Descartes",
+      "en": "René Descartes",
+      "fr": "René Descartes",
+      "it": "René Descartes",
+      "rm": "René Descartes",
+      "es": "René Descartes",
+      "zh-hans": "笛卡尔"
+    },
+    "phrases": [
+      "cogito ergo sum",
+      "ich denke also bin ich",
+      "i think therefore i am"
+    ]
+  },
+  {
+    "key": "sisyphus",
+    "title": {
+      "de": "Glücklicher Sisyphos",
+      "en": "Happy Sisyphus",
+      "fr": "Sisyphe heureux",
+      "it": "Sisifo felice",
+      "rm": "Sisifus fortunà",
+      "es": "Sísifo feliz",
+      "zh-hans": "快乐的西西弗斯"
+    },
+    "quote": {
+      "de": "Man muss sich Sisyphos als einen glücklichen Menschen vorstellen",
+      "en": "One must imagine Sisyphus happy",
+      "fr": "Il faut imaginer Sisyphe heureux",
+      "it": "Bisogna immaginare Sisifo felice",
+      "rm": "Ins sto s'imaginar Sisifus sco in uman fortunà",
+      "es": "Hay que imaginarse a Sísifo feliz",
+      "zh-hans": "我们必须想象西西弗斯是快乐的"
+    },
+    "source": {
+      "de": "Albert Camus",
+      "en": "Albert Camus",
+      "fr": "Albert Camus",
+      "it": "Albert Camus",
+      "rm": "Albert Camus",
+      "es": "Albert Camus",
+      "zh-hans": "加缪"
+    },
+    "phrases": [
+      "sisyphos als einen glücklichen menschen",
+      "imagine sisyphus happy"
+    ]
+  },
+  {
+    "key": "to_be_or_not",
+    "title": {
+      "de": "Hamlet",
+      "en": "Hamlet",
+      "fr": "Hamlet",
+      "it": "Amleto",
+      "rm": "Hamlet",
+      "es": "Hamlet",
+      "zh-hans": "哈姆雷特"
+    },
+    "quote": {
+      "de": "Sein oder Nichtsein, das ist hier die Frage",
+      "en": "To be, or not to be, that is the question",
+      "fr": "Être ou ne pas être, telle est la question",
+      "it": "Essere o non essere, questo è il problema",
+      "rm": "Esser u betg esser, quai è la dumonda",
+      "es": "Ser o no ser, esa es la cuestión",
+      "zh-hans": "生存还是毁灭，这是一个问题"
+    },
+    "source": {
+      "de": "William Shakespeare: Hamlet",
+      "en": "William Shakespeare: Hamlet",
+      "fr": "William Shakespeare : Hamlet",
+      "it": "William Shakespeare: Amleto",
+      "rm": "William Shakespeare: Hamlet",
+      "es": "William Shakespeare: Hamlet",
+      "zh-hans": "莎士比亚：哈姆雷特"
+    },
+    "phrases": [
+      "sein oder nichtsein",
+      "to be or not to be"
+    ]
+  },
+  {
+    "key": "armer_tor",
+    "title": {
+      "de": "Faust",
+      "en": "Faust",
+      "fr": "Faust",
+      "it": "Faust",
+      "rm": "Faust",
+      "es": "Fausto",
+      "zh-hans": "浮士德"
+    },
+    "quote": {
+      "de": "Da steh ich nun, ich armer Tor, und bin so klug als wie zuvor",
+      "en": "And here I stand, poor fool, no wiser than before",
+      "fr": "Me voici donc, pauvre fou, pas plus sage qu'avant",
+      "it": "Eccomi qui, povero stolto, e ne so quanto prima",
+      "rm": "Qua stun jau ussa, jau pover nar, e sun uschè sabi sco avant",
+      "es": "Aquí estoy, pobre necio, tan sabio como antes",
+      "zh-hans": "如今我站在这里，可怜的傻瓜，和从前一样不聪明"
+    },
+    "source": {
+      "de": "Johann Wolfgang von Goethe: Faust",
+      "en": "Johann Wolfgang von Goethe: Faust",
+      "fr": "Johann Wolfgang von Goethe : Faust",
+      "it": "Johann Wolfgang von Goethe: Faust",
+      "rm": "Johann Wolfgang von Goethe: Faust",
+      "es": "Johann Wolfgang von Goethe: Fausto",
+      "zh-hans": "歌德：浮士德"
+    },
+    "phrases": [
+      "da steh ich nun ich armer tor"
+    ]
+  },
+  {
+    "key": "panta_rhei",
+    "title": {
+      "de": "Panta rhei",
+      "en": "Panta rhei",
+      "fr": "Panta rhei",
+      "it": "Panta rhei",
+      "rm": "Panta rhei",
+      "es": "Panta rhei",
+      "zh-hans": "万物皆流"
+    },
+    "quote": {
+      "de": "Alles fliesst",
+      "en": "Everything flows",
+      "fr": "Tout s'écoule",
+      "it": "Tutto scorre",
+      "rm": "Tut flessa",
+      "es": "Todo fluye",
+      "zh-hans": "万物皆流"
+    },
+    "source": {
+      "de": "Heraklit",
+      "en": "Heraclitus",
+      "fr": "Héraclite",
+      "it": "Eraclito",
+      "rm": "Heraclit",
+      "es": "Heráclito",
+      "zh-hans": "赫拉克利特"
+    },
+    "phrases": [
+      "panta rhei"
+    ]
+  },
+  {
+    "key": "yabba_dabba",
+    "title": {
+      "de": "Steinzeit",
+      "en": "Stone Age",
+      "fr": "Âge de pierre",
+      "it": "Età della pietra",
+      "rm": "Epoca da crap",
+      "es": "Edad de Piedra",
+      "zh-hans": "石器时代"
+    },
+    "quote": {
+      "de": "Yabba Dabba Doo!",
+      "en": "Yabba Dabba Doo!",
+      "fr": "Yabba Dabba Doo!",
+      "it": "Yabba Dabba Doo!",
+      "rm": "Yabba Dabba Doo!",
+      "es": "Yabba Dabba Doo!",
+      "zh-hans": "Yabba Dabba Doo!"
+    },
+    "source": {
+      "de": "Steinzeit – Familie Feuerstein",
+      "en": "Stone Age – The Flintstones",
+      "fr": "Âge de pierre – Les Pierrafeu",
+      "it": "Età della pietra – Gli Antenati",
+      "rm": "Epoca da crap – Ils Flintstones",
+      "es": "Edad de Piedra – Los Picapiedra",
+      "zh-hans": "石器时代——摩登原始人"
+    },
+    "phrases": [
+      "yabba dabba doo"
+    ]
+  },
+  {
+    "key": "eureka",
+    "title": {
+      "de": "Heureka!",
+      "en": "Eureka!",
+      "fr": "Eurêka !",
+      "it": "Eureka!",
+      "rm": "Heureka!",
+      "es": "¡Eureka!",
+      "zh-hans": "尤里卡！"
+    },
+    "quote": {
+      "de": "Heureka!",
+      "en": "Eureka!",
+      "fr": "Eurêka !",
+      "it": "Eureka!",
+      "rm": "Heureka!",
+      "es": "¡Eureka!",
+      "zh-hans": "尤里卡！"
+    },
+    "source": {
+      "de": "Antike – Archimedes",
+      "en": "Antiquity – Archimedes",
+      "fr": "Antiquité – Archimède",
+      "it": "Antichità – Archimede",
+      "rm": "Antica – Archimedes",
+      "es": "Antigüedad – Arquímedes",
+      "zh-hans": "古代——阿基米德"
+    },
+    "phrases": [
+      "heureka",
+      "eureka"
+    ]
+  },
+  {
+    "key": "this_is_sparta",
+    "title": {
+      "de": "This Is Sparta!",
+      "en": "This Is Sparta!",
+      "fr": "This Is Sparta!",
+      "it": "This Is Sparta!",
+      "rm": "This Is Sparta!",
+      "es": "This Is Sparta!",
+      "zh-hans": "这就是斯巴达！"
+    },
+    "quote": {
+      "de": "This is Sparta!",
+      "en": "This is Sparta!",
+      "fr": "C'est Sparte !",
+      "it": "Questa è Sparta!",
+      "rm": "Quai è Sparta!",
+      "es": "¡Esto es Esparta!",
+      "zh-hans": "这就是斯巴达！"
+    },
+    "source": {
+      "de": "Antike – 300",
+      "en": "Antiquity – 300",
+      "fr": "Antiquité – 300",
+      "it": "Antichità – 300",
+      "rm": "Antica – 300",
+      "es": "Antigüedad – 300",
+      "zh-hans": "古代——斯巴达 300 勇士"
+    },
+    "phrases": [
+      "this is sparta",
+      "das ist sparta"
+    ]
+  },
+  {
+    "key": "veni_vidi_vici",
+    "title": {
+      "de": "Veni, vidi, vici",
+      "en": "Veni, vidi, vici",
+      "fr": "Veni, vidi, vici",
+      "it": "Veni, vidi, vici",
+      "rm": "Veni, vidi, vici",
+      "es": "Veni, vidi, vici",
+      "zh-hans": "我来，我见，我征服"
+    },
+    "quote": {
+      "de": "Ich kam, ich sah, ich siegte",
+      "en": "I came, I saw, I conquered",
+      "fr": "Je suis venu, j'ai vu, j'ai vaincu",
+      "it": "Venni, vidi, vinsi",
+      "rm": "Jau sun vegnì, hai vis e hai victorisà",
+      "es": "Llegué, vi, vencí",
+      "zh-hans": "我来，我见，我征服"
+    },
+    "source": {
+      "de": "Antike – Julius Cäsar",
+      "en": "Antiquity – Julius Caesar",
+      "fr": "Antiquité – Jules César",
+      "it": "Antichità – Giulio Cesare",
+      "rm": "Antica – Giulius Cesar",
+      "es": "Antigüedad – Julio César",
+      "zh-hans": "古代——尤利乌斯·凯撒"
+    },
+    "phrases": [
+      "veni vidi vici",
+      "ich kam ich sah ich siegte"
+    ]
+  },
+  {
+    "key": "alea_iacta",
+    "title": {
+      "de": "Rubikon",
+      "en": "Rubicon",
+      "fr": "Rubicon",
+      "it": "Rubicone",
+      "rm": "Rubicon",
+      "es": "Rubicón",
+      "zh-hans": "卢比孔河"
+    },
+    "quote": {
+      "de": "Alea iacta est – Der Würfel ist gefallen",
+      "en": "Alea iacta est – The die is cast",
+      "fr": "Alea iacta est – Le sort en est jeté",
+      "it": "Alea iacta est – Il dado è tratto",
+      "rm": "Alea iacta est – Il dad è tratg",
+      "es": "Alea iacta est – La suerte está echada",
+      "zh-hans": "Alea iacta est——骰子已经掷下"
+    },
+    "source": {
+      "de": "Antike – Julius Cäsar",
+      "en": "Antiquity – Julius Caesar",
+      "fr": "Antiquité – Jules César",
+      "it": "Antichità – Giulio Cesare",
+      "rm": "Antica – Giulius Cesar",
+      "es": "Antigüedad – Julio César",
+      "zh-hans": "古代——尤利乌斯·凯撒"
+    },
+    "phrases": [
+      "alea iacta est",
+      "der würfel ist gefallen"
+    ]
+  },
+  {
+    "key": "et_tu_brute",
+    "title": {
+      "de": "Iden des März",
+      "en": "Ides of March",
+      "fr": "Ides de mars",
+      "it": "Idi di marzo",
+      "rm": "Ids da mars",
+      "es": "Idus de marzo",
+      "zh-hans": "三月十五日"
+    },
+    "quote": {
+      "de": "Auch du, Brutus?",
+      "en": "Et tu, Brute?",
+      "fr": "Toi aussi, Brutus ?",
+      "it": "Anche tu, Bruto?",
+      "rm": "Er ti, Brutus?",
+      "es": "¿Tú también, Bruto?",
+      "zh-hans": "还有你吗，布鲁图？"
+    },
+    "source": {
+      "de": "Antike – Julius Cäsar",
+      "en": "Antiquity – Julius Caesar",
+      "fr": "Antiquité – Jules César",
+      "it": "Antichità – Giulio Cesare",
+      "rm": "Antica – Giulius Cesar",
+      "es": "Antigüedad – Julio César",
+      "zh-hans": "古代——尤利乌斯·凯撒"
+    },
+    "phrases": [
+      "et tu brute",
+      "auch du brutus",
+      "auch du mein sohn brutus"
+    ]
+  },
+  {
+    "key": "deus_vult",
+    "title": {
+      "de": "Kreuzritter",
+      "en": "Crusader",
+      "fr": "Croisé",
+      "it": "Crociato",
+      "rm": "Cruschader",
+      "es": "Cruzado",
+      "zh-hans": "十字军"
+    },
+    "quote": {
+      "de": "Deus vult!",
+      "en": "Deus vult!",
+      "fr": "Deus vult !",
+      "it": "Deus vult!",
+      "rm": "Deus vult!",
+      "es": "¡Deus vult!",
+      "zh-hans": "Deus vult！"
+    },
+    "source": {
+      "de": "Mittelalter – Kreuzzüge",
+      "en": "Middle Ages – Crusades",
+      "fr": "Moyen Âge – Croisades",
+      "it": "Medioevo – Crociate",
+      "rm": "Temp medieval – Cruschadas",
+      "es": "Edad Media – Cruzadas",
+      "zh-hans": "中世纪——十字军东征"
+    },
+    "phrases": [
+      "deus vult"
+    ]
+  },
+  {
+    "key": "hier_stehe_ich",
+    "title": {
+      "de": "Thesenanschlag",
+      "en": "Ninety-five Theses",
+      "fr": "Thèses de Wittenberg",
+      "it": "Tesi di Wittenberg",
+      "rm": "Tesas",
+      "es": "Tesis de Wittenberg",
+      "zh-hans": "九十五条论纲"
+    },
+    "quote": {
+      "de": "Hier stehe ich, ich kann nicht anders",
+      "en": "Here I stand, I can do no other",
+      "fr": "Me voici, je ne peux faire autrement",
+      "it": "Qui sto, non posso fare altrimenti",
+      "rm": "Qua stun jau, jau na poss betg auter",
+      "es": "Aquí estoy, no puedo hacer otra cosa",
+      "zh-hans": "这是我的立场，我别无选择"
+    },
+    "source": {
+      "de": "Reformation – Martin Luther",
+      "en": "Reformation – Martin Luther",
+      "fr": "Réforme – Martin Luther",
+      "it": "Riforma – Martin Lutero",
+      "rm": "Refurmaziun – Martin Luther",
+      "es": "Reforma – Martín Lutero",
+      "zh-hans": "宗教改革——马丁·路德"
+    },
+    "phrases": [
+      "hier stehe ich ich kann nicht anders"
+    ]
+  },
+  {
+    "key": "eppur_si_muove",
+    "title": {
+      "de": "Und sie bewegt sich doch",
+      "en": "And Yet It Moves",
+      "fr": "Et pourtant elle tourne",
+      "it": "Eppur si muove",
+      "rm": "E tuttina sa mova ella",
+      "es": "Y sin embargo se mueve",
+      "zh-hans": "但它确实在转动"
+    },
+    "quote": {
+      "de": "Eppur si muove",
+      "en": "Eppur si muove",
+      "fr": "Eppur si muove",
+      "it": "Eppur si muove",
+      "rm": "Eppur si muove",
+      "es": "Eppur si muove",
+      "zh-hans": "Eppur si muove"
+    },
+    "source": {
+      "de": "Renaissance – Galileo Galilei",
+      "en": "Renaissance – Galileo Galilei",
+      "fr": "Renaissance – Galilée",
+      "it": "Rinascimento – Galileo Galilei",
+      "rm": "Renaschientscha – Galileo Galilei",
+      "es": "Renacimiento – Galileo Galilei",
+      "zh-hans": "文艺复兴——伽利略"
+    },
+    "phrases": [
+      "eppur si muove",
+      "und sie bewegt sich doch"
+    ]
+  },
+  {
+    "key": "letat_cest_moi",
+    "title": {
+      "de": "Sonnenkönig",
+      "en": "Sun King",
+      "fr": "Roi-Soleil",
+      "it": "Re Sole",
+      "rm": "Retg sulegl",
+      "es": "Rey Sol",
+      "zh-hans": "太阳王"
+    },
+    "quote": {
+      "de": "Der Staat bin ich",
+      "en": "I am the state",
+      "fr": "L'État, c'est moi",
+      "it": "Lo Stato sono io",
+      "rm": "Il stadi sun jau",
+      "es": "El Estado soy yo",
+      "zh-hans": "朕即国家"
+    },
+    "source": {
+      "de": "Absolutismus – Ludwig XIV.",
+      "en": "Absolutism – Louis XIV",
+      "fr": "Absolutisme – Louis XIV",
+      "it": "Assolutismo – Luigi XIV",
+      "rm": "Absolutissem – Louis XIV",
+      "es": "Absolutismo – Luis XIV",
+      "zh-hans": "专制主义——路易十四"
+    },
+    "phrases": [
+      "l'état c'est moi",
+      "der staat bin ich"
+    ]
+  },
+  {
+    "key": "let_them_eat_cake",
+    "title": {
+      "de": "Kuchen für alle",
+      "en": "Cake for Everyone",
+      "fr": "Brioche pour tous",
+      "it": "Brioche per tutti",
+      "rm": "Turta per tuts",
+      "es": "Pastel para todos",
+      "zh-hans": "人人有蛋糕"
+    },
+    "quote": {
+      "de": "Dann sollen sie doch Kuchen essen!",
+      "en": "Let them eat cake!",
+      "fr": "Qu'ils mangent de la brioche !",
+      "it": "Che mangino brioche!",
+      "rm": "Ch'els mangian pia turta!",
+      "es": "¡Que coman pasteles!",
+      "zh-hans": "那就让他们吃蛋糕吧！"
+    },
+    "source": {
+      "de": "Französische Revolution",
+      "en": "French Revolution",
+      "fr": "Révolution française",
+      "it": "Rivoluzione francese",
+      "rm": "Revoluziun franzosa",
+      "es": "Revolución francesa",
+      "zh-hans": "法国大革命"
+    },
+    "phrases": [
+      "dann sollen sie doch kuchen essen",
+      "let them eat cake",
+      "qu'ils mangent de la brioche"
+    ]
+  },
+  {
+    "key": "liberte",
+    "title": {
+      "de": "Liberté, égalité, fraternité",
+      "en": "Liberté, égalité, fraternité",
+      "fr": "Liberté, égalité, fraternité",
+      "it": "Liberté, égalité, fraternité",
+      "rm": "Liberté, égalité, fraternité",
+      "es": "Liberté, égalité, fraternité",
+      "zh-hans": "自由、平等、博爱"
+    },
+    "quote": {
+      "de": "Freiheit, Gleichheit, Brüderlichkeit",
+      "en": "Liberty, equality, fraternity",
+      "fr": "Liberté, égalité, fraternité",
+      "it": "Libertà, uguaglianza, fratellanza",
+      "rm": "Libertad, egualitad, fraternitad",
+      "es": "Libertad, igualdad, fraternidad",
+      "zh-hans": "自由、平等、博爱"
+    },
+    "source": {
+      "de": "Französische Revolution",
+      "en": "French Revolution",
+      "fr": "Révolution française",
+      "it": "Rivoluzione francese",
+      "rm": "Revoluziun franzosa",
+      "es": "Revolución francesa",
+      "zh-hans": "法国大革命"
+    },
+    "phrases": [
+      "liberté égalité fraternité",
+      "freiheit gleichheit brüderlichkeit"
+    ]
+  },
+  {
+    "key": "small_step",
+    "title": {
+      "de": "Mondlandung",
+      "en": "Moon Landing",
+      "fr": "Alunissage",
+      "it": "Allunaggio",
+      "rm": "Allunaziun",
+      "es": "Alunizaje",
+      "zh-hans": "登月"
+    },
+    "quote": {
+      "de": "Ein kleiner Schritt für einen Menschen, ein riesiger Sprung für die Menschheit",
+      "en": "That's one small step for man, one giant leap for mankind",
+      "fr": "C'est un petit pas pour l'homme, un bond de géant pour l'humanité",
+      "it": "Questo è un piccolo passo per un uomo, ma un grande balzo per l'umanità",
+      "rm": "In pitschen pass per in uman, in grond sigl per l'umanitad",
+      "es": "Es un pequeño paso para el hombre, pero un gran salto para la humanidad",
+      "zh-hans": "这是个人的一小步，却是人类的一大步"
+    },
+    "source": {
+      "de": "Raumfahrt – Apollo 11",
+      "en": "Space travel – Apollo 11",
+      "fr": "Conquête spatiale – Apollo 11",
+      "it": "Esplorazione spaziale – Apollo 11",
+      "rm": "Viadi en l'univers – Apollo 11",
+      "es": "Carrera espacial – Apolo 11",
+      "zh-hans": "太空探索——阿波罗 11 号"
+    },
+    "phrases": [
+      "one small step for man",
+      "ein kleiner schritt für einen menschen"
+    ]
+  }
+]

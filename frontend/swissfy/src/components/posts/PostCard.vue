@@ -30,10 +30,10 @@
             shape="square"
             size="sm"
             :disabled="busy"
-            title="In Ordner verschieben"
+            :title="$t('postCard.move')"
             @click="$refs.folderDialog.open(post.saved_folder)"
           >
-            <AppIcon name="folder" alt="In Ordner verschieben" />
+            <AppIcon name="folder" :alt="$t('postCard.move')" />
           </BaseButton>
           <BaseButton
             v-if="post.can_report"
@@ -43,12 +43,12 @@
             @click="report"
           >
             <AppIcon name="flag" />
-            {{ post.reported ? 'Gemeldet' : 'Melden' }}
+            {{ post.reported ? $t('postCard.reported') : $t('postCard.report') }}
           </BaseButton>
           <PostAction
             v-if="post.is_own && !moderation"
             icon="pencil"
-            title="Bearbeiten"
+            :title="$t('common.edit')"
             @select="$refs.edit.open()"
           />
         </template>
@@ -56,7 +56,7 @@
 
       <template v-if="!post.video">
         <p v-if="post.hidden" class="px-4 pt-3 text-xs font-bold text-error">
-          Öffentlich verborgen
+          {{ $t('postCard.hidden') }}
         </p>
         <PostText
           v-if="post.text"
@@ -78,7 +78,7 @@
       </PostVideo>
     </div>
     <p v-if="post.video && post.hidden" class="px-4 pt-3 text-xs font-bold text-error">
-      Öffentlich verborgen
+      {{ $t('postCard.hidden') }}
     </p>
     <PostText
       v-if="post.video && !overlay && post.text"
@@ -117,7 +117,7 @@
       <div class="flex flex-col gap-2">
         <BaseButton v-if="post.is_own && !moderation" block @click="editFromMenu">
           <AppIcon name="pencil" />
-          Seed bearbeiten
+          {{ $t('postCard.editReel') }}
         </BaseButton>
         <BaseButton
           v-if="post.can_report"
@@ -126,7 +126,7 @@
           @click="reportFromMenu"
         >
           <AppIcon name="shield-exclamation" />
-          {{ post.reported ? 'Gemeldet' : 'Seed melden' }}
+          {{ post.reported ? $t('postCard.reported') : $t('postCard.reportReel') }}
         </BaseButton>
       </div>
     </BaseDialog>
@@ -171,6 +171,7 @@ import PostText from '@/components/posts/PostText.vue'
 import PostVideo from '@/components/posts/PostVideo.vue'
 import postsApi from '@/api/posts.js'
 import { useAuthStore } from '@/stores/auth.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'PostCard',
@@ -201,9 +202,6 @@ export default {
     reel: { type: Boolean, default: false },
   },
   emits: ['update', 'deleted', 'saved-change'],
-  data() {
-    return {}
-  },
   computed: {
     ...mapStores(useAuthStore),
     hasMedia() {
@@ -246,7 +244,7 @@ export default {
         this.$router.push('/login')
         return null
       }
-      const post = await this.runAction(request, 'Aktion fehlgeschlagen.')
+      const post = await this.runAction(request, t('common.actionFailed'))
       if (post) this.$emit('update', post)
       return post
     },

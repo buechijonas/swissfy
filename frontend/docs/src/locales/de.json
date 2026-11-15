@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "logoutFailed": "Abmelden fehlgeschlagen."
+  },
+  "display": {
+    "title": "Darstellung",
+    "appearance": "Erscheinungsbild der Oberfläche.",
+    "accessibility": "Barrierefreiheit",
+    "dyslexia": "Legasthenie",
+    "contrast": "Kontrastmodus",
+    "auto": "Auto",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "on": "An",
+    "off": "Aus",
+    "language": "Sprache",
+    "languageHint": "Sprache der Oberfläche."
+  },
+  "navigation": {
+    "changelog": "Changelog",
+    "donate": "Spenden",
+    "settings": "Einstellungen",
+    "version": "Version {version}"
+  },
+  "changelogs": {
+    "empty": "Noch keine Releases."
+  },
+  "header": {
+    "settings": "Einstellungen",
+    "docs": "Dokumentation",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "menu": "Menü"
+  },
+  "legal": {
+    "imprint": "Impressum",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Nutzungsrichtlinien",
+    "disclaimer": "Haftungsausschluss"
+  }
+}

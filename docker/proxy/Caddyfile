@@ -1,8 +1,19 @@
 :80 {
-	encode gzip
+	handle /api/events/ {
+		reverse_proxy events:8000
+	}
+
+	@media {
+		method GET HEAD
+		path_regexp ^/api/(posts/[0-9a-f-]+/(images/[0-9]+|video|thumbnail)|stories/[0-9a-f-]+/image|profiles/[^/]+/pictures/[^/]+|covers)/
+	}
+	handle @media {
+		reverse_proxy media:8000
+	}
 
 	@backend path /api/* /django-admin/* /static/*
 	handle @backend {
+		encode gzip
 		reverse_proxy {
 			dynamic a backend 8000 {
 				refresh 5s
@@ -15,6 +26,7 @@
 	}
 
 	handle {
+		encode gzip
 		map {header.X-Swissfy-App} {app_root} {
 			docs /srv/docs
 			default /srv/swissfy

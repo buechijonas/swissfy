@@ -8,9 +8,9 @@
           shape="circle"
           size="sm"
           class="absolute right-2 top-2"
-          title="Schliessen"
+          :title="$t('common.close')"
         >
-          <AppIcon name="cross" size="sm" alt="Schliessen" />
+          <AppIcon name="cross" size="sm" :alt="$t('common.close')" />
         </BaseButton>
       </form>
       <slot name="header">
@@ -37,7 +37,7 @@
       </div>
     </div>
     <form method="dialog" class="modal-backdrop">
-      <button>close</button>
+      <button>{{ $t('common.close') }}</button>
     </form>
   </dialog>
 </template>

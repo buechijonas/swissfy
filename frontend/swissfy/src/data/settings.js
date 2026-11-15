@@ -1,58 +1,73 @@
-export const onOffOptions = [
-  { value: true, label: 'An', icon: 'check' },
-  { value: false, label: 'Aus', icon: 'cross' },
-]
+import { t } from '@/i18n.js'
 
-export const themeOptions = [
-  { value: 'auto', icon: 'laptop', label: 'Auto' },
-  { value: 'light', icon: 'brightness', label: 'Hell' },
-  { value: 'dark', icon: 'moon-stars', label: 'Dunkel' },
-]
+export function onOffOptions() {
+  return [
+    { value: true, label: t('settings.on'), icon: 'check' },
+    { value: false, label: t('settings.off'), icon: 'cross' },
+  ]
+}
 
-export const designOptions = [
-  { value: 'default', icon: 'grid', label: 'Standard' },
-  { value: 'glass', icon: 'droplet', label: 'Glassmorphism' },
-  { value: 'y2k', icon: 'world', label: 'Y2K' },
-  { value: 'cyberpunk', icon: 'chip', label: 'Cyberpunk' },
-  { value: 'ecopunk', icon: 'globe', label: 'Ecopunk' },
-  { value: 'romance', icon: 'heart', label: 'Dark Romance' },
-]
+export function themeOptions() {
+  return [
+    { value: 'auto', icon: 'laptop', label: t('settings.auto') },
+    { value: 'light', icon: 'brightness', label: t('settings.light') },
+    { value: 'dark', icon: 'moon-stars', label: t('settings.dark') },
+  ]
+}
+
+export function designOptions() {
+  return [
+    { value: 'default', icon: 'grid', label: t('settings.standard') },
+    { value: 'glass', icon: 'droplet', label: 'Glassmorphism' },
+    { value: 'y2k', icon: 'world', label: 'Y2K' },
+    { value: 'cyberpunk', icon: 'chip', label: 'Cyberpunk' },
+    { value: 'ecopunk', icon: 'globe', label: 'Ecopunk' },
+    { value: 'romance', icon: 'heart', label: 'Dark Romance' },
+  ]
+}
 
 export const limitedDesigns = ['cyberpunk', 'romance', 'y2k']
 
-export const visibilityOptions = [
-  { value: 'public', label: 'Öffentlich', icon: 'globe' },
-  { value: 'followers', label: 'Follower', icon: 'user' },
-  { value: 'friends', label: 'Freunde', icon: 'users' },
-]
+export function visibilityOptions() {
+  return [
+    { value: 'public', label: t('settings.public'), icon: 'globe' },
+    { value: 'followers', label: t('settings.followers'), icon: 'user' },
+    { value: 'friends', label: t('settings.friends'), icon: 'users' },
+  ]
+}
 
-export const privacyToggles = [
-  {
-    field: 'read_receipts',
-    label: 'Lesebestätigungen',
-    hint: 'Wenn aus, sehen andere nicht, ob du ihre Nachrichten gelesen hast, und du siehst es bei ihnen auch nicht.',
-  },
-  {
-    field: 'chat_requests',
-    label: 'Chat-Anfragen',
-    hint: 'Wenn aus, kann dir niemand eine neue Chat-Anfrage senden. Bestehende Chats bleiben.',
-  },
-  {
-    field: 'show_birthdate',
-    label: 'Geburtsdatum',
-    hint: 'Wenn an, sehen alle, die dein Profil sehen dürfen, dein Geburtsdatum unter «Über mich».',
-  },
-]
+export function privacyToggles() {
+  return [
+    {
+      field: 'read_receipts',
+      label: t('settings.readReceipts'),
+      hint: t('settings.readReceiptsHint'),
+    },
+    {
+      field: 'chat_requests',
+      label: t('settings.chatRequests'),
+      hint: t('settings.chatRequestsHint'),
+    },
+    {
+      field: 'show_birthdate',
+      label: t('settings.birthdate'),
+      hint: t('settings.birthdateHint'),
+    },
+  ]
+}
 
-export const chatProtectionOptions = [
-  { value: 'standard', label: 'Standard', icon: 'shield-trust' },
-  { value: 'device', label: 'Nur auf diesem Gerät', icon: 'laptop' },
-  { value: 'pin', label: 'Chat-PIN', icon: 'lock' },
-]
+export function chatProtectionOptions() {
+  return [
+    { value: 'standard', label: t('settings.standard'), icon: 'shield-trust' },
+    { value: 'device', label: t('settings.device'), icon: 'laptop' },
+    { value: 'pin', label: t('settings.pin'), icon: 'lock' },
+  ]
+}
 
-export const chatProtectionHints = {
-  standard: 'Verschlüsselt gespeichert. Zugang auf jedem Gerät mit deinem Login.',
-  device:
-    'Ende-zu-Ende verschlüsselt. Nur dieses Gerät kann deine Chats lesen, neue Geräte sehen nur neue Nachrichten.',
-  pin: 'Ende-zu-Ende verschlüsselt. Auf neuen Geräten entsperrst du deine Chats mit deiner PIN.',
+export function chatProtectionHints() {
+  return {
+    standard: t('settings.standardHint'),
+    device: t('settings.deviceHint'),
+    pin: t('settings.pinHint'),
+  }
 }

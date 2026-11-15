@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -82,7 +83,7 @@ class CommentReplyViewSet(CommentReplyListViewSet, CreateModelMixin):
     def perform_create(self, serializer):
         parent = self.get_parent()
         if not Post.objects.apply_acl(self.request.user).filter(pk=parent.post_id).exists():
-            raise PermissionDenied("Dieser Feed ist nicht mehr verfügbar.")
+            raise PermissionDenied(_("Dieser Feed ist nicht mehr verfügbar."))
         comment = serializer.save(post=parent.post, parent=parent, author=self.request.user)
         notify_comment(comment)
         return comment
@@ -145,7 +146,7 @@ class CommentViewSet(CommentDetailViewSet, mixins.DestroyModelMixin):
     def vote(self, request, uuid):
         comment = self.get_object()
         if not comment.can_vote:
-            raise PermissionDenied("Du kannst nicht über eigene Kommentare abstimmen.")
+            raise PermissionDenied(_("Du kannst nicht über eigene Kommentare abstimmen."))
         serializer = CommentModelSerializer.vote(data=request.data)
         serializer.is_valid(raise_exception=True)
         value = serializer.validated_data["value"]

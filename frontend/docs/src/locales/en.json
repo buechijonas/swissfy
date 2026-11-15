@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "logoutFailed": "Logging out failed."
+  },
+  "display": {
+    "title": "Display",
+    "appearance": "Appearance of the interface.",
+    "accessibility": "Accessibility",
+    "dyslexia": "Dyslexia",
+    "contrast": "Contrast mode",
+    "auto": "Auto",
+    "light": "Light",
+    "dark": "Dark",
+    "on": "On",
+    "off": "Off",
+    "language": "Language",
+    "languageHint": "Language of the interface."
+  },
+  "navigation": {
+    "changelog": "Changelog",
+    "donate": "Donate",
+    "settings": "Settings",
+    "version": "Version {version}"
+  },
+  "changelogs": {
+    "empty": "No releases yet."
+  },
+  "header": {
+    "settings": "Settings",
+    "docs": "Documentation",
+    "logout": "Log out",
+    "login": "Log in",
+    "menu": "Menu"
+  },
+  "legal": {
+    "imprint": "Imprint",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "disclaimer": "Disclaimer"
+  }
+}

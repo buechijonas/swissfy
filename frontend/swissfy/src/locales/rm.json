@@ -1,0 +1,617 @@
+{
+  "common": {
+    "saveFailed": "Il memorisar n'è betg reussì.",
+    "loadFailed": "Il chargiar n'è betg reussì.",
+    "cancel": "Interrumper",
+    "close": "Serrar",
+    "hidden": "zuppà",
+    "delete": "Stizzar",
+    "loadMore": "Chargiar dapli",
+    "edit": "Modifitgar",
+    "save": "Memorisar",
+    "create": "Crear",
+    "more": "Dapli",
+    "actionFailed": "L'acziun n'è betg reussida.",
+    "next": "Vinavant",
+    "back": "Enavos"
+  },
+  "auth": {
+    "logoutFailed": "La deconnexiun n'è betg reussida.",
+    "consentFailed": "Il consentiment n'è betg reussì."
+  },
+  "chatKeys": {
+    "settingsFailed": "Las configuraziuns dal chat n'han betg pudì vegnir chargiadas.",
+    "keyFailed": "La clav n'ha betg pudì vegnir creada.",
+    "wrongPin": "PIN fallà."
+  },
+  "connections": {
+    "followers": "Followers",
+    "noFollowers": "Anc nagins followers.",
+    "following": "suonda",
+    "noFollowing": "Na suonda anc nagin.",
+    "friends": "Amis",
+    "noFriends": "Anc nagins amis."
+  },
+  "favorites": {
+    "movies": "Films preferids",
+    "searchMovie": "Tschertgar in film",
+    "series": "Serias preferidas",
+    "searchSeries": "Tschertgar ina seria",
+    "games": "Gieus preferids",
+    "searchGame": "Tschertgar in gieu",
+    "add": "Agiuntar",
+    "remove": "Allontanar",
+    "nothingFound": "Nagut chattà.",
+    "searchFailed": "La tschertga n'è betg reussida.",
+    "credits": "Datas e cuvertas da {imdb} e {steam}.",
+    "max": "Tscherna fin {max}."
+  },
+  "legal": {
+    "imprint": "Impressum",
+    "privacy": "Decleraziun da protecziun da datas",
+    "terms": "Directivas d'utilisaziun",
+    "disclaimer": "Exclusiun da responsabladad",
+    "agree": "Acceptar"
+  },
+  "navigation": {
+    "home": "Pagina iniziala",
+    "reels": "Seeds",
+    "search": "Tschertgar",
+    "notifications": "Avis",
+    "chats": "Chats",
+    "profile": "Profil",
+    "moderation": "Moderaziun",
+    "administration": "Administraziun",
+    "login": "S'annunziar",
+    "logout": "Sa deconnectar",
+    "closeSidebar": "Serrar la trav laterala",
+    "version": "Versiun {version}"
+  },
+  "settings": {
+    "on": "Activ",
+    "off": "Inactiv",
+    "auto": "Auto",
+    "light": "Cler",
+    "dark": "Stgir",
+    "standard": "Standard",
+    "public": "Public",
+    "followers": "Followers",
+    "friends": "Amis",
+    "readReceipts": "Confermaziuns da lectura",
+    "readReceiptsHint": "Sch'inactiv, na vesan ils auters betg, sche ti has legì lur messadis, e ti na vesas quai er betg tar els.",
+    "chatRequests": "Dumondas da chat",
+    "chatRequestsHint": "Sch'inactiv, na po nagin ta trametter ina nova dumonda da chat. Chats existents restan.",
+    "birthdate": "Data da naschientscha",
+    "birthdateHint": "Sch'activ, vesan tuts che dastgan vesair tes profil tia data da naschientscha sut «Davart mai».",
+    "device": "Mo sin quest apparat",
+    "pin": "PIN dal chat",
+    "standardHint": "Memorisà criptà. Access sin mintga apparat cun tes login.",
+    "deviceHint": "Criptà da fin a fin. Mo quest apparat po leger tes chats, novs apparats vesan mo novs messadis.",
+    "pinHint": "Criptà da fin a fin. Sin novs apparats debloccas ti tes chats cun tes PIN."
+  },
+  "routes": {
+    "home": "Pagina iniziala",
+    "reels": "Seeds",
+    "search": "Tschertgar",
+    "chats": "Chats",
+    "chat": "Chat",
+    "post": "Feed",
+    "comment": "Commentari",
+    "notifications": "Avis",
+    "moderation": "Moderaziun",
+    "administration": "Administraziun",
+    "saved": "Memorisà",
+    "profile": "Profil",
+    "album": "Album",
+    "newStory": "Nova story",
+    "newPost": "Nov feed",
+    "hashtag": "Hashtag",
+    "login": "S'annunziar",
+    "logout": "Sa deconnectar",
+    "settings": "Configuraziuns"
+  },
+  "time": {
+    "minutesAgo": "Avant {count} min.",
+    "hoursAgo": "Avant {count} ura | Avant {count} uras",
+    "yesterday": "Ier a las {time}",
+    "dateTime": "{day}, {time}"
+  },
+  "chat": {
+    "send": "Trametter",
+    "message": "Messadi",
+    "disconnected": "Colliaziun interrutta. Novs messadis cumparan, uschespert ch'ella è puspè qua.",
+    "encrypted": "Criptà",
+    "endToEnd": "Criptà da fin a fin",
+    "requestDeclined": "La dumonda è vegnida refusada",
+    "noRequests": "N'accepta naginas dumondas da chat",
+    "self": "Ti na pos betg chattar cun tatez.",
+    "profileNotFound": "Profil betg chattà.",
+    "loadFailed": "Il chat n'ha betg pudì vegnir chargià.",
+    "refreshFailed": "Il chat n'ha betg pudì vegnir actualisà.",
+    "sendFailed": "Il messadi n'ha betg pudì vegnir tramess.",
+    "empty": "Anc nagins messadis.",
+    "unreadable": "Betg legibel sin quest apparat.",
+    "tampered": "Messadi donnegià u manipulà.",
+    "unverified": "Betg verifitgà",
+    "safetyNumber": "Mussar il numer da segirezza",
+    "safetyNumberHint": "Cumparegliai quest numer da segirezza persunalmain u sur in auter chanal. Sch'el correspunda per vus dus, na legia nagin tranteren.",
+    "keysChanged": "{'@'}{username} ha novas clavs. Cumparegliai voss numer da segirezza avant che ti scrivas insatge confidenzial.",
+    "keysAccepted": "Chapì",
+    "enterPin": "Endatescha tes PIN dal chat per decriptar tes chats.",
+    "unlock": "Debloccar",
+    "pin": "PIN dal chat",
+    "sendRequest": "Trametter ina dumonda",
+    "declineForGood": "Refusar definitivamain",
+    "decline": "Refusar",
+    "accept": "Acceptar",
+    "withdraw": "Retrair la dumonda",
+    "requestFailed": "La dumonda n'è betg reussida.",
+    "retention": "Ils messadis vegnan stizzads automaticamain suenter {days} dis."
+  },
+  "chats": {
+    "requests": "Dumondas da chat",
+    "archiveTitle": "Archivar il chat",
+    "archive": "Archivar",
+    "requestSent": "Dumonda tramessa",
+    "noMessages": "Anc nagins messadis",
+    "noArchived": "Nagins chats archivads.",
+    "allArchived": "Tut ils chats èn archivads.",
+    "empty": "Anc nagins chats. Ti pos trametter ina dumonda da chat sur in profil.",
+    "loadFailed": "Ils chats n'han betg pudì vegnir chargiads.",
+    "archiveFailed": "Il chat n'ha betg pudì vegnir archivà.",
+    "restoreFailed": "Il chat n'ha betg pudì vegnir restaurà.",
+    "restore": "Restaurar",
+    "tabChats": "Chats",
+    "tabArchive": "Archiv",
+    "archiveMessage": "Archivar il chat cun {'@'}{username}? Ti na survegns nagins avis pli per chats archivads."
+  },
+  "header": {
+    "settings": "Configuraziuns",
+    "saved": "Memorisà",
+    "docs": "Documentaziun",
+    "menu": "Menu",
+    "logout": "Sa deconnectar",
+    "login": "S'annunziar",
+    "newNotifications": "Novs avis",
+    "notifications": "Avis"
+  },
+  "dialog": {
+    "confirmDelete": "Confermar il stizzar"
+  },
+  "dropzone": {
+    "label": "Tira maletgs nà qua u clicca"
+  },
+  "search": {
+    "search": "Tschertgar"
+  },
+  "users": {
+    "noneFound": "Nagins utilisaders chattads.",
+    "noOthers": "Anc nagins auters utilisaders.",
+    "loadFailed": "Ils utilisaders n'han betg pudì vegnir chargiads."
+  },
+  "messageStatus": {
+    "sent": "Tramess",
+    "delivered": "Arrivà",
+    "read": "Legì"
+  },
+  "administration": {
+    "allRoles": "Tut las rollas",
+    "noUsers": "Nagins utilisaders chattads.",
+    "searchPlaceholder": "Num d'utilisader u num",
+    "ownRole": "Ti na pos betg midar tia atgna rolla.",
+    "role": "Rolla",
+    "roleLockedForever": "Rolla bloccada per adina",
+    "loadFailed": "Ils utilisaders n'han betg pudì vegnir chargiads.",
+    "changeFailed": "La rolla n'ha betg pudì vegnir midada.",
+    "title": "Administraziun",
+    "roleLockedUntil": "Rolla bloccada fin ils {date}"
+  },
+  "album": {
+    "addToTimeline": "Agiuntar a la timeline",
+    "deleteMessage": "Stizzar l'album? Ils posts sezs restan.",
+    "notFound": "Album betg chattà.",
+    "loadFailed": "L'album n'ha betg pudì vegnir chargià.",
+    "deleteFailed": "L'album n'ha betg pudì vegnir stizzà.",
+    "albums": "Albums",
+    "album": "Album"
+  },
+  "commentView": {
+    "replyPlaceholder": "Scriver ina resposta…",
+    "deleteMessage": "Vuls ti stizzar quest commentari? Las respostas vegnan er stizzadas.",
+    "notFound": "Commentari betg chattà.",
+    "loadFailed": "Il commentari n'ha betg pudì vegnir chargià.",
+    "deleteFailed": "Il commentari n'ha betg pudì vegnir stizzà.",
+    "moderation": "Moderaziun",
+    "post": "Feed",
+    "comment": "Commentari"
+  },
+  "connectionsView": {
+    "searchPlaceholder": "Tschertgar utilisaders",
+    "profile": "Profil"
+  },
+  "hashtag": {
+    "unfollow": "Betg pli suandar",
+    "follow": "Suandar",
+    "noReels": "Anc nagins seeds.",
+    "noPosts": "Anc nagins feeds.",
+    "posts": "Feeds",
+    "reels": "Seeds",
+    "empty": "I na dat anc nagins feeds per quest hashtag.",
+    "loadFailed": "Il hashtag n'ha betg pudì vegnir chargià.",
+    "postCount": "{count} feeds",
+    "following": "Suandà"
+  },
+  "home": {
+    "welcome": "Bainvegni",
+    "post": "Publitgar",
+    "empty": "Anc nagins feeds. Suonda persunas u hashtags per vesair qua lur feeds.",
+    "noAnnouncements": "Anc naginas communicaziuns.",
+    "home": "Pagina iniziala"
+  },
+  "moderation": {
+    "noResolved": "Anc naginas annunzias liquidadas.",
+    "noOpen": "Naginas annunzias avertas.",
+    "title": "Moderaziun",
+    "open": "Avertas",
+    "resolved": "Liquidadas",
+    "post": "Feed",
+    "comment": "Commentari",
+    "loadFailed": "Las annunzias n'han betg pudì vegnir chargiadas."
+  },
+  "notifications": {
+    "accept": "Acceptar",
+    "decline": "Refusar",
+    "empty": "Anc nagins avis.",
+    "open": "Avrir",
+    "accepted": "Acceptà",
+    "declined": "Refusà",
+    "title": "Avis",
+    "loadFailed": "Ils avis n'han betg pudì vegnir chargiads.",
+    "actionFailed": "L'acziun n'è betg reussida."
+  },
+  "postView": {
+    "post": "Feed",
+    "moderation": "Moderaziun",
+    "notFound": "Feed betg chattà.",
+    "loadFailed": "Il feed n'ha betg pudì vegnir chargià."
+  },
+  "reels": {
+    "empty": "Anc nagins seeds.",
+    "emptyFollowing": "Anc nagins seeds da persunas u hashtags che ti suondas.",
+    "loadFailed": "Ils seeds n'han betg pudì vegnir chargiads."
+  },
+  "saved": {
+    "rename": "Renumnar",
+    "folder": "Ordinatur",
+    "empty": "Qua n'è anc nagut memorisà.",
+    "name": "Num",
+    "deleteMessage": "Stizzar l'ordinatur? Ils feeds memorisads restan sut «Senza ordinatur».",
+    "renameFolder": "Renumnar l'ordinatur",
+    "newFolder": "Nov ordinatur",
+    "title": "Memorisà",
+    "all": "Tuts",
+    "noFolder": "Senza ordinatur",
+    "loadFailed": "Ils ordinaturs n'han betg pudì vegnir chargiads."
+  },
+  "searchView": {
+    "title": "Tschertgar",
+    "placeholder": "Tschertgar utilisaders u #hashtags"
+  },
+  "settingsView": {
+    "groups": "Gruppas",
+    "title": "Configuraziuns",
+    "general": "General",
+    "privacy": "Protecziun da datas",
+    "profile": "Profil",
+    "display": "Visualisaziun",
+    "wellbeing": "Bainstar"
+  },
+  "login": {
+    "intro": "Swissfy utilisescha govex per l'annunzia. Là administreschas ti tes num d'utilisader e tes pled-clav.",
+    "button": "S'annunziar cun govex",
+    "title": "S'annunziar",
+    "failed": "L'annunzia via govex n'è betg reussida. Emprova anc ina giada."
+  },
+  "logout": {
+    "back": "Enavos a la pagina iniziala",
+    "title": "Sa deconnectar",
+    "done": "Ti es vegnì deconnectà.",
+    "pending": "Deconnexiun en lavur …"
+  },
+  "upload": {
+    "cropHint": "Tut ils maletgs vegnan taglià en il format da l'emprim maletg.",
+    "videoHint": "Il video vegn elavurà suenter la publicaziun e cumpara lura per ils auters.",
+    "removeImage": "Allontanar il maletg",
+    "storyDrop": "Tira in maletg per tia story nà qua u clicca",
+    "storyText": "Text sin tia story (facultativ)",
+    "removeVideo": "Allontanar il video",
+    "postDrop": "Tira maletgs u in video nà qua u clicca",
+    "add": "Agiuntar",
+    "postText": "Tge è nov? Marca hashtags cun #, p. ex. #zürich",
+    "posting": "Vegn publitgà…",
+    "post": "Publitgar",
+    "imageUnreadable": "Il maletg n'ha betg pudì vegnir legì.",
+    "videoTooLarge": "Il video è memia grond (max. 250 MB).",
+    "anImageUnreadable": "In maletg n'ha betg pudì vegnir legì.",
+    "storyFailed": "La story n'ha betg pudì vegnir creada.",
+    "postFailed": "Il feed n'ha betg pudì vegnir creà.",
+    "confirmStory": "Jau confirmesch che mia story correspunda a las {terms}.",
+    "confirmPost": "Jau confirmesch che mes feed correspunda a las {terms}.",
+    "terms": "directivas d'utilisaziun",
+    "quotaLeft": "Oz anc {remaining} da {limit} feeds pussaivels.",
+    "quotaUsed": "Ti has oz gia creà {limit} feeds.",
+    "videoTooLong": "Il video è memia lung (max. {seconds} secundas).",
+    "tooManyImages": "Ti pos chargiar si maximalmain {count} maletgs."
+  },
+  "profile": {
+    "followers": "Followers",
+    "following": "Suandà",
+    "chat": "Chat",
+    "friends": "Amis",
+    "private": "Quest profil è privat.",
+    "birthdate": "Data da naschientscha",
+    "noDetails": "Naginas indicaziuns.",
+    "post": "Publitgar",
+    "viewStory": "Guardar la story",
+    "addStory": "Agiuntar ina story",
+    "requested": "Dumandà",
+    "request": "Dumandar",
+    "activity": "Activitads",
+    "grid": "Grilla",
+    "albums": "Albums",
+    "about": "Davart mai",
+    "achievements": "Success",
+    "status": "Status",
+    "posts": "Feeds",
+    "noPosts": "Anc nagins feeds.",
+    "reels": "Seeds",
+    "noReels": "Anc nagins seeds.",
+    "comments": "Commentaris",
+    "noComments": "Anc nagins commentaris.",
+    "profile": "Profil",
+    "unfollow": "Betg pli suandar",
+    "follow": "Suandar",
+    "notFound": "Profil betg chattà.",
+    "loadFailed": "Il profil n'ha betg pudì vegnir chargià.",
+    "actionFailed": "L'acziun n'è betg reussida.",
+    "requestFailed": "La dumonda n'è betg reussida."
+  },
+  "comments": {
+    "comment": "Commentari",
+    "send": "Trametter",
+    "author": "Autur",
+    "hidden": "Zuppà",
+    "replyTo": "Resposta a",
+    "reply": "Respunder",
+    "reported": "Annunzià",
+    "report": "Annunziar",
+    "loadMore": "Chargiar ulteriurs commentaris",
+    "deleteMessage": "Vuls ti stizzar quest commentari? Las respostas vegnan er stizzadas.",
+    "placeholder": "Scriver in commentari…",
+    "sendFailed": "Il commentari n'ha betg pudì vegnir tramess.",
+    "deleteFailed": "Il commentari n'ha betg pudì vegnir stizzà.",
+    "title": "Commentaris",
+    "replyToUser": "Resposta a {'@'}{username}",
+    "showReplies": "Mussar tut las {count} respostas"
+  },
+  "create": {
+    "title": "Tge vuls ti chargiar si?",
+    "post": "Feed",
+    "postHint": "Resta en tes profil",
+    "story": "Story",
+    "storyHint": "Svanescha suenter 24 uras"
+  },
+  "folders": {
+    "none": "Senza ordinatur",
+    "move": "Spustar en in ordinatur",
+    "new": "Nov ordinatur",
+    "loadFailed": "Ils ordinaturs n'han betg pudì vegnir chargiads."
+  },
+  "groups": {
+    "intro": "Cun gruppas decidas ti, tgi che vesa in feed. Mo ti vesas tias gruppas.",
+    "empty": "Anc nagin.",
+    "add": "Agiuntar",
+    "new": "Nova gruppa",
+    "username": "Num d'utilisader",
+    "deleteMessage": "Stizzar la gruppa «{name}»?"
+  },
+  "postActions": {
+    "like": "Am plascha",
+    "comments": "Commentaris",
+    "unrepost": "Allontanar il repost",
+    "repost": "Republitgar",
+    "unsave": "Betg pli memorisar"
+  },
+  "postCard": {
+    "hidden": "Zuppà per il public",
+    "editReel": "Modifitgar il seed",
+    "move": "Spustar en in ordinatur",
+    "reported": "Annunzià",
+    "report": "Annunziar",
+    "reportReel": "Annunziar il seed"
+  },
+  "postEdit": {
+    "delete": "Stizzar il feed",
+    "title": "Modifitgar il feed",
+    "deleteMessage": "Vuls ti stizzar quest feed?",
+    "saveFailed": "Il feed n'ha betg pudì vegnir memorisà.",
+    "deleteFailed": "Il feed n'ha betg pudì vegnir stizzà."
+  },
+  "postImages": {
+    "previous": "Maletg precedent",
+    "next": "Proxim maletg"
+  },
+  "postList": {
+    "empty": "Anc nagins feeds.",
+    "loadFailed": "Ils feeds n'han betg pudì vegnir chargiads."
+  },
+  "video": {
+    "play": "Reproducir",
+    "failed": "Il video n'ha betg pudì vegnir elavurà.",
+    "processing": "Il video vegn elavurà…"
+  },
+  "story": {
+    "delete": "Stizzar la story",
+    "seenBy": "Vesì da",
+    "deleteMessage": "Vuls ti stizzar questa story?",
+    "unlike": "Betg pli plascher",
+    "like": "Am plascha",
+    "noViewers": "Nagin n'ha anc vesì tia story.",
+    "liked": "Plascha"
+  },
+  "visibility": {
+    "visibleTo": "Visibel per",
+    "globalHint": "Cumpara en il feed da tuts sin la pagina iniziala, er tar persunas che na ta suondan betg.",
+    "noGroups": "Ti n'has anc naginas gruppas.",
+    "createGroups": "Crear gruppas",
+    "public": "Tuts",
+    "followers": "Followers",
+    "friends": "Amis",
+    "groups": "Gruppas",
+    "global": "Global"
+  },
+  "albumPosts": {
+    "empty": "Nagins ulteriurs feeds u seeds per agiuntar.",
+    "loadMore": "Chargiar dapli",
+    "add": "Agiuntar",
+    "selected": "Tschernì",
+    "date": "Data (facultativ)",
+    "title": "Titel (facultativ)",
+    "choose": "Tscherner posts",
+    "setDate": "Fixar la data",
+    "loadFailed": "Ils posts n'han betg pudì vegnir chargiads.",
+    "addFailed": "Ils posts n'han betg pudì vegnir agiuntads."
+  },
+  "albumDialog": {
+    "cover": "Maletg da cuverta (facultativ)",
+    "coverHint": "Agiunta posts a la timeline per tscherner in dad els sco maletg da cuverta.",
+    "name": "Num",
+    "coverAlt": "Maletg da cuverta",
+    "edit": "Modifitgar l'album",
+    "new": "Nov album",
+    "saveFailed": "L'album n'ha betg pudì vegnir memorisà."
+  },
+  "albumTimeline": {
+    "title": "Timeline",
+    "empty": "Anc nagins posts en quest album.",
+    "noDate": "Senza data"
+  },
+  "albumEntry": {
+    "date": "Data (facultativ)",
+    "title": "Titel (facultativ)",
+    "remove": "Allontanar",
+    "edit": "Modifitgar l'endataziun",
+    "saveFailed": "L'endataziun n'ha betg pudì vegnir memorisada."
+  },
+  "albums": {
+    "empty": "Anc nagins albums.",
+    "new": "Nov album",
+    "move": "Spustar",
+    "loadFailed": "Ils albums n'han betg pudì vegnir chargiads.",
+    "orderFailed": "L'urden n'ha betg pudì vegnir memorisà."
+  },
+  "moderationPanel": {
+    "alreadyWarned": "Gia avertì e zuppà per il public.",
+    "reason": "Motiv da l'avertiment",
+    "warn": "Avertir",
+    "dismiss": "Refusar",
+    "warned": "Avertì:",
+    "noOpen": "Naginas annunzias avertas"
+  },
+  "profileStatus": {
+    "noWarnings": "Nagins avertiments.",
+    "view": "Guardar",
+    "reported": "Cuntegns annunziads",
+    "noReported": "Nagins cuntegns annunziads.",
+    "expiredSince": "Prescrit dapi",
+    "expiresOn": "Prescrit ils",
+    "loadFailed": "Il status n'ha betg pudì vegnir chargià.",
+    "warning": "Avertiment: {reason}",
+    "suspension": "Suspensiun: {duration}",
+    "reportCount": "{count}× annunzià",
+    "openCount": "{count} avertas",
+    "resolved": "liquidà"
+  },
+  "achievements": {
+    "empty": "Anc nagins success.",
+    "next": "Proxims finamiras",
+    "notReached": "Anc betg cuntanschì",
+    "timeline": "Timeline",
+    "collection": "Collecziun",
+    "loadFailed": "Ils success n'han betg pudì vegnir chargiads.",
+    "unlocked": "{count} da {total} success averts",
+    "eggs": "{count} da {total} easter eggs chattads",
+    "since": "Dapi ils {date}",
+    "level": "Nivel {level}/{total}",
+    "promotedFrom": "Avanzà da {title}",
+    "nextFrom": "Suenter {title}",
+    "adminEgg": "Easter egg · mo visibel per administraturs"
+  },
+  "roles": {
+    "default": "Standard",
+    "verified": "Verifitgà",
+    "support": "Support",
+    "moderator": "Moderatur",
+    "admin": "Admin"
+  },
+  "chatProtection": {
+    "title": "Criptadi dal chat",
+    "warning": "Senza PIN na po nagin restaurar tes chats, gnanc nus.",
+    "setPin": "Fixar il PIN",
+    "newPin": "Nov PIN dal chat (almain 6 caracters)",
+    "repeatPin": "Repeter il PIN dal chat"
+  },
+  "display": {
+    "title": "Visualisaziun",
+    "appearance": "Aspect da la surfatscha.",
+    "design": "Design",
+    "accessibility": "Accessibladad",
+    "dyslexia": "Dislexia",
+    "contrast": "Modus da cuntrast",
+    "limitedDesign": "Quest design po restrenscher l'accessibladad, per exempel tar il cuntrast, la legibladad e las animaziuns. Il design standard è il meglier optimà per l'accessibladad.",
+    "language": "Lingua",
+    "languageHint": "Lingua da la surfatscha e dals messadis."
+  },
+  "general": {
+    "account": "Conto",
+    "accountCenter": "govex Account Center",
+    "accountHint": "Profil, maletg da profil, pled-clav e segirezza administreschas ti en il govex Account Center.",
+    "toAccountCenter": "Al Account Center",
+    "govexAccount": "Conto govex",
+    "loginHint": "S'annunzia cun tes conto govex.",
+    "login": "S'annunziar",
+    "legal": "Infurmaziuns giuridicas",
+    "persistent": "Annunzia permanenta",
+    "persistentHint": "Sch'activ, restas ti annunzià sin quest apparat, er sche cookies u il cache vegnan stizzads. Mo sche tut las datas da la website vegnan stizzadas, stos ti t'annunziar da nov."
+  },
+  "privacy": {
+    "title": "Protecziun da datas",
+    "profileVisibility": "Profil visibel per",
+    "profileVisibilityHint": "Vala er per tes prenum e num sco er per tes feeds e seeds. Tes maletgs da profil na vegnan betg pertutgads, lur visibilitad fixeschas ti sut «Profil». Sche tes profil è pli privat ch'in post, vala per quest post la configuraziun pli severa da tes profil.",
+    "loadFailed": "Las configuraziuns n'han betg pudì vegnir chargiadas."
+  },
+  "about": {
+    "title": "Infos",
+    "biography": "Biografia",
+    "placeholder": "Raquinta insatge davart tai",
+    "loadFailed": "Las infos n'han betg pudì vegnir chargiadas."
+  },
+  "pictures": {
+    "title": "Maletgs da profil",
+    "upload": "Chargiar si",
+    "remove": "Allontanar",
+    "public": "Maletg da profil public",
+    "publicHint": "Vesan tuts. Senza agen maletg vegn duvrà tes maletg da profil govex.",
+    "private": "Maletg da profil privat",
+    "privateHint": "Mo las persunas tschernidas al vesan, tut ils auters vesan tes maletg public.",
+    "loadFailed": "Ils maletgs da profil n'han betg pudì vegnir chargiads."
+  },
+  "wellbeing": {
+    "title": "Prevenziun da dependenza",
+    "autoplay": "Reproducziun automatica",
+    "autoplayHint": "Sch'activ, cumenzan ils videos sezs e senza tun, uschespert che ti scrollas tar els.",
+    "loop": "Repeter",
+    "loopHint": "Sch'activ, cumenzan ils videos automaticamain da nov a la fin.",
+    "intro": "Swissfy renunzia per standard a funcziuns che duain ta tegnair pli ditg davant il visur. Qua las pos ti activar conscientamain. Vala per quest apparat."
+  }
+}

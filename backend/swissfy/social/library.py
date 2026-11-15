@@ -3,6 +3,7 @@ import re
 from urllib.parse import quote
 
 import requests
+from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import APIException, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ TIMEOUT = 10
 
 class LibraryUnavailable(APIException):
     status_code = 503
-    default_detail = "Die Bibliothek ist gerade nicht erreichbar."
+    default_detail = _("Die Bibliothek ist gerade nicht erreichbar.")
 
 
 def fetch(url, **params):
@@ -87,7 +88,7 @@ def details(kind, id):
         for data in imdb_suggestions(id):
             if data.get("id") == id and data.get("qid") in IMDB_TYPES[kind]:
                 return imdb_item(data)
-    raise ValidationError({f"favorite_{kind}": "Titel nicht gefunden."})
+    raise ValidationError({f"favorite_{kind}": _("Titel nicht gefunden.")})
 
 
 def cover_urls(path):

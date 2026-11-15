@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from commons.fields import ConstantField
@@ -7,7 +8,7 @@ from swissfy.posts.serializers import CommentModelSerializer, PostModelSerialize
 from .models import Reason, Report, Suspension, Warning
 from .reviews import ReportedContent
 
-CHOOSE_REASON = "Wähle einen Grund."
+CHOOSE_REASON = _("Wähle einen Grund.")
 
 
 class WarningModelSerializer(BaseModelSerializer):

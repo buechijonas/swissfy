@@ -1,10 +1,10 @@
 <template>
-  <BaseDialog ref="dialog" title="In Ordner verschieben">
+  <BaseDialog ref="dialog" :title="$t('folders.move')">
     <ul class="menu w-full p-0 gap-1">
       <li>
         <button type="button" :class="{ 'menu-active': selected === null }" @click="select(null)">
           <AppIcon name="bookmark" />
-          Ohne Ordner
+          {{ $t('folders.none') }}
         </button>
       </li>
       <li v-for="folder in folders" :key="folder.id">
@@ -20,10 +20,15 @@
     </ul>
 
     <form class="flex gap-2 mt-4" @submit.prevent="createFolder">
-      <input v-model="newName" class="input flex-1" maxlength="50" placeholder="Neuer Ordner" />
+      <input
+        v-model="newName"
+        class="input flex-1"
+        maxlength="50"
+        :placeholder="$t('folders.new')"
+      />
       <BaseButton type="submit" :disabled="!newName.trim()">
         <AppIcon name="plus" />
-        Anlegen
+        {{ $t('common.create') }}
       </BaseButton>
     </form>
     <ErrorText :message="error" class="mt-2" />
@@ -36,6 +41,7 @@ import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import { useFoldersStore } from '@/stores/posts.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'FolderDialog',
@@ -62,7 +68,7 @@ export default {
       this.newName = ''
       this.error = null
       this.foldersStore.load().catch(() => {
-        this.error = 'Ordner konnten nicht geladen werden.'
+        this.error = t('folders.loadFailed')
       })
       this.$refs.dialog.open()
     },

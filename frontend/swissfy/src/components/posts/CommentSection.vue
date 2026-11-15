@@ -2,7 +2,12 @@
   <div>
     <template v-if="!nested">
       <slot name="composer">
-        <CommentForm v-model="draft" :placeholder="placeholder" :sending="sending" @submit="add" />
+        <CommentForm
+          v-model="draft"
+          :placeholder="placeholderText"
+          :sending="sending"
+          @submit="add"
+        />
       </slot>
       <ErrorText :message="error" class="mt-2" />
     </template>
@@ -16,7 +21,7 @@
         <slot name="composer">
           <CommentForm
             v-model="draft"
-            :placeholder="placeholder"
+            :placeholder="placeholderText"
             :sending="sending"
             @submit="add"
           />
@@ -53,7 +58,7 @@
               :to="commentLink(comment, moderation)"
               class="block pl-15 pb-3 text-sm text-app-muted link"
             >
-              Alle {{ comment.reply_count }} Antworten anzeigen
+              {{ $t('comments.showReplies', { count: comment.reply_count }) }}
             </RouterLink>
           </template>
         </li>
@@ -61,12 +66,12 @@
     </BaseCard>
     <BaseButton v-if="cursor" class="mt-2" size="sm" block @click="load">
       <AppIcon name="down" />
-      Weitere Kommentare laden
+      {{ $t('comments.loadMore') }}
     </BaseButton>
 
     <ConfirmDialog
       ref="confirm"
-      message="Willst du diesen Kommentar löschen? Antworten darauf werden auch gelöscht."
+      :message="$t('comments.deleteMessage')"
       @confirm="remove(pending)"
     />
   </div>
@@ -83,6 +88,7 @@ import CommentForm from '@/components/posts/CommentForm.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
 import commentsApi from '@/api/comments.js'
 import { commentLink } from '@/lib/comments.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'CommentSection',
@@ -98,9 +104,14 @@ export default {
   },
   props: {
     url: { type: String, required: true },
-    placeholder: { type: String, default: 'Kommentar schreiben…' },
+    placeholder: { type: String, default: null },
     nested: { type: Boolean, default: false },
     moderation: { type: Boolean, default: false },
+  },
+  computed: {
+    placeholderText() {
+      return this.placeholder ?? t('comments.placeholder')
+    },
   },
   emits: ['created', 'deleted'],
   data() {
@@ -134,7 +145,7 @@ export default {
         this.$emit('created', comment)
         this.draft = ''
       } catch (error) {
-        this.error = error.detail ?? 'Kommentar konnte nicht gesendet werden.'
+        this.error = error.detail ?? t('comments.sendFailed')
       } finally {
         this.sending = false
       }
@@ -146,7 +157,7 @@ export default {
     async remove(comment) {
       const data = await commentsApi.remove(comment.id).catch(() => null)
       if (!data) {
-        this.error = 'Kommentar konnte nicht gelöscht werden.'
+        this.error = t('comments.deleteFailed')
         return
       }
       this.comments = this.comments

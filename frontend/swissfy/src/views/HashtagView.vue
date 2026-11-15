@@ -17,7 +17,9 @@
           </span>
           <div class="flex min-w-0 flex-1 flex-col">
             <span class="truncate text-lg font-bold">#{{ hashtag.name }}</span>
-            <span class="text-sm text-app-muted">{{ hashtag.post_count }} Feeds</span>
+            <span class="text-sm text-app-muted">{{
+              $t('hashtag.postCount', { count: hashtag.post_count })
+            }}</span>
           </div>
           <BaseButton
             size="sm"
@@ -26,7 +28,7 @@
             @click="toggleFollow"
           >
             <AppIcon :name="hashtag.following ? 'cross' : 'plus'" />
-            {{ hashtag.following ? 'Entfolgen' : 'Folgen' }}
+            {{ hashtag.following ? $t('hashtag.unfollow') : $t('hashtag.follow') }}
           </BaseButton>
         </BaseCard>
 
@@ -37,7 +39,7 @@
           :url="postsUrl"
           :grid="activeTab === 'reels'"
           :reel-base="`/hashtags/${encodeURIComponent(hashtag.name)}/reels`"
-          :empty-text="activeTab === 'reels' ? 'Noch keine Seeds.' : 'Noch keine Feeds.'"
+          :empty-text="activeTab === 'reels' ? $t('hashtag.noReels') : $t('hashtag.noPosts')"
         />
       </template>
     </div>
@@ -54,11 +56,14 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import PostList from '@/components/posts/PostList.vue'
 import postsApi from '@/api/posts.js'
+import { t } from '@/i18n.js'
 
-const TABS = [
-  { key: 'posts', label: 'Feeds', icon: 'list-timeline' },
-  { key: 'reels', label: 'Seeds', icon: 'clapperboard-play' },
-]
+function hashtagTabs() {
+  return [
+    { key: 'posts', label: t('hashtag.posts'), icon: 'list-timeline' },
+    { key: 'reels', label: t('hashtag.reels'), icon: 'clapperboard-play' },
+  ]
+}
 
 export default {
   name: 'HashtagView',
@@ -68,10 +73,12 @@ export default {
       hashtag: null,
       error: null,
       busy: false,
-      tabs: TABS,
     }
   },
   computed: {
+    tabs() {
+      return hashtagTabs()
+    },
     name() {
       return this.$route.params.name
     },
@@ -79,7 +86,9 @@ export default {
       return [{ label: `#${this.name}`, to: this.$route.path }]
     },
     activeTab() {
-      return TABS.some((tab) => tab.key === this.$route.query.tab) ? this.$route.query.tab : 'posts'
+      return hashtagTabs().some((tab) => tab.key === this.$route.query.tab)
+        ? this.$route.query.tab
+        : 'posts'
     },
     postsUrl() {
       return postsApi.hashtagPostsUrl(this.name, this.activeTab === 'reels' ? { videos: 1 } : null)
@@ -94,10 +103,7 @@ export default {
         try {
           this.hashtag = await postsApi.hashtag(this.name)
         } catch (error) {
-          this.error =
-            error.status === 404
-              ? 'Zu diesem Hashtag gibt es noch keine Feeds.'
-              : 'Hashtag konnte nicht geladen werden.'
+          this.error = error.status === 404 ? t('hashtag.empty') : t('hashtag.loadFailed')
         }
       },
     },

@@ -6,9 +6,9 @@
       variant="primary"
       shape="square"
       :disabled="sending || !modelValue.trim()"
-      title="Senden"
+      :title="$t('comments.send')"
     >
-      <AppIcon name="paper-plane-top" alt="Senden" />
+      <AppIcon name="paper-plane-top" :alt="$t('comments.send')" />
     </BaseButton>
   </form>
 </template>

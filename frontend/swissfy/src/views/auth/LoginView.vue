@@ -1,12 +1,12 @@
 <template>
-  <AuthPage title="Anmelden" breadcrumb-label="Anmelden">
+  <AuthPage :title="$t('login.title')" :breadcrumb-label="$t('login.title')">
     <p class="font-light mb-6">
-      Swissfy nutzt govex für die Anmeldung. Benutzername und Passwort verwaltest du dort.
+      {{ $t('login.intro') }}
     </p>
     <ErrorText :message="error" class="mb-4" />
     <BaseButton variant="primary" block @click="authStore.startGovexLogin()">
       <AppIcon name="enter" />
-      Mit govex anmelden
+      {{ $t('login.button') }}
     </BaseButton>
   </AuthPage>
 </template>
@@ -18,22 +18,23 @@ import AuthPage from '@/components/layout/AuthPage.vue'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
+import { t } from '@/i18n.js'
 
-const ERROR_MESSAGES = {
-  oidc_failed: 'Die Anmeldung über govex ist fehlgeschlagen. Bitte versuche es erneut.',
+function errorMessages() {
+  return {
+    oidc_failed: t('login.failed'),
+  }
 }
 
 export default {
   name: 'LoginView',
   components: { AppIcon, AuthPage, BaseButton, ErrorText },
-  data() {
-    return {
-      error: Object.hasOwn(ERROR_MESSAGES, this.$route.query.error ?? '')
-        ? ERROR_MESSAGES[this.$route.query.error]
-        : '',
-    }
-  },
   computed: {
+    error() {
+      const messages = errorMessages()
+      const code = this.$route.query.error ?? ''
+      return Object.hasOwn(messages, code) ? messages[code] : ''
+    },
     ...mapStores(useAuthStore),
   },
 }

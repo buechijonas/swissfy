@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog ref="dialog" title="Was möchtest du hochladen?">
+  <BaseDialog ref="dialog" :title="$t('create.title')">
     <div class="grid grid-cols-2 gap-3">
       <BaseButton
         v-for="option in kinds"
@@ -19,17 +19,23 @@
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'CreateDialog',
   components: { AppIcon, BaseButton, BaseDialog },
-  data() {
-    return {
-      kinds: [
-        { value: 'feed', label: 'Feed', icon: 'list-timeline', hint: 'Bleibt in deinem Profil' },
-        { value: 'story', label: 'Story', icon: 'clock', hint: 'Verschwindet nach 24 Stunden' },
-      ],
-    }
+  computed: {
+    kinds() {
+      return [
+        {
+          value: 'feed',
+          label: t('create.post'),
+          icon: 'list-timeline',
+          hint: t('create.postHint'),
+        },
+        { value: 'story', label: t('create.story'), icon: 'clock', hint: t('create.storyHint') },
+      ]
+    },
   },
   methods: {
     open() {

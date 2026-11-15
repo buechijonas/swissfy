@@ -1,11 +1,21 @@
 <template>
   <p class="text-xs text-app-muted">
-    Daten und Cover von
-    <a class="link" href="https://www.imdb.com" target="_blank" rel="noopener noreferrer">IMDb</a>
-    und
-    <a class="link" href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer"
-      >Steam</a
-    >.
+    <i18n-t keypath="favorites.credits">
+      <template #imdb>
+        <a class="link" href="https://www.imdb.com" target="_blank" rel="noopener noreferrer"
+          >IMDb</a
+        >
+      </template>
+      <template #steam>
+        <a
+          class="link"
+          href="https://store.steampowered.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Steam</a
+        >
+      </template>
+    </i18n-t>
   </p>
 </template>
 

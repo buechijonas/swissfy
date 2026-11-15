@@ -2,7 +2,7 @@
   <BaseBreadcrumbs :items="breadcrumbs">
     <template v-if="ownAlbum" #actions>
       <AddButton
-        label="Zur Timeline"
+        :label="$t('album.addToTimeline')"
         :loading="!album"
         icon="rectangle-history-circle-plus"
         @click="$refs.addDialog.open()"
@@ -49,10 +49,10 @@
               v-if="album.is_own"
               shape="square"
               class="shrink-0"
-              title="Bearbeiten"
+              :title="$t('common.edit')"
               @click="$refs.albumDialog.open(album)"
             >
-              <AppIcon name="pencil" alt="Bearbeiten" />
+              <AppIcon name="pencil" :alt="$t('common.edit')" />
             </BaseButton>
           </div>
         </BaseCard>
@@ -72,11 +72,7 @@
     <AlbumDialog ref="albumDialog" @saved="album = $event" @delete="$refs.confirmAlbum.open()" />
     <AddPostsDialog ref="addDialog" :album="album" @saved="album = $event" />
     <EntryDialog ref="entryDialog" @saved="album = $event" />
-    <ConfirmDialog
-      ref="confirmAlbum"
-      message="Album löschen? Die Posts selbst bleiben erhalten."
-      @confirm="deleteAlbum"
-    />
+    <ConfirmDialog ref="confirmAlbum" :message="$t('album.deleteMessage')" @confirm="deleteAlbum" />
   </template>
   <BaseFooter />
 </template>
@@ -98,6 +94,7 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import albumsApi from '@/api/albums.js'
 import { useAuthStore } from '@/stores/auth.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'AlbumView',
@@ -139,8 +136,8 @@ export default {
     breadcrumbs() {
       return [
         { label: this.username, to: this.profileLink },
-        { label: 'Alben', to: `${this.profileLink}?tab=albums` },
-        { label: this.album?.name ?? 'Album' },
+        { label: t('album.albums'), to: `${this.profileLink}?tab=albums` },
+        { label: this.album?.name ?? t('album.album') },
       ]
     },
   },
@@ -159,8 +156,7 @@ export default {
         this.album = await albumsApi.get(this.$route.params.id)
       } catch (error) {
         this.album = null
-        this.error =
-          error.status === 404 ? 'Album nicht gefunden.' : 'Album konnte nicht geladen werden.'
+        this.error = error.status === 404 ? t('album.notFound') : t('album.loadFailed')
       }
     },
     async deleteAlbum() {
@@ -168,7 +164,7 @@ export default {
         await albumsApi.remove(this.album.id)
         this.$router.replace(`${this.profileLink}?tab=albums`)
       } catch {
-        this.actionError = 'Album konnte nicht gelöscht werden.'
+        this.actionError = t('album.deleteFailed')
       }
     },
   },

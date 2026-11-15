@@ -1,8 +1,8 @@
 <template>
   <BaseCard class="p-6">
-    <h3 class="text-lg font-semibold">Timeline</h3>
+    <h3 class="text-lg font-semibold">{{ $t('albumTimeline.title') }}</h3>
 
-    <p v-if="!entries.length" class="mt-4 text-app-muted">Noch keine Posts in diesem Album.</p>
+    <p v-if="!entries.length" class="mt-4 text-app-muted">{{ $t('albumTimeline.empty') }}</p>
     <ol v-else class="mt-6">
       <li v-for="entry in entries" :key="entry.id" data-entry class="group/entry flex gap-4">
         <div class="flex w-3 shrink-0 flex-col items-center">
@@ -16,7 +16,7 @@
           <time v-if="entry.date" :datetime="entry.date" class="font-semibold">
             {{ formatDate(entry.date) }}
           </time>
-          <span v-else class="text-app-muted">Ohne Datum</span>
+          <span v-else class="text-app-muted">{{ $t('albumTimeline.noDate') }}</span>
           <div class="mt-2 flex items-start gap-4">
             <PostTile :post="entry.post" class="w-28 shrink-0 overflow-hidden rounded-box" />
             <p class="flex-1 min-w-0 break-words pt-1">{{ entry.title }}</p>
@@ -24,10 +24,10 @@
               v-if="editable"
               variant="ghost"
               shape="square"
-              title="Bearbeiten"
+              :title="$t('common.edit')"
               @click="$emit('edit-entry', entry)"
             >
-              <AppIcon name="pencil" alt="Bearbeiten" class="size-5!" />
+              <AppIcon name="pencil" :alt="$t('common.edit')" class="size-5!" />
             </BaseButton>
           </div>
         </div>

@@ -1,9 +1,17 @@
 import { ml_kem768 } from '@noble/post-quantum/ml-kem.js'
+import chunk from 'lodash-es/chunk'
+import find from 'lodash-es/find'
+import some from 'lodash-es/some'
 
 const ECDH = { name: 'ECDH', namedCurve: 'P-256' }
+const ECDSA = { name: 'ECDSA', namedCurve: 'P-256' }
+const SIGNATURE = { name: 'ECDSA', hash: 'SHA-256' }
 const AES = { name: 'AES-GCM', length: 256 }
 const HKDF_INFO = new TextEncoder().encode('swissfy-chat-v1')
+const SIGNATURE_CONTEXT = 'swissfy-chat-signature-v1'
 const PIN_ITERATIONS = 600000
+const SAFETY_GROUPS = 12
+const SAFETY_GROUP_BYTES = 4
 
 export function toBase64(bytes) {
   let binary = ''
@@ -43,13 +51,15 @@ async function hybridKey(kemSecret, ecdhSecret) {
 
 export async function generateKeyPair({ extractable }) {
   const ecdh = await crypto.subtle.generateKey(ECDH, extractable, ['deriveBits'])
+  const sign = await crypto.subtle.generateKey(ECDSA, extractable, ['sign', 'verify'])
   const kem = ml_kem768.keygen()
   return {
     publicKey: {
       ecdh: await crypto.subtle.exportKey('jwk', ecdh.publicKey),
       kem: toBase64(kem.publicKey),
+      sign: await crypto.subtle.exportKey('jwk', sign.publicKey),
     },
-    privateKey: { ecdh: ecdh.privateKey, kem: kem.secretKey },
+    privateKey: { ecdh: ecdh.privateKey, kem: kem.secretKey, sign: sign.privateKey },
   }
 }
 
@@ -82,75 +92,129 @@ async function open(envelope, privateKey) {
   return aesDecrypt(await hybridKey(kemSecret, ecdhSecret), envelope.wrapped, envelope.iv)
 }
 
-export async function encryptMessage(text, keys, withServerKey) {
+function signedContent(recipient, message) {
+  const content = [SIGNATURE_CONTEXT, recipient, message.ciphertext, message.iv]
+  return new TextEncoder().encode(JSON.stringify(content))
+}
+
+async function sign(message, signer) {
+  const signature = await crypto.subtle.sign(
+    SIGNATURE,
+    signer.key.sign,
+    signedContent(signer.recipient, message),
+  )
+  return { ...message, sender_key: signer.key.id, signature: toBase64(signature) }
+}
+
+export async function encryptMessage(text, keys, withServerKey, signer = null) {
   const messageKey = randomBytes(32)
   const aesKey = await crypto.subtle.importKey('raw', messageKey, AES, false, ['encrypt'])
   const { ciphertext, iv } = await aesEncrypt(aesKey, new TextEncoder().encode(text))
   const envelopes = await Promise.all(
     keys.map(async (key) => ({ key: key.id, ...(await seal(messageKey, key.public_key)) })),
   )
-  return {
+  const message = {
     ciphertext,
     iv,
     envelopes,
     ...(withServerKey ? { message_key: toBase64(messageKey) } : {}),
   }
+  return signer ? sign(message, signer) : message
+}
+
+export async function verifyMessage(message, recipient, keys) {
+  const signer = find(keys, { id: message.sender_key })
+  if (!message.signature || !signer?.public_key.sign) return false
+  try {
+    const key = await crypto.subtle.importKey('jwk', signer.public_key.sign, ECDSA, false, [
+      'verify',
+    ])
+    const signature = fromBase64(message.signature)
+    return await crypto.subtle.verify(SIGNATURE, key, signature, signedContent(recipient, message))
+  } catch {
+    return false
+  }
+}
+
+function openMessageKey(message, localKeys) {
+  if (message.message_key) return fromBase64(message.message_key)
+  const envelope = find(message.envelopes, (candidate) => some(localKeys, { id: candidate.key }))
+  return envelope ? open(envelope, find(localKeys, { id: envelope.key })) : null
 }
 
 export async function decryptMessage(message, localKeys) {
   try {
-    let messageKey = message.message_key && fromBase64(message.message_key)
-    for (const envelope of message.envelopes) {
-      const local = localKeys.find((key) => key.id === envelope.key)
-      if (!messageKey && local) messageKey = await open(envelope, local)
-    }
-    if (!messageKey) return null
+    const messageKey = await openMessageKey(message, localKeys)
+    if (!messageKey) return { text: null, error: 'missing' }
     const aesKey = await crypto.subtle.importKey('raw', messageKey, AES, false, ['decrypt'])
-    return new TextDecoder().decode(await aesDecrypt(aesKey, message.ciphertext, message.iv))
+    const plaintext = await aesDecrypt(aesKey, message.ciphertext, message.iv)
+    return { text: new TextDecoder().decode(plaintext), error: null }
   } catch {
-    return null
+    return { text: null, error: 'invalid' }
   }
 }
 
-async function pinKey(pin, salt) {
+function fingerprint(key) {
+  const { ecdh, kem, sign } = key.public_key
+  return JSON.stringify([key.owner, ecdh.x, ecdh.y, kem, sign?.x ?? null, sign?.y ?? null])
+}
+
+function safetyGroup(bytes) {
+  const number = bytes.reduce((value, byte) => value * 256 + byte, 0)
+  return String(number % 100000).padStart(5, '0')
+}
+
+export async function safetyNumber(keys) {
+  const material = new TextEncoder().encode(JSON.stringify(keys.map(fingerprint).sort()))
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-512', material))
+  const bytes = Array.from(digest.slice(0, SAFETY_GROUPS * SAFETY_GROUP_BYTES))
+  return chunk(bytes, SAFETY_GROUP_BYTES).map(safetyGroup)
+}
+
+export async function pinSecrets(pin, salt) {
   const material = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(pin),
     'PBKDF2',
     false,
-    ['deriveKey'],
+    ['deriveBits'],
   )
-  return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: PIN_ITERATIONS },
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', hash: 'SHA-256', salt: fromBase64(salt), iterations: PIN_ITERATIONS },
     material,
-    AES,
-    false,
-    ['encrypt', 'decrypt'],
+    512,
   )
+  const secrets = new Uint8Array(bits)
+  return {
+    key: await crypto.subtle.importKey('raw', secrets.slice(0, 32), AES, false, [
+      'encrypt',
+      'decrypt',
+    ]),
+    verifier: toBase64(secrets.slice(32)),
+  }
 }
 
 export async function wrapWithPin(privateKey, pin) {
-  const salt = randomBytes(16)
+  const salt = toBase64(randomBytes(16))
+  const { key, verifier } = await pinSecrets(pin, salt)
   const plaintext = JSON.stringify({
     ecdh: await crypto.subtle.exportKey('jwk', privateKey.ecdh),
     kem: toBase64(privateKey.kem),
+    sign: await crypto.subtle.exportKey('jwk', privateKey.sign),
   })
-  const { ciphertext, iv } = await aesEncrypt(
-    await pinKey(pin, salt),
-    new TextEncoder().encode(plaintext),
-  )
-  return { wrapped_private_key: ciphertext, salt: toBase64(salt), iv }
+  const { ciphertext, iv } = await aesEncrypt(key, new TextEncoder().encode(plaintext))
+  return {
+    sealed: { wrapped_private_key: ciphertext, salt, iv, pin_verifier: verifier },
+    key,
+  }
 }
 
-export async function unwrapWithPin(pinKeyData, pin) {
-  const plaintext = await aesDecrypt(
-    await pinKey(pin, fromBase64(pinKeyData.salt)),
-    pinKeyData.wrapped_private_key,
-    pinKeyData.iv,
-  )
-  const { ecdh, kem } = JSON.parse(new TextDecoder().decode(plaintext))
+export async function unwrapWithPin(sealed, key) {
+  const plaintext = await aesDecrypt(key, sealed.wrapped_private_key, sealed.iv)
+  const { ecdh, kem, sign } = JSON.parse(new TextDecoder().decode(plaintext))
   return {
     ecdh: await crypto.subtle.importKey('jwk', ecdh, ECDH, false, ['deriveBits']),
     kem: fromBase64(kem),
+    ...(sign ? { sign: await crypto.subtle.importKey('jwk', sign, ECDSA, false, ['sign']) } : {}),
   }
 }

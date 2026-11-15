@@ -212,7 +212,7 @@ class Command(BaseCommand):
                         )
                         for position, (file, width, height) in enumerate(files)
                     )
-                self.backdate(Post, post)
+                Post.objects.filter(pk=post.pk).backdate(self.past(60))
                 posts.append(post)
         return posts
 
@@ -314,7 +314,7 @@ class Command(BaseCommand):
             post = Post.objects.create(
                 author=user, text="Unangebrachter Inhalt", hidden_at=self.now
             )
-            Post.objects.filter(pk=post.pk).update(created_at=created_at)
+            Post.objects.filter(pk=post.pk).backdate(created_at)
             return {"post": post}
         post = self.random.choice(list(Post.objects.filter(author__username__startswith=PREFIX)))
         comment = Comment.objects.create(

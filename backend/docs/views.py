@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, viewsets
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny
@@ -17,5 +18,5 @@ class ChangelogViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Re
     def get_object(self):
         changelog = Changelog.get(self.kwargs["version"])
         if changelog is None:
-            raise NotFound("Diese Version gibt es nicht.")
+            raise NotFound(_("Diese Version gibt es nicht."))
         return changelog

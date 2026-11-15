@@ -25,6 +25,7 @@ services:
 
     command: >
       sh -c "
+      python manage.py compilemessages --ignore .venv &&
       python manage.py migrate &&
       python manage.py bootstrap_admin &&
       python manage.py runserver 0.0.0.0:8000
@@ -60,12 +61,28 @@ services:
       # Dev key pair; govex's compose.yml has the public key.
       CONSENT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgq6U+5u/cHiiJoNxb\nY9zAGBFBRr1I1MS7GivJoLcHQUahRANCAATJY73bOiWd6VUQlsMIQhwOR8wXCiMS\nEErDZlOGKEhuP7BFKSJYs5Qv+z8w88SuCzVxsU5BoBJdc0mlBBtYuV3l\n-----END PRIVATE KEY-----"
       MONOLITH_API_TOKEN: monolith-dev-token
-      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,host.docker.internal
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,events,host.docker.internal
       DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost:5175,http://127.0.0.1:5175,http://localhost:5176,http://127.0.0.1:5176
 
     depends_on:
       db:
         condition: service_healthy
+
+  events:
+    build:
+      context: ./backend
+
+    restart: unless-stopped
+
+    command: uvicorn main.asgi:application --host 0.0.0.0 --port 8000 --lifespan off --reload --reload-dir main --reload-dir commons --reload-dir swissfy
+
+    volumes:
+      - ./backend:/app
+
+    environment: *backend-environment
+
+    depends_on:
+      - backend
 
   chat-cleanup:
     build:
@@ -120,6 +137,7 @@ services:
 
     depends_on:
       - backend
+      - events
 
   docs:
     build:

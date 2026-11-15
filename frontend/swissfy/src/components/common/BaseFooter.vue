@@ -83,7 +83,7 @@ export default {
   computed: {
     ...mapStores(useAuthStore),
     footerItems() {
-      return filter(navigationItems, (item) => item.footer && isListed(item, this.authStore))
+      return filter(navigationItems(), (item) => item.footer && isListed(item, this.authStore))
     },
     hasAvatar() {
       return Boolean(avatarSrc(this.authStore.user))

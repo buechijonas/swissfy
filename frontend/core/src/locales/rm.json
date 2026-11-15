@@ -1,0 +1,11 @@
+{
+  "core": {
+    "requestFailed": "La dumonda n'è betg reussida ({status}).",
+    "legal": {
+      "impressum": "Impressum",
+      "privacy": "Decleraziun da protecziun da datas",
+      "terms": "Directivas d’utilisaziun",
+      "disclaimer": "Exclusiun da responsabladad"
+    }
+  }
+}

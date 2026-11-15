@@ -6,6 +6,7 @@ from . import views
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("api/health/", views.health, name="health"),
+    path("api/events/", views.events, name="events"),
     path("api/auth/", include("swissfy.accounts.urls")),
     path("api/social/", include("swissfy.social.urls")),
     path("api/chats/", include("swissfy.chats.urls")),

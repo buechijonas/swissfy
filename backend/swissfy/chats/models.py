@@ -4,14 +4,20 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Case, CharField, Exists, OuterRef, Prefetch, Q, Value, When
 from django.db.models.functions import Coalesce
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
-from commons.models import BaseModel, BaseQuerySet, boolean
+from commons import events
+from commons.models import BaseModel, BaseQuerySet, EncryptedTextField, boolean
 
-from .crypto import unwrap_message_key
+from .crypto import pin_verifier_digest, pin_verifier_matches, unwrap_message_key
+
+CHAT_EVENT = "chat"
 
 
 def retention_cutoff():
@@ -37,22 +43,25 @@ class ChatKeyQuerySet(BaseQuerySet):
         return self.filter(active=True)
 
     def of(self, *users):
-        return self.filter(user__in=users).active()
+        return self.filter(user__in=users).active().select_related("user")
 
 
 class ChatKey(BaseModel):
     class Kind(models.TextChoices):
-        DEVICE = "device", "Gerät"
-        PIN = "pin", "Chat-PIN"
+        DEVICE = "device", _("Gerät")
+        PIN = "pin", _("Chat-PIN")
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chat_keys"
     )
     kind = models.CharField(max_length=10, choices=Kind.choices)
     public_key = models.JSONField()
-    wrapped_private_key = models.TextField(blank=True)
+    wrapped_private_key = EncryptedTextField(blank=True)
     salt = models.CharField(max_length=64, blank=True)
     iv = models.CharField(max_length=32, blank=True)
+    pin_verifier = models.CharField(max_length=64, blank=True)
+    failed_unlocks = models.PositiveSmallIntegerField(default=0)
+    unlock_blocked_until = models.DateTimeField(null=True, blank=True)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -60,6 +69,40 @@ class ChatKey(BaseModel):
 
     def __str__(self):
         return f"ChatKey({self.user}, {self.kind}, {self.pk})"
+
+    @property
+    def needs_verifier(self):
+        return self.kind == self.Kind.PIN and not self.pin_verifier
+
+    @property
+    def unlock_wait(self):
+        if self.unlock_blocked_until is None:
+            return 0
+        remaining = (self.unlock_blocked_until - timezone.now()).total_seconds()
+        return max(0, math.ceil(remaining))
+
+    def set_verifier(self, verifier):
+        self.pin_verifier = pin_verifier_digest(verifier)
+
+    @transaction.atomic
+    def unlock(self, verifier):
+        self.refresh_from_db(from_queryset=ChatKey.objects.select_for_update())
+        if self.unlock_wait:
+            return False
+        return self.needs_verifier or self.check_pin(verifier)
+
+    def check_pin(self, verifier):
+        matches = pin_verifier_matches(self.pin_verifier, verifier)
+        if matches:
+            self.failed_unlocks = 0
+            self.unlock_blocked_until = None
+        else:
+            self.failed_unlocks += 1
+        if self.failed_unlocks >= settings.CHAT_PIN_ATTEMPTS:
+            lockout = timedelta(seconds=settings.CHAT_PIN_LOCKOUT_SECONDS)
+            self.unlock_blocked_until = timezone.now() + lockout
+        self.save(update_fields=["failed_unlocks", "unlock_blocked_until"])
+        return matches
 
 
 class ChatRequestQuerySet(BaseQuerySet):
@@ -81,9 +124,9 @@ class ChatRequestQuerySet(BaseQuerySet):
 
 class ChatRequest(BaseModel):
     class Status(models.TextChoices):
-        PENDING = "pending", "Offen"
-        ACCEPTED = "accepted", "Angenommen"
-        DECLINED = "declined", "Abgelehnt"
+        PENDING = "pending", _("Offen")
+        ACCEPTED = "accepted", _("Angenommen")
+        DECLINED = "declined", _("Abgelehnt")
 
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_chat_requests"
@@ -121,10 +164,10 @@ class ChatRequest(BaseModel):
         if self.is_accepted:
             return None
         if self.status == self.Status.DECLINED:
-            return "Diese Chat-Anfrage wurde abgelehnt."
+            return _("Diese Chat-Anfrage wurde abgelehnt.")
         if self.sender_id == sender.pk:
-            return "Warte, bis deine Chat-Anfrage angenommen wurde."
-        return "Nimm die Chat-Anfrage zuerst an."
+            return _("Warte, bis deine Chat-Anfrage angenommen wurde.")
+        return _("Nimm die Chat-Anfrage zuerst an.")
 
     def resolve(self, status):
         self.status = status
@@ -158,8 +201,17 @@ class MessageQuerySet(BaseQuerySet):
             status=Case(*statuses, default=Value("sent"), output_field=CharField())
         )
 
+    def participants(self):
+        pairs = self.order_by().values_list("sender", "recipient").distinct()
+        return {user for pair in pairs for user in pair}
+
+    def publish(self):
+        events.publish(self.participants(), CHAT_EVENT)
+
     def mark_delivered(self):
-        return self.filter(delivered_at__isnull=True).update(delivered_at=timezone.now())
+        undelivered = self.filter(delivered_at__isnull=True)
+        undelivered.publish()
+        return undelivered.update(delivered_at=timezone.now())
 
     def mark_seen(self, with_receipt):
         now = Value(timezone.now())
@@ -168,7 +220,9 @@ class MessageQuerySet(BaseQuerySet):
         if with_receipt:
             unread |= Q(read_at__isnull=True)
             marks["read_at"] = Coalesce("read_at", now)
-        return self.filter(unread).update(**marks)
+        unseen = self.filter(unread)
+        unseen.publish()
+        return unseen.update(**marks)
 
     def unread_partners(self, user):
         accepted = ChatRequest.objects.filter(
@@ -209,6 +263,10 @@ class Message(BaseModel):
     ciphertext = models.TextField()
     iv = models.CharField(max_length=32)
     server_key = models.BinaryField(null=True)
+    sender_key = models.ForeignKey(
+        "ChatKey", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    signature = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     read_at = models.DateTimeField(null=True, blank=True)
@@ -260,3 +318,14 @@ class ArchivedChat(BaseModel):
 
     def __str__(self):
         return f"ArchivedChat({self.user} -> {self.partner})"
+
+
+@receiver(post_save, sender=Message)
+def publish_message(sender, instance, created, **kwargs):
+    if created:
+        events.publish([instance.sender_id, instance.recipient_id], CHAT_EVENT)
+
+
+@receiver([post_save, post_delete], sender=ChatRequest)
+def publish_chat_request(sender, instance, **kwargs):
+    events.publish([instance.sender_id, instance.recipient_id], CHAT_EVENT)

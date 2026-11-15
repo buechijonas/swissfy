@@ -1,5 +1,5 @@
 <template>
-  <p class="mb-2 text-sm">Sichtbar für</p>
+  <p class="mb-2 text-sm">{{ $t('visibility.visibleTo') }}</p>
   <div class="grid gap-2" :class="gridClass">
     <BaseButton
       v-for="option in shownOptions"
@@ -13,7 +13,7 @@
     </BaseButton>
   </div>
   <p v-if="visibility === 'global'" class="mt-3 text-sm text-app-muted">
-    Erscheint bei allen im Feed auf der Startseite, auch bei Leuten, die dir nicht folgen.
+    {{ $t('visibility.globalHint') }}
   </p>
   <div v-if="visibility === 'groups'" class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
     <label
@@ -30,8 +30,10 @@
       <span class="truncate">{{ group.name }}</span>
     </label>
     <p v-if="!groupList.length" class="col-span-full text-sm text-app-muted">
-      Du hast noch keine Gruppen.
-      <RouterLink to="/settings?tab=groups" class="link">Gruppen anlegen</RouterLink>
+      {{ $t('visibility.noGroups') }}
+      <RouterLink to="/settings?tab=groups" class="link">{{
+        $t('visibility.createGroups')
+      }}</RouterLink>
     </p>
   </div>
 </template>
@@ -43,6 +45,7 @@ import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useGroupsStore } from '@/stores/posts.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'VisibilityPicker',
@@ -54,18 +57,16 @@ export default {
     allowGlobal: { type: Boolean, default: true },
   },
   emits: ['update:visibility', 'update:groups'],
-  data() {
-    return {
-      options: [
-        { value: 'public', label: 'Alle', icon: 'users-alt' },
-        { value: 'followers', label: 'Follower', icon: 'fire-flame-curved' },
-        { value: 'friends', label: 'Freunde', icon: 'high-five-celebration-yes' },
-        { value: 'groups', label: 'Gruppen', icon: 'resources' },
-        { value: 'global', label: 'Global', icon: 'world', adminOnly: true },
-      ],
-    }
-  },
   computed: {
+    options() {
+      return [
+        { value: 'public', label: t('visibility.public'), icon: 'users-alt' },
+        { value: 'followers', label: t('visibility.followers'), icon: 'fire-flame-curved' },
+        { value: 'friends', label: t('visibility.friends'), icon: 'high-five-celebration-yes' },
+        { value: 'groups', label: t('visibility.groups'), icon: 'resources' },
+        { value: 'global', label: t('visibility.global'), icon: 'world', adminOnly: true },
+      ]
+    },
     ...mapStores(useAuthStore),
     selectedGroups: {
       get() {

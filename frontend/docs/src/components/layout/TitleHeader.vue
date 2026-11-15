@@ -20,7 +20,7 @@
     >
       <button
         type="button"
-        aria-label="Menü"
+        :aria-label="$t('header.menu')"
         :aria-expanded="isMenuOpen"
         class="flex size-10 cursor-pointer items-center justify-center"
         @click="isMenuOpen = !isMenuOpen"
@@ -40,11 +40,11 @@
             class="flex h-12 items-center gap-3"
           >
             <AppIcon name="settings" class="size-6!" />
-            <span>Einstellungen</span>
+            <span>{{ $t('header.settings') }}</span>
           </RouterLink>
           <RouterLink v-else to="/" class="flex h-12 items-center gap-3">
             <AppIcon name="circle-book-open" class="size-6!" />
-            <span>Dokumentation</span>
+            <span>{{ $t('header.docs') }}</span>
           </RouterLink>
         </li>
         <li
@@ -71,7 +71,7 @@
             @click="logout"
           >
             <AppIcon name="exit" class="size-6!" />
-            <span>Abmelden</span>
+            <span>{{ $t('header.logout') }}</span>
           </button>
           <button
             v-else
@@ -80,7 +80,7 @@
             @click="authStore.startGovexLogin()"
           >
             <AppIcon name="enter" class="size-6!" />
-            <span>Anmelden</span>
+            <span>{{ $t('header.login') }}</span>
           </button>
         </li>
       </ul>

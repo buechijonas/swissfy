@@ -13,7 +13,7 @@
       class="post-video block bg-black object-contain"
       :class="
         reel
-          ? 'h-[calc(100dvh-var(--reel-chrome-height))] w-auto max-w-full lg:h-[calc(100dvh-48px)]'
+          ? 'h-[calc(100dvh-var(--reel-chrome-height))] w-auto max-w-full lg:h-[calc(100dvh-var(--header-height))]'
           : 'w-full'
       "
       :style="{ aspectRatio: detail ? post.aspect_ratio : post.list_aspect_ratio }"
@@ -47,10 +47,10 @@
         v-if="!playing"
         type="button"
         class="app-floating absolute top-1/2 left-1/2 flex size-18 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-content shadow-lg transition-transform hover:scale-105"
-        title="Abspielen"
+        :title="$t('video.play')"
         @click="toggle"
       >
-        <AppIcon name="play" alt="Abspielen" class="ml-1 size-8!" />
+        <AppIcon name="play" :alt="$t('video.play')" class="ml-1 size-8!" />
       </button>
     </Transition>
   </div>
@@ -63,6 +63,7 @@ import PostText from '@/components/posts/PostText.vue'
 import intersect from '@/directives/intersect.js'
 import playback from '@/directives/playback.js'
 import { videoAutoplay, videoLoop } from '@/lib/preferences.js'
+import { t } from '@/i18n.js'
 
 const HIDE_CONTROLS_MS = 2500
 
@@ -90,8 +91,8 @@ export default {
       return ['processing', 'failed'].includes(this.post.video_status)
     },
     unfinishedText() {
-      if (this.post.video_status === 'failed') return 'Das Video konnte nicht verarbeitet werden.'
-      return 'Video wird verarbeitet…'
+      if (this.post.video_status === 'failed') return t('video.failed')
+      return t('video.processing')
     },
     loop() {
       return videoLoop.value

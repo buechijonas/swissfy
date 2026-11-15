@@ -23,6 +23,7 @@ from .models import (
     Album,
     Comment,
     ContactGroup,
+    FeedEntry,
     Post,
     PostCreation,
     Repost,
@@ -224,7 +225,7 @@ class PostTests(TestCase):
         Follow.objects.create(follower=self.jonas, following=self.eve)
         self.befriend(self.jonas, self.eve)
         yesterday = Post.objects.create(author=self.eve, text="gestern")
-        Post.objects.filter(pk=yesterday.pk).update(created_at=timezone.now() - timedelta(days=1))
+        Post.objects.filter(pk=yesterday.pk).backdate(created_at=timezone.now() - timedelta(days=1))
         friend = Post.objects.create(author=self.eve, text="Freundin")
         follow = Post.objects.create(author=self.anna, text="Folge")
         own = Post.objects.create(author=self.jonas, text="eigener")
@@ -280,7 +281,7 @@ class PostTests(TestCase):
 
     def test_repost_reaches_followers_of_reposter(self):
         post = Post.objects.create(author=self.eve, text="teilen")
-        Post.objects.filter(pk=post.pk).update(created_at=timezone.now() - timedelta(days=3))
+        Post.objects.filter(pk=post.pk).backdate(created_at=timezone.now() - timedelta(days=3))
         Follow.objects.create(follower=self.jonas, following=self.anna)
         newer = Post.objects.create(author=self.anna, text="heute")
 
@@ -553,6 +554,74 @@ def video_upload(seconds=2, width=1080, height=1920):
         )
         data = Path(file.name).read_bytes()
     return SimpleUploadedFile("clip.mov", data, content_type="video/quicktime")
+
+
+class FeedTests(TestCase):
+    def setUp(self):
+        self.jonas = User.objects.create(username="jonas")
+        self.anna = User.objects.create(username="anna")
+        self.eve = User.objects.create(username="eve")
+        Follow.objects.create(follower=self.jonas, following=self.anna)
+        Follow.objects.create(follower=self.jonas, following=self.eve)
+        self.client.force_login(self.jonas)
+
+    def feed(self, url="/api/posts/"):
+        return self.client.get(url).json()
+
+    def feed_ids(self):
+        return [post["id"] for post in self.feed()["results"]]
+
+    def old_post(self, days, author=None):
+        post = Post.objects.create(author=author or self.anna, text=f"vor {days} Tagen")
+        Post.objects.filter(pk=post.pk).backdate(timezone.now() - timedelta(days=days))
+        return post
+
+    def test_every_post_gets_a_feed_entry(self):
+        post = Post.objects.create(author=self.anna, text="neu")
+        entry = FeedEntry.objects.get(post=post)
+        self.assertEqual((entry.repost, entry.shown_at), (None, post.created_at))
+
+    def test_every_repost_gets_a_feed_entry(self):
+        post = Post.objects.create(author=self.anna, text="teilen")
+        repost = Repost.objects.create(user=self.eve, post=post)
+        self.assertEqual(FeedEntry.objects.get(repost=repost).shown_at, repost.created_at)
+
+    def test_removed_repost_leaves_the_feed(self):
+        post = self.old_post(3, author=User.objects.create(username="mia"))
+        Repost.objects.create(user=self.eve, post=post).delete()
+        self.assertEqual(self.feed_ids(), [])
+
+    def test_backdating_moves_the_feed_entry(self):
+        post = self.old_post(4)
+        self.assertEqual(
+            FeedEntry.objects.get(post=post).day, timezone.localdate() - timedelta(days=4)
+        )
+
+    def test_post_reposted_by_two_follows_appears_once(self):
+        post = self.old_post(3, author=User.objects.create(username="mia"))
+        Repost.objects.create(user=self.anna, post=post)
+        Repost.objects.create(user=self.eve, post=post)
+        self.assertEqual(self.feed_ids(), [str(post.uuid)])
+        self.assertEqual(self.feed()["results"][0]["reposter"], "eve")
+
+    def test_own_followed_post_reposted_appears_once(self):
+        post = self.old_post(3)
+        Repost.objects.create(user=self.eve, post=post)
+        newer = Post.objects.create(author=self.anna, text="heute")
+        Post.objects.filter(pk=newer.pk).backdate(timezone.now() - timedelta(hours=1))
+        self.assertEqual(self.feed_ids(), [str(post.uuid), str(newer.uuid)])
+
+    def test_feed_reaches_posts_older_than_the_window(self):
+        old = self.old_post(40)
+        self.assertEqual(self.feed_ids(), [str(old.uuid)])
+
+    def test_feed_pages_continue_across_windows(self):
+        posts = [self.old_post(days) for days in range(1, 60, 2)]
+        first = self.feed()
+        second = self.feed(first["next"])
+        ids = [post["id"] for post in first["results"] + second["results"]]
+        self.assertEqual(ids, [str(post.uuid) for post in posts])
+        self.assertIsNone(second["next"])
 
 
 @override_settings(MEDIA_ROOT=MEDIA)

@@ -14,7 +14,7 @@
           :url="repliesUrl"
           nested
           :moderation="moderation"
-          placeholder="Antwort schreiben…"
+          :placeholder="$t('commentView.replyPlaceholder')"
           @created="comment.reply_count += 1"
           @deleted="comment.reply_count = $event.parent.reply_count"
         >
@@ -57,7 +57,7 @@
         <ErrorText :message="deleteError" class="mt-2" />
         <ConfirmDialog
           ref="confirm"
-          message="Willst du diesen Kommentar löschen? Antworten darauf werden auch gelöscht."
+          :message="$t('commentView.deleteMessage')"
           @confirm="remove(pending)"
         />
       </template>
@@ -78,6 +78,7 @@ import CommentSection from '@/components/posts/CommentSection.vue'
 import commentsApi from '@/api/comments.js'
 import moderationApi from '@/api/moderation.js'
 import { commentLink } from '@/lib/comments.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'CommentView',
@@ -118,9 +119,9 @@ export default {
     },
     breadcrumbs() {
       return [
-        ...(this.moderation ? [{ label: 'Moderation', to: '/moderation' }] : []),
-        ...(this.postLink ? [{ label: 'Feed', to: this.postLink }] : []),
-        { label: 'Kommentar', to: this.$route.path },
+        ...(this.moderation ? [{ label: t('commentView.moderation'), to: '/moderation' }] : []),
+        ...(this.postLink ? [{ label: t('commentView.post'), to: this.postLink }] : []),
+        { label: t('commentView.comment'), to: this.$route.path },
       ]
     },
   },
@@ -141,10 +142,7 @@ export default {
           ? await moderationApi.get('comments', this.id)
           : await commentsApi.get(this.id)
       } catch (error) {
-        this.error =
-          error.status === 404
-            ? 'Kommentar nicht gefunden.'
-            : 'Kommentar konnte nicht geladen werden.'
+        this.error = error.status === 404 ? t('commentView.notFound') : t('commentView.loadFailed')
       }
     },
     confirmRemove(comment) {
@@ -155,7 +153,7 @@ export default {
       this.deleteError = null
       const data = await commentsApi.remove(comment.id).catch(() => null)
       if (!data) {
-        this.deleteError = 'Kommentar konnte nicht gelöscht werden.'
+        this.deleteError = t('commentView.deleteFailed')
         return
       }
       const { parent } = data

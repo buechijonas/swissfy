@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -51,11 +52,13 @@ class AdminUserModelSerializer(BaseModelSerializer):
 
         def validate(self, data):
             if self.instance.is_self:
-                raise PermissionDenied("Du kannst deine eigene Rolle nicht ändern.")
+                raise PermissionDenied(_("Du kannst deine eigene Rolle nicht ändern."))
             if self.instance.role_lock:
                 raise PermissionDenied(
-                    "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt "
-                    "und Sperren abgelaufen sind."
+                    _(
+                        "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt "
+                        "und Sperren abgelaufen sind."
+                    )
                 )
             return data
 

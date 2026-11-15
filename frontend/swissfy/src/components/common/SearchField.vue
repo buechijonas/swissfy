@@ -9,7 +9,7 @@
       autocomplete="off"
     />
   </label>
-  <BaseDialog ref="dialog" title="Suchen">
+  <BaseDialog ref="dialog" :title="$t('search.search')">
     <form id="search-dialog-form" @submit.prevent="submitDialog">
       <label class="input w-full">
         <AppIcon name="search" class="text-app-muted" />
@@ -27,11 +27,11 @@
     <template #actions>
       <BaseButton @click="$refs.dialog.close()">
         <AppIcon name="cross" />
-        Abbrechen
+        {{ $t('common.cancel') }}
       </BaseButton>
       <BaseButton type="submit" form="search-dialog-form" variant="primary">
         <AppIcon name="search" />
-        Suchen
+        {{ $t('search.search') }}
       </BaseButton>
     </template>
   </BaseDialog>
@@ -43,6 +43,7 @@ import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import { useAddButtonStore } from '@/stores/addButton.js'
+import { t } from '@/i18n.js'
 
 const DEBOUNCE_MS = 300
 
@@ -73,7 +74,7 @@ export default {
   created() {
     this.debouncedSearch = debounce(this.search, DEBOUNCE_MS)
     useAddButtonStore().show(this.owner, {
-      label: 'Suchen',
+      label: t('search.search'),
       icon: 'search',
       loading: false,
       onClick: () => this.openDialog(),

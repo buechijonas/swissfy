@@ -1,7 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs">
     <template #actions>
-      <AddButton label="Ordner" @click="openFolderDialog(null)" />
+      <AddButton :label="$t('saved.folder')" @click="openFolderDialog(null)" />
     </template>
   </BaseBreadcrumbs>
   <div
@@ -25,7 +25,7 @@
         <h3 class="text-xl truncate">{{ currentFolder.name }}</h3>
         <BaseButton size="sm" class="ml-auto" @click="openFolderDialog(currentFolder)">
           <AppIcon name="pencil" />
-          Umbenennen
+          {{ $t('saved.rename') }}
         </BaseButton>
         <DeleteButton @click="$refs.confirm.open()" />
       </div>
@@ -37,37 +37,36 @@
         :url="listUrl"
         folder-picker
         edge-to-edge
-        empty-text="Hier ist noch nichts gespeichert."
+        :empty-text="$t('saved.empty')"
         @saved-change="onSavedChange"
       />
     </div>
   </div>
 
-  <BaseDialog ref="folderDialog" :title="editedFolder ? 'Ordner umbenennen' : 'Neuer Ordner'">
+  <BaseDialog
+    ref="folderDialog"
+    :title="editedFolder ? $t('saved.renameFolder') : $t('saved.newFolder')"
+  >
     <input
       v-model="folderName"
       class="input w-full"
       maxlength="50"
-      placeholder="Name"
+      :placeholder="$t('saved.name')"
       @keyup.enter="saveFolder"
     />
     <ErrorText :message="folderError" class="mt-2" />
     <template #actions>
       <BaseButton @click="$refs.folderDialog.close()">
         <AppIcon name="cross" />
-        Abbrechen
+        {{ $t('common.cancel') }}
       </BaseButton>
       <BaseButton variant="primary" :disabled="!folderName.trim()" @click="saveFolder">
         <AppIcon name="disk" />
-        Speichern
+        {{ $t('common.save') }}
       </BaseButton>
     </template>
   </BaseDialog>
-  <ConfirmDialog
-    ref="confirm"
-    message="Ordner löschen? Die gespeicherten Feeds bleiben unter «Ohne Ordner»."
-    @confirm="deleteFolder"
-  />
+  <ConfirmDialog ref="confirm" :message="$t('saved.deleteMessage')" @confirm="deleteFolder" />
   <BaseFooter />
 </template>
 
@@ -84,6 +83,7 @@ import DeleteButton from '@/components/common/DeleteButton.vue'
 import PostList from '@/components/posts/PostList.vue'
 import postsApi from '@/api/posts.js'
 import { useFoldersStore } from '@/stores/posts.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'SavedView',
@@ -101,20 +101,22 @@ export default {
   },
   data() {
     return {
-      breadcrumbs: [{ label: 'Gespeichert', to: '/saved' }],
       editedFolder: null,
       folderName: '',
       folderError: null,
     }
   },
   computed: {
+    breadcrumbs() {
+      return [{ label: t('saved.title'), to: '/saved' }]
+    },
     foldersStore() {
       return useFoldersStore()
     },
     filters() {
       return [
-        { value: null, label: 'Alle', icon: 'apps' },
-        { value: 'none', label: 'Ohne Ordner', icon: 'bookmark' },
+        { value: null, label: t('saved.all'), icon: 'apps' },
+        { value: 'none', label: t('saved.noFolder'), icon: 'bookmark' },
         ...(this.foldersStore.items ?? []).map((folder) => ({
           value: String(folder.id),
           label: folder.name,
@@ -134,7 +136,7 @@ export default {
   },
   created() {
     this.foldersStore.load().catch(() => {
-      this.folderError = 'Ordner konnten nicht geladen werden.'
+      this.folderError = t('saved.loadFailed')
     })
   },
   methods: {

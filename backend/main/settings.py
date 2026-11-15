@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import django.conf.locale
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -71,6 +72,8 @@ if not CONTENT_ENCRYPTION_KEYS:
 
 CHAT_RETENTION_DAYS = 14
 CHAT_SLOW_MODE_SECONDS = 5
+CHAT_PIN_ATTEMPTS = 5
+CHAT_PIN_LOCKOUT_SECONDS = 3600
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
@@ -123,6 +126,7 @@ MIDDLEWARE = [
     "main.middleware.RejectNullBytes",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -181,7 +185,26 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = "de-ch"
+LANGUAGE_CODE = "en"
+
+LANGUAGES = [
+    ("de", "Deutsch"),
+    ("fr", "Français"),
+    ("it", "Italiano"),
+    ("rm", "Rumantsch"),
+    ("en", "English"),
+    ("es", "Español"),
+    ("zh-hans", "简体中文"),
+]
+
+LANG_INFO = {
+    "rm": {"bidi": False, "code": "rm", "name": "Romansh", "name_local": "Rumantsch"},
+}
+django.conf.locale.LANG_INFO = {**django.conf.locale.LANG_INFO, **LANG_INFO}
+
+LANGUAGE_COOKIE_NAME = "language"
+
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 TIME_ZONE = "Europe/Zurich"
 
@@ -207,3 +230,5 @@ STORAGES = {
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+TEST_RUNNER = "main.testing.SourceLanguageTestRunner"

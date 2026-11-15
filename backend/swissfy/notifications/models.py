@@ -1,18 +1,20 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Exists, OuterRef, Q
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
+from commons import events
+from commons.i18n import local_date
 from commons.models import BaseModel, BaseQuerySet
 from swissfy.moderation.models import WARNING_EXPIRY, Suspension, Warning
 from swissfy.posts.models import authors_for
 from swissfy.social.models import Follow, FollowRequest, FriendRequest, Friendship
 
 PREVIEW_LENGTH = 80
-
-
-def local_date(value):
-    return timezone.localtime(value).strftime("%d.%m.%Y")
+NOTIFICATION_EVENT = "notification"
 
 
 def quote(text):
@@ -41,14 +43,21 @@ class NotificationQuerySet(BaseQuerySet):
             friend_accepted=Exists(Friendship.objects.filter(user=recipient, friend=actor)),
         )
 
+    def publish(self):
+        recipients = self.order_by().values_list("recipient", flat=True).distinct()
+        events.publish(recipients, NOTIFICATION_EVENT)
+
     def mark_read(self):
-        return self.unread().update(read_at=timezone.now())
+        unread = self.unread()
+        unread.publish()
+        return unread.update(read_at=timezone.now())
 
     def withdraw(self, recipient, kind, actor, **targets):
         return self.filter(recipient=recipient, kind=kind, actor=actor, **targets).delete()
 
     def resolve_request(self, recipient, kind, actor, resolution):
         requests = self.filter(recipient=recipient, actor=actor, kind=kind, resolution="")
+        requests.publish()
         return requests.update(resolution=resolution)
 
     def sync_expired_warnings(self, user):
@@ -71,18 +80,18 @@ class NotificationQuerySet(BaseQuerySet):
 
 class Notification(BaseModel):
     class Resolution(models.TextChoices):
-        ACCEPTED = "accepted", "Angenommen"
-        DECLINED = "declined", "Abgelehnt"
+        ACCEPTED = "accepted", _("Angenommen")
+        DECLINED = "declined", _("Abgelehnt")
 
     class Kind(models.TextChoices):
-        WARNING = "warning", "Verwarnung"
-        WARNING_EXPIRED = "warning_expired", "Verwarnung verjährt"
-        SUSPENSION = "suspension", "Kontosperre"
-        COMMENT = "comment", "Kommentar"
-        LIKE = "like", "Gefällt mir"
-        FOLLOW = "follow", "Neuer Follower"
-        FOLLOW_REQUEST = "follow_request", "Followeranfrage"
-        FRIEND_REQUEST = "friend_request", "Freundschaftsanfrage"
+        WARNING = "warning", _("Verwarnung")
+        WARNING_EXPIRED = "warning_expired", _("Verwarnung verjährt")
+        SUSPENSION = "suspension", _("Kontosperre")
+        COMMENT = "comment", _("Kommentar")
+        LIKE = "like", _("Gefällt mir")
+        FOLLOW = "follow", _("Neuer Follower")
+        FOLLOW_REQUEST = "follow_request", _("Followeranfrage")
+        FRIEND_REQUEST = "friend_request", _("Freundschaftsanfrage")
 
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications"
@@ -136,36 +145,46 @@ class Notification(BaseModel):
         Kind = self.Kind
         match self.kind:
             case Kind.WARNING:
-                return f"Du wurdest verwarnt: {self.warning.get_reason_display()}."
+                return _("Du wurdest verwarnt: %(reason)s.") % {
+                    "reason": self.warning.get_reason_display()
+                }
             case Kind.WARNING_EXPIRED:
-                reason = self.warning.get_reason_display()
-                created = local_date(self.warning.created_at)
-                return f"Deine Verwarnung «{reason}» vom {created} ist verjährt."
+                return _("Deine Verwarnung «%(reason)s» vom %(created)s ist verjährt.") % {
+                    "reason": self.warning.get_reason_display(),
+                    "created": local_date(self.warning.created_at),
+                }
             case Kind.SUSPENSION:
                 return self.suspension_message
             case Kind.COMMENT:
-                return f"{self.actor_name} hat deinen Feed kommentiert: {quote(self.comment.text)}"
+                return _("%(actor)s hat deinen Feed kommentiert: %(text)s") % {
+                    "actor": self.actor_name,
+                    "text": quote(self.comment.text),
+                }
             case Kind.LIKE:
-                return f"{self.actor_name} gefällt dein Feed."
+                return _("%(actor)s gefällt dein Feed.") % {"actor": self.actor_name}
             case Kind.FOLLOW:
-                return f"{self.actor_name} folgt dir jetzt."
+                return _("%(actor)s folgt dir jetzt.") % {"actor": self.actor_name}
             case Kind.FOLLOW_REQUEST:
-                return f"{self.actor_name} möchte dir folgen."
+                return _("%(actor)s möchte dir folgen.") % {"actor": self.actor_name}
             case Kind.FRIEND_REQUEST:
-                return f"{self.actor_name} möchte mit dir befreundet sein."
+                return _("%(actor)s möchte mit dir befreundet sein.") % {"actor": self.actor_name}
         return ""
 
     @property
     def suspension_message(self):
         suspension = self.suspension
-        duration = suspension.duration_label
         if suspension.ends_at is None:
-            return "Dein Konto wurde dauerhaft gesperrt."
-        until = local_date(suspension.ends_at)
+            return _("Dein Konto wurde dauerhaft gesperrt.")
+        dates = {
+            "duration": suspension.duration_label,
+            "start": local_date(suspension.starts_at),
+            "until": local_date(suspension.ends_at),
+        }
         if suspension.starts_at > timezone.now():
-            start = local_date(suspension.starts_at)
-            return f"Dein Konto wird für {duration} gesperrt, ab {start} bis {until}."
-        return f"Dein Konto wurde für {duration} gesperrt, bis {until}."
+            return (
+                _("Dein Konto wird für %(duration)s gesperrt, ab %(start)s bis %(until)s.") % dates
+            )
+        return _("Dein Konto wurde für %(duration)s gesperrt, bis %(until)s.") % dates
 
     @property
     def link(self):
@@ -193,3 +212,8 @@ class Notification(BaseModel):
         if pending:
             return "pending"
         return self.Resolution.ACCEPTED if accepted else self.Resolution.DECLINED
+
+
+@receiver([post_save, post_delete], sender=Notification)
+def publish_notification(sender, instance, **kwargs):
+    events.publish([instance.recipient_id], NOTIFICATION_EVENT)

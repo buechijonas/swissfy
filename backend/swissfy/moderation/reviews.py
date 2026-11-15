@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 from swissfy.posts.models import Comment, Post
 
@@ -47,7 +48,7 @@ class ReportedContent:
 
     @property
     def kind(self):
-        return "Feed" if self.is_post else "Kommentar"
+        return _("Feed") if self.is_post else _("Kommentar")
 
     @property
     def text(self):

@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import OuterRef, Subquery
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
@@ -118,7 +119,7 @@ class PostViewSet(
     @action(detail=True, methods=["post"])
     def like(self, request, uuid):
         post = self.get_object()
-        _, created = Like.objects.get_or_create(user=request.user, post=post)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
         if created:
             Notification.notify(post.author, Notification.Kind.LIKE, actor=request.user, post=post)
         return self.respond(post)
@@ -134,7 +135,7 @@ class PostViewSet(
     def repost(self, request, uuid):
         post = self.get_object()
         if post.is_own:
-            raise BadRequest("Du kannst deine eigenen Feeds nicht reposten.")
+            raise BadRequest(_("Du kannst deine eigenen Feeds nicht reposten."))
         Repost.objects.get_or_create(user=request.user, post=post)
         return self.respond(post)
 

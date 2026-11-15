@@ -1,15 +1,15 @@
 <template>
-  <BaseBreadcrumbs :items="breadcrumbs" />
-  <div
-    class="flex flex-col pb-16 px-6 max-h-[calc(100dvh-48px)] lg:max-h-[calc(100dvh-101px)] overflow-y-auto"
-  >
-    <div class="mx-auto w-full max-w-100">
-      <div
-        class="list bg-base-100 rounded-box max-sm:-mx-6 max-sm:rounded-none max-sm:border-x-0 shadow-none border-app-border border-solid border-1 mt-16 p-8"
-      >
-        <h2 class="text-xl font-light mb-6">{{ title }}</h2>
-        <div class="text-swissfy-slate">
-          <slot />
+  <div class="flex flex-col max-h-[calc(100dvh-var(--header-height))] lg:max-h-full">
+    <BaseBreadcrumbs :items="breadcrumbs" />
+    <div class="flex flex-col flex-1 min-h-0 pb-16 px-6 overflow-y-auto">
+      <div class="mx-auto w-full max-w-100">
+        <div
+          class="list bg-base-100 rounded-box max-sm:-mx-6 max-sm:rounded-none max-sm:border-x-0 shadow-none border-app-border border-solid border-1 mt-16 p-8"
+        >
+          <h2 class="text-xl font-light mb-6">{{ title }}</h2>
+          <div class="text-swissfy-slate">
+            <slot />
+          </div>
         </div>
       </div>
     </div>

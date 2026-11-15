@@ -1,14 +1,14 @@
 <template>
-  <h3 class="text-xl mt-10 mb-4">Info</h3>
+  <h3 class="text-xl mt-10 mb-4">{{ $t('about.title') }}</h3>
   <BaseCard class="p-6 flex flex-col gap-2">
-    <label for="biography">Biografie</label>
+    <label for="biography">{{ $t('about.biography') }}</label>
     <textarea
       id="biography"
       v-model="biography"
       class="textarea w-full h-28 resize-none"
       :maxlength="maxLength"
       :disabled="!about || busy"
-      placeholder="Erzähl etwas über dich"
+      :placeholder="$t('about.placeholder')"
     ></textarea>
     <div class="flex items-center justify-between gap-4">
       <span class="text-xs text-app-muted">{{ biography.length }}/{{ maxLength }}</span>
@@ -19,7 +19,7 @@
         @click="save({ biography })"
       >
         <AppIcon name="disk" />
-        Speichern
+        {{ $t('common.save') }}
       </BaseButton>
     </div>
   </BaseCard>
@@ -50,6 +50,7 @@ import BaseCard from '@core/components/BaseCard.vue'
 import FavoritePicker from '@/components/settings/FavoritePicker.vue'
 import { favoriteKinds } from '@/data/favorites.js'
 import profilesApi from '@/api/profiles.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ProfileAbout',
@@ -57,11 +58,13 @@ export default {
   components: { AppIcon, BaseButton, BaseCard, FavoritePicker, ErrorText },
   data() {
     return {
-      favoriteKinds,
       maxLength: 500,
       about: null,
       biography: '',
     }
+  },
+  computed: {
+    favoriteKinds,
   },
   mounted() {
     this.load()
@@ -72,13 +75,13 @@ export default {
         this.about = await profilesApi.about()
         this.biography = this.about.biography
       } catch {
-        this.error = 'Infos konnten nicht geladen werden.'
+        this.error = t('about.loadFailed')
       }
     },
     async save(changes) {
       const about = await this.runAction(
         () => profilesApi.updateAbout(changes),
-        'Speichern fehlgeschlagen.',
+        t('common.saveFailed'),
       )
       if (about) this.about = about
     },

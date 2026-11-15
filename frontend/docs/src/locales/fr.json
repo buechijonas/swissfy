@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "logoutFailed": "La déconnexion a échoué."
+  },
+  "display": {
+    "title": "Affichage",
+    "appearance": "Apparence de l'interface.",
+    "accessibility": "Accessibilité",
+    "dyslexia": "Dyslexie",
+    "contrast": "Mode contraste",
+    "auto": "Auto",
+    "light": "Clair",
+    "dark": "Sombre",
+    "on": "Activé",
+    "off": "Désactivé",
+    "language": "Langue",
+    "languageHint": "Langue de l'interface."
+  },
+  "navigation": {
+    "changelog": "Changelog",
+    "donate": "Faire un don",
+    "settings": "Paramètres",
+    "version": "Version {version}"
+  },
+  "changelogs": {
+    "empty": "Pas encore de versions."
+  },
+  "header": {
+    "settings": "Paramètres",
+    "docs": "Documentation",
+    "logout": "Se déconnecter",
+    "login": "Se connecter",
+    "menu": "Menu"
+  },
+  "legal": {
+    "imprint": "Mentions légales",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "disclaimer": "Clause de non-responsabilité"
+  }
+}

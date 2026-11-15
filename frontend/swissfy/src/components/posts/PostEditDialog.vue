@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog ref="dialog" title="Feed bearbeiten" class="modal-bottom sm:modal-middle">
+  <BaseDialog ref="dialog" :title="$t('postEdit.title')" class="modal-bottom sm:modal-middle">
     <VisibilityPicker v-model:visibility="visibility" v-model:groups="groups" />
     <ErrorText :message="error" class="mt-4" />
     <BaseButton
@@ -11,20 +11,20 @@
       @click="$refs.confirm.open()"
     >
       <AppIcon name="trash" />
-      Feed löschen
+      {{ $t('postEdit.delete') }}
     </BaseButton>
     <template #actions>
       <BaseButton @click="$refs.dialog.close()">
         <AppIcon name="cross" />
-        Abbrechen
+        {{ $t('common.cancel') }}
       </BaseButton>
       <BaseButton variant="primary" :disabled="!canSave" @click="save">
         <AppIcon name="disk" />
-        Speichern
+        {{ $t('common.save') }}
       </BaseButton>
     </template>
   </BaseDialog>
-  <ConfirmDialog ref="confirm" message="Willst du diesen Feed löschen?" @confirm="remove" />
+  <ConfirmDialog ref="confirm" :message="$t('postEdit.deleteMessage')" @confirm="remove" />
 </template>
 
 <script>
@@ -37,6 +37,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
 import postsApi from '@/api/posts.js'
 import { useGroupsStore } from '@/stores/posts.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'PostEditDialog',
@@ -73,14 +74,14 @@ export default {
         const post = await postsApi.updateAudience(this.post.id, body)
         this.$refs.dialog.close()
         this.$emit('updated', post)
-      }, 'Feed konnte nicht gespeichert werden.')
+      }, t('postEdit.saveFailed'))
     },
     remove() {
       return this.runAction(async () => {
         await postsApi.remove(this.post.id)
         this.$refs.dialog.close()
         this.$emit('deleted', this.post.id)
-      }, 'Feed konnte nicht gelöscht werden.')
+      }, t('postEdit.deleteFailed'))
     },
   },
 }

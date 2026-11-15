@@ -6,52 +6,53 @@ from django.db import IntegrityError, models
 from django.db.models import Count, Max, Q
 from django.utils import timezone
 from django.utils.formats import date_format
+from django.utils.translation import gettext_lazy as _
 
 from commons.models import BaseModel, BaseQuerySet
 from swissfy.accounts.roles import Role, is_admin, role_of, set_role
 
 
 class Reason(models.TextChoices):
-    ANTISEMITISM = "antisemitism", "Antisemitismus"
-    EXPLOITATION = "exploitation", "Ausbeuterische Inhalte"
-    INSULT = "insult", "Beleidigung"
-    REWARD_HUNTING = "reward_hunting", "Belohnungsjagd"
-    HARASSMENT = "harassment", "Belästigung"
-    FRAUD = "fraud", "Betrug"
-    CHRISTOPHOBIA = "christophobia", "Christophobie"
-    CYBERGROOMING = "cybergrooming", "Cybergrooming"
-    CYBERBULLYING = "cyberbullying", "Cybermobbing"
-    DISCRIMINATION = "discrimination", "Diskriminierung"
-    DOXXING = "doxxing", "Doxxing"
-    THREAT = "threat", "Drohung"
-    EXTORTION = "extortion", "Erpressung"
-    MISINFORMATION = "misinformation", "Falschinformationen"
-    FASCISM = "fascism", "Faschismus"
-    XENOPHOBIA = "xenophobia", "Fremdenfeindlichkeit"
-    CONSPIRACY = "conspiracy", "Gefährliche Verschwörungstheorien"
-    VIOLENT_CONTENT = "violent_content", "Gewaltbasierter Inhalt"
-    GLORIFYING_VIOLENCE = "glorifying_violence", "Gewaltverherrlichung"
-    HATE_SPEECH = "hate_speech", "Hassrede"
-    HOMOPHOBIA = "homophobia", "Homophobie"
-    IDENTITY_THEFT = "identity_theft", "Identitätsdiebstahl"
-    ILLEGAL_CONTENT = "illegal_content", "Illegale Inhalte"
-    ISLAMOPHOBIA = "islamophobia", "Islamophobie"
-    CULTURAL_APPROPRIATION = "cultural_appropriation", "Kulturelle Aneignung"
-    PROTECTION_OF_MINORS = "protection_of_minors", "Minderjährigenschutz"
-    PRIVILEGE_ABUSE = "privilege_abuse", "Missbrauch von Privilegien"
-    PLAGIARISM = "plagiarism", "Plagiate"
-    PORNOGRAPHY = "pornography", "Pornografische Inhalte"
-    PROPAGANDA = "propaganda", "Propaganda"
-    RACISM = "racism", "Rassismus"
-    RELATIVIZATION = "relativization", "Relativierung"
-    SELF_HARM = "self_harm", "Selbstgefährdung"
-    VIGILANTISM = "vigilantism", "Selbstjustiz"
-    SEXISM = "sexism", "Sexismus"
-    SEXTORTION = "sextortion", "Sextortion"
-    SPAM = "spam", "Spam"
-    INAPPROPRIATE_LANGUAGE = "inappropriate_language", "Unangemessene Wortwahl"
-    UNETHICAL_ADVERTISING = "unethical_advertising", "Unethische Werbung"
-    WHATABOUTISM = "whataboutism", "Whataboutismus"
+    ANTISEMITISM = "antisemitism", _("Antisemitismus")
+    EXPLOITATION = "exploitation", _("Ausbeuterische Inhalte")
+    INSULT = "insult", _("Beleidigung")
+    REWARD_HUNTING = "reward_hunting", _("Belohnungsjagd")
+    HARASSMENT = "harassment", _("Belästigung")
+    FRAUD = "fraud", _("Betrug")
+    CHRISTOPHOBIA = "christophobia", _("Christophobie")
+    CYBERGROOMING = "cybergrooming", _("Cybergrooming")
+    CYBERBULLYING = "cyberbullying", _("Cybermobbing")
+    DISCRIMINATION = "discrimination", _("Diskriminierung")
+    DOXXING = "doxxing", _("Doxxing")
+    THREAT = "threat", _("Drohung")
+    EXTORTION = "extortion", _("Erpressung")
+    MISINFORMATION = "misinformation", _("Falschinformationen")
+    FASCISM = "fascism", _("Faschismus")
+    XENOPHOBIA = "xenophobia", _("Fremdenfeindlichkeit")
+    CONSPIRACY = "conspiracy", _("Gefährliche Verschwörungstheorien")
+    VIOLENT_CONTENT = "violent_content", _("Gewaltbasierter Inhalt")
+    GLORIFYING_VIOLENCE = "glorifying_violence", _("Gewaltverherrlichung")
+    HATE_SPEECH = "hate_speech", _("Hassrede")
+    HOMOPHOBIA = "homophobia", _("Homophobie")
+    IDENTITY_THEFT = "identity_theft", _("Identitätsdiebstahl")
+    ILLEGAL_CONTENT = "illegal_content", _("Illegale Inhalte")
+    ISLAMOPHOBIA = "islamophobia", _("Islamophobie")
+    CULTURAL_APPROPRIATION = "cultural_appropriation", _("Kulturelle Aneignung")
+    PROTECTION_OF_MINORS = "protection_of_minors", _("Minderjährigenschutz")
+    PRIVILEGE_ABUSE = "privilege_abuse", _("Missbrauch von Privilegien")
+    PLAGIARISM = "plagiarism", _("Plagiate")
+    PORNOGRAPHY = "pornography", _("Pornografische Inhalte")
+    PROPAGANDA = "propaganda", _("Propaganda")
+    RACISM = "racism", _("Rassismus")
+    RELATIVIZATION = "relativization", _("Relativierung")
+    SELF_HARM = "self_harm", _("Selbstgefährdung")
+    VIGILANTISM = "vigilantism", _("Selbstjustiz")
+    SEXISM = "sexism", _("Sexismus")
+    SEXTORTION = "sextortion", _("Sextortion")
+    SPAM = "spam", _("Spam")
+    INAPPROPRIATE_LANGUAGE = "inappropriate_language", _("Unangemessene Wortwahl")
+    UNETHICAL_ADVERTISING = "unethical_advertising", _("Unethische Werbung")
+    WHATABOUTISM = "whataboutism", _("Whataboutismus")
 
     @classmethod
     def options(cls):
@@ -72,11 +73,11 @@ def convert_warning_integrity_error():
 
 WARNING_EXPIRY = timedelta(days=90)
 SUSPENSION_STEPS = [
-    (timedelta(days=3), "3 Tage"),
-    (timedelta(weeks=1), "1 Woche"),
-    (timedelta(days=30), "1 Monat"),
-    (timedelta(days=365), "1 Jahr"),
-    (None, "Lebenslang"),
+    (timedelta(days=3), _("3 Tage")),
+    (timedelta(weeks=1), _("1 Woche")),
+    (timedelta(days=30), _("1 Monat")),
+    (timedelta(days=365), _("1 Jahr")),
+    (None, _("Lebenslang")),
 ]
 WARNINGS_BEFORE_SUSPENSION = 3
 LOCKED_FOREVER = "forever"
@@ -212,8 +213,8 @@ class Warning(BaseModel):
     @property
     def target_label(self):
         if self.comment_id:
-            return "Kommentar"
-        return "Feed" if self.post_id else None
+            return _("Kommentar")
+        return _("Feed") if self.post_id else None
 
     @property
     def moderation_link(self):
@@ -300,11 +301,12 @@ class Suspension(BaseModel):
 
     @property
     def status_text(self):
-        until = date_format(timezone.localtime(self.ends_at), "j. F Y") if self.ends_at else None
+        ends_at = self.ends_at and timezone.localtime(self.ends_at)
+        until = {"until": date_format(ends_at, _("j. F Y"))} if ends_at else None
         if self.state == "ended":
-            return f"Abgelaufen am {until}"
+            return _("Abgelaufen am %(until)s") % until
         if self.state == "scheduled":
             if until:
-                return f"Beginnt nach der laufenden Sperre, bis {until}"
-            return "Beginnt nach der laufenden Sperre, dauerhaft"
-        return f"Gesperrt bis {until}" if until else "Dauerhaft gesperrt"
+                return _("Beginnt nach der laufenden Sperre, bis %(until)s") % until
+            return _("Beginnt nach der laufenden Sperre, dauerhaft")
+        return _("Gesperrt bis %(until)s") % until if until else _("Dauerhaft gesperrt")

@@ -39,15 +39,17 @@
         </RouterLink>
         <RoleBadge :role="comment.author.role" />
         <span v-if="comment.is_post_author" class="text-xs font-bold text-error shrink-0">
-          Verfasser
+          {{ $t('comments.author') }}
         </span>
         <span class="text-xs text-app-muted shrink-0">
           {{ formatRelativeTime(comment.created_at) }}
         </span>
-        <span v-if="comment.hidden" class="text-xs font-bold text-error shrink-0">Verborgen</span>
+        <span v-if="comment.hidden" class="text-xs font-bold text-error shrink-0">{{
+          $t('comments.hidden')
+        }}</span>
       </div>
       <p v-if="showReplyTo && comment.reply_to" class="text-xs text-app-muted">
-        Antwort an
+        {{ $t('comments.replyTo') }}
         <RouterLink :to="profileLink({ username: comment.reply_to })" class="link" @click.stop>
           @{{ comment.reply_to }}
         </RouterLink>
@@ -68,7 +70,7 @@
       />
       <div class="mt-1 flex flex-wrap items-center gap-2">
         <span class="flex items-center gap-1 text-xs text-app-muted">
-          <AppIcon name="comment-alt-middle" size="sm" alt="Antworten" />
+          <AppIcon name="comment-alt-middle" size="sm" :alt="$t('comments.reply')" />
           {{ count ?? comment.reply_count }}
         </span>
         <div v-if="'score' in comment" class="ml-auto flex items-center gap-2" @click.stop>
@@ -102,7 +104,7 @@
             @click="report"
           >
             <AppIcon name="flag" />
-            {{ reported ? 'Gemeldet' : 'Melden' }}
+            {{ reported ? $t('comments.reported') : $t('comments.report') }}
           </BaseButton>
         </div>
       </div>

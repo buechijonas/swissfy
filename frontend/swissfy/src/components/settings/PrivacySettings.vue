@@ -1,18 +1,17 @@
 <template>
   <div class="mb-10">
-    <h3 class="text-xl my-4">Datenschutz</h3>
+    <h3 class="text-xl my-4">{{ $t('privacy.title') }}</h3>
     <SettingCard
-      title="Profil sichtbar für"
-      hint="Gilt auch für deinen Vor- und Nachnamen sowie deine Feeds und Seeds. Deine Profilbilder sind davon nicht betroffen, ihre Sichtbarkeit legst du unter «Profil» fest. Ist dein Profil privater eingestellt als ein Post, gilt für diesen Post die strengere Einstellung deines Profils."
+      :title="$t('privacy.profileVisibility')"
+      :hint="$t('privacy.profileVisibilityHint')"
     >
-      <BaseSwitcher
+      <SelectMenu
         v-if="privacy"
-        class="flex-wrap justify-center gap-2"
-        size="sm"
+        :model-value="privacy.profile_visibility"
         :options="visibilityOptions"
-        :active="privacy.profile_visibility"
+        :label="$t('privacy.profileVisibility')"
         :disabled="busy"
-        @select="save('profile_visibility', $event)"
+        @update:model-value="save('profile_visibility', $event)"
       />
       <div v-else-if="!error" class="skeleton h-8 w-56"></div>
     </SettingCard>
@@ -42,30 +41,34 @@
 
 <script>
 import ErrorText from '@core/components/ErrorText.vue'
+import SelectMenu from '@core/components/SelectMenu.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import ChatProtectionSetting from '@/components/settings/ChatProtectionSetting.vue'
 import SettingCard from '@/components/settings/SettingCard.vue'
 import profilesApi from '@/api/profiles.js'
 import { onOffOptions, privacyToggles, visibilityOptions } from '@/data/settings.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'PrivacySettings',
   mixins: [asyncActionMixin],
-  components: { BaseSwitcher, ChatProtectionSetting, SettingCard, ErrorText },
+  components: { BaseSwitcher, ChatProtectionSetting, ErrorText, SelectMenu, SettingCard },
   data() {
     return {
-      onOffOptions,
-      privacyToggles,
-      visibilityOptions,
       privacy: null,
     }
+  },
+  computed: {
+    onOffOptions,
+    privacyToggles,
+    visibilityOptions,
   },
   async created() {
     try {
       this.privacy = await profilesApi.privacy()
     } catch {
-      this.error = 'Einstellungen konnten nicht geladen werden.'
+      this.error = t('privacy.loadFailed')
     }
   },
   methods: {
@@ -74,7 +77,7 @@ export default {
       this.privacy[field] = value
       await this.runAction(
         () => profilesApi.updatePrivacy({ [field]: value }),
-        'Speichern fehlgeschlagen.',
+        t('common.saveFailed'),
       )
       if (this.error) this.privacy[field] = previous
     },

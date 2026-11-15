@@ -28,7 +28,7 @@
       >
         <button
           type="button"
-          aria-label="Menü"
+          :aria-label="$t('header.menu')"
           :aria-expanded="isMenuOpen"
           :class="iconLinkClass"
           @click="isMenuOpen = !isMenuOpen"
@@ -44,13 +44,13 @@
           <li>
             <RouterLink to="/settings" class="flex h-12 items-center gap-3">
               <AppIcon name="settings" class="size-6!" />
-              <span>Einstellungen</span>
+              <span>{{ $t('header.settings') }}</span>
             </RouterLink>
           </li>
           <li v-if="authStore.isAuthenticated">
             <RouterLink to="/saved" class="flex h-12 items-center gap-3">
               <AppIcon name="bookmark" class="size-6!" />
-              <span>Gespeichert</span>
+              <span>{{ $t('header.saved') }}</span>
             </RouterLink>
           </li>
           <li v-for="item in staffItems" :key="item.key" class="lg:hidden">
@@ -62,7 +62,7 @@
           <li class="mt-1 border-t border-app-border pt-1">
             <a :href="docsUrl" class="flex h-12 items-center gap-3">
               <AppIcon name="circle-book-open" class="size-6!" />
-              <span>Dokumentation</span>
+              <span>{{ $t('header.docs') }}</span>
             </a>
           </li>
           <li>
@@ -77,7 +77,9 @@
               class="flex h-12 items-center gap-3"
             >
               <AppIcon :name="authStore.isAuthenticated ? 'exit' : 'enter'" class="size-6!" />
-              <span>{{ authStore.isAuthenticated ? 'Abmelden' : 'Anmelden' }}</span>
+              <span>{{
+                authStore.isAuthenticated ? $t('header.logout') : $t('header.login')
+              }}</span>
             </RouterLink>
           </li>
         </ul>
@@ -96,6 +98,7 @@ import { pageTitle } from '@/lib/title.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
 import packageJson from '../../../package.json'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'BaseHeader',
@@ -121,10 +124,12 @@ export default {
       return this.notificationsStore.unread ? 'bell-notification-social-media' : 'bell'
     },
     notificationsLabel() {
-      return this.notificationsStore.unread ? 'Neue Benachrichtigungen' : 'Benachrichtigungen'
+      return this.notificationsStore.unread
+        ? t('header.newNotifications')
+        : t('header.notifications')
     },
     staffItems() {
-      return navigationItems.filter((item) => item.permission && isListed(item, this.authStore))
+      return navigationItems().filter((item) => item.permission && isListed(item, this.authStore))
     },
   },
   watch: {

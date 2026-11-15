@@ -1,14 +1,14 @@
 <template>
   <div class="mb-10">
-    <h3 class="my-4 text-xl">Darstellung</h3>
+    <h3 class="my-4 text-xl">{{ $t('display.title') }}</h3>
     <BaseCard
       inset
       class="flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:justify-between sm:text-left"
     >
-      <p class="min-w-0 text-app-muted">Erscheinungsbild der Oberfläche.</p>
+      <p class="min-w-0 text-app-muted">{{ $t('display.appearance') }}</p>
       <div class="flex flex-wrap justify-center gap-2">
         <BaseButton
-          v-for="option in THEME_OPTIONS"
+          v-for="option in themeOptions"
           :key="option.value"
           size="sm"
           :variant="themeMode === option.value ? 'primary' : 'neutral'"
@@ -22,15 +22,26 @@
   </div>
 
   <div class="mb-10">
-    <h3 class="my-4 text-xl">Barrierefreiheit</h3>
+    <h3 class="my-4 text-xl">{{ $t('display.language') }}</h3>
+    <BaseCard
+      inset
+      class="flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:justify-between sm:text-left"
+    >
+      <p class="min-w-0 text-app-muted">{{ $t('display.languageHint') }}</p>
+      <LanguageSelect :label="$t('display.language')" />
+    </BaseCard>
+  </div>
+
+  <div class="mb-10">
+    <h3 class="my-4 text-xl">{{ $t('display.accessibility') }}</h3>
     <BaseCard
       inset
       class="mb-4 flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:justify-between sm:text-left"
     >
-      <p class="min-w-0 text-app-muted">Legasthenie</p>
+      <p class="min-w-0 text-app-muted">{{ $t('display.dyslexia') }}</p>
       <div class="flex flex-wrap justify-center gap-2">
         <BaseButton
-          v-for="option in TOGGLE_OPTIONS"
+          v-for="option in toggleOptions"
           :key="option.label"
           size="sm"
           :variant="dyslexiaFont === option.value ? 'primary' : 'neutral'"
@@ -45,10 +56,10 @@
       inset
       class="flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:justify-between sm:text-left"
     >
-      <p class="min-w-0 text-app-muted">Kontrastmodus</p>
+      <p class="min-w-0 text-app-muted">{{ $t('display.contrast') }}</p>
       <div class="flex flex-wrap justify-center gap-2">
         <BaseButton
-          v-for="option in TOGGLE_OPTIONS"
+          v-for="option in toggleOptions"
           :key="option.label"
           size="sm"
           :variant="contrastMode === option.value ? 'primary' : 'neutral'"
@@ -67,25 +78,30 @@ import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
 import { contrastMode, dyslexiaFont, themeMode } from '@core/lib/appearance.js'
+import LanguageSelect from '@core/components/LanguageSelect.vue'
+import { t } from '@/i18n.js'
 
-const THEME_OPTIONS = [
-  { value: 'auto', icon: 'laptop', label: 'Auto' },
-  { value: 'light', icon: 'brightness', label: 'Hell' },
-  { value: 'dark', icon: 'moon-stars', label: 'Dunkel' },
-]
+function themeOptions() {
+  return [
+    { value: 'auto', icon: 'laptop', label: t('display.auto') },
+    { value: 'light', icon: 'brightness', label: t('display.light') },
+    { value: 'dark', icon: 'moon-stars', label: t('display.dark') },
+  ]
+}
 
-const TOGGLE_OPTIONS = [
-  { value: true, icon: 'check-circle', label: 'An' },
-  { value: false, icon: 'cross', label: 'Aus' },
-]
+function toggleOptions() {
+  return [
+    { value: true, icon: 'check', label: t('display.on') },
+    { value: false, icon: 'cross', label: t('display.off') },
+  ]
+}
 
 export default {
   name: 'AppearanceSettings',
-  components: { AppIcon, BaseButton, BaseCard },
-  data() {
-    return { THEME_OPTIONS, TOGGLE_OPTIONS }
-  },
+  components: { AppIcon, BaseButton, BaseCard, LanguageSelect },
   computed: {
+    themeOptions,
+    toggleOptions,
     themeMode: {
       get() {
         return themeMode.value

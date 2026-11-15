@@ -6,7 +6,7 @@
       <BaseHeader />
       <div
         ref="scrollArea"
-        class="flex flex-1 flex-col lg:flex-none lg:h-[calc(100dvh-48px)] lg:overflow-y-auto"
+        class="flex flex-1 flex-col lg:flex-none lg:h-[calc(100dvh-var(--header-height))] lg:overflow-y-auto"
       >
         <slot />
       </div>

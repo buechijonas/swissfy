@@ -27,10 +27,10 @@
         shape="circle"
         size="sm"
         class="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden"
-        title="Vorheriges Bild"
+        :title="$t('postImages.previous')"
         @click.stop="requestedUrl = previous.url"
       >
-        <AppIcon name="angle-left" alt="Vorheriges Bild" />
+        <AppIcon name="angle-left" :alt="$t('postImages.previous')" />
       </BaseButton>
       <BaseButton
         v-if="next"
@@ -38,10 +38,10 @@
         shape="circle"
         size="sm"
         class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden"
-        title="Nächstes Bild"
+        :title="$t('postImages.next')"
         @click.stop="requestedUrl = next.url"
       >
-        <AppIcon name="angle-right" alt="Nächstes Bild" />
+        <AppIcon name="angle-right" :alt="$t('postImages.next')" />
       </BaseButton>
       <div class="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
         <span

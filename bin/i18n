@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+FRONTEND = ROOT / "frontend"
+BACKEND = ROOT / "backend"
+SOURCE = "de"
+APPS = {
+    "swissfy": [FRONTEND / "swissfy/src", FRONTEND / "core/src"],
+    "docs": [FRONTEND / "docs/src", FRONTEND / "core/src"],
+}
+KEY_USAGE = re.compile(r"(?<![\w.])\$?t\(\s*'([\w.]+)'|keypath=\"([\w.]+)\"|'(\w+\.\w+)'")
+
+problems = []
+
+
+def report(message):
+    problems.append(message)
+
+
+def frontend_languages():
+    source = (FRONTEND / "core/src/lib/language.js").read_text()
+    block = source[source.index("LANGUAGE_OPTIONS") : source.index("\n]\n")]
+    return re.findall(r"value: '([\w-]+)'", block)
+
+
+def backend_languages():
+    source = (BACKEND / "main/settings.py").read_text()
+    block = source[source.index("LANGUAGES = [") : source.index("\n]\n", source.index("LANGUAGES = ["))]
+    return re.findall(r'\("([\w-]+)",', block)
+
+
+def flatten(messages, prefix=""):
+    for key, value in messages.items():
+        if type(value) is dict:
+            yield from flatten(value, f"{prefix}{key}.")
+        else:
+            yield f"{prefix}{key}", value
+
+
+def catalog(directory, language):
+    path = directory / f"{language}.json"
+    if not path.exists():
+        report(f"{path.relative_to(ROOT)} is missing")
+        return {}
+    return dict(flatten(json.loads(path.read_text())))
+
+
+def check_locales(directory, languages):
+    source = catalog(directory, SOURCE)
+    for language in languages:
+        messages = catalog(directory, language)
+        name = (directory / f"{language}.json").relative_to(ROOT)
+        for key in sorted(source.keys() - messages.keys()):
+            report(f"{name}: missing {key}")
+        for key in sorted(messages.keys() - source.keys()):
+            report(f"{name}: unknown {key}")
+        for key, value in messages.items():
+            if not str(value).strip():
+                report(f"{name}: empty {key}")
+    return source
+
+
+def used_keys(directories):
+    keys = set()
+    for directory in directories:
+        for path in directory.rglob("*"):
+            if path.suffix in (".vue", ".js") and "locales" not in path.parts:
+                for match in KEY_USAGE.finditer(path.read_text()):
+                    keys.add(next(group for group in match.groups() if group))
+    return keys
+
+
+def check_usage(app, directories, known):
+    candidates = used_keys(directories)
+    namespaces = {key.split(".")[0] for key in known}
+    for key in sorted(candidates):
+        if key.split(".")[0] in namespaces and key not in known:
+            report(f"{app}: {key} is used but not translated")
+
+
+def check_frontend(languages):
+    core = check_locales(FRONTEND / "core/src/locales", languages)
+    for app, directories in APPS.items():
+        known = {**core, **check_locales(FRONTEND / app / "src/locales", languages)}
+        check_usage(app, directories, known)
+
+
+LEGAL_SHAPE = """
+const { default: contracts } = await import(process.argv[1])
+const shape = Object.fromEntries(
+  Object.entries(contracts).map(([page, contract]) => [
+    page,
+    contract.sections.map((section) => [
+      Boolean(section.title),
+      Boolean(section.text),
+      (section.lines ?? []).length,
+      (section.items ?? []).length,
+    ]),
+  ]),
+)
+console.log(JSON.stringify(shape))
+"""
+
+
+def legal_path(language):
+    return FRONTEND / f"core/src/legal/swissfy.{language}.js"
+
+
+def legal_shape(language):
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", LEGAL_SHAPE, legal_path(language).as_uri()],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode:
+        report(f"legal texts for {language} could not be read: {result.stderr.strip()}")
+        return None
+    return json.loads(result.stdout)
+
+
+def check_legal(languages):
+    source = legal_shape(SOURCE)
+    for language in languages:
+        if not legal_path(language).exists():
+            report(f"legal texts for {language} are missing")
+            continue
+        shape = legal_shape(language)
+        if source and shape and shape != source:
+            report(f"legal texts for {language} differ in structure from {SOURCE}")
+
+
+def check_po(language):
+    path = BACKEND / "locale" / language.replace("-hans", "_Hans") / "LC_MESSAGES/django.po"
+    if not path.exists():
+        report(f"{path.relative_to(ROOT)} is missing")
+        return
+    for block in path.read_text().split("\n\n"):
+        lines = block.split("\n")
+        if not any(line.startswith("msgid ") for line in lines):
+            continue
+        start = next(i for i, line in enumerate(lines) if line.startswith("msgid "))
+        end = next(i for i, line in enumerate(lines) if line.startswith("msgstr "))
+        msgid = "".join(re.findall(r'"(.*)"', "\n".join(lines[start:end])))
+        msgstr = "".join(re.findall(r'"(.*)"', "\n".join(lines[end:])))
+        if msgid and not msgstr:
+            report(f"{path.relative_to(ROOT)}: untranslated {msgid!r}")
+        if "#, fuzzy" in lines and msgid:
+            report(f"{path.relative_to(ROOT)}: fuzzy {msgid!r}")
+
+
+def localized_values(value, path=""):
+    if type(value) is dict and SOURCE in value:
+        yield path, value
+    elif type(value) is dict:
+        for key, child in value.items():
+            yield from localized_values(child, f"{path}.{key}")
+    elif type(value) is list:
+        for index, child in enumerate(value):
+            yield from localized_values(child, f"{path}[{index}]")
+
+
+def check_content(languages):
+    for path in sorted((BACKEND / "swissfy/achievements/data").glob("*.json")):
+        for location, texts in localized_values(json.loads(path.read_text())):
+            for language in languages:
+                if not texts.get(language):
+                    report(f"{path.relative_to(ROOT)}{location}: missing {language}")
+                elif type(texts[SOURCE]) is list and len(texts[language]) != len(texts[SOURCE]):
+                    report(f"{path.relative_to(ROOT)}{location}: {language} has a different length")
+
+
+def main():
+    languages = frontend_languages()
+    if sorted(languages) != sorted(backend_languages()):
+        report(f"frontend languages {languages} differ from backend {backend_languages()}")
+    check_frontend(languages)
+    check_legal(languages)
+    for language in languages:
+        if language != SOURCE:
+            check_po(language)
+    check_content(languages)
+    for problem in problems:
+        print(problem)
+    print(f"{len(problems)} problem(s) in {len(languages)} languages." if problems else f"All translations complete in {len(languages)} languages: {', '.join(languages)}.")
+    return 1 if problems else 0
+
+
+sys.exit(main())

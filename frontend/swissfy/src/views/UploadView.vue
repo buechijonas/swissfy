@@ -21,23 +21,23 @@
             shape="circle"
             size="sm"
             class="absolute top-2 right-2"
-            title="Bild entfernen"
+            :title="$t('upload.removeImage')"
             @click="clearStoryImage"
           >
-            <AppIcon name="cross" alt="Bild entfernen" />
+            <AppIcon name="cross" :alt="$t('upload.removeImage')" />
           </BaseButton>
         </div>
         <ImageDropzone
           v-else
           class="h-56"
-          label="Bild für deine Story hierher ziehen oder klicken"
+          :label="$t('upload.storyDrop')"
           @select="setStoryImage"
         />
         <textarea
           v-model="text"
           class="textarea w-full h-20 resize-none mt-4"
           :maxlength="maxLength"
-          placeholder="Text auf deiner Story (optional)"
+          :placeholder="$t('upload.storyText')"
         ></textarea>
         <p class="mt-2 text-right text-xs text-app-muted">{{ text.length }} / {{ maxLength }}</p>
       </template>
@@ -55,17 +55,17 @@
             shape="circle"
             size="sm"
             class="absolute top-2 right-2"
-            title="Video entfernen"
+            :title="$t('upload.removeVideo')"
             @click="clearVideo"
           >
-            <AppIcon name="cross" alt="Video entfernen" />
+            <AppIcon name="cross" :alt="$t('upload.removeVideo')" />
           </BaseButton>
         </div>
         <ImageDropzone
           v-else-if="!images.length"
           class="h-56"
           accept="image/*,video/*,video/mp4,video/quicktime,video/x-matroska,.mov,.mp4,.mkv"
-          label="Bilder oder ein Video hierher ziehen oder klicken"
+          :label="$t('upload.postDrop')"
           multiple
           @select="addMedia"
         />
@@ -86,32 +86,32 @@
               shape="circle"
               size="sm"
               class="absolute top-2 right-2"
-              title="Bild entfernen"
+              :title="$t('upload.removeImage')"
               @click="removeImage(image)"
             >
-              <AppIcon name="cross" alt="Bild entfernen" />
+              <AppIcon name="cross" :alt="$t('upload.removeImage')" />
             </BaseButton>
           </div>
           <ImageDropzone
             v-if="images.length < maxImages"
             class="h-40 w-28 shrink-0"
-            label="Hinzufügen"
+            :label="$t('upload.add')"
             multiple
             @select="addImages"
           />
         </div>
         <p v-if="images.length > 1" class="text-xs text-app-muted mt-1">
-          Alle Bilder werden im Format des ersten Bildes zugeschnitten.
+          {{ $t('upload.cropHint') }}
         </p>
         <p v-if="video" class="text-xs text-app-muted mt-1">
-          Das Video wird nach dem Posten verarbeitet und erscheint danach für andere.
+          {{ $t('upload.videoHint') }}
         </p>
 
         <textarea
           v-model="text"
           class="textarea w-full h-28 resize-none mt-4"
           :maxlength="maxLength"
-          placeholder="Was gibt's Neues? Hashtags mit # markieren, z. B. #zürich"
+          :placeholder="$t('upload.postText')"
         ></textarea>
         <div class="mt-2 flex items-start gap-2">
           <div class="flex min-w-0 flex-1 flex-wrap gap-1">
@@ -139,13 +139,16 @@
 
       <label class="mt-4 flex items-center gap-3 text-sm">
         <input v-model="acceptedTerms" type="checkbox" class="size-8 shrink-0 accent-primary" />
-        <span>
-          Ich bestätige, dass {{ kind === 'story' ? 'meine Story' : 'mein Feed' }} den
-          <a href="/terms" target="_blank" rel="noopener" class="link text-primary"
-            >Nutzungsrichtlinien</a
-          >
-          entspricht.
-        </span>
+        <i18n-t
+          :keypath="kind === 'story' ? 'upload.confirmStory' : 'upload.confirmPost'"
+          tag="span"
+        >
+          <template #terms>
+            <a :href="termsUrl" target="_blank" rel="noopener" class="link text-primary">{{
+              $t('upload.terms')
+            }}</a>
+          </template>
+        </i18n-t>
       </label>
       <p
         v-if="quota && kind === 'feed'"
@@ -154,20 +157,20 @@
       >
         {{
           quota.remaining
-            ? `Heute noch ${quota.remaining} von ${quota.limit} Feeds möglich.`
-            : `Du hast heute bereits ${quota.limit} Feeds erstellt.`
+            ? $t('upload.quotaLeft', { remaining: quota.remaining, limit: quota.limit })
+            : $t('upload.quotaUsed', { limit: quota.limit })
         }}
       </p>
 
       <div class="mt-auto flex justify-end gap-2 pt-6">
         <BaseButton :disabled="sending" @click="leave">
           <AppIcon name="cross" />
-          Abbrechen
+          {{ $t('common.cancel') }}
         </BaseButton>
         <BaseButton variant="primary" :disabled="!canSubmit" @click="submit">
           <span v-if="sending" class="loading loading-spinner loading-sm"></span>
           <AppIcon v-else name="paper-plane-top" />
-          {{ sending ? 'Wird gepostet…' : 'Posten' }}
+          {{ sending ? $t('upload.posting') : $t('upload.post') }}
         </BaseButton>
       </div>
     </div>
@@ -191,6 +194,8 @@ import { compressImage, imageSize } from '@/lib/image.js'
 import { pageTitle } from '@/lib/title.js'
 import { MAX_VIDEO_DURATION, MAX_VIDEO_SIZE, videoDuration } from '@/lib/video.js'
 import { useGroupsStore } from '@/stores/posts.js'
+import { legalUrl } from '@/data/footer.js'
+import { t } from '@/i18n.js'
 
 const MAX_LENGTH = 500
 const MAX_STORY_LENGTH = 200
@@ -223,6 +228,9 @@ export default {
     }
   },
   computed: {
+    termsUrl() {
+      return legalUrl('terms')
+    },
     kind() {
       return this.$route.params.kind
     },
@@ -269,7 +277,7 @@ export default {
         this.clearStoryImage()
         this.storyImage = { blob, preview: URL.createObjectURL(blob) }
       } catch {
-        this.error = 'Das Bild konnte nicht gelesen werden.'
+        this.error = t('upload.imageUnreadable')
       }
     },
     clearStoryImage() {
@@ -292,14 +300,14 @@ export default {
     async setVideo(file) {
       this.error = null
       if (file.size > MAX_VIDEO_SIZE) {
-        this.error = 'Das Video ist zu gross (max. 250 MB).'
+        this.error = t('upload.videoTooLarge')
         return
       }
       const preview = URL.createObjectURL(file)
       const duration = await videoDuration(preview).catch(() => 0)
       if (duration > MAX_VIDEO_DURATION + 0.5) {
         URL.revokeObjectURL(preview)
-        this.error = `Das Video ist zu lang (max. ${MAX_VIDEO_DURATION} Sekunden).`
+        this.error = t('upload.videoTooLong', { seconds: MAX_VIDEO_DURATION })
         return
       }
       this.video = { file, preview }
@@ -311,14 +319,14 @@ export default {
     async addImages(files) {
       this.error = null
       const free = MAX_IMAGES - this.images.length
-      if (files.length > free) this.error = `Du kannst höchstens ${MAX_IMAGES} Bilder hochladen.`
+      if (files.length > free) this.error = t('upload.tooManyImages', { count: MAX_IMAGES })
       for (const file of files.slice(0, free)) {
         try {
           const blob = await compressImage(file)
           const size = await imageSize(blob)
           this.images.push({ blob, ...size, preview: URL.createObjectURL(blob) })
         } catch {
-          this.error = 'Ein Bild konnte nicht gelesen werden.'
+          this.error = t('upload.anImageUnreadable')
         }
       }
     },
@@ -348,9 +356,7 @@ export default {
     async submit() {
       if (!this.canSubmit) return
       const story = this.kind === 'story'
-      const fallback = story
-        ? 'Story konnte nicht erstellt werden.'
-        : 'Feed konnte nicht erstellt werden.'
+      const fallback = story ? t('upload.storyFailed') : t('upload.postFailed')
       this.sending = true
       this.error = null
       try {

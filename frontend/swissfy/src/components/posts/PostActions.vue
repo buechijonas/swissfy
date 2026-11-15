@@ -9,7 +9,7 @@
   >
     <PostAction
       :icon="post.liked ? 'heart-filled' : 'heart'"
-      title="Gefällt mir"
+      :title="$t('postActions.like')"
       :label="post.like_count"
       :disabled="busy"
       :icon-class="{ 'text-primary': post.liked }"
@@ -17,14 +17,14 @@
     />
     <PostAction
       icon="comment-alt-middle"
-      title="Kommentare"
+      :title="$t('postActions.comments')"
       :label="post.comment_count"
       :interactive="commentable"
       @select="$emit('comments')"
     />
     <PostAction
       icon="arrows-retweet"
-      :title="post.reposted ? 'Repost entfernen' : 'Reposten'"
+      :title="post.reposted ? $t('postActions.unrepost') : $t('postActions.repost')"
       :label="repostLabel"
       :disabled="busy || post.is_own"
       :icon-class="{ 'text-swissfy-repost': post.reposted, 'opacity-40': post.is_own }"
@@ -34,7 +34,7 @@
     <PostAction
       :class="{ 'ml-auto': !reel }"
       :icon="post.saved ? 'bookmarked' : 'bookmark'"
-      :title="post.saved ? 'Nicht mehr speichern' : 'Speichern'"
+      :title="post.saved ? $t('postActions.unsave') : $t('common.save')"
       :label="reel ? null : formatRelativeTime(post.created_at)"
       :disabled="busy"
       :align="reel ? 'center' : 'end'"
@@ -44,7 +44,7 @@
     <PostAction
       v-if="reel && hasMenu"
       icon="menu-dots-vertical"
-      title="Mehr"
+      :title="$t('common.more')"
       @select="$emit('menu')"
     />
   </footer>

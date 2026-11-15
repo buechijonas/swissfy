@@ -24,10 +24,10 @@
           <button
             type="button"
             class="ml-auto flex cursor-pointer p-2 -m-2"
-            title="Schliessen"
+            :title="$t('common.close')"
             @click.stop="close"
           >
-            <AppIcon name="cross" alt="Schliessen" class="size-6!" />
+            <AppIcon name="cross" :alt="$t('common.close')" class="size-6!" />
           </button>
         </div>
       </div>
@@ -45,10 +45,10 @@
         v-if="current.is_own"
         type="button"
         class="flex cursor-pointer items-center justify-center gap-2 border-t border-white/20 px-4 py-3"
-        title="Gesehen von"
+        :title="$t('story.seenBy')"
         @click.stop="openViewers"
       >
-        <AppIcon name="eyes" alt="Gesehen von" class="size-6!" />
+        <AppIcon name="eyes" :alt="$t('story.seenBy')" class="size-6!" />
         <span class="text-sm">{{ current.view_count }}</span>
       </button>
 
@@ -61,13 +61,13 @@
           <button
             type="button"
             class="flex cursor-pointer p-2 -m-2"
-            :title="current.liked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'"
+            :title="current.liked ? $t('story.unlike') : $t('story.like')"
             :disabled="busy"
             @click.stop="toggleLike"
           >
             <AppIcon
               :name="current.liked ? 'heart-filled' : 'heart'"
-              :alt="current.liked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'"
+              :alt="current.liked ? $t('story.unlike') : $t('story.like')"
               class="size-6!"
               :class="{ 'text-primary': current.liked }"
             />
@@ -78,10 +78,10 @@
           v-if="current.is_own"
           type="button"
           class="flex cursor-pointer p-2 -m-2"
-          title="Mehr"
+          :title="$t('common.more')"
           @click.stop="openMenu"
         >
-          <AppIcon name="menu-dots-vertical" alt="Mehr" class="size-6!" />
+          <AppIcon name="menu-dots-vertical" :alt="$t('common.more')" class="size-6!" />
         </button>
       </div>
       <p v-if="error" class="absolute inset-x-0 top-24 text-center text-sm text-error">
@@ -97,13 +97,13 @@
   >
     <BaseButton variant="error" outline block :disabled="busy" @click="confirmRemove">
       <AppIcon name="trash" />
-      Story löschen
+      {{ $t('story.delete') }}
     </BaseButton>
   </BaseDialog>
   <StoryViewersSheet ref="viewers" @close="sheetOpen = false" />
   <ConfirmDialog
     ref="confirm"
-    message="Willst du diese Story löschen?"
+    :message="$t('story.deleteMessage')"
     @confirm="remove"
     @close="confirmOpen = false"
   />
@@ -129,6 +129,7 @@ import HeartBurst from '@/components/posts/HeartBurst.vue'
 import StoryViewersSheet from '@/components/posts/StoryViewersSheet.vue'
 import storiesApi from '@/api/stories.js'
 import { formatRelativeTime } from '@/lib/time.js'
+import { t } from '@/i18n.js'
 
 const DURATION_MS = 5000
 const TICK_MS = 50
@@ -248,7 +249,7 @@ export default {
       if (!this.current.liked) this.toggleLike()
     },
     run(action) {
-      return this.runAction(action, 'Aktion fehlgeschlagen.')
+      return this.runAction(action, t('common.actionFailed'))
     },
     toggleLike() {
       const story = this.current

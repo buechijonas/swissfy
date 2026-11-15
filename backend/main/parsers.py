@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 from rest_framework import parsers
 from rest_framework.exceptions import ParseError
 
@@ -7,4 +8,4 @@ class JSONParser(parsers.JSONParser):
         try:
             return super().parse(stream, media_type, parser_context)
         except RecursionError:
-            raise ParseError("JSON ist zu tief verschachtelt.")
+            raise ParseError(_("JSON ist zu tief verschachtelt."))

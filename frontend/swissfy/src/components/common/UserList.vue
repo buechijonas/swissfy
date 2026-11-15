@@ -11,7 +11,7 @@
 
   <BaseCard v-else-if="!hasMore && !loading" class="p-6">
     <p class="text-app-muted">
-      {{ query ? 'Keine User gefunden.' : emptyText }}
+      {{ query ? $t('users.noneFound') : emptyTextOrDefault }}
     </p>
   </BaseCard>
 
@@ -37,6 +37,7 @@ import UserRow from '@/components/common/UserRow.vue'
 import api from '@core/api/client.js'
 import profilesApi from '@/api/profiles.js'
 import intersect from '@/directives/intersect.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'UserList',
@@ -46,7 +47,12 @@ export default {
     linkTo: { type: Function, required: true },
     query: { type: String, default: '' },
     url: { type: String, default: profilesApi.listUrl() },
-    emptyText: { type: String, default: 'Noch keine anderen User.' },
+    emptyText: { type: String, default: null },
+  },
+  computed: {
+    emptyTextOrDefault() {
+      return this.emptyText ?? t('users.noOthers')
+    },
   },
   data() {
     return {
@@ -79,7 +85,7 @@ export default {
         this.hasMore = data.next !== null
       } catch (error) {
         if (query !== this.query) return
-        this.error = error.detail ?? 'User konnten nicht geladen werden.'
+        this.error = error.detail ?? t('users.loadFailed')
       } finally {
         this.loading = false
         if (query !== this.query) this.loadMore()

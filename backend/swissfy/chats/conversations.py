@@ -3,6 +3,7 @@ from functools import cached_property
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, F, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
+from django.utils.translation import gettext_lazy as _
 
 from commons.models import boolean
 from swissfy.accounts.models import UserProfile
@@ -33,7 +34,7 @@ def protection_state(user):
 def set_protection(user, mode, key):
     user.chat_keys.update(active=False)
     if mode != Protection.STANDARD:
-        ChatKey.objects.create(
+        chat_key = ChatKey(
             user=user,
             kind=ChatKey.Kind.PIN if mode == Protection.PIN else ChatKey.Kind.DEVICE,
             public_key=key["public_key"],
@@ -41,6 +42,9 @@ def set_protection(user, mode, key):
             salt=key.get("salt", ""),
             iv=key.get("iv", ""),
         )
+        if "pin_verifier" in key:
+            chat_key.set_verifier(key["pin_verifier"])
+        chat_key.save()
     user.profile.chat_protection = mode
     user.profile.save(update_fields=["chat_protection"])
 
@@ -73,7 +77,7 @@ class Conversation:
     @property
     def blocked_reason(self):
         if self.chat_request is None:
-            return "Sende zuerst eine Chat-Anfrage."
+            return _("Sende zuerst eine Chat-Anfrage.")
         return self.chat_request.blocked_reason(self.user)
 
     @property
@@ -91,7 +95,16 @@ class Conversation:
     def keys_match(self, data):
         expected = set(self.keys.values_list("pk", flat=True))
         envelope_keys = {envelope["key"] for envelope in data["envelopes"]}
-        return envelope_keys == expected and ("message_key" in data) == self.needs_server_key
+        return (
+            envelope_keys == expected
+            and ("message_key" in data) == self.needs_server_key
+            and self.signed_by_own_key(data)
+        )
+
+    def signed_by_own_key(self, data):
+        if "sender_key" not in data:
+            return True
+        return ChatKey.objects.of(self.user).filter(pk=data["sender_key"]).exists()
 
     def receive(self, read):
         incoming = Message.objects.filter(sender=self.partner, recipient=self.user)
@@ -112,7 +125,12 @@ class Conversation:
 
     def send(self, data):
         message = Message(
-            sender=self.user, recipient=self.partner, ciphertext=data["ciphertext"], iv=data["iv"]
+            sender=self.user,
+            recipient=self.partner,
+            ciphertext=data["ciphertext"],
+            iv=data["iv"],
+            sender_key_id=data.get("sender_key"),
+            signature=data.get("signature", ""),
         )
         if "message_key" in data:
             message.server_key = wrap_message_key(message, data["message_key"])

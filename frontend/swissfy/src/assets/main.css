@@ -48,8 +48,9 @@
 }
 
 :root {
+  --header-height: 3rem;
   --footer-height: calc(3.5rem + env(safe-area-inset-bottom));
-  --mobile-chrome-height: calc(3rem + var(--footer-height));
+  --mobile-chrome-height: calc(var(--header-height) + var(--footer-height));
   --reel-chrome-height: var(--mobile-chrome-height);
 }
 
@@ -78,8 +79,8 @@
   --color-app-muted: light-dark(#4f5b69, #c3ccd6);
   --radius-box: 1.75rem;
   --footer-height: calc(4.5rem + env(safe-area-inset-bottom));
-  --mobile-chrome-height: 3rem;
-  --reel-chrome-height: calc(3rem + var(--footer-height));
+  --mobile-chrome-height: var(--header-height);
+  --reel-chrome-height: calc(var(--header-height) + var(--footer-height));
 }
 
 :root[data-design='glass'] {
@@ -1282,8 +1283,8 @@
   --radius-field: 0.875rem;
   --radius-selector: 1rem;
   --footer-height: calc(4.5rem + env(safe-area-inset-bottom));
-  --mobile-chrome-height: 3rem;
-  --reel-chrome-height: calc(3rem + var(--footer-height));
+  --mobile-chrome-height: var(--header-height);
+  --reel-chrome-height: calc(var(--header-height) + var(--footer-height));
 }
 
 :root[data-design='y2k'] {

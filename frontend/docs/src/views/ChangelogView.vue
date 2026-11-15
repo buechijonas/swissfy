@@ -9,6 +9,7 @@ import ChangelogCard from '@/components/ChangelogCard.vue'
 import DocsPage from '@/components/layout/DocsPage.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import { useChangelogsStore } from '@/stores/changelogs.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ChangelogView',
@@ -21,7 +22,10 @@ export default {
   },
   computed: {
     breadcrumbs() {
-      return [{ label: 'Changelog', to: '/' }, { label: `v${this.$route.params.version}` }]
+      return [
+        { label: t('navigation.changelog'), to: '/' },
+        { label: `v${this.$route.params.version}` },
+      ]
     },
   },
   mounted() {

@@ -5,9 +5,9 @@
     <template v-else>
       <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
         <p class="text-sm text-app-muted">
-          {{ unlockedCount }} von {{ regular.length }} Erfolgen freigeschaltet
+          {{ $t('achievements.unlocked', { count: unlockedCount, total: regular.length }) }}
           <template v-if="foundEggs">
-            · {{ foundEggs }} von {{ eggs.length }} Easter Eggs gefunden
+            · {{ $t('achievements.eggs', { count: foundEggs, total: eggs.length }) }}
           </template>
         </p>
         <div class="flex gap-2">
@@ -23,7 +23,7 @@
           </BaseButton>
         </div>
       </div>
-      <p v-if="!timeline.length">Noch keine Erfolge.</p>
+      <p v-if="!timeline.length">{{ $t('achievements.empty') }}</p>
       <ul v-else-if="activeView === 'collection'" class="divide-y divide-app-border">
         <li v-for="achievement in collection" :key="achievement.group" class="flex gap-4 py-3">
           <span
@@ -38,9 +38,15 @@
             </span>
             <span class="text-sm text-app-muted">{{ achievement.description }}</span>
             <span class="text-xs text-app-muted">
-              Seit {{ formatDate(achievement.unlocked_at) }}
+              {{ $t('achievements.since', { date: formatDate(achievement.unlocked_at) }) }}
               <template v-if="tierCounts[achievement.group] > 1">
-                · Stufe {{ achievement.level }}/{{ tierCounts[achievement.group] }}
+                ·
+                {{
+                  $t('achievements.level', {
+                    level: achievement.level,
+                    total: tierCounts[achievement.group],
+                  })
+                }}
               </template>
             </span>
           </div>
@@ -65,11 +71,21 @@
             <span class="text-xs text-app-muted">
               {{ formatDate(achievement.unlocked_at) }}
               <template v-if="tierCounts[achievement.group] > 1">
-                · Stufe {{ achievement.level }}/{{ tierCounts[achievement.group] }}
+                ·
+                {{
+                  $t('achievements.level', {
+                    level: achievement.level,
+                    total: tierCounts[achievement.group],
+                  })
+                }}
               </template>
             </span>
             <span v-if="previousTitle(achievement)" class="text-sm text-app-muted truncate">
-              Aufgestiegen von <span class="line-through">{{ previousTitle(achievement) }}</span>
+              <i18n-t keypath="achievements.promotedFrom">
+                <template #title>
+                  <span class="line-through">{{ previousTitle(achievement) }}</span>
+                </template>
+              </i18n-t>
             </span>
             <span class="font-bold truncate" :class="accent(achievement).title">
               {{ achievement.title }}
@@ -81,7 +97,7 @@
 
       <template v-if="locked.length">
         <h3 class="mt-8 mb-2 text-app-muted">
-          {{ activeView === 'timeline' ? 'Nächste Ziele' : 'Noch nicht erreicht' }}
+          {{ activeView === 'timeline' ? $t('achievements.next') : $t('achievements.notReached') }}
         </h3>
         <ul class="divide-y divide-app-border">
           <li
@@ -96,10 +112,10 @@
             </span>
             <div class="flex min-w-0 flex-1 flex-col gap-1">
               <span v-if="previousTitle(achievement)" class="text-sm text-app-muted truncate">
-                Aufstieg von {{ previousTitle(achievement) }}
+                {{ $t('achievements.nextFrom', { title: previousTitle(achievement) }) }}
               </span>
               <span v-if="achievement.secret" class="text-xs text-app-muted">
-                Easter Egg · nur für Admins sichtbar
+                {{ $t('achievements.adminEgg') }}
               </span>
               <span class="font-bold truncate">{{ achievement.title }}</span>
               <span class="text-sm text-app-muted">{{ achievement.description }}</span>
@@ -128,11 +144,14 @@ import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
 import profilesApi from '@/api/profiles.js'
 import { formatDate } from '@/lib/time.js'
+import { t } from '@/i18n.js'
 
-const VIEWS = [
-  { key: 'timeline', label: 'Timeline', icon: 'list-timeline' },
-  { key: 'collection', label: 'Sammlung', icon: 'list' },
-]
+function achievementViews() {
+  return [
+    { key: 'timeline', label: t('achievements.timeline'), icon: 'list-timeline' },
+    { key: 'collection', label: t('achievements.collection'), icon: 'list' },
+  ]
+}
 const DEFAULT_ACCENT = { icon: 'bg-primary text-primary-content', title: '' }
 const SECRET_ACCENT = {
   icon: 'bg-amber-500/15 text-amber-500 ring-1 ring-amber-500/40',
@@ -153,7 +172,7 @@ export default {
     username: { type: String, required: true },
   },
   data() {
-    return { achievements: null, error: null, activeView: 'timeline', views: VIEWS }
+    return { achievements: null, error: null, activeView: 'timeline', views: achievementViews() }
   },
   computed: {
     regular() {
@@ -218,7 +237,7 @@ export default {
     try {
       this.achievements = await profilesApi.achievements(this.username)
     } catch {
-      this.error = 'Erfolge konnten nicht geladen werden.'
+      this.error = t('achievements.loadFailed')
     }
   },
   methods: {

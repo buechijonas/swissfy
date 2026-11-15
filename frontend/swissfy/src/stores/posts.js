@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { foldersApi, groupsApi } from '@/api/collections.js'
+import { t } from '@/i18n.js'
 
 function ownedCollection(collection) {
   const items = ref(null)
@@ -8,14 +9,14 @@ function ownedCollection(collection) {
   async function load() {
     if (items.value) return items.value
     items.value = await collection.list().catch(() => {
-      throw new Error('Laden fehlgeschlagen.')
+      throw new Error(t('common.loadFailed'))
     })
     return items.value
   }
 
   function send(request) {
     return request.catch((error) => {
-      throw new Error(error.detail ?? 'Speichern fehlgeschlagen.')
+      throw new Error(error.detail ?? t('common.saveFailed'))
     })
   }
 

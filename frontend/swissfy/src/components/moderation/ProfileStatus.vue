@@ -2,7 +2,7 @@
   <BaseCard class="p-6 border-t-0">
     <ErrorText v-if="error" :message="error" />
     <div v-else-if="!events" class="skeleton h-16 w-full"></div>
-    <p v-else-if="!events.length">Keine Verwarnungen.</p>
+    <p v-else-if="!events.length">{{ $t('profileStatus.noWarnings') }}</p>
     <ol v-if="events?.length">
       <li
         v-for="event in events"
@@ -16,16 +16,22 @@
         <div class="flex min-w-0 flex-1 flex-col gap-0.5" :class="{ 'opacity-60': event.past }">
           <span class="text-xs text-app-muted">{{ formatDate(event.created_at) }}</span>
           <template v-if="event.type === 'warning'">
-            <span class="font-bold">Verwarnung: {{ event.reason }}</span>
+            <span class="font-bold">{{
+              $t('profileStatus.warning', { reason: event.reason })
+            }}</span>
             <span v-if="event.target" class="text-sm text-app-muted">{{ event.target }}</span>
             <span class="text-sm" :class="event.expired ? 'text-app-muted' : ''">
-              {{ event.expired ? 'Verjährt seit' : 'Verjährt am' }}
+              {{ event.expired ? $t('profileStatus.expiredSince') : $t('profileStatus.expiresOn') }}
               {{ formatDate(event.expires_at) }}
             </span>
-            <RouterLink v-if="event.link" :to="event.link" class="link text-sm">Ansehen</RouterLink>
+            <RouterLink v-if="event.link" :to="event.link" class="link text-sm">{{
+              $t('profileStatus.view')
+            }}</RouterLink>
           </template>
           <template v-else>
-            <span class="font-bold">Kontosperre: {{ event.duration }}</span>
+            <span class="font-bold">{{
+              $t('profileStatus.suspension', { duration: event.duration })
+            }}</span>
             <span class="text-sm" :class="{ 'text-error': event.state === 'active' }">
               {{ event.status_text }}
             </span>
@@ -35,7 +41,7 @@
     </ol>
 
     <template v-if="reports">
-      <h3 class="mt-8 mb-2 text-app-muted">Gemeldete Inhalte</h3>
+      <h3 class="mt-8 mb-2 text-app-muted">{{ $t('profileStatus.reported') }}</h3>
       <ul v-if="reports.length" class="divide-y divide-app-border">
         <li
           v-for="report in reports"
@@ -45,17 +51,22 @@
           <div class="flex min-w-0 flex-col">
             <span class="truncate">{{ report.text || report.type }}</span>
             <span class="text-xs" :class="report.open_count ? 'text-error' : 'text-app-muted'">
-              {{ report.type }} · {{ report.report_count }}× gemeldet
-              {{ report.open_count ? `· ${report.open_count} offen` : '· erledigt' }}
+              {{ report.type }} ·
+              {{ $t('profileStatus.reportCount', { count: report.report_count }) }} ·
+              {{
+                report.open_count
+                  ? $t('profileStatus.openCount', { count: report.open_count })
+                  : $t('profileStatus.resolved')
+              }}
             </span>
           </div>
           <BaseButton size="sm" :to="report.link">
             <AppIcon name="eye" />
-            Ansehen
+            {{ $t('profileStatus.view') }}
           </BaseButton>
         </li>
       </ul>
-      <p v-else>Keine gemeldeten Inhalte.</p>
+      <p v-else>{{ $t('profileStatus.noReported') }}</p>
     </template>
   </BaseCard>
 </template>
@@ -68,6 +79,7 @@ import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
 import profilesApi from '@/api/profiles.js'
 import { formatDate } from '@/lib/time.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ProfileStatus',
@@ -84,7 +96,7 @@ export default {
       this.events = data.events
       this.reports = data.reports
     } catch {
-      this.error = 'Status konnte nicht geladen werden.'
+      this.error = t('profileStatus.loadFailed')
     }
   },
   methods: {

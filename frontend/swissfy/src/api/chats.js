@@ -23,11 +23,8 @@ export default {
   keys(username) {
     return api.get(chatPath(username, 'keys'))
   },
-  receive(username, read) {
-    return api.post(chatPath(username, 'receive'), { read })
-  },
-  messages(username, params) {
-    return api.get(chatPath(username, 'messages'), params)
+  receive(username, read, after) {
+    return api.post(chatPath(username, 'receive'), { read, after })
   },
   send(username, payload) {
     return api.post(chatPath(username, 'messages'), payload)
@@ -43,7 +40,13 @@ export default {
   setProtection(body) {
     return api.put('/api/chats/protection/', body)
   },
-  createKey(publicKey) {
-    return api.post('/api/chats/keys/', { public_key: publicKey })
+  unlock(verifier) {
+    return api.post('/api/chats/protection/unlock/', { verifier })
+  },
+  setPinVerifier(verifier) {
+    return api.put('/api/chats/protection/verifier/', { verifier })
+  },
+  createKey(publicKey, replaces) {
+    return api.post('/api/chats/keys/', { public_key: publicKey, replaces })
   },
 }
