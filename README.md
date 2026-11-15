@@ -6,7 +6,9 @@ notifications, achievements and moderation.
 
 The repo holds a Django REST backend (`backend/`) and two Vue frontends that
 share `frontend/core`: `frontend/swissfy` is the app itself, `frontend/docs` is
-the public changelog at `docs.swissfy.ch`. The setup mirrors wintersehn.
+the public changelog and the legal pages (imprint, privacy policy, terms of use,
+disclaimer) at `docs.swissfy.ch`. Logged-in users still have to agree to the
+privacy policy, terms and disclaimer inside swissfy (`/consent/<page>`). The setup mirrors wintersehn.
 
 Login goes through [govex](https://github.com/NEOTYRA/govex) (authentik, OIDC).
 swissfy stores no passwords; username, email, name, birthdate and avatar come
@@ -15,10 +17,11 @@ from govex.
 ## Stack
 
 Backend: Python 3.13, Django 6, Django REST framework, PostgreSQL 17,
-cryptography (AES-GCM), Pillow, FFmpeg, gunicorn and WhiteNoise.
+cryptography (AES-GCM), Pillow, FFmpeg, gunicorn, uvicorn (server-sent events)
+and WhiteNoise.
 
 Frontend: Vue 3 with the Options API, Vue Router, Pinia, Vite, Tailwind 4,
-daisyUI 5, and `@noble/post-quantum` for the chat key exchange.
+daisyUI 5, vue-i18n, and `@noble/post-quantum` for the chat key exchange.
 
 Infrastructure: Docker Compose locally and in production, Caddy as proxy and
 for TLS, and Anubis for bot protection. Images are hosted on Docker Hub.
@@ -34,6 +37,7 @@ flowchart LR
     subgraph swissfy["swissfy"]
         frontend["swissfy + docs<br/>Vite / Caddy"]
         backend["backend<br/>Django + DRF"]
+        events["events<br/>SSE, uvicorn"]
         video["video-worker<br/>FFmpeg"]
         cleanup["chat-cleanup<br/>hourly"]
         db[("PostgreSQL")]
@@ -47,9 +51,11 @@ flowchart LR
 
     browser -- "pages" --> frontend
     browser -- "/api" --> frontend --> backend
+    frontend -- "/api/events/" --> events
     browser -- "login, account" --> govexui --> authentik
     backend <-- "token, userinfo,<br/>signed webhooks" --> authentik
     backend --> db
+    backend -- "NOTIFY" --> db -- "LISTEN" --> events
     backend --> media
     video --> db & media
     cleanup --> db
@@ -132,8 +138,37 @@ combined through HKDF. The backend stores ciphertext and envelopes only.
 
 If either participant uses `standard`, the server key is attached. Messages
 are deleted after 14 days by `chat-cleanup`. Slow mode allows one message
-every 5 seconds per chat. The chat view polls every 3 seconds; there are no
-websockets yet.
+every 5 seconds per chat.
+
+### Live updates
+
+The browser keeps one server-sent event stream open (`/api/events/`). Events
+carry no content, only which part changed (`chat` or `notification`); the
+client then reloads it through the normal, authenticated API.
+
+```mermaid
+sequenceDiagram
+    participant A as backend (WSGI)
+    participant P as PostgreSQL
+    participant E as events (ASGI)
+    participant B as browser
+
+    B->>E: GET /api/events/ (session cookie)
+    E->>P: LISTEN swissfy_events (one connection per process)
+    A->>P: pg_notify on commit: {"users": [...], "kind": "chat"}
+    P-->>E: notification
+    E-->>B: event: chat
+    B->>A: reload messages
+```
+
+`commons.events.publish` sends the notification through
+`transaction.on_commit`, so a client never reloads before the change is
+committed. Changes that do not alter a row (marking an already read message as
+read) send nothing, which keeps the reload loop from echoing. The stream lives
+in its own `events` service (`main.asgi` under uvicorn), so long-lived
+connections never take away the gunicorn threads of the API. On every
+(re)connect the stream sends `sync` and the client reloads everything it
+missed.
 
 ### Videos
 
@@ -149,9 +184,10 @@ flowchart LR
     internet(["Internet"]) -- "80 / 443" --> edge["edge<br/>Caddy, Let's Encrypt"]
     edge --> anubis["anubis"]
     anubis --> origin["origin<br/>Caddy"]
+    origin -- "/api/events/" --> events["events"]
     origin -- "/api, /django-admin, /static" --> backend["backend ×1–2"]
     origin -- "everything else" --> spa["swissfy + docs builds"]
-    backend & worker["video-worker"] & cleanup["chat-cleanup"] --> db[("PostgreSQL")]
+    backend & events & worker["video-worker"] & cleanup["chat-cleanup"] --> db[("PostgreSQL")]
 ```
 
 `edge` tags each request with `X-Swissfy-App` (`swissfy` or `docs`), and
@@ -226,9 +262,24 @@ sent ready to use. The frontend does not recompute permissions.
 first: `select_for_update` for the post quota and `lock_users` before chat
 messages and chat requests, both inside `transaction.atomic`.
 
-**User-facing messages are German** and are raised directly from the backend
-(`BadRequest`, `Conflict`, `RetryLater` in `commons.exceptions`). The frontend
-shows `error.detail` as it is.
+**User-facing messages are translated** into English, German, French, Italian,
+Romansh, Spanish and simplified Chinese. The source language is German, wrapped
+in `gettext_lazy` (`_("…")`), with one catalog per language in
+`backend/locale/*/LC_MESSAGES/django.po`. Placeholders are named
+(`_("Dein Konto ist bis %(until)s gesperrt.") % {"until": until}`), never
+f-strings. Messages are raised directly from the backend (`BadRequest`,
+`Conflict`, `RetryLater` in `commons.exceptions`), and the frontend shows
+`error.detail` as it is. Larger content that is not code, like the achievement
+texts, lives as JSON with one entry per language (`achievements/data/`) and is
+read through `commons.i18n.localized`, which falls back to English.
+
+The language is resolved the same way everywhere: the `language` cookie if the
+user picked one, otherwise the first supported browser language, otherwise
+English. The cookie is only written when someone picks a language. The API
+client sends the resolved language as `Accept-Language`, so frontend and
+backend always agree. `LANGUAGE_CODE` is English for that fallback; the test
+runner (`main.testing.SourceLanguageTestRunner`) switches to German, because the
+tests assert the source texts.
 
 ### Rules that apply everywhere
 
@@ -254,6 +305,18 @@ shows `error.detail` as it is.
   components from `components/common` (`BaseButton`, `BaseCard`, `AppIcon`,
   …). Every button has an `AppIcon`.
 - Reusable logic without UI goes into `src/lib/` (chat crypto, time, links).
+- Every text goes through vue-i18n: `$t('…')` in templates, `t('…')` from
+  `@/i18n.js` in scripts. Messages live in `src/locales/<language>.json`,
+  shared ones in `core/src/locales`. The language switches without a reload,
+  so a translated text is never stored once: option lists are functions that
+  components use as `computed`, route titles are functions, and prop defaults
+  fall back to `t()` in a `computed`.
+- `bin/i18n` checks that every language has every key, that every key used in
+  the code exists, that the legal texts have the same structure in every
+  language, and that the backend catalogs and achievement data are complete.
+  CI runs it.
+- Live data reacts to `useEventsStore()` (`chat`, `notification` counters)
+  instead of polling.
 
 ### Tests
 
@@ -304,6 +367,7 @@ cd ~/projects/swissfy && docker compose up --build
 | `backend`      | migrates, creates the admin user, runs `runserver` with reload  |
 | `swissfy`      | Vite dev server for the app                                     |
 | `docs`         | Vite dev server for the changelog                               |
+| `events`       | server-sent events (uvicorn), `/api/events/`                    |
 | `video-worker` | transcodes uploaded videos                                      |
 | `chat-cleanup` | deletes chat messages older than 14 days, hourly                |
 
@@ -348,6 +412,8 @@ Run these from the repo root while the stack is up.
 | Django shell          | `docker compose exec backend python manage.py shell`                  |
 | Format backend        | `docker compose exec backend sh -c "isort . && black ."`              |
 | Lint backend          | `docker compose exec backend flake8`                                  |
+| Update translations   | `docker compose exec backend bin/translations`                        |
+| Check translations    | `bin/i18n`                                                            |
 | Frontend tests        | `docker compose exec swissfy npm test`                                |
 | Lint / format frontend | `docker compose exec swissfy npm run lint` / `npm run format` (same for `docs`) |
 | Production build      | `docker compose exec swissfy npm run build`                           |
@@ -367,8 +433,10 @@ docker compose up --build
 
 ```
 backend/
-  main/          settings, URLs, health, pagination, middleware
-  commons/       base viewset, serializer and model classes, encryption, storage
+  main/          settings, URLs, health, events stream, pagination, middleware
+  locale/        translation catalogs (one per language)
+  commons/       base viewset, serializer and model classes, encryption, storage,
+                 events (LISTEN/NOTIFY), i18n helpers
   swissfy/
     accounts/    govex login (oidc.py), profile, consent, roles, administration
     social/      friend and follow requests, blocks, nicknames
@@ -376,10 +444,11 @@ backend/
     chats/       encrypted chats and keys
     notifications/
     moderation/  reports, warnings, suspensions
-    achievements/ badges, themes, easter eggs
+    achievements/ badges, themes, easter eggs (texts in data/*.json)
   docs/          changelogs (changelogs/vX.Y.Z.md)
 frontend/
-  core/src/      shared by both apps: API client, cookies, settings, fonts
+  core/src/      shared by both apps: API client, cookies, settings, fonts, i18n,
+                 legal texts (legal/) shown in docs and on the consent pages
   swissfy/src/   api/, components/, views/, stores/, lib/, data/, router/
   docs/src/      changelog app
 docker/proxy/    production Caddy image, builds both frontends
