@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
@@ -11,7 +12,7 @@ from .catalog import achievements_of
 
 
 class CanViewAchievements(BasePermission):
-    message = "Du kannst die Erfolge dieses Profils nicht sehen."
+    message = _("Du kannst die Erfolge dieses Profils nicht sehen.")
 
     def has_object_permission(self, request, view, obj):
         return Member.objects.can_view(request.user, obj)

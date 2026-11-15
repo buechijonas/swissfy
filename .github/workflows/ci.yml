@@ -46,8 +46,8 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements.txt
 
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install ffmpeg and gettext
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg gettext
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -60,6 +60,14 @@ jobs:
 
       - name: Check migrations
         run: python manage.py makemigrations --check --dry-run
+
+      - name: Check translations
+        run: |
+          bin/translations
+          git diff --exit-code locale
+          for po in locale/*/LC_MESSAGES/django.po; do
+            test -z "$(msgattrib --untranslated "$po")"
+          done
 
       - name: Run tests
         run: python manage.py test --noinput
@@ -158,3 +166,21 @@ jobs:
       - name: Docs node dependencies
         working-directory: frontend/docs
         run: npm audit --omit=dev --audit-level=high
+
+  i18n:
+    name: Translations
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Check that every text is translated
+        run: bin/i18n

@@ -1,0 +1,1640 @@
+[
+  {
+    "key": "gaming",
+    "label": {
+      "de": "Gaming",
+      "en": "Gaming",
+      "fr": "Gaming",
+      "it": "Gaming",
+      "rm": "Gaming",
+      "es": "Gaming",
+      "zh-hans": "游戏"
+    },
+    "hashtags": [
+      "gaming",
+      "gamer",
+      "zocken",
+      "playstation",
+      "ps5",
+      "xbox",
+      "nintendo",
+      "switch",
+      "pcgaming",
+      "esports"
+    ],
+    "post_titles": {
+      "de": [
+        "Press Start",
+        "Respawn-Profi",
+        "Speedrunner",
+        "Final Boss",
+        "Leeroy Jenkins",
+        "Konami-Code"
+      ],
+      "en": [
+        "Press Start",
+        "Respawn Pro",
+        "Speedrunner",
+        "Final Boss",
+        "Leeroy Jenkins",
+        "Konami Code"
+      ],
+      "fr": [
+        "Press Start",
+        "Pro du respawn",
+        "Speedrunner",
+        "Boss final",
+        "Leeroy Jenkins",
+        "Code Konami"
+      ],
+      "it": [
+        "Press Start",
+        "Pro del respawn",
+        "Speedrunner",
+        "Boss finale",
+        "Leeroy Jenkins",
+        "Codice Konami"
+      ],
+      "rm": [
+        "Press Start",
+        "Pro dal respawn",
+        "Speedrunner",
+        "Boss final",
+        "Leeroy Jenkins",
+        "Code Konami"
+      ],
+      "es": [
+        "Press Start",
+        "Pro del respawn",
+        "Speedrunner",
+        "Jefe final",
+        "Leeroy Jenkins",
+        "Código Konami"
+      ],
+      "zh-hans": [
+        "按下开始",
+        "复活高手",
+        "速通玩家",
+        "最终 Boss",
+        "Leeroy Jenkins",
+        "科乐美秘技"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Insert Coin",
+        "Player 2 joined",
+        "1-UP",
+        "Game Over? Niemals!"
+      ],
+      "en": [
+        "Insert Coin",
+        "Player 2 joined",
+        "1-UP",
+        "Game Over? Never!"
+      ],
+      "fr": [
+        "Insert Coin",
+        "Player 2 joined",
+        "1-UP",
+        "Game over ? Jamais !"
+      ],
+      "it": [
+        "Insert Coin",
+        "Player 2 joined",
+        "1-UP",
+        "Game over? Mai!"
+      ],
+      "rm": [
+        "Insert Coin",
+        "Player 2 joined",
+        "1-UP",
+        "Game over? Mai!"
+      ],
+      "es": [
+        "Insert Coin",
+        "Player 2 joined",
+        "1-UP",
+        "¿Game over? ¡Jamás!"
+      ],
+      "zh-hans": [
+        "投币",
+        "玩家 2 加入",
+        "1-UP",
+        "游戏结束？绝不！"
+      ]
+    }
+  },
+  {
+    "key": "horror",
+    "label": {
+      "de": "Horror",
+      "en": "Horror",
+      "fr": "Horreur",
+      "it": "Horror",
+      "rm": "Horror",
+      "es": "Terror",
+      "zh-hans": "恐怖"
+    },
+    "hashtags": [
+      "horror",
+      "zombie",
+      "zombies",
+      "halloween",
+      "gruselig",
+      "creepy",
+      "thewalkingdead",
+      "residentevil",
+      "silenthill",
+      "horrorfilm"
+    ],
+    "post_titles": {
+      "de": [
+        "Gänsehaut",
+        "Verirrt im Nebel",
+        "Umbrella-Praktikant",
+        "Flüsterer",
+        "Pyramid Head",
+        "Nemesis"
+      ],
+      "en": [
+        "Goosebumps",
+        "Lost in the Fog",
+        "Umbrella Intern",
+        "Whisperer",
+        "Pyramid Head",
+        "Nemesis"
+      ],
+      "fr": [
+        "Chair de poule",
+        "Perdu dans le brouillard",
+        "Stagiaire chez Umbrella",
+        "Chuchoteur",
+        "Pyramid Head",
+        "Nemesis"
+      ],
+      "it": [
+        "Pelle d'oca",
+        "Perso nella nebbia",
+        "Stagista alla Umbrella",
+        "Sussurratore",
+        "Pyramid Head",
+        "Nemesis"
+      ],
+      "rm": [
+        "Pel da giaglina",
+        "Pers en la tschajera",
+        "Praticant tar Umbrella",
+        "Tschitschader",
+        "Pyramid Head",
+        "Nemesis"
+      ],
+      "es": [
+        "Piel de gallina",
+        "Perdido en la niebla",
+        "Becario de Umbrella",
+        "Susurrador",
+        "Pyramid Head",
+        "Nemesis"
+      ],
+      "zh-hans": [
+        "起鸡皮疙瘩",
+        "迷失在雾中",
+        "保护伞实习生",
+        "低语者",
+        "三角头",
+        "追踪者"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Schreckhaft",
+        "Survival-Horror-Fan",
+        "Bereit für die Apokalypse",
+        "Final Girl"
+      ],
+      "en": [
+        "Easily Spooked",
+        "Survival Horror Fan",
+        "Ready for the Apocalypse",
+        "Final Girl"
+      ],
+      "fr": [
+        "Peureux",
+        "Fan de survival horror",
+        "Prêt pour l'apocalypse",
+        "Final girl"
+      ],
+      "it": [
+        "Facile allo spavento",
+        "Fan del survival horror",
+        "Pronto per l'apocalisse",
+        "Final girl"
+      ],
+      "rm": [
+        "Tementus",
+        "Fan da survival horror",
+        "Pront per l'apocalipsa",
+        "Final girl"
+      ],
+      "es": [
+        "Asustadizo",
+        "Fan del survival horror",
+        "Listo para el apocalipsis",
+        "Final girl"
+      ],
+      "zh-hans": [
+        "胆小鬼",
+        "生存恐怖迷",
+        "末日已就绪",
+        "最终女孩"
+      ]
+    }
+  },
+  {
+    "key": "film",
+    "label": {
+      "de": "Film & Serien",
+      "en": "Film & TV",
+      "fr": "Films et séries",
+      "it": "Film e serie",
+      "rm": "Films e serias",
+      "es": "Cine y series",
+      "zh-hans": "影视"
+    },
+    "hashtags": [
+      "film",
+      "filme",
+      "kino",
+      "serie",
+      "serien",
+      "netflix",
+      "movie",
+      "binge",
+      "anime",
+      "popcorn"
+    ],
+    "post_titles": {
+      "de": [
+        "Popcorn-Kritiker",
+        "Binge-Watcher",
+        "Director's Cut",
+        "Und täglich grüsst das Murmeltier",
+        "Nur noch eine Folge",
+        "Cinema Paradiso"
+      ],
+      "en": [
+        "Popcorn Critic",
+        "Binge Watcher",
+        "Director's Cut",
+        "Groundhog Day",
+        "Just One More Episode",
+        "Cinema Paradiso"
+      ],
+      "fr": [
+        "Critique popcorn",
+        "Binge-watcher",
+        "Director's cut",
+        "Un jour sans fin",
+        "Encore un épisode",
+        "Cinema Paradiso"
+      ],
+      "it": [
+        "Critico da popcorn",
+        "Binge watcher",
+        "Director's cut",
+        "Ricomincio da capo",
+        "Solo un altro episodio",
+        "Nuovo Cinema Paradiso"
+      ],
+      "rm": [
+        "Critichel da popcorn",
+        "Binge watcher",
+        "Director's cut",
+        "Ed adina saluda la muntanella",
+        "Mo anc in episod",
+        "Cinema Paradiso"
+      ],
+      "es": [
+        "Crítico de palomitas",
+        "Maratonero de series",
+        "Director's cut",
+        "Atrapado en el tiempo",
+        "Solo un episodio más",
+        "Cinema Paradiso"
+      ],
+      "zh-hans": [
+        "爆米花影评人",
+        "追剧狂",
+        "导演剪辑版",
+        "土拨鼠之日",
+        "再看一集",
+        "天堂电影院"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Couch-Potato",
+        "Videothek-Kind",
+        "Serienjunkie",
+        "Gefangen im Upside Down"
+      ],
+      "en": [
+        "Couch Potato",
+        "Video Store Kid",
+        "Series Junkie",
+        "Trapped in the Upside Down"
+      ],
+      "fr": [
+        "Couch potato",
+        "Enfant du vidéoclub",
+        "Accro aux séries",
+        "Coincé dans le Monde à l'envers"
+      ],
+      "it": [
+        "Pantofolaio",
+        "Figlio della videoteca",
+        "Drogato di serie",
+        "Intrappolato nel Sottosopra"
+      ],
+      "rm": [
+        "Couch potato",
+        "Uffant da la videoteca",
+        "Dependent da serias",
+        "Tschuf en l'Upside Down"
+      ],
+      "es": [
+        "Teleadicto",
+        "Niño del videoclub",
+        "Adicto a las series",
+        "Atrapado en el Mundo del Revés"
+      ],
+      "zh-hans": [
+        "沙发土豆",
+        "录像店少年",
+        "剧迷",
+        "困在颠倒世界"
+      ]
+    }
+  },
+  {
+    "key": "music",
+    "label": {
+      "de": "Musik",
+      "en": "Music",
+      "fr": "Musique",
+      "it": "Musica",
+      "rm": "Musica",
+      "es": "Música",
+      "zh-hans": "音乐"
+    },
+    "hashtags": [
+      "musik",
+      "music",
+      "konzert",
+      "festival",
+      "openair",
+      "rap",
+      "rock",
+      "techno",
+      "band",
+      "gitarre"
+    ],
+    "post_titles": {
+      "de": [
+        "Garagenband",
+        "Wonderwall-Gitarrist",
+        "One-Hit-Wonder",
+        "Headliner",
+        "Bohemian Rhapsody",
+        "Ewiger Ohrwurm"
+      ],
+      "en": [
+        "Garage Band",
+        "Wonderwall Guitarist",
+        "One-Hit Wonder",
+        "Headliner",
+        "Bohemian Rhapsody",
+        "Eternal Earworm"
+      ],
+      "fr": [
+        "Groupe de garage",
+        "Guitariste de Wonderwall",
+        "One-hit wonder",
+        "Tête d'affiche",
+        "Bohemian Rhapsody",
+        "Ver d'oreille éternel"
+      ],
+      "it": [
+        "Band da garage",
+        "Chitarrista di Wonderwall",
+        "One-hit wonder",
+        "Headliner",
+        "Bohemian Rhapsody",
+        "Tormentone eterno"
+      ],
+      "rm": [
+        "Band da garascha",
+        "Guitarist da Wonderwall",
+        "One-hit wonder",
+        "Headliner",
+        "Bohemian Rhapsody",
+        "Verm d'ureglia perpetn"
+      ],
+      "es": [
+        "Banda de garaje",
+        "Guitarrista de Wonderwall",
+        "One-hit wonder",
+        "Cabeza de cartel",
+        "Bohemian Rhapsody",
+        "Canción pegadiza eterna"
+      ],
+      "zh-hans": [
+        "车库乐队",
+        "Wonderwall 吉他手",
+        "一曲成名",
+        "压轴艺人",
+        "波西米亚狂想曲",
+        "永恒洗脑神曲"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Walkman-Kind",
+        "Mixtape-Sammler",
+        "Backstage-Pass",
+        "Vinyl-Nerd"
+      ],
+      "en": [
+        "Walkman Kid",
+        "Mixtape Collector",
+        "Backstage Pass",
+        "Vinyl Nerd"
+      ],
+      "fr": [
+        "Enfant du walkman",
+        "Collectionneur de mixtapes",
+        "Pass backstage",
+        "Fou de vinyles"
+      ],
+      "it": [
+        "Figlio del walkman",
+        "Collezionista di mixtape",
+        "Pass per il backstage",
+        "Fanatico del vinile"
+      ],
+      "rm": [
+        "Uffant dal walkman",
+        "Collecziunader da mixtapes",
+        "Pass da backstage",
+        "Nerd da vinil"
+      ],
+      "es": [
+        "Niño del walkman",
+        "Coleccionista de mixtapes",
+        "Pase de backstage",
+        "Friki del vinilo"
+      ],
+      "zh-hans": [
+        "随身听少年",
+        "混音带收藏家",
+        "后台通行证",
+        "黑胶发烧友"
+      ]
+    }
+  },
+  {
+    "key": "food",
+    "label": {
+      "de": "Essen",
+      "en": "Food",
+      "fr": "Cuisine",
+      "it": "Cibo",
+      "rm": "Mangiar",
+      "es": "Comida",
+      "zh-hans": "美食"
+    },
+    "hashtags": [
+      "essen",
+      "food",
+      "kochen",
+      "rezept",
+      "backen",
+      "foodporn",
+      "fondue",
+      "raclette",
+      "schoggi",
+      "vegan"
+    ],
+    "post_titles": {
+      "de": [
+        "Hobbykoch",
+        "Ratatouille",
+        "Fondue-Fanatiker",
+        "Höllenküche",
+        "Michelin-Stern",
+        "Willy Wonka"
+      ],
+      "en": [
+        "Home Cook",
+        "Ratatouille",
+        "Fondue Fanatic",
+        "Hell's Kitchen",
+        "Michelin Star",
+        "Willy Wonka"
+      ],
+      "fr": [
+        "Cuisinier amateur",
+        "Ratatouille",
+        "Fanatique de fondue",
+        "Cauchemar en cuisine",
+        "Étoile Michelin",
+        "Willy Wonka"
+      ],
+      "it": [
+        "Cuoco per hobby",
+        "Ratatouille",
+        "Fanatico della fondue",
+        "Hell's Kitchen",
+        "Stella Michelin",
+        "Willy Wonka"
+      ],
+      "rm": [
+        "Cuschinier per hobby",
+        "Ratatouille",
+        "Fanatic da fondue",
+        "Cuschina infernala",
+        "Staila Michelin",
+        "Willy Wonka"
+      ],
+      "es": [
+        "Cocinero aficionado",
+        "Ratatouille",
+        "Fanático de la fondue",
+        "Pesadilla en la cocina",
+        "Estrella Michelin",
+        "Willy Wonka"
+      ],
+      "zh-hans": [
+        "业余厨师",
+        "料理鼠王",
+        "芝士火锅狂人",
+        "地狱厨房",
+        "米其林星级",
+        "威利·旺卡"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Hungrig",
+        "Krümelmonster",
+        "Schlaraffenland",
+        "Mmmh … Donuts"
+      ],
+      "en": [
+        "Hungry",
+        "Cookie Monster",
+        "Land of Plenty",
+        "Mmmh … Donuts"
+      ],
+      "fr": [
+        "Affamé",
+        "Cookie Monster",
+        "Pays de cocagne",
+        "Mmmh … des donuts"
+      ],
+      "it": [
+        "Affamato",
+        "Cookie Monster",
+        "Paese di Cuccagna",
+        "Mmmh … ciambelle"
+      ],
+      "rm": [
+        "Fomentà",
+        "Krümelmonster",
+        "Paradis dals gourmets",
+        "Mmmh … donuts"
+      ],
+      "es": [
+        "Hambriento",
+        "Monstruo de las galletas",
+        "País de Jauja",
+        "Mmmh … donuts"
+      ],
+      "zh-hans": [
+        "饿了",
+        "饼干怪兽",
+        "安乐乡",
+        "嗯……甜甜圈"
+      ]
+    }
+  },
+  {
+    "key": "sport",
+    "label": {
+      "de": "Sport",
+      "en": "Sports",
+      "fr": "Sport",
+      "it": "Sport",
+      "rm": "Sport",
+      "es": "Deporte",
+      "zh-hans": "运动"
+    },
+    "hashtags": [
+      "sport",
+      "fussball",
+      "fitness",
+      "gym",
+      "laufen",
+      "velo",
+      "ski",
+      "hockey",
+      "tennis",
+      "training"
+    ],
+    "post_titles": {
+      "de": [
+        "Aufwärmrunde",
+        "Rocky Balboa",
+        "Eye of the Tiger",
+        "Captain Tsubasa",
+        "Space Jam",
+        "Olympia-Gold"
+      ],
+      "en": [
+        "Warm-up Lap",
+        "Rocky Balboa",
+        "Eye of the Tiger",
+        "Captain Tsubasa",
+        "Space Jam",
+        "Olympic Gold"
+      ],
+      "fr": [
+        "Tour d'échauffement",
+        "Rocky Balboa",
+        "Eye of the Tiger",
+        "Olive et Tom",
+        "Space Jam",
+        "Or olympique"
+      ],
+      "it": [
+        "Giro di riscaldamento",
+        "Rocky Balboa",
+        "Eye of the Tiger",
+        "Holly e Benji",
+        "Space Jam",
+        "Oro olimpico"
+      ],
+      "rm": [
+        "Runda da stgaudar",
+        "Rocky Balboa",
+        "Eye of the Tiger",
+        "Capitani Tsubasa",
+        "Space Jam",
+        "Aur olimpic"
+      ],
+      "es": [
+        "Vuelta de calentamiento",
+        "Rocky Balboa",
+        "Eye of the Tiger",
+        "Oliver y Benji",
+        "Space Jam",
+        "Oro olímpico"
+      ],
+      "zh-hans": [
+        "热身圈",
+        "洛奇·巴尔博亚",
+        "Eye of the Tiger",
+        "足球小将",
+        "空中大灌篮",
+        "奥运金牌"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Couch-Coach",
+        "Fankurven-Ultra",
+        "Bankdrücker",
+        "Trainer-Legende"
+      ],
+      "en": [
+        "Couch Coach",
+        "Ultra in the Stands",
+        "Bench Warmer",
+        "Coaching Legend"
+      ],
+      "fr": [
+        "Coach de canapé",
+        "Ultra du virage",
+        "Chauffeur de banc",
+        "Légende des entraîneurs"
+      ],
+      "it": [
+        "Allenatore da divano",
+        "Ultrà della curva",
+        "Panchinaro",
+        "Leggenda della panchina"
+      ],
+      "rm": [
+        "Trenader dal canapé",
+        "Ultra da la curva",
+        "Giugader da banc",
+        "Legenda da trenaders"
+      ],
+      "es": [
+        "Entrenador de sofá",
+        "Ultra de la grada",
+        "Calientabanquillos",
+        "Leyenda de los entrenadores"
+      ],
+      "zh-hans": [
+        "沙发教练",
+        "看台死忠",
+        "板凳队员",
+        "传奇教练"
+      ]
+    }
+  },
+  {
+    "key": "travel",
+    "label": {
+      "de": "Reisen",
+      "en": "Travel",
+      "fr": "Voyages",
+      "it": "Viaggi",
+      "rm": "Viadis",
+      "es": "Viajes",
+      "zh-hans": "旅行"
+    },
+    "hashtags": [
+      "reisen",
+      "travel",
+      "ferien",
+      "urlaub",
+      "wanderlust",
+      "roadtrip",
+      "strand",
+      "backpacking",
+      "weltreise",
+      "citytrip"
+    ],
+    "post_titles": {
+      "de": [
+        "Tagesausflug",
+        "Rucksacktourist",
+        "Indiana Jones",
+        "Wo steckt Carmen Sandiego?",
+        "In 80 Tagen um die Welt",
+        "Unendliche Weiten"
+      ],
+      "en": [
+        "Day Trip",
+        "Backpacker",
+        "Indiana Jones",
+        "Where in the World Is Carmen Sandiego?",
+        "Around the World in 80 Days",
+        "Infinite Space"
+      ],
+      "fr": [
+        "Excursion d'un jour",
+        "Routard",
+        "Indiana Jones",
+        "Où se cache Carmen Sandiego ?",
+        "Le Tour du monde en 80 jours",
+        "Espace infini"
+      ],
+      "it": [
+        "Gita di un giorno",
+        "Saccopelista",
+        "Indiana Jones",
+        "Dov'è finita Carmen Sandiego?",
+        "Il giro del mondo in 80 giorni",
+        "Spazio infinito"
+      ],
+      "rm": [
+        "Excursiun d'in di",
+        "Viagiatur cun satgados",
+        "Indiana Jones",
+        "Nua è Carmen Sandiego?",
+        "Enturn il mund en 80 dis",
+        "Spazi infinit"
+      ],
+      "es": [
+        "Excursión de un día",
+        "Mochilero",
+        "Indiana Jones",
+        "¿Dónde está Carmen Sandiego?",
+        "La vuelta al mundo en 80 días",
+        "Espacio infinito"
+      ],
+      "zh-hans": [
+        "一日游",
+        "背包客",
+        "印第安纳·琼斯",
+        "卡门·圣地亚哥在哪里？",
+        "八十天环游地球",
+        "无限宇宙"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Fernweh",
+        "Globetrotter",
+        "Dora the Explorer",
+        "Hin und wieder zurück"
+      ],
+      "en": [
+        "Wanderlust",
+        "Globetrotter",
+        "Dora the Explorer",
+        "There and Back Again"
+      ],
+      "fr": [
+        "Envie d'ailleurs",
+        "Globe-trotteur",
+        "Dora l'exploratrice",
+        "Un aller et retour"
+      ],
+      "it": [
+        "Voglia di partire",
+        "Giramondo",
+        "Dora l'esploratrice",
+        "Andata e ritorno"
+      ],
+      "rm": [
+        "Lungatg",
+        "Globetrotter",
+        "Dora l'exploratura",
+        "Ina giada là e puspè enavos"
+      ],
+      "es": [
+        "Ganas de viajar",
+        "Trotamundos",
+        "Dora la exploradora",
+        "Ida y vuelta"
+      ],
+      "zh-hans": [
+        "向往远方",
+        "环球旅行者",
+        "爱探险的朵拉",
+        "去而复返"
+      ]
+    }
+  },
+  {
+    "key": "nature",
+    "label": {
+      "de": "Natur",
+      "en": "Nature",
+      "fr": "Nature",
+      "it": "Natura",
+      "rm": "Natira",
+      "es": "Naturaleza",
+      "zh-hans": "自然"
+    },
+    "hashtags": [
+      "natur",
+      "wandern",
+      "berge",
+      "alpen",
+      "see",
+      "hiking",
+      "outdoor",
+      "wald",
+      "gipfel",
+      "camping"
+    ],
+    "post_titles": {
+      "de": [
+        "Sonntagswanderer",
+        "Heidi und Geissenpeter",
+        "Gipfelstürmer",
+        "Into the Wild",
+        "Herr der Berge",
+        "Yeti"
+      ],
+      "en": [
+        "Sunday Hiker",
+        "Heidi and Peter the Goatherd",
+        "Summit Stormer",
+        "Into the Wild",
+        "Lord of the Mountains",
+        "Yeti"
+      ],
+      "fr": [
+        "Randonneur du dimanche",
+        "Heidi et Peter",
+        "Conquérant des sommets",
+        "Into the Wild",
+        "Seigneur des montagnes",
+        "Yéti"
+      ],
+      "it": [
+        "Escursionista della domenica",
+        "Heidi e Peter",
+        "Conquistatore di vette",
+        "Into the Wild",
+        "Signore delle montagne",
+        "Yeti"
+      ],
+      "rm": [
+        "Viandant da dumengia",
+        "Heidi e Peter",
+        "Conquistadur da piz",
+        "Into the Wild",
+        "Signur da las muntognas",
+        "Yeti"
+      ],
+      "es": [
+        "Senderista de domingo",
+        "Heidi y Pedro",
+        "Conquistador de cumbres",
+        "Hacia rutas salvajes",
+        "Señor de las montañas",
+        "Yeti"
+      ],
+      "zh-hans": [
+        "周日徒步者",
+        "海蒂和彼得",
+        "登顶者",
+        "荒野生存",
+        "群山之王",
+        "雪人"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Frischluft-Fan",
+        "Pfadi-Spirit",
+        "Captain Planet",
+        "Mutter Natur"
+      ],
+      "en": [
+        "Fresh Air Fan",
+        "Scout Spirit",
+        "Captain Planet",
+        "Mother Nature"
+      ],
+      "fr": [
+        "Fan de grand air",
+        "Esprit scout",
+        "Capitaine Planète",
+        "Mère Nature"
+      ],
+      "it": [
+        "Amante dell'aria aperta",
+        "Spirito scout",
+        "Capitan Planet",
+        "Madre Natura"
+      ],
+      "rm": [
+        "Fan d'aria frestga",
+        "Spiert da battasendas",
+        "Captain Planet",
+        "Mamma Natira"
+      ],
+      "es": [
+        "Amante del aire libre",
+        "Espíritu scout",
+        "Capitán Planeta",
+        "Madre Naturaleza"
+      ],
+      "zh-hans": [
+        "户外爱好者",
+        "童军精神",
+        "地球超人",
+        "大自然母亲"
+      ]
+    }
+  },
+  {
+    "key": "animals",
+    "label": {
+      "de": "Tiere",
+      "en": "Animals",
+      "fr": "Animaux",
+      "it": "Animali",
+      "rm": "Animals",
+      "es": "Animales",
+      "zh-hans": "动物"
+    },
+    "hashtags": [
+      "tiere",
+      "hund",
+      "katze",
+      "haustier",
+      "dog",
+      "cat",
+      "pferd",
+      "zoo",
+      "tierliebe",
+      "welpe"
+    ],
+    "post_titles": {
+      "de": [
+        "Tierfreund",
+        "Kommissar Rex",
+        "Doktor Dolittle",
+        "Grumpy Cat",
+        "Noahs Arche",
+        "König der Löwen"
+      ],
+      "en": [
+        "Animal Lover",
+        "Inspector Rex",
+        "Doctor Dolittle",
+        "Grumpy Cat",
+        "Noah's Ark",
+        "The Lion King"
+      ],
+      "fr": [
+        "Ami des animaux",
+        "Rex, chien flic",
+        "Docteur Dolittle",
+        "Grumpy Cat",
+        "L'Arche de Noé",
+        "Le Roi lion"
+      ],
+      "it": [
+        "Amico degli animali",
+        "Il commissario Rex",
+        "Il dottor Dolittle",
+        "Grumpy Cat",
+        "Arca di Noè",
+        "Il re leone"
+      ],
+      "rm": [
+        "Ami dals animals",
+        "Commissari Rex",
+        "Doctor Dolittle",
+        "Grumpy Cat",
+        "Arca da Noe",
+        "Il retg liun"
+      ],
+      "es": [
+        "Amigo de los animales",
+        "Rex, un policía diferente",
+        "Doctor Dolittle",
+        "Grumpy Cat",
+        "Arca de Noé",
+        "El rey león"
+      ],
+      "zh-hans": [
+        "动物之友",
+        "警犬雷克斯",
+        "怪医杜立德",
+        "不爽猫",
+        "诺亚方舟",
+        "狮子王"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Streichelzoo",
+        "Bambi-Herz",
+        "Pokémon-Trainer",
+        "Schnapp sie dir alle!"
+      ],
+      "en": [
+        "Petting Zoo",
+        "Heart of Bambi",
+        "Pokémon Trainer",
+        "Gotta Catch 'Em All!"
+      ],
+      "fr": [
+        "Zoo pour enfants",
+        "Cœur de Bambi",
+        "Dresseur Pokémon",
+        "Attrapez-les tous !"
+      ],
+      "it": [
+        "Zoo dei cuccioli",
+        "Cuore di Bambi",
+        "Allenatore di Pokémon",
+        "Acchiappali tutti!"
+      ],
+      "rm": [
+        "Zoo da charezzar",
+        "Cor da Bambi",
+        "Trenader da Pokémon",
+        "Piglia els tuts!"
+      ],
+      "es": [
+        "Granja escuela",
+        "Corazón de Bambi",
+        "Entrenador Pokémon",
+        "¡Hazte con todos!"
+      ],
+      "zh-hans": [
+        "萌宠乐园",
+        "小鹿斑比之心",
+        "宝可梦训练家",
+        "全部收服！"
+      ]
+    }
+  },
+  {
+    "key": "tech",
+    "label": {
+      "de": "Tech",
+      "en": "Tech",
+      "fr": "Tech",
+      "it": "Tech",
+      "rm": "Tech",
+      "es": "Tecnología",
+      "zh-hans": "科技"
+    },
+    "hashtags": [
+      "tech",
+      "coding",
+      "programmieren",
+      "ki",
+      "ai",
+      "apple",
+      "android",
+      "linux",
+      "gadgets",
+      "startup"
+    ],
+    "post_titles": {
+      "de": [
+        "Bastler",
+        "Script-Kiddie",
+        "MacGyver",
+        "Hackerman",
+        "Neo aus der Matrix",
+        "Skynet"
+      ],
+      "en": [
+        "Tinkerer",
+        "Script Kiddie",
+        "MacGyver",
+        "Hackerman",
+        "Neo from the Matrix",
+        "Skynet"
+      ],
+      "fr": [
+        "Bricoleur",
+        "Script kiddie",
+        "MacGyver",
+        "Hackerman",
+        "Neo de Matrix",
+        "Skynet"
+      ],
+      "it": [
+        "Smanettone",
+        "Script kiddie",
+        "MacGyver",
+        "Hackerman",
+        "Neo di Matrix",
+        "Skynet"
+      ],
+      "rm": [
+        "Ziplader",
+        "Script kiddie",
+        "MacGyver",
+        "Hackerman",
+        "Neo da la Matrix",
+        "Skynet"
+      ],
+      "es": [
+        "Manitas",
+        "Script kiddie",
+        "MacGyver",
+        "Hackerman",
+        "Neo de Matrix",
+        "Skynet"
+      ],
+      "zh-hans": [
+        "爱折腾",
+        "脚本小子",
+        "百战天龙",
+        "黑客侠",
+        "黑客帝国的尼奥",
+        "天网"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Early Adopter",
+        "Tamagotchi-Pfleger",
+        "Nerd-Alarm",
+        "Ich bin kein Roboter"
+      ],
+      "en": [
+        "Early Adopter",
+        "Tamagotchi Keeper",
+        "Nerd Alert",
+        "I'm Not a Robot"
+      ],
+      "fr": [
+        "Early adopter",
+        "Éleveur de Tamagotchi",
+        "Alerte geek",
+        "Je ne suis pas un robot"
+      ],
+      "it": [
+        "Early adopter",
+        "Allevatore di Tamagotchi",
+        "Allarme nerd",
+        "Non sono un robot"
+      ],
+      "rm": [
+        "Early adopter",
+        "Tgirader da Tamagotchi",
+        "Alarm nerd",
+        "Jau na sun betg in robot"
+      ],
+      "es": [
+        "Early adopter",
+        "Cuidador de Tamagotchi",
+        "Alerta friki",
+        "No soy un robot"
+      ],
+      "zh-hans": [
+        "尝鲜者",
+        "电子宠物饲养员",
+        "极客警报",
+        "我不是机器人"
+      ]
+    }
+  },
+  {
+    "key": "photo",
+    "label": {
+      "de": "Fotografie",
+      "en": "Photography",
+      "fr": "Photographie",
+      "it": "Fotografia",
+      "rm": "Fotografia",
+      "es": "Fotografía",
+      "zh-hans": "摄影"
+    },
+    "hashtags": [
+      "foto",
+      "fotografie",
+      "photography",
+      "sonnenuntergang",
+      "sunset",
+      "portrait",
+      "landschaft",
+      "analog",
+      "kamera",
+      "goldenhour"
+    ],
+    "post_titles": {
+      "de": [
+        "Schnappschuss",
+        "Polaroid",
+        "Einwegkamera-Nostalgie",
+        "Golden Hour",
+        "National Geographic",
+        "Mona Lisa"
+      ],
+      "en": [
+        "Snapshot",
+        "Polaroid",
+        "Disposable Camera Nostalgia",
+        "Golden Hour",
+        "National Geographic",
+        "Mona Lisa"
+      ],
+      "fr": [
+        "Instantané",
+        "Polaroid",
+        "Nostalgie de l'appareil jetable",
+        "Golden hour",
+        "National Geographic",
+        "Mona Lisa"
+      ],
+      "it": [
+        "Istantanea",
+        "Polaroid",
+        "Nostalgia della usa e getta",
+        "Golden hour",
+        "National Geographic",
+        "Monna Lisa"
+      ],
+      "rm": [
+        "Instantana",
+        "Polaroid",
+        "Nostalgia da la camera d'ina giada",
+        "Golden hour",
+        "National Geographic",
+        "Mona Lisa"
+      ],
+      "es": [
+        "Instantánea",
+        "Polaroid",
+        "Nostalgia de la cámara desechable",
+        "Golden hour",
+        "National Geographic",
+        "Mona Lisa"
+      ],
+      "zh-hans": [
+        "快照",
+        "宝丽来",
+        "怀旧一次性相机",
+        "黄金时刻",
+        "国家地理",
+        "蒙娜丽莎"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Augenmensch",
+        "Fotoalbum-Kind",
+        "Bildschön",
+        "Kodak-Moment"
+      ],
+      "en": [
+        "Visual Person",
+        "Photo Album Kid",
+        "Picture Perfect",
+        "Kodak Moment"
+      ],
+      "fr": [
+        "Visuel",
+        "Enfant de l'album photo",
+        "Belle image",
+        "Moment Kodak"
+      ],
+      "it": [
+        "Persona visiva",
+        "Figlio dell'album di foto",
+        "Da cartolina",
+        "Momento Kodak"
+      ],
+      "rm": [
+        "Persuna visuala",
+        "Uffant da l'album da fotos",
+        "Bel sco in maletg",
+        "Mument Kodak"
+      ],
+      "es": [
+        "Persona visual",
+        "Niño del álbum de fotos",
+        "De postal",
+        "Momento Kodak"
+      ],
+      "zh-hans": [
+        "视觉系",
+        "相册少年",
+        "美如画",
+        "柯达时刻"
+      ]
+    }
+  },
+  {
+    "key": "politics",
+    "label": {
+      "de": "Politik",
+      "en": "Politics",
+      "fr": "Politique",
+      "it": "Politica",
+      "rm": "Politica",
+      "es": "Política",
+      "zh-hans": "政治"
+    },
+    "hashtags": [
+      "politik",
+      "abstimmung",
+      "wahlen",
+      "demokratie",
+      "bundesrat",
+      "nationalrat",
+      "initiative",
+      "referendum",
+      "klima",
+      "gesellschaft"
+    ],
+    "post_titles": {
+      "de": [
+        "Stammtisch-Politiker",
+        "Unterschriftensammler",
+        "Hinterbänkler",
+        "Fraktionschef",
+        "House of Cards",
+        "Bundesrat der Herzen"
+      ],
+      "en": [
+        "Pub Politician",
+        "Signature Collector",
+        "Backbencher",
+        "Party Whip",
+        "House of Cards",
+        "Federal Councillor of Hearts"
+      ],
+      "fr": [
+        "Politicien de comptoir",
+        "Collecteur de signatures",
+        "Député de l'arrière-ban",
+        "Chef de groupe",
+        "House of Cards",
+        "Conseiller fédéral des cœurs"
+      ],
+      "it": [
+        "Politico da bar",
+        "Raccoglitore di firme",
+        "Peone",
+        "Capogruppo",
+        "House of Cards",
+        "Consigliere federale dei cuori"
+      ],
+      "rm": [
+        "Politicher da maisa da stamm",
+        "Rimnader da suttascripziuns",
+        "Deputà da la davosa fila",
+        "Schef da fracziun",
+        "House of Cards",
+        "Cusseglier federal dals cors"
+      ],
+      "es": [
+        "Político de barra de bar",
+        "Recolector de firmas",
+        "Diputado de fila trasera",
+        "Jefe de grupo",
+        "House of Cards",
+        "Consejero federal de los corazones"
+      ],
+      "zh-hans": [
+        "饭桌政治家",
+        "签名收集者",
+        "后排议员",
+        "党团领袖",
+        "纸牌屋",
+        "人心所向的联邦委员"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Abstimmungsbüchlein-Leser",
+        "Polit-Junkie",
+        "Lobbyist",
+        "Spin Doctor"
+      ],
+      "en": [
+        "Voting Booklet Reader",
+        "Politics Junkie",
+        "Lobbyist",
+        "Spin Doctor"
+      ],
+      "fr": [
+        "Lecteur de brochure de votation",
+        "Accro à la politique",
+        "Lobbyiste",
+        "Spin doctor"
+      ],
+      "it": [
+        "Lettore dell'opuscolo di voto",
+        "Drogato di politica",
+        "Lobbista",
+        "Spin doctor"
+      ],
+      "rm": [
+        "Lectur dal cudeschet da votaziun",
+        "Dependent da politica",
+        "Lobbist",
+        "Spin doctor"
+      ],
+      "es": [
+        "Lector del folleto de votación",
+        "Adicto a la política",
+        "Lobista",
+        "Spin doctor"
+      ],
+      "zh-hans": [
+        "投票手册读者",
+        "政治迷",
+        "说客",
+        "公关高手"
+      ]
+    }
+  },
+  {
+    "key": "switzerland",
+    "label": {
+      "de": "Schweiz",
+      "en": "Switzerland",
+      "fr": "Suisse",
+      "it": "Svizzera",
+      "rm": "Svizra",
+      "es": "Suiza",
+      "zh-hans": "瑞士"
+    },
+    "hashtags": [
+      "schweiz",
+      "swiss",
+      "switzerland",
+      "zürich",
+      "bern",
+      "basel",
+      "luzern",
+      "genf",
+      "heimat",
+      "nati"
+    ],
+    "post_titles": {
+      "de": [
+        "Heimweh-Schweizer",
+        "Chuchichäschtli",
+        "Röstigraben-Überquerer",
+        "Wilhelm Tell",
+        "Helvetia",
+        "Matterhorn"
+      ],
+      "en": [
+        "Homesick Swiss",
+        "Chuchichäschtli",
+        "Röstigraben Crosser",
+        "William Tell",
+        "Helvetia",
+        "Matterhorn"
+      ],
+      "fr": [
+        "Suisse nostalgique",
+        "Chuchichäschtli",
+        "Franchisseur de Röstigraben",
+        "Guillaume Tell",
+        "Helvetia",
+        "Cervin"
+      ],
+      "it": [
+        "Svizzero nostalgico",
+        "Chuchichäschtli",
+        "Attraversatore del Röstigraben",
+        "Guglielmo Tell",
+        "Helvetia",
+        "Cervino"
+      ],
+      "rm": [
+        "Svizzer cun increschantum",
+        "Chuchichäschtli",
+        "Traversader dal Röstigraben",
+        "Guglielm Tell",
+        "Helvetia",
+        "Matterhorn"
+      ],
+      "es": [
+        "Suizo nostálgico",
+        "Chuchichäschtli",
+        "Cruzador del Röstigraben",
+        "Guillermo Tell",
+        "Helvetia",
+        "Cervino"
+      ],
+      "zh-hans": [
+        "思乡的瑞士人",
+        "Chuchichäschtli",
+        "跨越薯饼鸿沟",
+        "威廉·退尔",
+        "赫尔维蒂娅",
+        "马特洪峰"
+      ]
+    },
+    "follow_titles": {
+      "de": [
+        "Cervelat-Liebhaber",
+        "Bünzli",
+        "Eidgenosse",
+        "Swissness pur"
+      ],
+      "en": [
+        "Cervelat Lover",
+        "Bünzli",
+        "Confederate",
+        "Pure Swissness"
+      ],
+      "fr": [
+        "Amateur de cervelas",
+        "Bünzli",
+        "Confédéré",
+        "Swissness pure"
+      ],
+      "it": [
+        "Amante del cervelat",
+        "Bünzli",
+        "Confederato",
+        "Swissness pura"
+      ],
+      "rm": [
+        "Amatur da cervelat",
+        "Bünzli",
+        "Confederà",
+        "Swissness pura"
+      ],
+      "es": [
+        "Amante del cervelat",
+        "Bünzli",
+        "Confederado",
+        "Swissness pura"
+      ],
+      "zh-hans": [
+        "瑞士香肠爱好者",
+        "Bünzli",
+        "联邦公民",
+        "纯正瑞士风"
+      ]
+    }
+  }
+]

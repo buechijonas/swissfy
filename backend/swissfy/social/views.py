@@ -1,6 +1,7 @@
 from django.db.models import Exists, OuterRef, Subquery
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -62,7 +63,7 @@ class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
     def connected(self):
         target = self.get_object()
         if not Member.objects.can_view(self.request.user, target):
-            raise PermissionDenied("Dieses Profil ist privat.")
+            raise PermissionDenied(_("Dieses Profil ist privat."))
         return target
 
     def get_object(self):
@@ -99,7 +100,7 @@ class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
     def follow(self, request, username):
         target = self.get_object()
         if target == request.user:
-            raise BadRequest("Du kannst dir nicht selbst folgen.")
+            raise BadRequest(_("Du kannst dir nicht selbst folgen."))
         relations.follow(request.user, target)
         return self.respond(target)
 

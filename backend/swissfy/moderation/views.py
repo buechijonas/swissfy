@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -79,7 +80,7 @@ class ReportQueueViewSet(BaseViewSet, mixins.ListModelMixin):
 
 
 MODERATOR_OF_AUTHOR = [IsModerator, CanModerateAuthor]
-ALREADY_WARNED = "Dieser Inhalt wurde bereits verwarnt."
+ALREADY_WARNED = _("Dieser Inhalt wurde bereits verwarnt.")
 
 
 class ModerationActionsMixin:

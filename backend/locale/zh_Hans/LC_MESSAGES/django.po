@@ -1,0 +1,804 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: commons/i18n.py
+msgid "%d.%m.%Y"
+msgstr "%Y-%m-%d"
+
+#: commons/i18n.py
+msgid "%d.%m.%Y, %H:%M Uhr"
+msgstr "%Y-%m-%d %H:%M"
+
+#: docs/views.py
+msgid "Diese Version gibt es nicht."
+msgstr "此版本不存在。"
+
+#: main/numbers.py
+#, python-format
+msgid "%(sign)s%(count)s Tsd."
+msgstr "%(sign)s%(count)s千"
+
+#: main/pagination.py
+msgid "Ungültige Seite."
+msgstr "无效页面。"
+
+#: main/parsers.py
+msgid "JSON ist zu tief verschachtelt."
+msgstr "JSON 嵌套过深。"
+
+#: swissfy/accounts/administration.py
+msgid "Du kannst deine eigene Rolle nicht ändern."
+msgstr "你不能更改自己的角色。"
+
+#: swissfy/accounts/administration.py
+msgid "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt und Sperren abgelaufen sind."
+msgstr "在所有警告失效且所有封禁结束之前，该角色被锁定。"
+
+#: swissfy/accounts/models.py
+msgid "Männlich"
+msgstr "男"
+
+#: swissfy/accounts/models.py
+msgid "Weiblich"
+msgstr "女"
+
+#: swissfy/accounts/models.py
+msgid "Divers"
+msgstr "多元"
+
+#: swissfy/accounts/models.py
+msgid "Single"
+msgstr "单身"
+
+#: swissfy/accounts/models.py
+msgid "Kennenlernphase"
+msgstr "相识阶段"
+
+#: swissfy/accounts/models.py
+msgid "In einer Beziehung"
+msgstr "恋爱中"
+
+#: swissfy/accounts/models.py
+msgid "Verlobt"
+msgstr "已订婚"
+
+#: swissfy/accounts/models.py
+msgid "Verheiratet"
+msgstr "已婚"
+
+#: swissfy/accounts/models.py
+msgid "Es ist kompliziert"
+msgstr "一言难尽"
+
+#: swissfy/accounts/models.py
+msgid "Getrennt"
+msgstr "分居"
+
+#: swissfy/accounts/models.py
+msgid "Geschieden"
+msgstr "离异"
+
+#: swissfy/accounts/models.py
+msgid "Verwitwet"
+msgstr "丧偶"
+
+#: swissfy/accounts/models.py
+msgid "Sonstiges"
+msgstr "其他"
+
+#: swissfy/accounts/models.py
+msgid "Öffentlich"
+msgstr "公开"
+
+#: swissfy/accounts/models.py
+msgid "Nur Follower"
+msgstr "仅关注者"
+
+#: swissfy/accounts/models.py
+msgid "Nur Freunde"
+msgstr "仅好友"
+
+#: swissfy/accounts/models.py swissfy/posts/models/audience.py
+msgid "Follower"
+msgstr "关注者"
+
+#: swissfy/accounts/models.py swissfy/posts/models/audience.py
+msgid "Freunde"
+msgstr "好友"
+
+#: swissfy/accounts/models.py swissfy/posts/models/audience.py
+msgid "Gruppen"
+msgstr "群组"
+
+#: swissfy/accounts/models.py
+msgid "Standard"
+msgstr "标准"
+
+#: swissfy/accounts/models.py
+msgid "Nur auf diesem Gerät"
+msgstr "仅限此设备"
+
+#: swissfy/accounts/models.py swissfy/chats/models.py
+msgid "Chat-PIN"
+msgstr "聊天 PIN"
+
+#: swissfy/accounts/models.py
+msgid "Öffentliches Profilbild"
+msgstr "公开头像"
+
+#: swissfy/accounts/models.py
+msgid "Privates Profilbild"
+msgstr "私密头像"
+
+#: swissfy/accounts/models.py
+msgid "Privates Profilbild sichtbar für"
+msgstr "私密头像可见范围"
+
+#: swissfy/accounts/models.py
+msgid "Geburtsdatum"
+msgstr "出生日期"
+
+#: swissfy/accounts/models.py
+msgid "Biografie"
+msgstr "个人简介"
+
+#: swissfy/accounts/models.py
+msgid "Geschlecht"
+msgstr "性别"
+
+#: swissfy/accounts/models.py
+msgid "Tätigkeit"
+msgstr "职业"
+
+#: swissfy/accounts/models.py
+msgid "Wohnort"
+msgstr "居住地"
+
+#: swissfy/accounts/models.py
+msgid "Heimatort"
+msgstr "籍贯"
+
+#: swissfy/accounts/models.py
+msgid "Beziehungsstatus"
+msgstr "感情状况"
+
+#: swissfy/accounts/models.py
+msgid "Lieblingsfilme"
+msgstr "最爱的电影"
+
+#: swissfy/accounts/models.py
+msgid "Lieblingsserien"
+msgstr "最爱的剧集"
+
+#: swissfy/accounts/models.py
+msgid "Lieblingsspiele"
+msgstr "最爱的游戏"
+
+#: swissfy/accounts/models.py
+msgid "Profil sichtbar für"
+msgstr "个人资料可见范围"
+
+#: swissfy/accounts/models.py
+msgid "Chat-Verschlüsselung"
+msgstr "聊天加密"
+
+#: swissfy/accounts/models.py
+msgid "Lesebestätigungen"
+msgstr "已读回执"
+
+#: swissfy/accounts/models.py
+msgid "Chat-Anfragen erlauben"
+msgstr "允许聊天请求"
+
+#: swissfy/accounts/models.py
+msgid "Geburtsdatum anzeigen"
+msgstr "显示出生日期"
+
+#: swissfy/accounts/models.py
+msgid "Datenschutzerklärung"
+msgstr "隐私政策"
+
+#: swissfy/accounts/models.py
+msgid "Nutzungsrichtlinien"
+msgstr "使用条款"
+
+#: swissfy/accounts/models.py
+msgid "Haftungsausschluss"
+msgstr "免责声明"
+
+#: swissfy/achievements/views.py
+msgid "Du kannst die Erfolge dieses Profils nicht sehen."
+msgstr "你无法查看此个人资料的成就。"
+
+#: swissfy/chats/conversations.py
+msgid "Sende zuerst eine Chat-Anfrage."
+msgstr "请先发送聊天请求。"
+
+#: swissfy/chats/models.py
+msgid "Gerät"
+msgstr "设备"
+
+#: swissfy/chats/models.py
+msgid "Offen"
+msgstr "待处理"
+
+#: swissfy/chats/models.py swissfy/notifications/models.py
+msgid "Angenommen"
+msgstr "已接受"
+
+#: swissfy/chats/models.py swissfy/notifications/models.py
+msgid "Abgelehnt"
+msgstr "已拒绝"
+
+#: swissfy/chats/models.py
+msgid "Diese Chat-Anfrage wurde abgelehnt."
+msgstr "此聊天请求已被拒绝。"
+
+#: swissfy/chats/models.py
+msgid "Warte, bis deine Chat-Anfrage angenommen wurde."
+msgstr "请等待你的聊天请求被接受。"
+
+#: swissfy/chats/models.py
+msgid "Nimm die Chat-Anfrage zuerst an."
+msgstr "请先接受聊天请求。"
+
+#: swissfy/chats/serializers.py
+msgid "Ungültiger Schlüssel."
+msgstr "无效密钥。"
+
+#: swissfy/chats/serializers.py
+msgid "Standard braucht keinen Schlüssel."
+msgstr "标准模式不需要密钥。"
+
+#: swissfy/chats/serializers.py
+msgid "Schlüssel fehlt."
+msgstr "缺少密钥。"
+
+#: swissfy/chats/serializers.py
+msgid "Der PIN-Schlüssel ist unvollständig."
+msgstr "PIN 密钥不完整。"
+
+#: swissfy/chats/serializers.py
+msgid "Signatur und Schlüssel gehören zusammen."
+msgstr "签名和密钥必须同时提供。"
+
+#: swissfy/chats/views.py
+msgid "Zu viele falsche Versuche. Versuche es später erneut."
+msgstr "错误尝试次数过多，请稍后再试。"
+
+#: swissfy/chats/views.py
+msgid "Falsche PIN."
+msgstr "PIN 错误。"
+
+#: swissfy/chats/views.py
+msgid "Die PIN ist bereits gesichert."
+msgstr "PIN 已受保护。"
+
+#: swissfy/chats/views.py
+msgid "Gerät-Schlüssel gibt es nur im Modus „Nur auf diesem Gerät“."
+msgstr "设备密钥仅在“仅限此设备”模式下存在。"
+
+#: swissfy/chats/views.py
+msgid "Die Schlüssel haben sich geändert."
+msgstr "密钥已更改。"
+
+#: swissfy/chats/views.py
+msgid "Bitte warte kurz."
+msgstr "请稍候。"
+
+#: swissfy/chats/views.py
+msgid "Es gibt bereits eine Chat-Anfrage."
+msgstr "已存在聊天请求。"
+
+#: swissfy/chats/views.py
+msgid "Diese Person nimmt keine Chat-Anfragen an."
+msgstr "此人不接受聊天请求。"
+
+#: swissfy/moderation/models.py
+msgid "Antisemitismus"
+msgstr "反犹太主义"
+
+#: swissfy/moderation/models.py
+msgid "Ausbeuterische Inhalte"
+msgstr "剥削性内容"
+
+#: swissfy/moderation/models.py
+msgid "Beleidigung"
+msgstr "侮辱"
+
+#: swissfy/moderation/models.py
+msgid "Belohnungsjagd"
+msgstr "刷奖励"
+
+#: swissfy/moderation/models.py
+msgid "Belästigung"
+msgstr "骚扰"
+
+#: swissfy/moderation/models.py
+msgid "Betrug"
+msgstr "欺诈"
+
+#: swissfy/moderation/models.py
+msgid "Christophobie"
+msgstr "仇视基督教"
+
+#: swissfy/moderation/models.py
+msgid "Cybergrooming"
+msgstr "网络诱骗"
+
+#: swissfy/moderation/models.py
+msgid "Cybermobbing"
+msgstr "网络霸凌"
+
+#: swissfy/moderation/models.py
+msgid "Diskriminierung"
+msgstr "歧视"
+
+#: swissfy/moderation/models.py
+msgid "Doxxing"
+msgstr "人肉搜索"
+
+#: swissfy/moderation/models.py
+msgid "Drohung"
+msgstr "威胁"
+
+#: swissfy/moderation/models.py
+msgid "Erpressung"
+msgstr "勒索"
+
+#: swissfy/moderation/models.py
+msgid "Falschinformationen"
+msgstr "虚假信息"
+
+#: swissfy/moderation/models.py
+msgid "Faschismus"
+msgstr "法西斯主义"
+
+#: swissfy/moderation/models.py
+msgid "Fremdenfeindlichkeit"
+msgstr "排外"
+
+#: swissfy/moderation/models.py
+msgid "Gefährliche Verschwörungstheorien"
+msgstr "危险的阴谋论"
+
+#: swissfy/moderation/models.py
+msgid "Gewaltbasierter Inhalt"
+msgstr "暴力内容"
+
+#: swissfy/moderation/models.py
+msgid "Gewaltverherrlichung"
+msgstr "美化暴力"
+
+#: swissfy/moderation/models.py
+msgid "Hassrede"
+msgstr "仇恨言论"
+
+#: swissfy/moderation/models.py
+msgid "Homophobie"
+msgstr "恐同"
+
+#: swissfy/moderation/models.py
+msgid "Identitätsdiebstahl"
+msgstr "身份盗用"
+
+#: swissfy/moderation/models.py
+msgid "Illegale Inhalte"
+msgstr "违法内容"
+
+#: swissfy/moderation/models.py
+msgid "Islamophobie"
+msgstr "仇视伊斯兰"
+
+#: swissfy/moderation/models.py
+msgid "Kulturelle Aneignung"
+msgstr "文化挪用"
+
+#: swissfy/moderation/models.py
+msgid "Minderjährigenschutz"
+msgstr "未成年人保护"
+
+#: swissfy/moderation/models.py
+msgid "Missbrauch von Privilegien"
+msgstr "滥用权限"
+
+#: swissfy/moderation/models.py
+msgid "Plagiate"
+msgstr "抄袭"
+
+#: swissfy/moderation/models.py
+msgid "Pornografische Inhalte"
+msgstr "色情内容"
+
+#: swissfy/moderation/models.py
+msgid "Propaganda"
+msgstr "宣传煽动"
+
+#: swissfy/moderation/models.py
+msgid "Rassismus"
+msgstr "种族主义"
+
+#: swissfy/moderation/models.py
+msgid "Relativierung"
+msgstr "淡化罪行"
+
+#: swissfy/moderation/models.py
+msgid "Selbstgefährdung"
+msgstr "自我伤害"
+
+#: swissfy/moderation/models.py
+msgid "Selbstjustiz"
+msgstr "私刑"
+
+#: swissfy/moderation/models.py
+msgid "Sexismus"
+msgstr "性别歧视"
+
+#: swissfy/moderation/models.py
+msgid "Sextortion"
+msgstr "性勒索"
+
+#: swissfy/moderation/models.py
+msgid "Spam"
+msgstr "垃圾信息"
+
+#: swissfy/moderation/models.py
+msgid "Unangemessene Wortwahl"
+msgstr "不当言辞"
+
+#: swissfy/moderation/models.py
+msgid "Unethische Werbung"
+msgstr "不道德广告"
+
+#: swissfy/moderation/models.py
+msgid "Whataboutismus"
+msgstr "转移话题"
+
+#: swissfy/moderation/models.py
+msgid "3 Tage"
+msgstr "3 天"
+
+#: swissfy/moderation/models.py
+msgid "1 Woche"
+msgstr "1 周"
+
+#: swissfy/moderation/models.py
+msgid "1 Monat"
+msgstr "1 个月"
+
+#: swissfy/moderation/models.py
+msgid "1 Jahr"
+msgstr "1 年"
+
+#: swissfy/moderation/models.py
+msgid "Lebenslang"
+msgstr "永久"
+
+#: swissfy/moderation/models.py swissfy/moderation/reviews.py
+#: swissfy/notifications/models.py
+msgid "Kommentar"
+msgstr "评论"
+
+#: swissfy/moderation/models.py swissfy/moderation/reviews.py
+msgid "Feed"
+msgstr "动态"
+
+#: swissfy/moderation/models.py
+msgid "j. F Y"
+msgstr "Y年n月j日"
+
+#: swissfy/moderation/models.py
+#, python-format
+msgid "Abgelaufen am %(until)s"
+msgstr "已于 %(until)s 结束"
+
+#: swissfy/moderation/models.py
+#, python-format
+msgid "Beginnt nach der laufenden Sperre, bis %(until)s"
+msgstr "在当前封禁结束后开始，直至 %(until)s"
+
+#: swissfy/moderation/models.py
+msgid "Beginnt nach der laufenden Sperre, dauerhaft"
+msgstr "在当前封禁结束后开始，永久"
+
+#: swissfy/moderation/models.py
+#, python-format
+msgid "Gesperrt bis %(until)s"
+msgstr "封禁至 %(until)s"
+
+#: swissfy/moderation/models.py
+msgid "Dauerhaft gesperrt"
+msgstr "永久封禁"
+
+#: swissfy/moderation/permissions.py
+msgid "Du kannst eigene Inhalte nicht melden."
+msgstr "你不能举报自己的内容。"
+
+#: swissfy/moderation/permissions.py
+msgid "Inhalte von Admins kannst du nicht melden."
+msgstr "你不能举报管理员的内容。"
+
+#: swissfy/moderation/permissions.py
+msgid "Inhalte von Admins können nur Admins bearbeiten."
+msgstr "只有管理员才能处理管理员的内容。"
+
+#: swissfy/moderation/permissions.py
+msgid "Du kannst diese Verwarnungen nicht sehen."
+msgstr "你无法查看这些警告。"
+
+#: swissfy/moderation/serializers.py
+msgid "Wähle einen Grund."
+msgstr "请选择原因。"
+
+#: swissfy/moderation/views.py
+msgid "Dieser Inhalt wurde bereits verwarnt."
+msgstr "此内容已被警告。"
+
+#: swissfy/notifications/models.py
+msgid "Verwarnung"
+msgstr "警告"
+
+#: swissfy/notifications/models.py
+msgid "Verwarnung verjährt"
+msgstr "警告已失效"
+
+#: swissfy/notifications/models.py
+msgid "Kontosperre"
+msgstr "账户封禁"
+
+#: swissfy/notifications/models.py
+msgid "Gefällt mir"
+msgstr "赞"
+
+#: swissfy/notifications/models.py
+msgid "Neuer Follower"
+msgstr "新关注者"
+
+#: swissfy/notifications/models.py
+msgid "Followeranfrage"
+msgstr "关注请求"
+
+#: swissfy/notifications/models.py
+msgid "Freundschaftsanfrage"
+msgstr "好友请求"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "Du wurdest verwarnt: %(reason)s."
+msgstr "你已被警告：%(reason)s。"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "Deine Verwarnung «%(reason)s» vom %(created)s ist verjährt."
+msgstr "你于 %(created)s 收到的警告“%(reason)s”已失效。"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s hat deinen Feed kommentiert: %(text)s"
+msgstr "%(actor)s 评论了你的动态：%(text)s"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s gefällt dein Feed."
+msgstr "%(actor)s 赞了你的动态。"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s folgt dir jetzt."
+msgstr "%(actor)s 关注了你。"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s möchte dir folgen."
+msgstr "%(actor)s 想关注你。"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s möchte mit dir befreundet sein."
+msgstr "%(actor)s 想加你为好友。"
+
+#: swissfy/notifications/models.py
+msgid "Dein Konto wurde dauerhaft gesperrt."
+msgstr "你的账户已被永久封禁。"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "Dein Konto wird für %(duration)s gesperrt, ab %(start)s bis %(until)s."
+msgstr "你的账户将被封禁 %(duration)s，从 %(start)s 至 %(until)s。"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "Dein Konto wurde für %(duration)s gesperrt, bis %(until)s."
+msgstr "你的账户已被封禁 %(duration)s，直至 %(until)s。"
+
+#: swissfy/posts/images.py
+msgid "Ein Bild ist zu gross (max. 15 MB)."
+msgstr "有图片过大（最大 15 MB）。"
+
+#: swissfy/posts/images.py
+msgid "Eine Datei ist kein gültiges Bild."
+msgstr "有文件不是有效的图片。"
+
+#: swissfy/posts/images.py
+#, python-format
+msgid "Du kannst höchstens %(count)s Bilder hochladen."
+msgstr "最多只能上传 %(count)s 张图片。"
+
+#: swissfy/posts/models/audience.py
+msgid "Alle"
+msgstr "所有人"
+
+#: swissfy/posts/models/audience.py
+msgid "Global"
+msgstr "全局"
+
+#: swissfy/posts/models/posts.py
+msgid "Wird verarbeitet"
+msgstr "处理中"
+
+#: swissfy/posts/models/posts.py
+msgid "Bereit"
+msgstr "就绪"
+
+#: swissfy/posts/models/posts.py
+msgid "Fehlgeschlagen"
+msgstr "失败"
+
+#: swissfy/posts/permissions.py
+msgid "Du kannst nur eigene Inhalte bearbeiten."
+msgstr "你只能编辑自己的内容。"
+
+#: swissfy/posts/permissions.py
+msgid "Dein Konto ist dauerhaft gesperrt."
+msgstr "你的账户已被永久封禁。"
+
+#: swissfy/posts/permissions.py
+#, python-format
+msgid "Dein Konto ist bis %(until)s gesperrt."
+msgstr "你的账户被封禁至 %(until)s。"
+
+#: swissfy/posts/permissions.py
+#, python-format
+msgid "Du kannst höchstens %(count)s Feeds pro Tag erstellen."
+msgstr "每天最多只能发布 %(count)s 条动态。"
+
+#: swissfy/posts/serializers/collections.py
+#, python-brace-format
+msgid "Den Benutzer «{value}» gibt es nicht."
+msgstr "用户“{value}”不存在。"
+
+#: swissfy/posts/serializers/collections.py
+msgid "Du kannst dich nicht selbst hinzufügen."
+msgstr "你不能添加自己。"
+
+#: swissfy/posts/serializers/comments.py
+msgid "Dieser Kommentar wurde gesperrt."
+msgstr "此评论已被屏蔽。"
+
+#: swissfy/posts/serializers/comments.py
+msgid "Dieser Kommentar ist nicht sichtbar."
+msgstr "此评论不可见。"
+
+#: swissfy/posts/serializers/comments.py
+msgid "Ungültige Stimme."
+msgstr "无效投票。"
+
+#: swissfy/posts/serializers/common.py
+msgid "Der User wurde gesperrt und ist nicht sichtbar."
+msgstr "该用户已被封禁，不可见。"
+
+#: swissfy/posts/serializers/common.py
+msgid "Nur Admins können global posten."
+msgstr "只有管理员才能全局发布。"
+
+#: swissfy/posts/serializers/common.py swissfy/social/serializers.py
+msgid "Wähle mindestens eine Gruppe."
+msgstr "请至少选择一个群组。"
+
+#: swissfy/posts/serializers/common.py
+msgid "Dieser Name ist schon vergeben."
+msgstr "该名称已被使用。"
+
+#: swissfy/posts/serializers/posts.py
+msgid "Dieser Feed wurde gesperrt."
+msgstr "此动态已被屏蔽。"
+
+#: swissfy/posts/serializers/posts.py
+msgid "Dieser Feed ist nicht sichtbar."
+msgstr "此动态不可见。"
+
+#: swissfy/posts/serializers/posts.py
+msgid "Wähle entweder Bilder oder ein Video."
+msgstr "请选择图片或一个视频。"
+
+#: swissfy/posts/serializers/posts.py
+msgid "Schreib etwas oder wähle ein Bild oder Video."
+msgstr "请写点内容，或选择图片或视频。"
+
+#: swissfy/posts/serializers/stories.py
+msgid "Stories können nicht global sein."
+msgstr "快拍不能全局发布。"
+
+#: swissfy/posts/videos.py
+msgid "Die Datei ist kein gültiges Video."
+msgstr "该文件不是有效的视频。"
+
+#: swissfy/posts/videos.py
+msgid "Das Video ist zu gross (max. 250 MB)."
+msgstr "视频过大（最大 250 MB）。"
+
+#: swissfy/posts/videos.py
+#, python-format
+msgid "Das Video ist zu lang (max. %(seconds)s Sekunden)."
+msgstr "视频过长（最长 %(seconds)s 秒）。"
+
+#: swissfy/posts/views/albums.py
+msgid "Ungültige Reihenfolge."
+msgstr "无效的顺序。"
+
+#: swissfy/posts/views/albums.py
+msgid "Diese Alben sind nicht sichtbar."
+msgstr "这些相册不可见。"
+
+#: swissfy/posts/views/albums.py
+msgid "Dieses Album ist nicht sichtbar."
+msgstr "此相册不可见。"
+
+#: swissfy/posts/views/albums.py
+msgid "Ein Feed ist schon im Album."
+msgstr "有动态已在相册中。"
+
+#: swissfy/posts/views/albums.py
+msgid "Der Feed eines Eintrags kann nicht geändert werden."
+msgstr "条目的动态无法更改。"
+
+#: swissfy/posts/views/comments.py
+msgid "Dieser Feed ist nicht mehr verfügbar."
+msgstr "此动态已不可用。"
+
+#: swissfy/posts/views/comments.py
+msgid "Du kannst nicht über eigene Kommentare abstimmen."
+msgstr "你不能给自己的评论投票。"
+
+#: swissfy/posts/views/posts.py
+msgid "Du kannst deine eigenen Feeds nicht reposten."
+msgstr "你不能转发自己的动态。"
+
+#: swissfy/social/library.py
+msgid "Die Bibliothek ist gerade nicht erreichbar."
+msgstr "资料库暂时无法访问。"
+
+#: swissfy/social/library.py
+msgid "Titel nicht gefunden."
+msgstr "未找到该作品。"
+
+#: swissfy/social/relations.py
+msgid "Freundschaftsanfragen gehen nur, wenn ihr euch gegenseitig folgt."
+msgstr "只有互相关注才能发送好友请求。"
+
+#: swissfy/social/relations.py
+msgid "Ihr seid bereits befreundet."
+msgstr "你们已经是好友了。"
+
+#: swissfy/social/views.py
+msgid "Dieses Profil ist privat."
+msgstr "此个人资料为私密。"
+
+#: swissfy/social/views.py
+msgid "Du kannst dir nicht selbst folgen."
+msgstr "你不能关注自己。"

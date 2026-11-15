@@ -1,0 +1,1608 @@
+{
+  "og": {
+    "titles": {
+      "de": [
+        "OG"
+      ],
+      "en": [
+        "OG"
+      ],
+      "fr": [
+        "OG"
+      ],
+      "it": [
+        "OG"
+      ],
+      "rm": [
+        "OG"
+      ],
+      "es": [
+        "OG"
+      ],
+      "zh-hans": [
+        "元老"
+      ]
+    },
+    "description": {
+      "de": "Gehöre zu den ersten {n} Accounts auf Swissfy.",
+      "en": "Be one of the first {n} accounts on Swissfy.",
+      "fr": "Fais partie des {n} premiers comptes sur Swissfy.",
+      "it": "Sii tra i primi {n} account su Swissfy.",
+      "rm": "Fa part dals emprims {n} contos sin Swissfy.",
+      "es": "Sé una de las primeras {n} cuentas de Swissfy.",
+      "zh-hans": "成为 Swissfy 前 {n} 个账户之一。"
+    }
+  },
+  "pioneer": {
+    "titles": {
+      "de": [
+        "Rütlischwur"
+      ],
+      "en": [
+        "Rütli Oath"
+      ],
+      "fr": [
+        "Serment du Grütli"
+      ],
+      "it": [
+        "Giuramento del Grütli"
+      ],
+      "rm": [
+        "Engirament dal Grütli"
+      ],
+      "es": [
+        "Juramento de Rütli"
+      ],
+      "zh-hans": [
+        "吕特利誓言"
+      ]
+    },
+    "description": {
+      "de": "Gehöre zu den ersten {n} Accounts auf Swissfy.",
+      "en": "Be one of the first {n} accounts on Swissfy.",
+      "fr": "Fais partie des {n} premiers comptes sur Swissfy.",
+      "it": "Sii tra i primi {n} account su Swissfy.",
+      "rm": "Fa part dals emprims {n} contos sin Swissfy.",
+      "es": "Sé una de las primeras {n} cuentas de Swissfy.",
+      "zh-hans": "成为 Swissfy 前 {n} 个账户之一。"
+    }
+  },
+  "open_book": {
+    "titles": {
+      "de": [
+        "Charakter erstellt"
+      ],
+      "en": [
+        "Character Created"
+      ],
+      "fr": [
+        "Personnage créé"
+      ],
+      "it": [
+        "Personaggio creato"
+      ],
+      "rm": [
+        "Persunagi creà"
+      ],
+      "es": [
+        "Personaje creado"
+      ],
+      "zh-hans": [
+        "角色已创建"
+      ]
+    },
+    "description": {
+      "de": "Hinterlege in govex Vorname, Nachname, Geburtsdatum und einen Avatar.",
+      "en": "Add your first name, last name, birthdate and an avatar in govex.",
+      "fr": "Renseigne dans govex ton prénom, ton nom, ta date de naissance et un avatar.",
+      "it": "Inserisci in govex nome, cognome, data di nascita e un avatar.",
+      "rm": "Endatescha en govex prenum, num, data da naschientscha ed in avatar.",
+      "es": "Añade en govex tu nombre, apellido, fecha de nacimiento y un avatar.",
+      "zh-hans": "在 govex 中填写名字、姓氏、出生日期并设置头像。"
+    }
+  },
+  "veteran": {
+    "titles": {
+      "de": [
+        "Tutorial abgeschlossen",
+        "Willkommen in Silent Hill",
+        "Stammgast",
+        "Inventar",
+        "Urgestein",
+        "Gandalf der Graue",
+        "Meister Yoda",
+        "Es kann nur einen geben",
+        "Marty McFly",
+        "Methusalem"
+      ],
+      "en": [
+        "Tutorial Complete",
+        "Welcome to Silent Hill",
+        "Regular",
+        "Part of the Furniture",
+        "Old Timer",
+        "Gandalf the Grey",
+        "Master Yoda",
+        "There Can Be Only One",
+        "Marty McFly",
+        "Methuselah"
+      ],
+      "fr": [
+        "Tutoriel terminé",
+        "Bienvenue à Silent Hill",
+        "Habitué",
+        "Meuble de la maison",
+        "Vieux de la vieille",
+        "Gandalf le Gris",
+        "Maître Yoda",
+        "Il ne peut en rester qu'un",
+        "Marty McFly",
+        "Mathusalem"
+      ],
+      "it": [
+        "Tutorial completato",
+        "Benvenuto a Silent Hill",
+        "Cliente abituale",
+        "Parte dell'arredamento",
+        "Veterano",
+        "Gandalf il Grigio",
+        "Maestro Yoda",
+        "Ne resterà soltanto uno",
+        "Marty McFly",
+        "Matusalemme"
+      ],
+      "rm": [
+        "Tutorial terminà",
+        "Bainvegni a Silent Hill",
+        "Giast regular",
+        "Part da l'inventari",
+        "Vegl lup",
+        "Gandalf il Grisch",
+        "Maister Yoda",
+        "I po dar mo in",
+        "Marty McFly",
+        "Metusalem"
+      ],
+      "es": [
+        "Tutorial completado",
+        "Bienvenido a Silent Hill",
+        "Cliente habitual",
+        "Parte del mobiliario",
+        "Veterano",
+        "Gandalf el Gris",
+        "Maestro Yoda",
+        "Solo puede quedar uno",
+        "Marty McFly",
+        "Matusalén"
+      ],
+      "zh-hans": [
+        "新手教程完成",
+        "欢迎来到寂静岭",
+        "常客",
+        "老面孔",
+        "元老级",
+        "灰袍甘道夫",
+        "尤达大师",
+        "只能有一个",
+        "马蒂·麦弗莱",
+        "玛土撒拉"
+      ]
+    },
+    "description": {
+      "de": "Sei {n} Tage auf Swissfy dabei.",
+      "en": "Be on Swissfy for {n} days.",
+      "fr": "Sois sur Swissfy depuis {n} jours.",
+      "it": "Sii su Swissfy da {n} giorni.",
+      "rm": "Sajas {n} dis sin Swissfy.",
+      "es": "Lleva {n} días en Swissfy.",
+      "zh-hans": "在 Swissfy 待满 {n} 天。"
+    }
+  },
+  "posts": {
+    "titles": {
+      "de": [
+        "Hello World",
+        "Hobby-Influencer",
+        "Content Creator",
+        "GZSZ-Niveau",
+        "Vollzeit-Influencer",
+        "Liebling des Algorithmus"
+      ],
+      "en": [
+        "Hello World",
+        "Hobby Influencer",
+        "Content Creator",
+        "Soap Opera Level",
+        "Full-Time Influencer",
+        "Darling of the Algorithm"
+      ],
+      "fr": [
+        "Hello World",
+        "Influenceur amateur",
+        "Créateur de contenu",
+        "Niveau soap opera",
+        "Influenceur à plein temps",
+        "Chouchou de l'algorithme"
+      ],
+      "it": [
+        "Hello World",
+        "Influencer per hobby",
+        "Content creator",
+        "Livello soap opera",
+        "Influencer a tempo pieno",
+        "Beniamino dell'algoritmo"
+      ],
+      "rm": [
+        "Hello World",
+        "Influencer per hobby",
+        "Content creator",
+        "Nivel da telenovela",
+        "Influencer a temp plain",
+        "Favurit da l'algoritmus"
+      ],
+      "es": [
+        "Hello World",
+        "Influencer aficionado",
+        "Creador de contenido",
+        "Nivel telenovela",
+        "Influencer a tiempo completo",
+        "Favorito del algoritmo"
+      ],
+      "zh-hans": [
+        "Hello World",
+        "业余网红",
+        "内容创作者",
+        "肥皂剧水准",
+        "全职网红",
+        "算法宠儿"
+      ]
+    },
+    "description": {
+      "de": "Veröffentliche {n} Feeds.",
+      "en": "Publish {n} feeds.",
+      "fr": "Publie {n} feeds.",
+      "it": "Pubblica {n} feed.",
+      "rm": "Publitgescha {n} feeds.",
+      "es": "Publica {n} feeds.",
+      "zh-hans": "发布 {n} 条动态。"
+    }
+  },
+  "reels": {
+    "titles": {
+      "de": [
+        "VHS-Rookie",
+        "Tarantino-Schüler",
+        "Blockbuster",
+        "Oscar-verdächtig",
+        "Hollywood-Legende"
+      ],
+      "en": [
+        "VHS Rookie",
+        "Tarantino's Apprentice",
+        "Blockbuster",
+        "Oscar Material",
+        "Hollywood Legend"
+      ],
+      "fr": [
+        "Débutant VHS",
+        "Élève de Tarantino",
+        "Blockbuster",
+        "Digne d'un Oscar",
+        "Légende d'Hollywood"
+      ],
+      "it": [
+        "Principiante VHS",
+        "Allievo di Tarantino",
+        "Blockbuster",
+        "Da Oscar",
+        "Leggenda di Hollywood"
+      ],
+      "rm": [
+        "Principiant VHS",
+        "Scolar da Tarantino",
+        "Blockbuster",
+        "Degn d'in Oscar",
+        "Legenda da Hollywood"
+      ],
+      "es": [
+        "Novato del VHS",
+        "Alumno de Tarantino",
+        "Taquillazo",
+        "Digno de un Óscar",
+        "Leyenda de Hollywood"
+      ],
+      "zh-hans": [
+        "录像带新手",
+        "昆汀的学徒",
+        "大片",
+        "奥斯卡热门",
+        "好莱坞传奇"
+      ]
+    },
+    "description": {
+      "de": "Lade {n} Seeds hoch.",
+      "en": "Upload {n} seeds.",
+      "fr": "Mets en ligne {n} seeds.",
+      "it": "Carica {n} seed.",
+      "rm": "Chargia si {n} seeds.",
+      "es": "Sube {n} seeds.",
+      "zh-hans": "上传 {n} 个 Seeds。"
+    }
+  },
+  "hashtags_used": {
+    "titles": {
+      "de": [
+        "#NoFilter",
+        "#Trendsetter",
+        "#Hashtagkönig",
+        "#YOLO",
+        "#Hashtag-Hydra"
+      ],
+      "en": [
+        "#NoFilter",
+        "#Trendsetter",
+        "#HashtagKing",
+        "#YOLO",
+        "#HashtagHydra"
+      ],
+      "fr": [
+        "#NoFilter",
+        "#Trendsetter",
+        "#RoiDuHashtag",
+        "#YOLO",
+        "#HydreÀHashtags"
+      ],
+      "it": [
+        "#NoFilter",
+        "#Trendsetter",
+        "#ReDegliHashtag",
+        "#YOLO",
+        "#IdraDegliHashtag"
+      ],
+      "rm": [
+        "#NoFilter",
+        "#Trendsetter",
+        "#ReigDalsHashtags",
+        "#YOLO",
+        "#HidraDaHashtags"
+      ],
+      "es": [
+        "#NoFilter",
+        "#Trendsetter",
+        "#ReyDelHashtag",
+        "#YOLO",
+        "#HidraDeHashtags"
+      ],
+      "zh-hans": [
+        "#无滤镜",
+        "#潮流引领者",
+        "#话题之王",
+        "#YOLO",
+        "#话题九头蛇"
+      ]
+    },
+    "description": {
+      "de": "Verwende {n} verschiedene Hashtags in deinen Feeds.",
+      "en": "Use {n} different hashtags in your feeds.",
+      "fr": "Utilise {n} hashtags différents dans tes feeds.",
+      "it": "Usa {n} hashtag diversi nei tuoi feed.",
+      "rm": "Dovra {n} differents hashtags en tes feeds.",
+      "es": "Usa {n} hashtags distintos en tus feeds.",
+      "zh-hans": "在动态中使用 {n} 个不同话题。"
+    }
+  },
+  "likes_given": {
+    "titles": {
+      "de": [
+        "Daumen aus Stahl",
+        "Button-Masher",
+        "Like-Maschine",
+        "Combo-Breaker",
+        "Daumen-Olympionike"
+      ],
+      "en": [
+        "Thumb of Steel",
+        "Button Masher",
+        "Like Machine",
+        "Combo Breaker",
+        "Olympic Thumb"
+      ],
+      "fr": [
+        "Pouce d'acier",
+        "Martèle-bouton",
+        "Machine à likes",
+        "Combo Breaker",
+        "Pouce olympique"
+      ],
+      "it": [
+        "Pollice d'acciaio",
+        "Pesta-tasti",
+        "Macchina da like",
+        "Combo Breaker",
+        "Pollice olimpionico"
+      ],
+      "rm": [
+        "Polesch d'atschal",
+        "Smatgader da buttuns",
+        "Maschina da likes",
+        "Combo Breaker",
+        "Polesch olimpic"
+      ],
+      "es": [
+        "Pulgar de acero",
+        "Machacabotones",
+        "Máquina de likes",
+        "Combo Breaker",
+        "Pulgar olímpico"
+      ],
+      "zh-hans": [
+        "钢铁拇指",
+        "狂按按钮",
+        "点赞机器",
+        "连击终结者",
+        "奥运拇指"
+      ]
+    },
+    "description": {
+      "de": "Like {n} Feeds.",
+      "en": "Like {n} feeds.",
+      "fr": "Like {n} feeds.",
+      "it": "Metti mi piace a {n} feed.",
+      "rm": "Dà in like a {n} feeds.",
+      "es": "Dale like a {n} feeds.",
+      "zh-hans": "给 {n} 条动态点赞。"
+    }
+  },
+  "likes_received": {
+    "titles": {
+      "de": [
+        "Herzensbrecher",
+        "Publikumsmagnet",
+        "Bachelor-Rose",
+        "Schwarm der Nation",
+        "Herz-Monopol"
+      ],
+      "en": [
+        "Heartbreaker",
+        "Crowd Puller",
+        "Bachelor Rose",
+        "Nation's Sweetheart",
+        "Heart Monopoly"
+      ],
+      "fr": [
+        "Bourreau des cœurs",
+        "Aimant à public",
+        "Rose du Bachelor",
+        "Chouchou de la nation",
+        "Monopole des cœurs"
+      ],
+      "it": [
+        "Rubacuori",
+        "Calamita di pubblico",
+        "Rosa del Bachelor",
+        "Fidanzato della nazione",
+        "Monopolio dei cuori"
+      ],
+      "rm": [
+        "Rumpacors",
+        "Magnet dal public",
+        "Rosa dal Bachelor",
+        "Favurit da la naziun",
+        "Monopol dals cors"
+      ],
+      "es": [
+        "Rompecorazones",
+        "Imán de público",
+        "Rosa del Bachelor",
+        "Ídolo de la nación",
+        "Monopolio de corazones"
+      ],
+      "zh-hans": [
+        "万人迷",
+        "人气磁铁",
+        "单身汉的玫瑰",
+        "国民偶像",
+        "爱心垄断"
+      ]
+    },
+    "description": {
+      "de": "Erhalte {n} Likes auf deine Feeds.",
+      "en": "Get {n} likes on your feeds.",
+      "fr": "Reçois {n} likes sur tes feeds.",
+      "it": "Ricevi {n} mi piace sui tuoi feed.",
+      "rm": "Survegna {n} likes sin tes feeds.",
+      "es": "Recibe {n} likes en tus feeds.",
+      "zh-hans": "你的动态获得 {n} 个赞。"
+    }
+  },
+  "superfan": {
+    "titles": {
+      "de": [
+        "Superfan",
+        "Groupie",
+        "Fanclub-Präsident",
+        "Swiftie-Level"
+      ],
+      "en": [
+        "Superfan",
+        "Groupie",
+        "Fan Club President",
+        "Swiftie Level"
+      ],
+      "fr": [
+        "Superfan",
+        "Groupie",
+        "Président du fan-club",
+        "Niveau Swiftie"
+      ],
+      "it": [
+        "Superfan",
+        "Groupie",
+        "Presidente del fan club",
+        "Livello Swiftie"
+      ],
+      "rm": [
+        "Superfan",
+        "Groupie",
+        "President dal fanclub",
+        "Nivel Swiftie"
+      ],
+      "es": [
+        "Superfan",
+        "Groupie",
+        "Presidente del club de fans",
+        "Nivel Swiftie"
+      ],
+      "zh-hans": [
+        "超级粉丝",
+        "追星族",
+        "粉丝团团长",
+        "霉粉级别"
+      ]
+    },
+    "description": {
+      "de": "Like {n} Feeds derselben Person.",
+      "en": "Like {n} feeds of the same person.",
+      "fr": "Like {n} feeds de la même personne.",
+      "it": "Metti mi piace a {n} feed della stessa persona.",
+      "rm": "Dà in like a {n} feeds da la medema persuna.",
+      "es": "Dale like a {n} feeds de la misma persona.",
+      "zh-hans": "给同一个人的 {n} 条动态点赞。"
+    }
+  },
+  "fanclub": {
+    "titles": {
+      "de": [
+        "Treuer Fanclub",
+        "Hachiko-Treue",
+        "Fankurve",
+        "Beatlemania"
+      ],
+      "en": [
+        "Loyal Fan Club",
+        "Loyal Like Hachiko",
+        "The Stands",
+        "Beatlemania"
+      ],
+      "fr": [
+        "Fan-club fidèle",
+        "Fidèle comme Hachikō",
+        "Tribune des supporters",
+        "Beatlemania"
+      ],
+      "it": [
+        "Fan club fedele",
+        "Fedele come Hachiko",
+        "Curva dei tifosi",
+        "Beatlemania"
+      ],
+      "rm": [
+        "Fanclub fidaivel",
+        "Fidaivel sco Hachiko",
+        "Curva dals fans",
+        "Beatlemania"
+      ],
+      "es": [
+        "Club de fans fiel",
+        "Fiel como Hachiko",
+        "Grada de fans",
+        "Beatlemanía"
+      ],
+      "zh-hans": [
+        "忠实粉丝团",
+        "八公般忠诚",
+        "球迷看台",
+        "披头士狂热"
+      ]
+    },
+    "description": {
+      "de": "Erhalte {n} Likes von derselben Person.",
+      "en": "Get {n} likes from the same person.",
+      "fr": "Reçois {n} likes de la même personne.",
+      "it": "Ricevi {n} mi piace dalla stessa persona.",
+      "rm": "Survegna {n} likes da la medema persuna.",
+      "es": "Recibe {n} likes de la misma persona.",
+      "zh-hans": "从同一个人那里获得 {n} 个赞。"
+    }
+  },
+  "comments_written": {
+    "titles": {
+      "de": [
+        "Senf-Dazugeber",
+        "Stammkommentator",
+        "Meinungsmacher",
+        "Filibuster",
+        "Kommentar-Kanone",
+        "Senf-Fabrik"
+      ],
+      "en": [
+        "Two Cents",
+        "Regular Commenter",
+        "Opinion Maker",
+        "Filibuster",
+        "Comment Cannon",
+        "Two Cents Factory"
+      ],
+      "fr": [
+        "Mon grain de sel",
+        "Commentateur assidu",
+        "Faiseur d'opinion",
+        "Obstruction parlementaire",
+        "Canon à commentaires",
+        "Usine à grains de sel"
+      ],
+      "it": [
+        "Il mio parere",
+        "Commentatore abituale",
+        "Opinionista",
+        "Ostruzionismo",
+        "Cannone di commenti",
+        "Fabbrica di pareri"
+      ],
+      "rm": [
+        "Mes mustard",
+        "Commentatur regular",
+        "Furmader d'opiniun",
+        "Obstrucziun",
+        "Cannun da commentaris",
+        "Fabrica da mustard"
+      ],
+      "es": [
+        "Mi granito de arena",
+        "Comentarista habitual",
+        "Creador de opinión",
+        "Obstruccionismo",
+        "Cañón de comentarios",
+        "Fábrica de opiniones"
+      ],
+      "zh-hans": [
+        "发表意见",
+        "评论常客",
+        "意见领袖",
+        "冗长发言",
+        "评论大炮",
+        "意见工厂"
+      ]
+    },
+    "description": {
+      "de": "Schreibe {n} Kommentare.",
+      "en": "Write {n} comments.",
+      "fr": "Écris {n} commentaires.",
+      "it": "Scrivi {n} commenti.",
+      "rm": "Scriva {n} commentaris.",
+      "es": "Escribe {n} comentarios.",
+      "zh-hans": "发表 {n} 条评论。"
+    }
+  },
+  "comments_received": {
+    "titles": {
+      "de": [
+        "Gesprächsstoff",
+        "Stadtgespräch",
+        "Arena-Thema",
+        "Breaking News",
+        "Talk of the Town"
+      ],
+      "en": [
+        "Talking Point",
+        "Talk of the Village",
+        "Arena Topic",
+        "Breaking News",
+        "Talk of the Town"
+      ],
+      "fr": [
+        "Sujet de conversation",
+        "Le sujet du village",
+        "Débat d'Arena",
+        "Breaking News",
+        "Talk of the Town"
+      ],
+      "it": [
+        "Argomento di conversazione",
+        "Discorso del paese",
+        "Tema da Arena",
+        "Breaking News",
+        "Talk of the Town"
+      ],
+      "rm": [
+        "Tema da discussiun",
+        "Discurs dal vitg",
+        "Tema da l'Arena",
+        "Breaking News",
+        "Talk of the Town"
+      ],
+      "es": [
+        "Tema de conversación",
+        "La comidilla del pueblo",
+        "Tema de debate",
+        "Breaking News",
+        "Talk of the Town"
+      ],
+      "zh-hans": [
+        "话题焦点",
+        "街谈巷议",
+        "热议话题",
+        "突发新闻",
+        "全城热议"
+      ]
+    },
+    "description": {
+      "de": "Erhalte {n} Kommentare auf deine Feeds.",
+      "en": "Get {n} comments on your feeds.",
+      "fr": "Reçois {n} commentaires sur tes feeds.",
+      "it": "Ricevi {n} commenti sui tuoi feed.",
+      "rm": "Survegna {n} commentaris sin tes feeds.",
+      "es": "Recibe {n} comentarios en tus feeds.",
+      "zh-hans": "你的动态获得 {n} 条评论。"
+    }
+  },
+  "crowd": {
+    "titles": {
+      "de": [
+        "Publikumsliebling",
+        "Lagerfeuer-Erzähler",
+        "Landsgemeinde",
+        "Wetten, dass..?",
+        "Woodstock"
+      ],
+      "en": [
+        "Crowd Favourite",
+        "Campfire Storyteller",
+        "Town Meeting",
+        "Wetten, dass..?",
+        "Woodstock"
+      ],
+      "fr": [
+        "Chouchou du public",
+        "Conteur au coin du feu",
+        "Landsgemeinde",
+        "Wetten, dass..?",
+        "Woodstock"
+      ],
+      "it": [
+        "Beniamino del pubblico",
+        "Narratore al falò",
+        "Landsgemeinde",
+        "Wetten, dass..?",
+        "Woodstock"
+      ],
+      "rm": [
+        "Favurit dal public",
+        "Raquintader al fieu",
+        "Cumin",
+        "Wetten, dass..?",
+        "Woodstock"
+      ],
+      "es": [
+        "Favorito del público",
+        "Narrador junto al fuego",
+        "Landsgemeinde",
+        "Wetten, dass..?",
+        "Woodstock"
+      ],
+      "zh-hans": [
+        "观众宠儿",
+        "篝火讲述者",
+        "公民大会",
+        "Wetten, dass..?",
+        "伍德斯托克"
+      ]
+    },
+    "description": {
+      "de": "Erhalte Kommentare von {n} verschiedenen Personen.",
+      "en": "Get comments from {n} different people.",
+      "fr": "Reçois des commentaires de {n} personnes différentes.",
+      "it": "Ricevi commenti da {n} persone diverse.",
+      "rm": "Survegna commentaris da {n} differentas persunas.",
+      "es": "Recibe comentarios de {n} personas distintas.",
+      "zh-hans": "获得 {n} 个不同的人的评论。"
+    }
+  },
+  "sparring": {
+    "titles": {
+      "de": [
+        "Wortgefecht",
+        "Round 1 – Fight!",
+        "Rap-Battle",
+        "Finish Him!",
+        "Fatality"
+      ],
+      "en": [
+        "War of Words",
+        "Round 1 – Fight!",
+        "Rap Battle",
+        "Finish Him!",
+        "Fatality"
+      ],
+      "fr": [
+        "Joute verbale",
+        "Round 1 – Fight!",
+        "Battle de rap",
+        "Finish Him!",
+        "Fatality"
+      ],
+      "it": [
+        "Duello verbale",
+        "Round 1 – Fight!",
+        "Rap battle",
+        "Finish Him!",
+        "Fatality"
+      ],
+      "rm": [
+        "Duel da pleds",
+        "Round 1 – Fight!",
+        "Rap battle",
+        "Finish Him!",
+        "Fatality"
+      ],
+      "es": [
+        "Duelo verbal",
+        "Round 1 – Fight!",
+        "Batalla de rap",
+        "Finish Him!",
+        "Fatality"
+      ],
+      "zh-hans": [
+        "唇枪舌剑",
+        "第一回合——开打！",
+        "说唱对决",
+        "Finish Him!",
+        "Fatality"
+      ]
+    },
+    "description": {
+      "de": "Antworte {n}-mal auf Kommentare derselben Person.",
+      "en": "Reply {n} times to comments of the same person.",
+      "fr": "Réponds {n} fois aux commentaires de la même personne.",
+      "it": "Rispondi {n} volte ai commenti della stessa persona.",
+      "rm": "Respunda {n} giadas a commentaris da la medema persuna.",
+      "es": "Responde {n} veces a comentarios de la misma persona.",
+      "zh-hans": "回复同一个人的评论 {n} 次。"
+    }
+  },
+  "long_debate": {
+    "titles": {
+      "de": [
+        "Ewige Debatte",
+        "Tom & Jerry",
+        "Röstigraben",
+        "Parlament zu zweit",
+        "Krieg der Sterne",
+        "Game of Thrones",
+        "Kalter Krieg",
+        "Hundertjähriger Krieg"
+      ],
+      "en": [
+        "Eternal Debate",
+        "Tom & Jerry",
+        "Röstigraben",
+        "Parliament for Two",
+        "Star Wars",
+        "Game of Thrones",
+        "Cold War",
+        "Hundred Years' War"
+      ],
+      "fr": [
+        "Débat éternel",
+        "Tom et Jerry",
+        "Röstigraben",
+        "Parlement à deux",
+        "La Guerre des étoiles",
+        "Game of Thrones",
+        "Guerre froide",
+        "Guerre de Cent Ans"
+      ],
+      "it": [
+        "Dibattito eterno",
+        "Tom e Jerry",
+        "Röstigraben",
+        "Parlamento a due",
+        "Guerre stellari",
+        "Game of Thrones",
+        "Guerra fredda",
+        "Guerra dei cent'anni"
+      ],
+      "rm": [
+        "Debatta perpetna",
+        "Tom e Jerry",
+        "Röstigraben",
+        "Parlament a dus",
+        "Guerra da las stailas",
+        "Game of Thrones",
+        "Guerra fraida",
+        "Guerra da tschient onns"
+      ],
+      "es": [
+        "Debate eterno",
+        "Tom y Jerry",
+        "Röstigraben",
+        "Parlamento a dos",
+        "La guerra de las galaxias",
+        "Juego de tronos",
+        "Guerra fría",
+        "Guerra de los Cien Años"
+      ],
+      "zh-hans": [
+        "永恒的辩论",
+        "猫和老鼠",
+        "薯饼鸿沟",
+        "两人议会",
+        "星球大战",
+        "权力的游戏",
+        "冷战",
+        "百年战争"
+      ]
+    },
+    "description": {
+      "de": "Diskutiere mit derselben Person in den Kommentaren über {n} Tage hinweg hin und her.",
+      "en": "Keep a back-and-forth going with the same person in the comments over {n} days.",
+      "fr": "Échange avec la même personne dans les commentaires pendant {n} jours.",
+      "it": "Discuti con la stessa persona nei commenti per {n} giorni.",
+      "rm": "Discutescha cun la medema persuna en ils commentaris durant {n} dis.",
+      "es": "Discute con la misma persona en los comentarios durante {n} días.",
+      "zh-hans": "与同一个人在评论中来回讨论超过 {n} 天。"
+    }
+  },
+  "upvotes_received": {
+    "titles": {
+      "de": [
+        "Weise Worte",
+        "Konfuzius sagt",
+        "Orakel von Delphi",
+        "Dumbledore-Weisheit",
+        "Die Antwort ist 42"
+      ],
+      "en": [
+        "Wise Words",
+        "Confucius Says",
+        "Oracle of Delphi",
+        "Dumbledore's Wisdom",
+        "The Answer Is 42"
+      ],
+      "fr": [
+        "Paroles sages",
+        "Confucius a dit",
+        "Oracle de Delphes",
+        "Sagesse de Dumbledore",
+        "La réponse est 42"
+      ],
+      "it": [
+        "Parole sagge",
+        "Confucio dice",
+        "Oracolo di Delfi",
+        "Saggezza di Silente",
+        "La risposta è 42"
+      ],
+      "rm": [
+        "Pleds sabis",
+        "Confuzius di",
+        "Oracul da Delfi",
+        "Sabientscha da Dumbledore",
+        "La resposta è 42"
+      ],
+      "es": [
+        "Palabras sabias",
+        "Confucio dice",
+        "Oráculo de Delfos",
+        "Sabiduría de Dumbledore",
+        "La respuesta es 42"
+      ],
+      "zh-hans": [
+        "金玉良言",
+        "子曰",
+        "德尔斐神谕",
+        "邓布利多的智慧",
+        "答案是 42"
+      ]
+    },
+    "description": {
+      "de": "Erhalte {n} Upvotes auf deine Kommentare.",
+      "en": "Get {n} upvotes on your comments.",
+      "fr": "Reçois {n} votes positifs sur tes commentaires.",
+      "it": "Ricevi {n} voti positivi sui tuoi commenti.",
+      "rm": "Survegna {n} upvotes sin tes commentaris.",
+      "es": "Recibe {n} votos positivos en tus comentarios.",
+      "zh-hans": "你的评论获得 {n} 个赞同。"
+    }
+  },
+  "saves_given": {
+    "titles": {
+      "de": [
+        "Eichhörnchen-Modus",
+        "Inventar voll",
+        "Itemkiste im Save-Room",
+        "Drachenhort"
+      ],
+      "en": [
+        "Squirrel Mode",
+        "Inventory Full",
+        "Item Box in the Save Room",
+        "Dragon's Hoard"
+      ],
+      "fr": [
+        "Mode écureuil",
+        "Inventaire plein",
+        "Coffre de la salle de sauvegarde",
+        "Trésor du dragon"
+      ],
+      "it": [
+        "Modalità scoiattolo",
+        "Inventario pieno",
+        "Baule della stanza di salvataggio",
+        "Tesoro del drago"
+      ],
+      "rm": [
+        "Modus da scorsalla",
+        "Inventari plain",
+        "Chista en la stanza da memorisar",
+        "Stgazi dal dragun"
+      ],
+      "es": [
+        "Modo ardilla",
+        "Inventario lleno",
+        "Baúl de la sala de guardado",
+        "Tesoro del dragón"
+      ],
+      "zh-hans": [
+        "松鼠模式",
+        "背包已满",
+        "存档室宝箱",
+        "巨龙宝藏"
+      ]
+    },
+    "description": {
+      "de": "Speichere {n} Feeds.",
+      "en": "Save {n} feeds.",
+      "fr": "Enregistre {n} feeds.",
+      "it": "Salva {n} feed.",
+      "rm": "Memorisescha {n} feeds.",
+      "es": "Guarda {n} feeds.",
+      "zh-hans": "收藏 {n} 条动态。"
+    }
+  },
+  "saves_received": {
+    "titles": {
+      "de": [
+        "Sammlerstück",
+        "Panini-Bildli",
+        "Glänzendes Glurak",
+        "Museumsreif",
+        "Heiliger Gral"
+      ],
+      "en": [
+        "Collector's Item",
+        "Panini Sticker",
+        "Shiny Charizard",
+        "Museum Piece",
+        "Holy Grail"
+      ],
+      "fr": [
+        "Pièce de collection",
+        "Vignette Panini",
+        "Dracaufeu chromatique",
+        "Digne d'un musée",
+        "Saint Graal"
+      ],
+      "it": [
+        "Pezzo da collezione",
+        "Figurina Panini",
+        "Charizard cromatico",
+        "Da museo",
+        "Santo Graal"
+      ],
+      "rm": [
+        "Toc da collecziun",
+        "Maletg Panini",
+        "Charizard glitschant",
+        "Degn d'in museum",
+        "Sontg Graal"
+      ],
+      "es": [
+        "Pieza de colección",
+        "Cromo Panini",
+        "Charizard variocolor",
+        "Digno de museo",
+        "Santo Grial"
+      ],
+      "zh-hans": [
+        "收藏品",
+        "帕尼尼贴纸",
+        "闪光喷火龙",
+        "博物馆级",
+        "圣杯"
+      ]
+    },
+    "description": {
+      "de": "Lass deine Feeds {n}-mal speichern.",
+      "en": "Have your feeds saved {n} times.",
+      "fr": "Fais enregistrer tes feeds {n} fois.",
+      "it": "Fai salvare i tuoi feed {n} volte.",
+      "rm": "Laschà memorisar tes feeds {n} giadas.",
+      "es": "Consigue que guarden tus feeds {n} veces.",
+      "zh-hans": "你的动态被收藏 {n} 次。"
+    }
+  },
+  "followers": {
+    "titles": {
+      "de": [
+        "Kleiner Kult",
+        "Lokale Berühmtheit",
+        "Dorfgespräch",
+        "Zombie-Horde im Schlepptau",
+        "Promi",
+        "Rockstar",
+        "Legende"
+      ],
+      "en": [
+        "Small Cult",
+        "Local Celebrity",
+        "Talk of the Village",
+        "Zombie Horde in Tow",
+        "Celebrity",
+        "Rock Star",
+        "Legend"
+      ],
+      "fr": [
+        "Petit culte",
+        "Célébrité locale",
+        "Le sujet du village",
+        "Horde de zombies aux trousses",
+        "Célébrité",
+        "Rock star",
+        "Légende"
+      ],
+      "it": [
+        "Piccolo culto",
+        "Celebrità locale",
+        "Discorso del paese",
+        "Orda di zombie al seguito",
+        "Vip",
+        "Rockstar",
+        "Leggenda"
+      ],
+      "rm": [
+        "Pitschen cult",
+        "Celebritad locala",
+        "Discurs dal vitg",
+        "Horda da zombies davos",
+        "Prominent",
+        "Rockstar",
+        "Legenda"
+      ],
+      "es": [
+        "Pequeño culto",
+        "Celebridad local",
+        "La comidilla del pueblo",
+        "Horda de zombis detrás",
+        "Famoso",
+        "Estrella del rock",
+        "Leyenda"
+      ],
+      "zh-hans": [
+        "小众崇拜",
+        "本地名人",
+        "街谈巷议",
+        "身后的僵尸大军",
+        "名人",
+        "摇滚明星",
+        "传奇"
+      ]
+    },
+    "description": {
+      "de": "Gewinne {n} Follower.",
+      "en": "Gain {n} followers.",
+      "fr": "Gagne {n} abonnés.",
+      "it": "Ottieni {n} follower.",
+      "rm": "Gudogna {n} followers.",
+      "es": "Consigue {n} seguidores.",
+      "zh-hans": "获得 {n} 个关注者。"
+    }
+  },
+  "following": {
+    "titles": {
+      "de": [
+        "Neugiernase",
+        "Paparazzo",
+        "Big Brother",
+        "NSA-Praktikant"
+      ],
+      "en": [
+        "Nosy Parker",
+        "Paparazzo",
+        "Big Brother",
+        "NSA Intern"
+      ],
+      "fr": [
+        "Curieux",
+        "Paparazzo",
+        "Big Brother",
+        "Stagiaire à la NSA"
+      ],
+      "it": [
+        "Ficcanaso",
+        "Paparazzo",
+        "Grande Fratello",
+        "Stagista della NSA"
+      ],
+      "rm": [
+        "Nas curius",
+        "Paparazzo",
+        "Big Brother",
+        "Praticant da la NSA"
+      ],
+      "es": [
+        "Curioso",
+        "Paparazzo",
+        "Gran Hermano",
+        "Becario de la NSA"
+      ],
+      "zh-hans": [
+        "好奇宝宝",
+        "狗仔队",
+        "老大哥",
+        "NSA 实习生"
+      ]
+    },
+    "description": {
+      "de": "Folge {n} Accounts.",
+      "en": "Follow {n} accounts.",
+      "fr": "Suis {n} comptes.",
+      "it": "Segui {n} account.",
+      "rm": "Suonda {n} contos.",
+      "es": "Sigue a {n} cuentas.",
+      "zh-hans": "关注 {n} 个账户。"
+    }
+  },
+  "mutual": {
+    "titles": {
+      "de": [
+        "Auf Gegenseitigkeit",
+        "Ping & Pong",
+        "Bilaterale Verträge",
+        "Rebellen-Allianz"
+      ],
+      "en": [
+        "Mutual Terms",
+        "Ping & Pong",
+        "Bilateral Agreements",
+        "Rebel Alliance"
+      ],
+      "fr": [
+        "Réciprocité",
+        "Ping et Pong",
+        "Accords bilatéraux",
+        "Alliance rebelle"
+      ],
+      "it": [
+        "Reciprocità",
+        "Ping e Pong",
+        "Accordi bilaterali",
+        "Alleanza ribelle"
+      ],
+      "rm": [
+        "Vicendaivlas",
+        "Ping e Pong",
+        "Contracts bilaterals",
+        "Allianza da rebels"
+      ],
+      "es": [
+        "Reciprocidad",
+        "Ping y Pong",
+        "Acuerdos bilaterales",
+        "Alianza rebelde"
+      ],
+      "zh-hans": [
+        "互相关注",
+        "乒与乓",
+        "双边协议",
+        "义军同盟"
+      ]
+    },
+    "description": {
+      "de": "Folgt euch mit {n} Accounts gegenseitig.",
+      "en": "Follow each other with {n} accounts.",
+      "fr": "Suivez-vous mutuellement avec {n} comptes.",
+      "it": "Seguitevi a vicenda con {n} account.",
+      "rm": "As suandai vicendaivlamain cun {n} contos.",
+      "es": "Seguíos mutuamente con {n} cuentas.",
+      "zh-hans": "与 {n} 个账户互相关注。"
+    }
+  },
+  "friends": {
+    "titles": {
+      "de": [
+        "Die drei ???",
+        "Friends-Clique",
+        "Ocean's Eleven",
+        "Ritter der Tafelrunde",
+        "Bürgermeister der Herzen"
+      ],
+      "en": [
+        "The Three Investigators",
+        "Friends Crew",
+        "Ocean's Eleven",
+        "Knights of the Round Table",
+        "Mayor of Hearts"
+      ],
+      "fr": [
+        "Les Trois Jeunes Détectives",
+        "Bande à la Friends",
+        "Ocean's Eleven",
+        "Chevaliers de la Table ronde",
+        "Maire des cœurs"
+      ],
+      "it": [
+        "I tre investigatori",
+        "Gruppo di Friends",
+        "Ocean's Eleven",
+        "Cavalieri della Tavola Rotonda",
+        "Sindaco dei cuori"
+      ],
+      "rm": [
+        "Ils trais detectivs",
+        "Clicca da Friends",
+        "Ocean's Eleven",
+        "Cavaliers da la Maisa rodunda",
+        "President communal dals cors"
+      ],
+      "es": [
+        "Los Tres Investigadores",
+        "Pandilla de Friends",
+        "Ocean's Eleven",
+        "Caballeros de la Mesa Redonda",
+        "Alcalde de los corazones"
+      ],
+      "zh-hans": [
+        "三个问号",
+        "老友记团伙",
+        "十一罗汉",
+        "圆桌骑士",
+        "人心所向"
+      ]
+    },
+    "description": {
+      "de": "Schliesse {n} Freundschaften.",
+      "en": "Make {n} friends.",
+      "fr": "Noue {n} amitiés.",
+      "it": "Stringi {n} amicizie.",
+      "rm": "Fa {n} amicizias.",
+      "es": "Haz {n} amistades.",
+      "zh-hans": "结交 {n} 位好友。"
+    }
+  },
+  "old_friends": {
+    "titles": {
+      "de": [
+        "Buddy-Movie",
+        "Timon & Pumbaa",
+        "Asterix & Obelix",
+        "Frodo & Sam",
+        "Rick & Daryl",
+        "Ernie & Bert",
+        "Han Solo & Chewbacca",
+        "Bud Spencer & Terence Hill"
+      ],
+      "en": [
+        "Buddy Movie",
+        "Timon & Pumbaa",
+        "Asterix & Obelix",
+        "Frodo & Sam",
+        "Rick & Daryl",
+        "Bert & Ernie",
+        "Han Solo & Chewbacca",
+        "Bud Spencer & Terence Hill"
+      ],
+      "fr": [
+        "Buddy movie",
+        "Timon et Pumbaa",
+        "Astérix et Obélix",
+        "Frodon et Sam",
+        "Rick et Daryl",
+        "Bart et Ernie",
+        "Han Solo et Chewbacca",
+        "Bud Spencer et Terence Hill"
+      ],
+      "it": [
+        "Buddy movie",
+        "Timon e Pumbaa",
+        "Asterix e Obelix",
+        "Frodo e Sam",
+        "Rick e Daryl",
+        "Ernesto e Berto",
+        "Han Solo e Chewbacca",
+        "Bud Spencer e Terence Hill"
+      ],
+      "rm": [
+        "Buddy movie",
+        "Timon e Pumbaa",
+        "Asterix ed Obelix",
+        "Frodo e Sam",
+        "Rick e Daryl",
+        "Ernie e Bert",
+        "Han Solo e Chewbacca",
+        "Bud Spencer e Terence Hill"
+      ],
+      "es": [
+        "Buddy movie",
+        "Timón y Pumba",
+        "Astérix y Obélix",
+        "Frodo y Sam",
+        "Rick y Daryl",
+        "Epi y Blas",
+        "Han Solo y Chewbacca",
+        "Bud Spencer y Terence Hill"
+      ],
+      "zh-hans": [
+        "兄弟电影",
+        "丁满和彭彭",
+        "阿斯泰利克斯和奥贝利克斯",
+        "佛罗多和山姆",
+        "瑞克和达里尔",
+        "厄尼和伯特",
+        "汉·索罗和楚巴卡",
+        "巴德·斯潘塞和特伦斯·希尔"
+      ]
+    },
+    "description": {
+      "de": "Sei seit {n} Tagen mit derselben Person befreundet.",
+      "en": "Be friends with the same person for {n} days.",
+      "fr": "Sois ami avec la même personne depuis {n} jours.",
+      "it": "Sii amico della stessa persona da {n} giorni.",
+      "rm": "Sajas dapi {n} dis ami cun la medema persuna.",
+      "es": "Sé amigo de la misma persona durante {n} días.",
+      "zh-hans": "与同一个人保持好友关系 {n} 天。"
+    }
+  },
+  "hashtags_followed": {
+    "titles": {
+      "de": [
+        "Trendscout",
+        "Pfadfinder",
+        "Inspector Gadget",
+        "Mulder & Scully"
+      ],
+      "en": [
+        "Trend Scout",
+        "Pathfinder",
+        "Inspector Gadget",
+        "Mulder & Scully"
+      ],
+      "fr": [
+        "Chasseur de tendances",
+        "Éclaireur",
+        "Inspecteur Gadget",
+        "Mulder et Scully"
+      ],
+      "it": [
+        "Cacciatore di tendenze",
+        "Esploratore",
+        "Ispettore Gadget",
+        "Mulder e Scully"
+      ],
+      "rm": [
+        "Chatschader da trends",
+        "Battasendas",
+        "Inspectur Gadget",
+        "Mulder e Scully"
+      ],
+      "es": [
+        "Cazatendencias",
+        "Explorador",
+        "Inspector Gadget",
+        "Mulder y Scully"
+      ],
+      "zh-hans": [
+        "潮流侦察兵",
+        "探路者",
+        "神探加杰特",
+        "穆德和史卡丽"
+      ]
+    },
+    "description": {
+      "de": "Folge {n} Hashtags.",
+      "en": "Follow {n} hashtags.",
+      "fr": "Suis {n} hashtags.",
+      "it": "Segui {n} hashtag.",
+      "rm": "Suonda {n} hashtags.",
+      "es": "Sigue {n} hashtags.",
+      "zh-hans": "关注 {n} 个话题。"
+    }
+  },
+  "chats": {
+    "titles": {
+      "de": [
+        "Eisbrecher",
+        "ICQ-Uh-Oh",
+        "MSN-Nostalgiker",
+        "Nokia 3310"
+      ],
+      "en": [
+        "Icebreaker",
+        "ICQ Uh-Oh",
+        "MSN Nostalgic",
+        "Nokia 3310"
+      ],
+      "fr": [
+        "Brise-glace",
+        "ICQ Uh-Oh",
+        "Nostalgique de MSN",
+        "Nokia 3310"
+      ],
+      "it": [
+        "Rompighiaccio",
+        "ICQ Uh-Oh",
+        "Nostalgico di MSN",
+        "Nokia 3310"
+      ],
+      "rm": [
+        "Rumpaglatsch",
+        "ICQ Uh-Oh",
+        "Nostalgic da MSN",
+        "Nokia 3310"
+      ],
+      "es": [
+        "Rompehielos",
+        "ICQ Uh-Oh",
+        "Nostálgico de MSN",
+        "Nokia 3310"
+      ],
+      "zh-hans": [
+        "破冰者",
+        "ICQ 嗷哦",
+        "MSN 怀旧党",
+        "诺基亚 3310"
+      ]
+    },
+    "description": {
+      "de": "Beginne {n} Chats.",
+      "en": "Start {n} chats.",
+      "fr": "Commence {n} chats.",
+      "it": "Avvia {n} chat.",
+      "rm": "Cumenza {n} chats.",
+      "es": "Inicia {n} chats.",
+      "zh-hans": "开始 {n} 个聊天。"
+    }
+  },
+  "topic_posts": {
+    "description": {
+      "de": "Poste {n}-mal mit {label}-Hashtags wie #{first} oder #{second}.",
+      "en": "Publish {n} feeds with {label} hashtags like #{first} or #{second}.",
+      "fr": "Publie {n} feeds avec des hashtags {label} comme #{first} ou #{second}.",
+      "it": "Pubblica {n} feed con hashtag {label} come #{first} o #{second}.",
+      "rm": "Publitgescha {n} feeds cun hashtags {label} sco #{first} u #{second}.",
+      "es": "Publica {n} feeds con hashtags de {label} como #{first} o #{second}.",
+      "zh-hans": "发布 {n} 条带有{label}话题（如 #{first} 或 #{second}）的动态。"
+    }
+  },
+  "topic_follows": {
+    "description": {
+      "de": "Folge {n} der {label}-Hashtags wie #{first} oder #{second}.",
+      "en": "Follow {n} of the {label} hashtags like #{first} or #{second}.",
+      "fr": "Suis {n} des hashtags {label} comme #{first} ou #{second}.",
+      "it": "Segui {n} degli hashtag {label} come #{first} o #{second}.",
+      "rm": "Suonda {n} dals hashtags {label} sco #{first} u #{second}.",
+      "es": "Sigue {n} de los hashtags de {label} como #{first} o #{second}.",
+      "zh-hans": "关注 {n} 个{label}话题，如 #{first} 或 #{second}。"
+    }
+  }
+}

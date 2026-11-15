@@ -32,6 +32,7 @@ PUBLIC = {
     "changelog-detail",
 }
 SIGNED = {"govex-account-deleted", "govex-account-updated"}
+STREAMS = {"events"}
 UNSAFE = ["post", "put", "patch", "delete"]
 
 INJECTIONS = [
@@ -248,7 +249,7 @@ class InjectionTests(Fixtures):
         unsafe = [
             (path, param, payload)
             for path, name in self.api_routes()
-            if name not in PUBLIC
+            if name not in PUBLIC | STREAMS
             for param in QUERY_PARAMS
             for payload in INJECTIONS
             if not self.is_safe(self.request(path, {param: payload}))

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from commons.fields import CompactNumberField
@@ -208,7 +209,7 @@ class ProfileSettingsModelSerializer:
             if visibility == UserProfile.PictureAudience.GROUPS:
                 if not data.get("private_picture_groups"):
                     raise serializers.ValidationError(
-                        {"private_picture_groups": "Wähle mindestens eine Gruppe."}
+                        {"private_picture_groups": _("Wähle mindestens eine Gruppe.")}
                     )
             elif visibility:
                 data["private_picture_groups"] = []

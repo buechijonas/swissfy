@@ -3,7 +3,7 @@ FROM python:3.13-slim
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg \
+    && apt-get install -y --no-install-recommends ffmpeg gettext \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -11,6 +11,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+
+RUN python manage.py compilemessages --ignore .venv
 
 EXPOSE 8000
 

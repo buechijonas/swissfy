@@ -1,0 +1,804 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: commons/i18n.py
+msgid "%d.%m.%Y"
+msgstr "%d.%m.%Y"
+
+#: commons/i18n.py
+msgid "%d.%m.%Y, %H:%M Uhr"
+msgstr "%d.%m.%Y, %H:%M"
+
+#: docs/views.py
+msgid "Diese Version gibt es nicht."
+msgstr "Questa versione non esiste."
+
+#: main/numbers.py
+#, python-format
+msgid "%(sign)s%(count)s Tsd."
+msgstr "%(sign)s%(count)s mila"
+
+#: main/pagination.py
+msgid "Ungültige Seite."
+msgstr "Pagina non valida."
+
+#: main/parsers.py
+msgid "JSON ist zu tief verschachtelt."
+msgstr "Il JSON è annidato troppo in profondità."
+
+#: swissfy/accounts/administration.py
+msgid "Du kannst deine eigene Rolle nicht ändern."
+msgstr "Non puoi modificare il tuo ruolo."
+
+#: swissfy/accounts/administration.py
+msgid "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt und Sperren abgelaufen sind."
+msgstr "Il ruolo è bloccato finché tutti gli avvertimenti non sono prescritti e tutte le sospensioni scadute."
+
+#: swissfy/accounts/models.py
+msgid "Männlich"
+msgstr "Maschile"
+
+#: swissfy/accounts/models.py
+msgid "Weiblich"
+msgstr "Femminile"
+
+#: swissfy/accounts/models.py
+msgid "Divers"
+msgstr "Diverso"
+
+#: swissfy/accounts/models.py
+msgid "Single"
+msgstr "Single"
+
+#: swissfy/accounts/models.py
+msgid "Kennenlernphase"
+msgstr "Fase di conoscenza"
+
+#: swissfy/accounts/models.py
+msgid "In einer Beziehung"
+msgstr "Impegnato"
+
+#: swissfy/accounts/models.py
+msgid "Verlobt"
+msgstr "Fidanzato"
+
+#: swissfy/accounts/models.py
+msgid "Verheiratet"
+msgstr "Sposato"
+
+#: swissfy/accounts/models.py
+msgid "Es ist kompliziert"
+msgstr "È complicato"
+
+#: swissfy/accounts/models.py
+msgid "Getrennt"
+msgstr "Separato"
+
+#: swissfy/accounts/models.py
+msgid "Geschieden"
+msgstr "Divorziato"
+
+#: swissfy/accounts/models.py
+msgid "Verwitwet"
+msgstr "Vedovo"
+
+#: swissfy/accounts/models.py
+msgid "Sonstiges"
+msgstr "Altro"
+
+#: swissfy/accounts/models.py
+msgid "Öffentlich"
+msgstr "Pubblico"
+
+#: swissfy/accounts/models.py
+msgid "Nur Follower"
+msgstr "Solo follower"
+
+#: swissfy/accounts/models.py
+msgid "Nur Freunde"
+msgstr "Solo amici"
+
+#: swissfy/accounts/models.py swissfy/posts/models/audience.py
+msgid "Follower"
+msgstr "Follower"
+
+#: swissfy/accounts/models.py swissfy/posts/models/audience.py
+msgid "Freunde"
+msgstr "Amici"
+
+#: swissfy/accounts/models.py swissfy/posts/models/audience.py
+msgid "Gruppen"
+msgstr "Gruppi"
+
+#: swissfy/accounts/models.py
+msgid "Standard"
+msgstr "Standard"
+
+#: swissfy/accounts/models.py
+msgid "Nur auf diesem Gerät"
+msgstr "Solo su questo dispositivo"
+
+#: swissfy/accounts/models.py swissfy/chats/models.py
+msgid "Chat-PIN"
+msgstr "PIN della chat"
+
+#: swissfy/accounts/models.py
+msgid "Öffentliches Profilbild"
+msgstr "Immagine del profilo pubblica"
+
+#: swissfy/accounts/models.py
+msgid "Privates Profilbild"
+msgstr "Immagine del profilo privata"
+
+#: swissfy/accounts/models.py
+msgid "Privates Profilbild sichtbar für"
+msgstr "Immagine del profilo privata visibile a"
+
+#: swissfy/accounts/models.py
+msgid "Geburtsdatum"
+msgstr "Data di nascita"
+
+#: swissfy/accounts/models.py
+msgid "Biografie"
+msgstr "Biografia"
+
+#: swissfy/accounts/models.py
+msgid "Geschlecht"
+msgstr "Sesso"
+
+#: swissfy/accounts/models.py
+msgid "Tätigkeit"
+msgstr "Attività"
+
+#: swissfy/accounts/models.py
+msgid "Wohnort"
+msgstr "Domicilio"
+
+#: swissfy/accounts/models.py
+msgid "Heimatort"
+msgstr "Luogo d'origine"
+
+#: swissfy/accounts/models.py
+msgid "Beziehungsstatus"
+msgstr "Situazione sentimentale"
+
+#: swissfy/accounts/models.py
+msgid "Lieblingsfilme"
+msgstr "Film preferiti"
+
+#: swissfy/accounts/models.py
+msgid "Lieblingsserien"
+msgstr "Serie preferite"
+
+#: swissfy/accounts/models.py
+msgid "Lieblingsspiele"
+msgstr "Giochi preferiti"
+
+#: swissfy/accounts/models.py
+msgid "Profil sichtbar für"
+msgstr "Profilo visibile a"
+
+#: swissfy/accounts/models.py
+msgid "Chat-Verschlüsselung"
+msgstr "Crittografia della chat"
+
+#: swissfy/accounts/models.py
+msgid "Lesebestätigungen"
+msgstr "Conferme di lettura"
+
+#: swissfy/accounts/models.py
+msgid "Chat-Anfragen erlauben"
+msgstr "Consenti richieste di chat"
+
+#: swissfy/accounts/models.py
+msgid "Geburtsdatum anzeigen"
+msgstr "Mostra data di nascita"
+
+#: swissfy/accounts/models.py
+msgid "Datenschutzerklärung"
+msgstr "Informativa sulla privacy"
+
+#: swissfy/accounts/models.py
+msgid "Nutzungsrichtlinien"
+msgstr "Condizioni d'uso"
+
+#: swissfy/accounts/models.py
+msgid "Haftungsausschluss"
+msgstr "Esclusione di responsabilità"
+
+#: swissfy/achievements/views.py
+msgid "Du kannst die Erfolge dieses Profils nicht sehen."
+msgstr "Non puoi vedere i traguardi di questo profilo."
+
+#: swissfy/chats/conversations.py
+msgid "Sende zuerst eine Chat-Anfrage."
+msgstr "Invia prima una richiesta di chat."
+
+#: swissfy/chats/models.py
+msgid "Gerät"
+msgstr "Dispositivo"
+
+#: swissfy/chats/models.py
+msgid "Offen"
+msgstr "Aperta"
+
+#: swissfy/chats/models.py swissfy/notifications/models.py
+msgid "Angenommen"
+msgstr "Accettata"
+
+#: swissfy/chats/models.py swissfy/notifications/models.py
+msgid "Abgelehnt"
+msgstr "Rifiutata"
+
+#: swissfy/chats/models.py
+msgid "Diese Chat-Anfrage wurde abgelehnt."
+msgstr "Questa richiesta di chat è stata rifiutata."
+
+#: swissfy/chats/models.py
+msgid "Warte, bis deine Chat-Anfrage angenommen wurde."
+msgstr "Attendi che la tua richiesta di chat venga accettata."
+
+#: swissfy/chats/models.py
+msgid "Nimm die Chat-Anfrage zuerst an."
+msgstr "Accetta prima la richiesta di chat."
+
+#: swissfy/chats/serializers.py
+msgid "Ungültiger Schlüssel."
+msgstr "Chiave non valida."
+
+#: swissfy/chats/serializers.py
+msgid "Standard braucht keinen Schlüssel."
+msgstr "La modalità standard non richiede una chiave."
+
+#: swissfy/chats/serializers.py
+msgid "Schlüssel fehlt."
+msgstr "Manca la chiave."
+
+#: swissfy/chats/serializers.py
+msgid "Der PIN-Schlüssel ist unvollständig."
+msgstr "La chiave PIN è incompleta."
+
+#: swissfy/chats/serializers.py
+msgid "Signatur und Schlüssel gehören zusammen."
+msgstr "Firma e chiave vanno insieme."
+
+#: swissfy/chats/views.py
+msgid "Zu viele falsche Versuche. Versuche es später erneut."
+msgstr "Troppi tentativi errati. Riprova più tardi."
+
+#: swissfy/chats/views.py
+msgid "Falsche PIN."
+msgstr "PIN errato."
+
+#: swissfy/chats/views.py
+msgid "Die PIN ist bereits gesichert."
+msgstr "Il PIN è già protetto."
+
+#: swissfy/chats/views.py
+msgid "Gerät-Schlüssel gibt es nur im Modus „Nur auf diesem Gerät“."
+msgstr "Le chiavi del dispositivo esistono solo nella modalità «Solo su questo dispositivo»."
+
+#: swissfy/chats/views.py
+msgid "Die Schlüssel haben sich geändert."
+msgstr "Le chiavi sono cambiate."
+
+#: swissfy/chats/views.py
+msgid "Bitte warte kurz."
+msgstr "Attendi un momento."
+
+#: swissfy/chats/views.py
+msgid "Es gibt bereits eine Chat-Anfrage."
+msgstr "Esiste già una richiesta di chat."
+
+#: swissfy/chats/views.py
+msgid "Diese Person nimmt keine Chat-Anfragen an."
+msgstr "Questa persona non accetta richieste di chat."
+
+#: swissfy/moderation/models.py
+msgid "Antisemitismus"
+msgstr "Antisemitismo"
+
+#: swissfy/moderation/models.py
+msgid "Ausbeuterische Inhalte"
+msgstr "Contenuti di sfruttamento"
+
+#: swissfy/moderation/models.py
+msgid "Beleidigung"
+msgstr "Insulto"
+
+#: swissfy/moderation/models.py
+msgid "Belohnungsjagd"
+msgstr "Caccia alle ricompense"
+
+#: swissfy/moderation/models.py
+msgid "Belästigung"
+msgstr "Molestia"
+
+#: swissfy/moderation/models.py
+msgid "Betrug"
+msgstr "Frode"
+
+#: swissfy/moderation/models.py
+msgid "Christophobie"
+msgstr "Cristianofobia"
+
+#: swissfy/moderation/models.py
+msgid "Cybergrooming"
+msgstr "Adescamento online"
+
+#: swissfy/moderation/models.py
+msgid "Cybermobbing"
+msgstr "Cyberbullismo"
+
+#: swissfy/moderation/models.py
+msgid "Diskriminierung"
+msgstr "Discriminazione"
+
+#: swissfy/moderation/models.py
+msgid "Doxxing"
+msgstr "Doxxing"
+
+#: swissfy/moderation/models.py
+msgid "Drohung"
+msgstr "Minaccia"
+
+#: swissfy/moderation/models.py
+msgid "Erpressung"
+msgstr "Estorsione"
+
+#: swissfy/moderation/models.py
+msgid "Falschinformationen"
+msgstr "Disinformazione"
+
+#: swissfy/moderation/models.py
+msgid "Faschismus"
+msgstr "Fascismo"
+
+#: swissfy/moderation/models.py
+msgid "Fremdenfeindlichkeit"
+msgstr "Xenofobia"
+
+#: swissfy/moderation/models.py
+msgid "Gefährliche Verschwörungstheorien"
+msgstr "Teorie del complotto pericolose"
+
+#: swissfy/moderation/models.py
+msgid "Gewaltbasierter Inhalt"
+msgstr "Contenuti violenti"
+
+#: swissfy/moderation/models.py
+msgid "Gewaltverherrlichung"
+msgstr "Apologia della violenza"
+
+#: swissfy/moderation/models.py
+msgid "Hassrede"
+msgstr "Incitamento all'odio"
+
+#: swissfy/moderation/models.py
+msgid "Homophobie"
+msgstr "Omofobia"
+
+#: swissfy/moderation/models.py
+msgid "Identitätsdiebstahl"
+msgstr "Furto d'identità"
+
+#: swissfy/moderation/models.py
+msgid "Illegale Inhalte"
+msgstr "Contenuti illegali"
+
+#: swissfy/moderation/models.py
+msgid "Islamophobie"
+msgstr "Islamofobia"
+
+#: swissfy/moderation/models.py
+msgid "Kulturelle Aneignung"
+msgstr "Appropriazione culturale"
+
+#: swissfy/moderation/models.py
+msgid "Minderjährigenschutz"
+msgstr "Tutela dei minori"
+
+#: swissfy/moderation/models.py
+msgid "Missbrauch von Privilegien"
+msgstr "Abuso di privilegi"
+
+#: swissfy/moderation/models.py
+msgid "Plagiate"
+msgstr "Plagio"
+
+#: swissfy/moderation/models.py
+msgid "Pornografische Inhalte"
+msgstr "Contenuti pornografici"
+
+#: swissfy/moderation/models.py
+msgid "Propaganda"
+msgstr "Propaganda"
+
+#: swissfy/moderation/models.py
+msgid "Rassismus"
+msgstr "Razzismo"
+
+#: swissfy/moderation/models.py
+msgid "Relativierung"
+msgstr "Relativizzazione"
+
+#: swissfy/moderation/models.py
+msgid "Selbstgefährdung"
+msgstr "Autolesionismo"
+
+#: swissfy/moderation/models.py
+msgid "Selbstjustiz"
+msgstr "Giustizia privata"
+
+#: swissfy/moderation/models.py
+msgid "Sexismus"
+msgstr "Sessismo"
+
+#: swissfy/moderation/models.py
+msgid "Sextortion"
+msgstr "Sextortion"
+
+#: swissfy/moderation/models.py
+msgid "Spam"
+msgstr "Spam"
+
+#: swissfy/moderation/models.py
+msgid "Unangemessene Wortwahl"
+msgstr "Linguaggio inappropriato"
+
+#: swissfy/moderation/models.py
+msgid "Unethische Werbung"
+msgstr "Pubblicità non etica"
+
+#: swissfy/moderation/models.py
+msgid "Whataboutismus"
+msgstr "Benaltrismo"
+
+#: swissfy/moderation/models.py
+msgid "3 Tage"
+msgstr "3 giorni"
+
+#: swissfy/moderation/models.py
+msgid "1 Woche"
+msgstr "1 settimana"
+
+#: swissfy/moderation/models.py
+msgid "1 Monat"
+msgstr "1 mese"
+
+#: swissfy/moderation/models.py
+msgid "1 Jahr"
+msgstr "1 anno"
+
+#: swissfy/moderation/models.py
+msgid "Lebenslang"
+msgstr "a vita"
+
+#: swissfy/moderation/models.py swissfy/moderation/reviews.py
+#: swissfy/notifications/models.py
+msgid "Kommentar"
+msgstr "Commento"
+
+#: swissfy/moderation/models.py swissfy/moderation/reviews.py
+msgid "Feed"
+msgstr "Feed"
+
+#: swissfy/moderation/models.py
+msgid "j. F Y"
+msgstr "j F Y"
+
+#: swissfy/moderation/models.py
+#, python-format
+msgid "Abgelaufen am %(until)s"
+msgstr "Scaduta il %(until)s"
+
+#: swissfy/moderation/models.py
+#, python-format
+msgid "Beginnt nach der laufenden Sperre, bis %(until)s"
+msgstr "Inizia dopo la sospensione in corso, fino al %(until)s"
+
+#: swissfy/moderation/models.py
+msgid "Beginnt nach der laufenden Sperre, dauerhaft"
+msgstr "Inizia dopo la sospensione in corso, in modo permanente"
+
+#: swissfy/moderation/models.py
+#, python-format
+msgid "Gesperrt bis %(until)s"
+msgstr "Sospeso fino al %(until)s"
+
+#: swissfy/moderation/models.py
+msgid "Dauerhaft gesperrt"
+msgstr "Sospeso in modo permanente"
+
+#: swissfy/moderation/permissions.py
+msgid "Du kannst eigene Inhalte nicht melden."
+msgstr "Non puoi segnalare i tuoi contenuti."
+
+#: swissfy/moderation/permissions.py
+msgid "Inhalte von Admins kannst du nicht melden."
+msgstr "Non puoi segnalare contenuti degli amministratori."
+
+#: swissfy/moderation/permissions.py
+msgid "Inhalte von Admins können nur Admins bearbeiten."
+msgstr "Solo gli amministratori possono moderare i contenuti degli amministratori."
+
+#: swissfy/moderation/permissions.py
+msgid "Du kannst diese Verwarnungen nicht sehen."
+msgstr "Non puoi vedere questi avvertimenti."
+
+#: swissfy/moderation/serializers.py
+msgid "Wähle einen Grund."
+msgstr "Scegli un motivo."
+
+#: swissfy/moderation/views.py
+msgid "Dieser Inhalt wurde bereits verwarnt."
+msgstr "Questo contenuto è già stato oggetto di un avvertimento."
+
+#: swissfy/notifications/models.py
+msgid "Verwarnung"
+msgstr "Avvertimento"
+
+#: swissfy/notifications/models.py
+msgid "Verwarnung verjährt"
+msgstr "Avvertimento prescritto"
+
+#: swissfy/notifications/models.py
+msgid "Kontosperre"
+msgstr "Sospensione dell'account"
+
+#: swissfy/notifications/models.py
+msgid "Gefällt mir"
+msgstr "Mi piace"
+
+#: swissfy/notifications/models.py
+msgid "Neuer Follower"
+msgstr "Nuovo follower"
+
+#: swissfy/notifications/models.py
+msgid "Followeranfrage"
+msgstr "Richiesta di follow"
+
+#: swissfy/notifications/models.py
+msgid "Freundschaftsanfrage"
+msgstr "Richiesta di amicizia"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "Du wurdest verwarnt: %(reason)s."
+msgstr "Hai ricevuto un avvertimento: %(reason)s."
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "Deine Verwarnung «%(reason)s» vom %(created)s ist verjährt."
+msgstr "Il tuo avvertimento «%(reason)s» del %(created)s è prescritto."
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s hat deinen Feed kommentiert: %(text)s"
+msgstr "%(actor)s ha commentato il tuo feed: %(text)s"
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s gefällt dein Feed."
+msgstr "A %(actor)s piace il tuo feed."
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s folgt dir jetzt."
+msgstr "%(actor)s ora ti segue."
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s möchte dir folgen."
+msgstr "%(actor)s vuole seguirti."
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "%(actor)s möchte mit dir befreundet sein."
+msgstr "%(actor)s vuole diventare tuo amico."
+
+#: swissfy/notifications/models.py
+msgid "Dein Konto wurde dauerhaft gesperrt."
+msgstr "Il tuo account è stato sospeso in modo permanente."
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "Dein Konto wird für %(duration)s gesperrt, ab %(start)s bis %(until)s."
+msgstr "Il tuo account sarà sospeso per %(duration)s, dal %(start)s al %(until)s."
+
+#: swissfy/notifications/models.py
+#, python-format
+msgid "Dein Konto wurde für %(duration)s gesperrt, bis %(until)s."
+msgstr "Il tuo account è stato sospeso per %(duration)s, fino al %(until)s."
+
+#: swissfy/posts/images.py
+msgid "Ein Bild ist zu gross (max. 15 MB)."
+msgstr "Un'immagine è troppo grande (max. 15 MB)."
+
+#: swissfy/posts/images.py
+msgid "Eine Datei ist kein gültiges Bild."
+msgstr "Un file non è un'immagine valida."
+
+#: swissfy/posts/images.py
+#, python-format
+msgid "Du kannst höchstens %(count)s Bilder hochladen."
+msgstr "Puoi caricare al massimo %(count)s immagini."
+
+#: swissfy/posts/models/audience.py
+msgid "Alle"
+msgstr "Tutti"
+
+#: swissfy/posts/models/audience.py
+msgid "Global"
+msgstr "Globale"
+
+#: swissfy/posts/models/posts.py
+msgid "Wird verarbeitet"
+msgstr "In elaborazione"
+
+#: swissfy/posts/models/posts.py
+msgid "Bereit"
+msgstr "Pronto"
+
+#: swissfy/posts/models/posts.py
+msgid "Fehlgeschlagen"
+msgstr "Non riuscito"
+
+#: swissfy/posts/permissions.py
+msgid "Du kannst nur eigene Inhalte bearbeiten."
+msgstr "Puoi modificare solo i tuoi contenuti."
+
+#: swissfy/posts/permissions.py
+msgid "Dein Konto ist dauerhaft gesperrt."
+msgstr "Il tuo account è sospeso in modo permanente."
+
+#: swissfy/posts/permissions.py
+#, python-format
+msgid "Dein Konto ist bis %(until)s gesperrt."
+msgstr "Il tuo account è sospeso fino al %(until)s."
+
+#: swissfy/posts/permissions.py
+#, python-format
+msgid "Du kannst höchstens %(count)s Feeds pro Tag erstellen."
+msgstr "Puoi creare al massimo %(count)s feed al giorno."
+
+#: swissfy/posts/serializers/collections.py
+#, python-brace-format
+msgid "Den Benutzer «{value}» gibt es nicht."
+msgstr "L'utente «{value}» non esiste."
+
+#: swissfy/posts/serializers/collections.py
+msgid "Du kannst dich nicht selbst hinzufügen."
+msgstr "Non puoi aggiungere te stesso."
+
+#: swissfy/posts/serializers/comments.py
+msgid "Dieser Kommentar wurde gesperrt."
+msgstr "Questo commento è stato bloccato."
+
+#: swissfy/posts/serializers/comments.py
+msgid "Dieser Kommentar ist nicht sichtbar."
+msgstr "Questo commento non è visibile."
+
+#: swissfy/posts/serializers/comments.py
+msgid "Ungültige Stimme."
+msgstr "Voto non valido."
+
+#: swissfy/posts/serializers/common.py
+msgid "Der User wurde gesperrt und ist nicht sichtbar."
+msgstr "Questo utente è stato sospeso e non è visibile."
+
+#: swissfy/posts/serializers/common.py
+msgid "Nur Admins können global posten."
+msgstr "Solo gli amministratori possono pubblicare globalmente."
+
+#: swissfy/posts/serializers/common.py swissfy/social/serializers.py
+msgid "Wähle mindestens eine Gruppe."
+msgstr "Scegli almeno un gruppo."
+
+#: swissfy/posts/serializers/common.py
+msgid "Dieser Name ist schon vergeben."
+msgstr "Questo nome è già in uso."
+
+#: swissfy/posts/serializers/posts.py
+msgid "Dieser Feed wurde gesperrt."
+msgstr "Questo feed è stato bloccato."
+
+#: swissfy/posts/serializers/posts.py
+msgid "Dieser Feed ist nicht sichtbar."
+msgstr "Questo feed non è visibile."
+
+#: swissfy/posts/serializers/posts.py
+msgid "Wähle entweder Bilder oder ein Video."
+msgstr "Scegli immagini oppure un video."
+
+#: swissfy/posts/serializers/posts.py
+msgid "Schreib etwas oder wähle ein Bild oder Video."
+msgstr "Scrivi qualcosa o scegli un'immagine o un video."
+
+#: swissfy/posts/serializers/stories.py
+msgid "Stories können nicht global sein."
+msgstr "Le storie non possono essere globali."
+
+#: swissfy/posts/videos.py
+msgid "Die Datei ist kein gültiges Video."
+msgstr "Il file non è un video valido."
+
+#: swissfy/posts/videos.py
+msgid "Das Video ist zu gross (max. 250 MB)."
+msgstr "Il video è troppo grande (max. 250 MB)."
+
+#: swissfy/posts/videos.py
+#, python-format
+msgid "Das Video ist zu lang (max. %(seconds)s Sekunden)."
+msgstr "Il video è troppo lungo (max. %(seconds)s secondi)."
+
+#: swissfy/posts/views/albums.py
+msgid "Ungültige Reihenfolge."
+msgstr "Ordine non valido."
+
+#: swissfy/posts/views/albums.py
+msgid "Diese Alben sind nicht sichtbar."
+msgstr "Questi album non sono visibili."
+
+#: swissfy/posts/views/albums.py
+msgid "Dieses Album ist nicht sichtbar."
+msgstr "Questo album non è visibile."
+
+#: swissfy/posts/views/albums.py
+msgid "Ein Feed ist schon im Album."
+msgstr "Un feed è già nell'album."
+
+#: swissfy/posts/views/albums.py
+msgid "Der Feed eines Eintrags kann nicht geändert werden."
+msgstr "Il feed di una voce non può essere modificato."
+
+#: swissfy/posts/views/comments.py
+msgid "Dieser Feed ist nicht mehr verfügbar."
+msgstr "Questo feed non è più disponibile."
+
+#: swissfy/posts/views/comments.py
+msgid "Du kannst nicht über eigene Kommentare abstimmen."
+msgstr "Non puoi votare i tuoi commenti."
+
+#: swissfy/posts/views/posts.py
+msgid "Du kannst deine eigenen Feeds nicht reposten."
+msgstr "Non puoi ripubblicare i tuoi feed."
+
+#: swissfy/social/library.py
+msgid "Die Bibliothek ist gerade nicht erreichbar."
+msgstr "La biblioteca non è al momento raggiungibile."
+
+#: swissfy/social/library.py
+msgid "Titel nicht gefunden."
+msgstr "Titolo non trovato."
+
+#: swissfy/social/relations.py
+msgid "Freundschaftsanfragen gehen nur, wenn ihr euch gegenseitig folgt."
+msgstr "Le richieste di amicizia sono possibili solo se vi seguite a vicenda."
+
+#: swissfy/social/relations.py
+msgid "Ihr seid bereits befreundet."
+msgstr "Siete già amici."
+
+#: swissfy/social/views.py
+msgid "Dieses Profil ist privat."
+msgstr "Questo profilo è privato."
+
+#: swissfy/social/views.py
+msgid "Du kannst dir nicht selbst folgen."
+msgstr "Non puoi seguire te stesso."

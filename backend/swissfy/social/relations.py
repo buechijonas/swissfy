@@ -1,3 +1,5 @@
+from django.utils.translation import gettext_lazy as _
+
 from commons.exceptions import BadRequest
 from swissfy.notifications.models import Notification
 
@@ -17,10 +19,12 @@ def are_friends(user, other):
 
 def follow(viewer, target):
     if target.profile.requires_follow_request and not follows(viewer, target):
-        _, created = FollowRequest.objects.get_or_create(follower=viewer, following=target)
+        follow_request, created = FollowRequest.objects.get_or_create(
+            follower=viewer, following=target
+        )
         kind = Kind.FOLLOW_REQUEST
     else:
-        _, created = Follow.objects.get_or_create(follower=viewer, following=target)
+        follow, created = Follow.objects.get_or_create(follower=viewer, following=target)
         kind = Kind.FOLLOW
     if created:
         Notification.notify(target, kind, actor=viewer)
@@ -35,10 +39,10 @@ def unfollow(viewer, target):
 
 def send_friend_request(viewer, target):
     if not (follows(viewer, target) and follows(target, viewer)):
-        raise BadRequest("Freundschaftsanfragen gehen nur, wenn ihr euch gegenseitig folgt.")
+        raise BadRequest(_("Freundschaftsanfragen gehen nur, wenn ihr euch gegenseitig folgt."))
     if are_friends(viewer, target):
-        raise BadRequest("Ihr seid bereits befreundet.")
-    _, created = FriendRequest.objects.get_or_create(sender=viewer, receiver=target)
+        raise BadRequest(_("Ihr seid bereits befreundet."))
+    friend_request, created = FriendRequest.objects.get_or_create(sender=viewer, receiver=target)
     if created:
         Notification.notify(target, Kind.FRIEND_REQUEST, actor=viewer)
 

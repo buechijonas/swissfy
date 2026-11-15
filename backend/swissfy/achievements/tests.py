@@ -2,8 +2,9 @@ from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from django.utils import timezone
+from django.utils import timezone, translation
 
+from commons.i18n import localized
 from swissfy.accounts.models import UserProfile
 from swissfy.accounts.roles import Role, set_role
 from swissfy.posts.hashtags import tag
@@ -165,3 +166,39 @@ class AchievementTests(TestCase):
         self.assertFalse(egg["unlocked"])
         self.assertEqual(egg["title"], "Verwandlung")
         self.assertIn("Kafka", egg["description"])
+
+    def test_english_titles_and_descriptions(self):
+        tag(Post.objects.create(author=self.anna, text="Neues Level #gaming"))
+        self.client.force_login(self.anna)
+        self.client.cookies["language"] = "en"
+
+        achievements = self.achievements()
+        self.assertEqual(achievements["likes_given-2"]["title"], "Button Masher")
+        self.assertEqual(achievements["posts-2"]["description"], "Publish 2 feeds.")
+        self.assertEqual(
+            achievements["topic_gaming_posts-1"]["description"],
+            "Publish 1 feeds with Gaming hashtags like #gaming or #gamer.",
+        )
+
+    def test_english_easter_egg(self):
+        set_role(self.jonas, Role.ADMIN)
+        self.client.force_login(self.jonas)
+        self.client.cookies["language"] = "en"
+
+        egg = self.achievements()["egg_your_father-1"]
+        self.assertEqual(egg["title"], "Family Reunion")
+        self.assertEqual(
+            egg["description"], "«I am your father» – Star Wars: The Empire Strikes Back"
+        )
+
+    def test_unknown_language_falls_back_to_english(self):
+        self.client.force_login(self.anna)
+        with translation.override("pt"):
+            self.assertEqual(localized({"de": "Hallo", "en": "Hello"}), "Hello")
+        self.assertEqual(self.achievements()["posts-1"]["title"], "Hello World")
+
+    def test_every_language_renders(self):
+        self.client.force_login(self.anna)
+        for language in ("fr", "it", "rm", "es", "zh-hans"):
+            self.client.cookies["language"] = language
+            self.assertTrue(self.achievements()["veteran-1"]["title"])

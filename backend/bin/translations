@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python manage.py makemessages -l de -l fr -l it -l rm -l en -l es -l zh_Hans \
+  --add-location file --no-obsolete --no-wrap \
+  --ignore .venv --ignore "*/tests.py" --ignore "*/test_*.py"
+for po in locale/*/LC_MESSAGES/django.po; do
+  sed -i.bak '/"POT-Creation-Date/d' "$po"
+  rm "$po.bak"
+done
+python manage.py compilemessages --ignore .venv

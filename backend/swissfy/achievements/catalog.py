@@ -5,13 +5,14 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, F, Max, Min, Q
 from django.utils import timezone
 
+from commons.i18n import localized
 from swissfy.chats.models import ChatRequest
 from swissfy.posts.models import Comment, CommentVote, Hashtag, Like, Post, SavedPost
 from swissfy.social.models import Follow, Friendship
 
-from .eggs import EGGS, PATTERNS
+from .content import EGGS, TEXTS, THEMES
+from .eggs import PATTERNS
 from .models import Unlock
-from .themes import THEMES
 
 User = get_user_model()
 
@@ -129,20 +130,40 @@ def profile_complete(user):
 @dataclass(frozen=True)
 class Achievement:
     key: str
-    title: object
-    description: str
     count: object
     reached: object = None
     base: int = 1
     tiered: bool = True
     bonus: bool = False
 
+    @property
+    def titles(self):
+        return localized(TEXTS[self.key]["titles"])
+
+    def description(self, n):
+        return localized(TEXTS[self.key]["description"]).format(n=n)
+
+
+@dataclass(frozen=True)
+class ThemeAchievement(Achievement):
+    theme: dict = None
+    kind: str = None
+
+    @property
+    def titles(self):
+        return localized(self.theme[f"{self.kind}_titles"])
+
+    def description(self, n):
+        first, second = self.theme["hashtags"][:2]
+        template = localized(TEXTS[f"topic_{self.kind}s"]["description"])
+        return template.format(
+            n=n, label=localized(self.theme["label"]), first=first, second=second
+        )
+
 
 ACHIEVEMENTS = [
     Achievement(
         "og",
-        "OG",
-        "Gehöre zu den ersten {n} Accounts auf Swissfy.",
         lambda user: account_rank(user) < OG_ACCOUNTS,
         reached=joined,
         base=OG_ACCOUNTS,
@@ -151,8 +172,6 @@ ACHIEVEMENTS = [
     ),
     Achievement(
         "pioneer",
-        "Rütlischwur",
-        "Gehöre zu den ersten {n} Accounts auf Swissfy.",
         lambda user: account_rank(user) < PIONEER_ACCOUNTS,
         reached=joined,
         base=PIONEER_ACCOUNTS,
@@ -160,103 +179,40 @@ ACHIEVEMENTS = [
     ),
     Achievement(
         "open_book",
-        "Charakter erstellt",
-        "Hinterlege in govex Vorname, Nachname, Geburtsdatum und einen Avatar.",
         profile_complete,
         tiered=False,
     ),
     Achievement(
         "veteran",
-        (
-            "Tutorial abgeschlossen",
-            "Willkommen in Silent Hill",
-            "Stammgast",
-            "Inventar",
-            "Urgestein",
-            "Gandalf der Graue",
-            "Meister Yoda",
-            "Es kann nur einen geben",
-            "Marty McFly",
-            "Methusalem",
-        ),
-        "Sei {n} Tage auf Swissfy dabei.",
         lambda user: (timezone.now() - user.date_joined).days,
         reached=days_after_joining,
         base=7,
     ),
     Achievement(
         "posts",
-        (
-            "Hello World",
-            "Hobby-Influencer",
-            "Content Creator",
-            "GZSZ-Niveau",
-            "Vollzeit-Influencer",
-            "Liebling des Algorithmus",
-        ),
-        "Veröffentliche {n} Feeds.",
         **events(visible_posts),
     ),
     Achievement(
         "reels",
-        (
-            "VHS-Rookie",
-            "Tarantino-Schüler",
-            "Blockbuster",
-            "Oscar-verdächtig",
-            "Hollywood-Legende",
-        ),
-        "Lade {n} Seeds hoch.",
         **events(lambda user: visible_posts(user).exclude(video="")),
     ),
     Achievement(
         "hashtags_used",
-        (
-            "#NoFilter",
-            "#Trendsetter",
-            "#Hashtagkönig",
-            "#YOLO",
-            "#Hashtag-Hydra",
-        ),
-        "Verwende {n} verschiedene Hashtags in deinen Feeds.",
         lambda user: Hashtag.objects.filter(posts__in=visible_posts(user)).distinct().count(),
         base=3,
     ),
     Achievement(
         "likes_given",
-        (
-            "Daumen aus Stahl",
-            "Button-Masher",
-            "Like-Maschine",
-            "Combo-Breaker",
-            "Daumen-Olympionike",
-        ),
-        "Like {n} Feeds.",
         **events(lambda user: Like.objects.filter(user=user)),
         base=10,
     ),
     Achievement(
         "likes_received",
-        (
-            "Herzensbrecher",
-            "Publikumsmagnet",
-            "Bachelor-Rose",
-            "Schwarm der Nation",
-            "Herz-Monopol",
-        ),
-        "Erhalte {n} Likes auf deine Feeds.",
         **events(likes_received),
         base=10,
     ),
     Achievement(
         "superfan",
-        (
-            "Superfan",
-            "Groupie",
-            "Fanclub-Präsident",
-            "Swiftie-Level",
-        ),
-        "Like {n} Feeds derselben Person.",
         lambda user: top_count(
             Like.objects.filter(user=user, post__hidden_at__isnull=True).exclude(post__author=user),
             "post__author",
@@ -265,95 +221,36 @@ ACHIEVEMENTS = [
     ),
     Achievement(
         "fanclub",
-        (
-            "Treuer Fanclub",
-            "Hachiko-Treue",
-            "Fankurve",
-            "Beatlemania",
-        ),
-        "Erhalte {n} Likes von derselben Person.",
         lambda user: top_count(likes_received(user), "user"),
         base=5,
     ),
     Achievement(
         "comments_written",
-        (
-            "Senf-Dazugeber",
-            "Stammkommentator",
-            "Meinungsmacher",
-            "Filibuster",
-            "Kommentar-Kanone",
-            "Senf-Fabrik",
-        ),
-        "Schreibe {n} Kommentare.",
         **events(visible_comments),
         base=5,
     ),
     Achievement(
         "comments_received",
-        (
-            "Gesprächsstoff",
-            "Stadtgespräch",
-            "Arena-Thema",
-            "Breaking News",
-            "Talk of the Town",
-        ),
-        "Erhalte {n} Kommentare auf deine Feeds.",
         **events(comments_received),
         base=5,
     ),
     Achievement(
         "crowd",
-        (
-            "Publikumsliebling",
-            "Lagerfeuer-Erzähler",
-            "Landsgemeinde",
-            "Wetten, dass..?",
-            "Woodstock",
-        ),
-        "Erhalte Kommentare von {n} verschiedenen Personen.",
         lambda user: comments_received(user).values("author").distinct().count(),
         base=5,
     ),
     Achievement(
         "sparring",
-        (
-            "Wortgefecht",
-            "Round 1 – Fight!",
-            "Rap-Battle",
-            "Finish Him!",
-            "Fatality",
-        ),
-        "Antworte {n}-mal auf Kommentare derselben Person.",
         lambda user: top_count(replies(author=user), "parent__author"),
         base=3,
     ),
     Achievement(
         "long_debate",
-        (
-            "Ewige Debatte",
-            "Tom & Jerry",
-            "Röstigraben",
-            "Parlament zu zweit",
-            "Krieg der Sterne",
-            "Game of Thrones",
-            "Kalter Krieg",
-            "Hundertjähriger Krieg",
-        ),
-        "Diskutiere mit derselben Person in den Kommentaren über {n} Tage hinweg hin und her.",
         longest_debate,
         base=7,
     ),
     Achievement(
         "upvotes_received",
-        (
-            "Weise Worte",
-            "Konfuzius sagt",
-            "Orakel von Delphi",
-            "Dumbledore-Weisheit",
-            "Die Antwort ist 42",
-        ),
-        "Erhalte {n} Upvotes auf deine Kommentare.",
         lambda user: CommentVote.objects.filter(
             comment__in=visible_comments(user), value=CommentVote.Value.UP
         )
@@ -363,119 +260,47 @@ ACHIEVEMENTS = [
     ),
     Achievement(
         "saves_given",
-        (
-            "Eichhörnchen-Modus",
-            "Inventar voll",
-            "Itemkiste im Save-Room",
-            "Drachenhort",
-        ),
-        "Speichere {n} Feeds.",
         **events(lambda user: SavedPost.objects.filter(user=user)),
         base=5,
     ),
     Achievement(
         "saves_received",
-        (
-            "Sammlerstück",
-            "Panini-Bildli",
-            "Glänzendes Glurak",
-            "Museumsreif",
-            "Heiliger Gral",
-        ),
-        "Lass deine Feeds {n}-mal speichern.",
         **events(saves_received),
         base=5,
     ),
     Achievement(
         "followers",
-        (
-            "Kleiner Kult",
-            "Lokale Berühmtheit",
-            "Dorfgespräch",
-            "Zombie-Horde im Schlepptau",
-            "Promi",
-            "Rockstar",
-            "Legende",
-        ),
-        "Gewinne {n} Follower.",
         **events(lambda user: Follow.objects.filter(following=user)),
         base=5,
     ),
     Achievement(
         "following",
-        (
-            "Neugiernase",
-            "Paparazzo",
-            "Big Brother",
-            "NSA-Praktikant",
-        ),
-        "Folge {n} Accounts.",
         **events(lambda user: Follow.objects.filter(follower=user)),
         base=5,
     ),
     Achievement(
         "mutual",
-        (
-            "Auf Gegenseitigkeit",
-            "Ping & Pong",
-            "Bilaterale Verträge",
-            "Rebellen-Allianz",
-        ),
-        "Folgt euch mit {n} Accounts gegenseitig.",
         mutual_follows,
         base=3,
     ),
     Achievement(
         "friends",
-        (
-            "Die drei ???",
-            "Friends-Clique",
-            "Ocean's Eleven",
-            "Ritter der Tafelrunde",
-            "Bürgermeister der Herzen",
-        ),
-        "Schliesse {n} Freundschaften.",
         **events(lambda user: Friendship.objects.filter(user=user)),
         base=3,
     ),
     Achievement(
         "old_friends",
-        (
-            "Buddy-Movie",
-            "Timon & Pumbaa",
-            "Asterix & Obelix",
-            "Frodo & Sam",
-            "Rick & Daryl",
-            "Ernie & Bert",
-            "Han Solo & Chewbacca",
-            "Bud Spencer & Terence Hill",
-        ),
-        "Sei seit {n} Tagen mit derselben Person befreundet.",
         longest_friendship,
         reached=days_after_oldest_friendship,
         base=30,
     ),
     Achievement(
         "hashtags_followed",
-        (
-            "Trendscout",
-            "Pfadfinder",
-            "Inspector Gadget",
-            "Mulder & Scully",
-        ),
-        "Folge {n} Hashtags.",
         lambda user: Hashtag.objects.filter(followers=user).count(),
         base=3,
     ),
     Achievement(
         "chats",
-        (
-            "Eisbrecher",
-            "ICQ-Uh-Oh",
-            "MSN-Nostalgiker",
-            "Nokia 3310",
-        ),
-        "Beginne {n} Chats.",
         **events(accepted_chats),
     ),
 ]
@@ -486,25 +311,19 @@ def theme_posts(hashtags):
     return lambda user: visible_posts(user).filter(pk__in=tagged)
 
 
-def theme_examples(theme):
-    first, second = theme["hashtags"][:2]
-    return f"#{first} oder #{second}"
-
-
 def theme_achievements(theme):
-    examples = theme_examples(theme)
     return [
-        Achievement(
+        ThemeAchievement(
             f"topic_{theme['key']}_posts",
-            tuple(theme["post_titles"]),
-            f"Poste {{n}}-mal mit {theme['label']}-Hashtags wie {examples}.",
+            theme=theme,
+            kind="post",
             **events(theme_posts(theme["hashtags"])),
         ),
-        Achievement(
+        ThemeAchievement(
             f"topic_{theme['key']}_follows",
-            tuple(theme["follow_titles"]),
-            f"Folge {{n}} der {theme['label']}-Hashtags wie {examples}.",
             lambda user: Hashtag.objects.filter(followers=user, name__in=theme["hashtags"]).count(),
+            theme=theme,
+            kind="follow",
         ),
     ]
 
@@ -514,10 +333,10 @@ ACHIEVEMENTS += [achievement for theme in THEMES for achievement in theme_achiev
 
 def tiers(achievement, count):
     if not achievement.tiered:
-        yield achievement.title, achievement.base, bool(count), None, None
+        yield achievement.titles[0], achievement.base, bool(count), None, None
         return
     previous = 0
-    for index, title in enumerate(achievement.title):
+    for index, title in enumerate(achievement.titles):
         target = achievement.base * 2**index
         yield title, target, count >= target, previous, target
         previous = target
@@ -531,6 +350,10 @@ def unlock_date(achievement, user, n):
 
 def egg_key(egg):
     return f"egg_{egg['key']}-1"
+
+
+def egg_description(egg):
+    return f"«{localized(egg['quote'])}» – {localized(egg['source'])}"
 
 
 def found_eggs(user, stored):
@@ -564,8 +387,8 @@ def egg_entries(user, stored, new, reveal):
                 "key": key,
                 "group": f"egg_{egg['key']}",
                 "level": 1,
-                "title": egg["title"] if visible else None,
-                "description": f"«{egg['quote']}» – {egg['source']}" if visible else None,
+                "title": localized(egg["title"]) if visible else None,
+                "description": egg_description(egg) if visible else None,
                 "unlocked": unlocked,
                 "unlocked_at": stored.get(key),
                 "bonus": False,
@@ -596,7 +419,7 @@ def achievements_of(user, reveal_secrets=False):
                     "group": achievement.key,
                     "level": level,
                     "title": title,
-                    "description": achievement.description.format(n=n),
+                    "description": achievement.description(n),
                     "unlocked": key in stored,
                     "unlocked_at": stored.get(key),
                     "bonus": achievement.bonus,
