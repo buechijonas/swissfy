@@ -14,7 +14,9 @@ from .models import ChatKey, ChatRequest, Envelope, Message
 User = get_user_model()
 
 ECDH_KEY = {"kty": "EC", "crv": "P-256", "x": "x" * 43, "y": "y" * 43}
-PUBLIC_KEY = {"ecdh": ECDH_KEY, "kem": "a2Vt"}
+SIGN_KEY = {"kty": "EC", "crv": "P-256", "x": "s" * 43, "y": "t" * 43}
+PUBLIC_KEY = {"ecdh": ECDH_KEY, "kem": "a2Vt", "sign": SIGN_KEY}
+PIN_VERIFIER = base64.b64encode(bytes(range(32, 64))).decode()
 MESSAGE_KEY = base64.b64encode(bytes(range(32))).decode()
 
 
@@ -80,6 +82,26 @@ class ChatTests(TestCase):
     def statuses(self, username="anna"):
         return self.client.get(f"/api/chats/{username}/messages/").json()["statuses"]
 
+    def test_receive_returns_the_new_messages(self):
+        self.send(self.payload())
+        first = Message.objects.get()
+        self.send(self.payload())
+        self.client.force_login(self.anna)
+        url = "/api/chats/jonas/receive/"
+        data = self.client.post(url, {"after": first.pk}, content_type="application/json").json()
+        self.assertEqual(len(data["messages"]), 1)
+        self.assertEqual(data["chat_request"]["status"], "accepted")
+
+    def test_receive_marks_before_it_answers(self):
+        self.send(self.payload())
+        self.client.force_login(self.anna)
+        self.receive("jonas", read=True)
+        self.client.force_login(self.jonas)
+        response = self.client.post(
+            "/api/chats/anna/receive/", {"read": False}, content_type="application/json"
+        )
+        self.assertEqual(list(response.json()["statuses"].values()), ["read"])
+
     def test_requires_login(self):
         self.client.logout()
         self.assertEqual(self.client.get("/api/chats/protection/").status_code, 403)
@@ -104,10 +126,11 @@ class ChatTests(TestCase):
                     "wrapped_private_key": "c2VjcmV0",
                     "salt": "c2FsdA==",
                     "iv": "aXY=",
+                    "pin_verifier": PIN_VERIFIER,
                 },
             }
         ).json()
-        self.assertEqual(data["pin_key"]["wrapped_private_key"], "c2VjcmV0")
+        self.assertEqual(data["pin_key"]["salt"], "c2FsdA==")
         old.refresh_from_db()
         self.assertFalse(old.active)
 
@@ -142,6 +165,23 @@ class ChatTests(TestCase):
         data = self.client.get("/api/chats/anna/keys/").json()
         self.assertEqual(len(data["keys"]), 2)
         self.assertFalse(data["server_key"])
+
+    @override_settings(CHAT_RETENTION_DAYS=7)
+    def test_conversation_keys_carry_the_retention(self):
+        data = self.client.get("/api/chats/anna/keys/").json()
+        self.assertEqual(data["retention_days"], 7)
+
+    def test_conversation_keys_name_their_owner(self):
+        self.set_mode(self.anna, "device")
+        data = self.client.get("/api/chats/anna/keys/").json()
+        self.assertEqual(data["keys"][0]["owner"], "anna")
+
+    def test_messages_carry_their_signature(self):
+        jonas_key = self.set_mode(self.jonas, "device")
+        payload = {**self.payload([jonas_key]), "sender_key": jonas_key.pk, "signature": "c2ln"}
+        self.send(payload)
+        message = self.messages()[0]
+        self.assertEqual((message["sender_key"], message["signature"]), (jonas_key.pk, "c2ln"))
 
     def test_no_conversation_with_self(self):
         self.assertEqual(self.client.get("/api/chats/jonas/keys/").status_code, 404)

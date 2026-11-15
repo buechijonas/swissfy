@@ -4,7 +4,7 @@
       class="flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
     >
       <div class="min-w-0">
-        <p>Chat-Verschlüsselung</p>
+        <p>{{ $t('chatProtection.title') }}</p>
         <p v-if="mode" class="text-app-muted text-sm mt-1">{{ chatProtectionHints[mode] }}</p>
       </div>
       <BaseSwitcher
@@ -24,26 +24,26 @@
         type="password"
         autocomplete="new-password"
         class="input w-full"
-        placeholder="Neue Chat-PIN (mindestens 6 Zeichen)"
+        :placeholder="$t('chatProtection.newPin')"
       />
       <input
         v-model="newPinRepeat"
         type="password"
         autocomplete="new-password"
         class="input w-full"
-        placeholder="Chat-PIN wiederholen"
+        :placeholder="$t('chatProtection.repeatPin')"
       />
       <p class="text-app-muted text-sm">
-        Ohne PIN kann niemand deine Chats wiederherstellen, auch wir nicht.
+        {{ $t('chatProtection.warning') }}
       </p>
       <div class="flex justify-end gap-2">
         <BaseButton size="sm" :disabled="busy" @click="pinSetup = false">
           <AppIcon name="cross" />
-          Abbrechen
+          {{ $t('common.cancel') }}
         </BaseButton>
         <BaseButton type="submit" size="sm" variant="primary" :disabled="!pinValid || busy">
           <AppIcon name="lock" />
-          PIN festlegen
+          {{ $t('chatProtection.setPin') }}
         </BaseButton>
       </div>
     </form>
@@ -69,8 +69,6 @@ export default {
   components: { AppIcon, BaseButton, BaseCard, BaseSwitcher, ErrorText },
   data() {
     return {
-      chatProtectionHints,
-      chatProtectionOptions,
       mode: null,
       pinSetup: false,
       newPin: '',
@@ -79,6 +77,8 @@ export default {
   },
   computed: {
     ...mapStores(useAuthStore),
+    chatProtectionHints,
+    chatProtectionOptions,
     pinValid() {
       return this.newPin.length >= 6 && this.newPin === this.newPinRepeat
     },

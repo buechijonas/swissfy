@@ -5,8 +5,9 @@
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseTabs class="mb-4" :tabs="tabs" :active="activeTab" />
+      <ErrorText :message="error" class="mb-4" />
       <BaseCard v-if="requests.length && !archive" class="mb-4">
-        <h3 class="px-6 pt-4 pb-2 font-bold">Chat-Anfragen</h3>
+        <h3 class="px-6 pt-4 pb-2 font-bold">{{ $t('chats.requests') }}</h3>
         <ul class="divide-y divide-app-border">
           <li v-for="user in requests" :key="user.username">
             <UserRow :user="user" :to="chatLink(user)" />
@@ -37,7 +38,7 @@
               </template>
               <template v-else #subtitle>
                 <span class="text-app-muted text-sm truncate">
-                  {{ user.pending ? 'Anfrage gesendet' : 'Noch keine Nachrichten' }}
+                  {{ user.pending ? $t('chats.requestSent') : $t('chats.noMessages') }}
                 </span>
               </template>
               <span
@@ -76,9 +77,9 @@
   </div>
   <ConfirmDialog
     ref="confirmArchive"
-    title="Chat archivieren"
+    :title="$t('chats.archiveTitle')"
     :message="archiveMessage"
-    confirm-label="Archivieren"
+    :confirm-label="$t('chats.archive')"
     confirm-icon="archive"
     confirm-variant="primary"
     @confirm="toggleArchive(pendingArchive)"
@@ -89,7 +90,6 @@
 <script>
 import clockMixin from '@/mixins/clockMixin.js'
 import { mapStores } from 'pinia'
-import { useIntervalFn } from '@vueuse/core'
 import filter from 'lodash-es/filter'
 import map from 'lodash-es/map'
 import AppIcon from '@core/components/AppIcon.vue'
@@ -97,6 +97,7 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import ErrorText from '@core/components/ErrorText.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
@@ -109,13 +110,15 @@ import { localKeys } from '@/lib/chatKeys.js'
 import { formatRelativeTime } from '@/lib/time.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useChatsStore } from '@/stores/chats.js'
+import { useEventsStore } from '@/stores/events.js'
+import { t } from '@/i18n.js'
 
-const REFRESH_INTERVAL = 10000
-
-const TABS = [
-  { key: 'chats', label: 'Chats' },
-  { key: 'archive', label: 'Archiv' },
-]
+function chatTabs() {
+  return [
+    { key: 'chats', label: t('chats.tabChats') },
+    { key: 'archive', label: t('chats.tabArchive') },
+  ]
+}
 
 export default {
   name: 'ChatsView',
@@ -129,22 +132,28 @@ export default {
     BaseTabs,
     CipherText,
     ConfirmDialog,
+    ErrorText,
     MessageStatus,
     SwipeRow,
     UserRow,
   },
   data() {
     return {
-      breadcrumbs: [{ label: 'Chats', to: '/chats' }],
       requests: [],
       conversations: null,
       previews: {},
-      tabs: TABS,
       pendingArchive: null,
+      error: null,
     }
   },
   computed: {
-    ...mapStores(useAuthStore),
+    tabs() {
+      return chatTabs()
+    },
+    breadcrumbs() {
+      return [{ label: t('chats.tabChats'), to: '/chats' }]
+    },
+    ...mapStores(useAuthStore, useEventsStore),
     archive() {
       return this.$route.query.tab === 'archive'
     },
@@ -158,46 +167,58 @@ export default {
       return this.archive ? 'archive-restore' : 'archive'
     },
     archiveLabel() {
-      return this.archive ? 'Wiederherstellen' : 'Archivieren'
+      return this.archive ? t('chats.restore') : t('chats.archive')
     },
     archiveMessage() {
-      return `Chat mit @${this.pendingArchive?.username} archivieren? Du erhältst für archivierte Chats keine Benachrichtigungen mehr.`
+      return t('chats.archiveMessage', { username: this.pendingArchive?.username })
     },
     emptyText() {
-      if (this.archive) return 'Keine archivierten Chats.'
-      if (this.conversations.length) return 'Alle Chats sind archiviert.'
-      return 'Noch keine Chats. Über ein Profil kannst du eine Chat-Anfrage senden.'
+      if (this.archive) return t('chats.noArchived')
+      if (this.conversations.length) return t('chats.allArchived')
+      return t('chats.empty')
+    },
+  },
+  watch: {
+    'eventsStore.chat'() {
+      if (this.keys) this.load()
     },
   },
   async created() {
-    this.refresher = useIntervalFn(this.load, REFRESH_INTERVAL, { immediate: false })
+    this.decrypted = {}
     this.keys = await localKeys(this.authStore.user.id)
     await this.load()
-    this.refresher.resume()
-  },
-  beforeUnmount() {
-    this.refresher.pause()
   },
   methods: {
     formatRelativeTime,
     async load() {
-      const [requests, list] = await Promise.all([
-        chatsApi.requests().catch(() => null),
-        chatsApi.conversations().catch(() => []),
-      ])
-      if (requests) this.requests = requests
+      try {
+        await this.fetchConversations()
+        this.error = null
+      } catch {
+        this.error = t('chats.loadFailed')
+      }
+    },
+    async fetchConversations() {
+      const [requests, list] = await Promise.all([chatsApi.requests(), chatsApi.conversations()])
+      this.requests = requests
       const previews = {}
       await Promise.all(
         list
           .filter((user) => user.last_message)
           .map(async (user) => {
-            previews[user.username] = await decryptMessage(user.last_message, this.keys)
+            previews[user.username] = await this.preview(user.last_message)
           }),
       )
       this.previews = previews
       this.conversations = list
       this.syncUnread()
       this.now = Date.now()
+    },
+    async preview(message) {
+      if (!(message.id in this.decrypted)) {
+        this.decrypted[message.id] = (await decryptMessage(message, this.keys)).text
+      }
+      return this.decrypted[message.id]
     },
     syncUnread() {
       const unread = filter(this.conversations, { unread: true, archived: false })
@@ -217,6 +238,7 @@ export default {
       } catch {
         user.archived = !archived
         this.syncUnread()
+        this.error = archived ? t('chats.archiveFailed') : t('chats.restoreFailed')
       }
     },
     chatLink(user) {

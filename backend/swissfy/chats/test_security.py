@@ -6,12 +6,15 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
+from commons.tests import raw
 from swissfy.accounts.models import get_or_create_profile
 from swissfy.moderation.models import Reason, Suspension, Warning
 
-from .crypto import unwrap_message_key, wrap_message_key
+from .crypto import pin_verifier_digest, unwrap_message_key, wrap_message_key
 from .models import ChatKey, ChatRequest, Envelope, Message
-from .tests import MESSAGE_KEY, PUBLIC_KEY
+from .tests import MESSAGE_KEY, PIN_VERIFIER, PUBLIC_KEY
+
+WRONG_VERIFIER = base64.b64encode(bytes(32)).decode()
 
 User = get_user_model()
 
@@ -225,7 +228,7 @@ class ChatSecurityTests(TestCase):
     def assert_public_key_rejected(self, ecdh, kem="a2Vt"):
         response = self.client.put(
             "/api/chats/protection/",
-            {"mode": "device", "key": {"public_key": {"ecdh": ecdh, "kem": kem}}},
+            {"mode": "device", "key": {"public_key": {**PUBLIC_KEY, "ecdh": ecdh, "kem": kem}}},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
@@ -252,7 +255,7 @@ class ChatSecurityTests(TestCase):
         extra = {**PUBLIC_KEY["ecdh"], "d": "private-part", "evil": "<script>"}
         self.client.put(
             "/api/chats/protection/",
-            {"mode": "device", "key": {"public_key": {"ecdh": extra, "kem": "a2Vt"}}},
+            {"mode": "device", "key": {"public_key": {**PUBLIC_KEY, "ecdh": extra}}},
             content_type="application/json",
         )
         stored = ChatKey.objects.get(user=self.jonas, active=True).public_key["ecdh"]
@@ -336,3 +339,241 @@ class ServerKeyTests(TestCase):
         first = wrap_message_key(message, bytes(32))
         second = wrap_message_key(message, bytes(32))
         self.assertNotEqual(first[:12], second[:12])
+
+
+@override_settings(CHAT_PIN_ATTEMPTS=3, CHAT_PIN_LOCKOUT_SECONDS=600)
+class PinUnlockSecurityTests(TestCase):
+    def setUp(self):
+        self.jonas = User.objects.create(username="jonas")
+        self.anna = User.objects.create(username="anna")
+        profile = get_or_create_profile(self.jonas)
+        profile.chat_protection = "pin"
+        profile.save()
+        self.key = ChatKey.objects.create(
+            user=self.jonas,
+            kind="pin",
+            public_key=PUBLIC_KEY,
+            wrapped_private_key="c2VjcmV0",
+            salt="c2FsdA==",
+            iv="aXY=",
+            pin_verifier=pin_verifier_digest(base64.b64decode(PIN_VERIFIER)),
+        )
+        self.client.force_login(self.jonas)
+
+    def unlock(self, verifier=PIN_VERIFIER):
+        return self.client.post(
+            "/api/chats/protection/unlock/", {"verifier": verifier}, content_type="application/json"
+        )
+
+    def fail_attempts(self, count):
+        for _ in range(count):
+            self.unlock(WRONG_VERIFIER)
+
+    def test_protection_state_hides_the_wrapped_key(self):
+        pin_key = self.client.get("/api/chats/protection/").json()["pin_key"]
+        self.assertEqual(pin_key["salt"], "c2FsdA==")
+        self.assertNotIn("wrapped_private_key", pin_key)
+        self.assertNotIn("iv", pin_key)
+
+    def test_wrapped_key_is_stored_encrypted(self):
+        stored = raw(ChatKey, "wrapped_private_key", self.key.pk)
+        self.assertTrue(stored.startswith("enc:"))
+        self.assertNotIn("c2VjcmV0", stored)
+
+    def test_verifier_is_not_stored_in_plain(self):
+        self.assertNotIn(PIN_VERIFIER, self.key.pin_verifier)
+        self.assertNotIn(base64.b64decode(PIN_VERIFIER).hex(), self.key.pin_verifier)
+
+    def test_right_verifier_releases_the_wrapped_key(self):
+        data = self.unlock().json()
+        self.assertEqual(data["wrapped_private_key"], "c2VjcmV0")
+        self.assertFalse(data["needs_verifier"])
+
+    def test_wrong_verifier_releases_nothing(self):
+        response = self.unlock(WRONG_VERIFIER)
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("c2VjcmV0", response.content.decode())
+
+    def test_wrong_attempts_are_counted(self):
+        self.fail_attempts(2)
+        self.key.refresh_from_db()
+        self.assertEqual(self.key.failed_unlocks, 2)
+
+    def test_too_many_wrong_attempts_lock_the_key(self):
+        self.fail_attempts(2)
+        response = self.unlock(WRONG_VERIFIER)
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.json()["retry_after"], 600)
+
+    def test_locked_key_rejects_even_the_right_verifier(self):
+        self.fail_attempts(3)
+        response = self.unlock()
+        self.assertEqual(response.status_code, 429)
+        self.assertNotIn("c2VjcmV0", response.content.decode())
+
+    def test_lock_expires(self):
+        self.fail_attempts(3)
+        ChatKey.objects.filter(pk=self.key.pk).update(
+            unlock_blocked_until=timezone.now() - timedelta(seconds=1)
+        )
+        self.assertEqual(self.unlock().status_code, 200)
+
+    def test_every_wrong_attempt_after_the_limit_locks_again(self):
+        self.fail_attempts(3)
+        ChatKey.objects.filter(pk=self.key.pk).update(
+            unlock_blocked_until=timezone.now() - timedelta(seconds=1)
+        )
+        self.assertEqual(self.unlock(WRONG_VERIFIER).status_code, 429)
+
+    def test_success_resets_the_attempts(self):
+        self.fail_attempts(2)
+        self.unlock()
+        self.key.refresh_from_db()
+        self.assertEqual(self.key.failed_unlocks, 0)
+
+    def test_others_cannot_unlock_a_pin_key(self):
+        self.client.force_login(self.anna)
+        self.assertEqual(self.unlock().status_code, 404)
+
+    def test_verifier_must_have_the_right_length(self):
+        self.assertEqual(self.unlock(base64.b64encode(bytes(16)).decode()).status_code, 400)
+
+    def test_verifier_cannot_be_replaced(self):
+        response = self.client.put(
+            "/api/chats/protection/verifier/",
+            {"verifier": WRONG_VERIFIER},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(self.unlock().status_code, 200)
+
+    def test_new_pin_keys_need_a_verifier(self):
+        response = self.client.put(
+            "/api/chats/protection/",
+            {
+                "mode": "pin",
+                "key": {
+                    "public_key": PUBLIC_KEY,
+                    "wrapped_private_key": "c2VjcmV0",
+                    "salt": "c2FsdA==",
+                    "iv": "aXY=",
+                },
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+
+class LegacyPinKeyTests(TestCase):
+    def setUp(self):
+        self.jonas = User.objects.create(username="jonas")
+        self.key = ChatKey.objects.create(
+            user=self.jonas,
+            kind="pin",
+            public_key=PUBLIC_KEY,
+            wrapped_private_key="c2VjcmV0",
+            salt="c2FsdA==",
+            iv="aXY=",
+        )
+        self.client.force_login(self.jonas)
+
+    def set_verifier(self):
+        return self.client.put(
+            "/api/chats/protection/verifier/",
+            {"verifier": PIN_VERIFIER},
+            content_type="application/json",
+        )
+
+    def test_legacy_key_asks_for_a_verifier(self):
+        response = self.client.post(
+            "/api/chats/protection/unlock/",
+            {"verifier": WRONG_VERIFIER},
+            content_type="application/json",
+        )
+        self.assertTrue(response.json()["needs_verifier"])
+
+    def test_legacy_key_can_be_secured_once(self):
+        self.assertEqual(self.set_verifier().status_code, 204)
+        self.key.refresh_from_db()
+        self.assertFalse(self.key.needs_verifier)
+        self.assertEqual(self.set_verifier().status_code, 409)
+
+
+@override_settings(CHAT_SLOW_MODE_SECONDS=0)
+class SignatureSecurityTests(TestCase):
+    def setUp(self):
+        self.jonas = User.objects.create(username="jonas")
+        self.anna = User.objects.create(username="anna")
+        ChatRequest.objects.create(sender=self.jonas, recipient=self.anna, status="accepted")
+        self.jonas_key = self.device_key(self.jonas)
+        self.anna_key = self.device_key(self.anna)
+        self.client.force_login(self.jonas)
+
+    def device_key(self, user):
+        profile = get_or_create_profile(user)
+        profile.chat_protection = "device"
+        profile.save()
+        return ChatKey.objects.create(user=user, kind="device", public_key=PUBLIC_KEY)
+
+    def send(self, **signature):
+        envelope = {"kem": "a2Vt", "ecdh": PUBLIC_KEY["ecdh"], "wrapped": "d3I=", "iv": "aXY="}
+        payload = {
+            "ciphertext": "Y2lwaGVy",
+            "iv": "aXY=",
+            "envelopes": [
+                {"key": self.jonas_key.pk, **envelope},
+                {"key": self.anna_key.pk, **envelope},
+            ],
+            **signature,
+        }
+        return self.client.post(
+            "/api/chats/anna/messages/", payload, content_type="application/json"
+        )
+
+    def test_signature_is_stored_with_its_key(self):
+        self.assertEqual(self.send(sender_key=self.jonas_key.pk, signature="c2ln").status_code, 201)
+        message = Message.objects.get()
+        self.assertEqual((message.sender_key, message.signature), (self.jonas_key, "c2ln"))
+
+    def test_messages_cannot_be_signed_with_the_partners_key(self):
+        response = self.send(sender_key=self.anna_key.pk, signature="c2ln")
+        self.assertEqual(response.status_code, 409)
+        self.assertFalse(Message.objects.exists())
+
+    def test_messages_cannot_be_signed_with_an_inactive_key(self):
+        ChatKey.objects.filter(pk=self.jonas_key.pk).update(active=False)
+        old = ChatKey.objects.get(pk=self.jonas_key.pk)
+        self.jonas_key = self.device_key(self.jonas)
+        self.assertEqual(self.send(sender_key=old.pk, signature="c2ln").status_code, 409)
+
+    def test_signature_needs_its_key(self):
+        self.assertEqual(self.send(signature="c2ln").status_code, 400)
+
+    def test_key_needs_its_signature(self):
+        self.assertEqual(self.send(sender_key=self.jonas_key.pk).status_code, 400)
+
+    def test_new_keys_need_a_signing_key(self):
+        public_key = {"ecdh": PUBLIC_KEY["ecdh"], "kem": "a2Vt"}
+        response = self.client.post(
+            "/api/chats/keys/", {"public_key": public_key}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_device_key_can_replace_an_own_key(self):
+        response = self.client.post(
+            "/api/chats/keys/",
+            {"public_key": PUBLIC_KEY, "replaces": self.jonas_key.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.jonas_key.refresh_from_db()
+        self.assertFalse(self.jonas_key.active)
+
+    def test_device_key_cannot_replace_a_foreign_key(self):
+        self.client.post(
+            "/api/chats/keys/",
+            {"public_key": PUBLIC_KEY, "replaces": self.anna_key.pk},
+            content_type="application/json",
+        )
+        self.anna_key.refresh_from_db()
+        self.assertTrue(self.anna_key.active)

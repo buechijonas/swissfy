@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -52,12 +53,44 @@ class ChatViewSet(BaseViewSet):
         )
         return self.protection(request)
 
+    def pin_key(self):
+        return get_object_or_404(ChatKey.objects.of(self.request.user), kind=ChatKey.Kind.PIN)
+
+    @action(detail=False, methods=["post"], url_path="protection/unlock")
+    def unlock(self, request):
+        serializer = ChatKeyModelSerializer.unlock(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        key = self.pin_key()
+        if key.unlock(serializer.validated_data["verifier"]):
+            return Response(ChatKeyModelSerializer.sealed(key).data)
+        if key.unlock_wait:
+            raise RetryLater(
+                _("Zu viele falsche Versuche. Versuche es später erneut."), key.unlock_wait
+            )
+        raise PermissionDenied(_("Falsche PIN."))
+
+    @action(detail=False, methods=["put"], url_path="protection/verifier")
+    def verifier(self, request):
+        serializer = ChatKeyModelSerializer.unlock(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        key = self.pin_key()
+        if not key.needs_verifier:
+            raise Conflict(_("Die PIN ist bereits gesichert."))
+        key.set_verifier(serializer.validated_data["verifier"])
+        key.save(update_fields=["pin_verifier"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(detail=False, methods=["post"], url_path="keys")
+    @transaction.atomic
     def add_device_key(self, request):
         if request.user.profile.chat_protection != Protection.DEVICE:
-            raise BadRequest("Gerät-Schlüssel gibt es nur im Modus „Nur auf diesem Gerät“.")
+            raise BadRequest(_("Gerät-Schlüssel gibt es nur im Modus „Nur auf diesem Gerät“."))
         serializer = ChatKeyModelSerializer.device(data=request.data)
         serializer.is_valid(raise_exception=True)
+        if "replaces" in serializer.validated_data:
+            request.user.chat_keys.filter(
+                pk=serializer.validated_data["replaces"], kind=ChatKey.Kind.DEVICE
+            ).update(active=False)
         key = ChatKey.objects.create(
             user=request.user,
             kind=ChatKey.Kind.DEVICE,
@@ -111,30 +144,33 @@ class ConversationViewSet(BaseViewSet):
             {
                 "keys": ChatKeyModelSerializer.read(conversation.keys, many=True).data,
                 "server_key": conversation.needs_server_key,
+                "retention_days": settings.CHAT_RETENTION_DAYS,
             }
         )
 
-    @action(detail=True)
-    def messages(self, request, username):
-        conversation = self.get_conversation()
-        query = MessageModelSerializer.query(data=request.query_params)
-        query.is_valid(raise_exception=True)
-        page = conversation.page(query.validated_data.get("after"))
+    def page(self, conversation, after):
         return Response(
             {
-                "messages": MessageModelSerializer.read(page, many=True).data,
+                "messages": MessageModelSerializer.read(conversation.page(after), many=True).data,
                 "statuses": conversation.statuses(),
                 "chat_request": conversation.request_state,
                 "can_request": conversation.can_request,
             }
         )
 
+    @action(detail=True)
+    def messages(self, request, username):
+        query = MessageModelSerializer.query(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        return self.page(self.get_conversation(), query.validated_data.get("after"))
+
     @action(detail=True, methods=["post"])
     def receive(self, request, username):
         receipt = MessageModelSerializer.receipt(data=request.data)
         receipt.is_valid(raise_exception=True)
-        self.get_conversation().receive(receipt.validated_data["read"])
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        conversation = self.get_conversation()
+        conversation.receive(receipt.validated_data["read"])
+        return self.page(conversation, receipt.validated_data.get("after"))
 
     @messages.mapping.post
     @transaction.atomic
@@ -143,13 +179,13 @@ class ConversationViewSet(BaseViewSet):
         serializer = MessageModelSerializer.write(data=request.data)
         serializer.is_valid(raise_exception=True)
         if not conversation.keys_match(serializer.validated_data):
-            raise Conflict("Die Schlüssel haben sich geändert.")
+            raise Conflict(_("Die Schlüssel haben sich geändert."))
         lock_users(request.user, conversation.partner)
         if conversation.blocked_reason:
             raise PermissionDenied(conversation.blocked_reason)
         wait = Message.objects.slow_mode_wait(request.user, conversation.partner)
         if wait:
-            raise RetryLater("Bitte warte kurz.", wait)
+            raise RetryLater(_("Bitte warte kurz."), wait)
         conversation.send(serializer.validated_data)
         return Response(
             {"retry_after": settings.CHAT_SLOW_MODE_SECONDS}, status=status.HTTP_201_CREATED
@@ -161,9 +197,9 @@ class ConversationViewSet(BaseViewSet):
         conversation = self.get_conversation()
         lock_users(request.user, conversation.partner)
         if conversation.has_open_request:
-            raise Conflict("Es gibt bereits eine Chat-Anfrage.")
+            raise Conflict(_("Es gibt bereits eine Chat-Anfrage."))
         if not conversation.can_request:
-            raise PermissionDenied("Diese Person nimmt keine Chat-Anfragen an.")
+            raise PermissionDenied(_("Diese Person nimmt keine Chat-Anfragen an."))
         ChatRequest.objects.between(request.user, conversation.partner).delete()
         chat_request = ChatRequest.objects.create(
             sender=request.user, recipient=conversation.partner
