@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import F
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -27,7 +28,7 @@ def apply_order(items, values, field):
     except (TypeError, ValueError):
         uuids = None
     if uuids is None or sorted(uuids) != sorted(by_uuid):
-        raise ValidationError({field: ["Ungültige Reihenfolge."]})
+        raise ValidationError({field: [_("Ungültige Reihenfolge.")]})
     for position, value in enumerate(uuids):
         by_uuid[value].position = position
     return list(by_uuid.values())
@@ -61,7 +62,7 @@ class UserAlbumViewSet(BaseViewSet):
     def list(self, request, username):
         owner = get_object_or_404(User.objects.select_related("profile"), username=username)
         if not Member.objects.can_view(request.user, owner):
-            raise PermissionDenied("Diese Alben sind nicht sichtbar.")
+            raise PermissionDenied(_("Diese Alben sind nicht sichtbar."))
         albums = owner.albums.with_details(request.user)
         return Response(self.get_serializer(albums, many=True).data)
 
@@ -95,7 +96,7 @@ class AlbumViewSet(AlbumResponseMixin, BaseViewSet):
     def retrieve(self, request, uuid):
         album = self.get_object()
         if not Member.objects.can_view(request.user, album.owner):
-            raise PermissionDenied("Dieses Album ist nicht sichtbar.")
+            raise PermissionDenied(_("Dieses Album ist nicht sichtbar."))
         return self.album_response(album)
 
     def partial_update(self, request, uuid):
@@ -117,7 +118,7 @@ class AlbumEntryCollectionViewSet(AlbumResponseMixin, BaseViewSet):
         serializer.is_valid(raise_exception=True)
         posts = [entry["post"] for entry in serializer.validated_data]
         if len(set(posts)) != len(posts) or album.entries.filter(post__in=posts).exists():
-            raise ValidationError({"entries": ["Ein Feed ist schon im Album."]})
+            raise ValidationError({"entries": [_("Ein Feed ist schon im Album.")]})
         last = album.entries.order_by("-position").values_list("position", flat=True).first()
         start = 0 if last is None else last + 1
         AlbumEntry.objects.bulk_create(
@@ -140,7 +141,9 @@ class AlbumEntryViewSet(AlbumResponseMixin, BaseViewSet):
         serializer = self.get_serializer(entry, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         if "post" in serializer.validated_data:
-            raise ValidationError({"post": ["Der Feed eines Eintrags kann nicht geändert werden."]})
+            raise ValidationError(
+                {"post": [_("Der Feed eines Eintrags kann nicht geändert werden.")]}
+            )
         serializer.save()
         return self.album_response(entry.album)
 

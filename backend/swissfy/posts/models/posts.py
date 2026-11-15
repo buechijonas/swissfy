@@ -1,52 +1,49 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import Group
-from django.db import models, transaction
+from django.db import models
 from django.db.models import (
-    Case,
     CharField,
     Count,
     Exists,
+    F,
     IntegerField,
+    Min,
     OuterRef,
     Prefetch,
     Q,
     Subquery,
     Sum,
     Value,
-    When,
 )
-from django.db.models.functions import Coalesce, Greatest, TruncDate
-from django.db.models.signals import post_delete
+from django.db.models.functions import Coalesce
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
-from commons.models import (
-    BaseModel,
-    BaseQuerySet,
-    EncryptedTextField,
-    UUIDModel,
-    boolean,
-    count_of,
+from commons.models import BaseModel, BaseQuerySet, EncryptedTextField, boolean, count_of
+from swissfy.accounts.roles import is_admin, is_moderator
+from swissfy.moderation.models import Report, Warning
+
+from .audience import (
+    NAME_LENGTH,
+    NOT_HIDDEN,
+    TEXT_LENGTH,
+    Audience,
+    AudienceQuerySet,
+    ContactGroup,
+    HideableModel,
+    ModeratedQuerySet,
+    by_suspended_author,
+    followed_by,
+    reportable_by,
+    shared_with_viewer,
 )
-from swissfy.accounts.models import UserProfile
-from swissfy.accounts.roles import Role, is_admin, is_moderator
-from swissfy.moderation.models import Report, Suspension, Warning, convert_warning_integrity_error
-from swissfy.social.models import Follow, Friendship, Member
+from .stories import Story, authors_for
 
-TEXT_LENGTH = 500
-NAME_LENGTH = 50
-STORY_TEXT_LENGTH = 200
-STORY_LIFETIME = timedelta(hours=24)
 POSTS_PER_DAY = 10
-
-NOT_HIDDEN = Q(hidden_at__isnull=True)
-
-
-def story_cutoff():
-    return timezone.now() - STORY_LIFETIME
 
 
 def aspect_ratio(width, height):
@@ -59,74 +56,6 @@ def unfinished_video():
 
 def reported_comments():
     return Q(pk__in=Comment.objects.filter(reports__isnull=False).values("pk"))
-
-
-def by_suspended_author():
-    return Q(author__in=Suspension.objects.running().values("user"))
-
-
-def by_admin_author():
-    return Q(Exists(Group.objects.filter(user=OuterRef("author"), name=Role.ADMIN.label)))
-
-
-def reportable_by(user):
-    reportable = ~Q(author=user)
-    if is_moderator(user) and not is_admin(user):
-        reportable &= ~by_admin_author()
-    return boolean(reportable)
-
-
-def followed_by(user):
-    followed = Follow.objects.filter(follower=user).values("following")
-    friends = Friendship.objects.filter(user=user).values("friend")
-    return followed.union(friends)
-
-
-def shared_with_viewer():
-    Audience = Post.Visibility
-    Profile = UserProfile.Visibility
-    profile_visible = (
-        Q(author__profile__profile_visibility=Profile.PUBLIC)
-        | Q(author__profile__profile_visibility=Profile.FOLLOWERS, viewer_follows=True)
-        | Q(viewer_is_friend=True)
-    )
-    audience = (
-        Q(visibility=Audience.PUBLIC)
-        | Q(visibility=Audience.FOLLOWERS, viewer_follows=True)
-        | Q(visibility=Audience.FRIENDS, viewer_is_friend=True)
-        | Q(visibility=Audience.GROUPS, viewer_in_group=True)
-    )
-    return profile_visible & audience
-
-
-class AudienceQuerySet(BaseQuerySet):
-    def with_audience(self, user, groups):
-        return self.filter(author__is_active=True).annotate(
-            viewer_follows=Exists(
-                Follow.objects.filter(follower=user, following=OuterRef("author"))
-            ),
-            viewer_is_friend=Exists(
-                Friendship.objects.filter(user=user, friend=OuterRef("author"))
-            ),
-            viewer_in_group=Exists(groups.filter(members=user)),
-        )
-
-
-class ContactGroup(BaseModel):
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="contact_groups"
-    )
-    name = models.CharField(max_length=NAME_LENGTH)
-    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="+", blank=True)
-
-    class Meta:
-        ordering = ["name"]
-        constraints = [
-            models.UniqueConstraint(fields=["owner", "name"], name="unique_contact_group"),
-        ]
-
-    def __str__(self):
-        return f"{self.owner}: {self.name}"
 
 
 class HashtagQuerySet(BaseQuerySet):
@@ -152,44 +81,6 @@ class Hashtag(BaseModel):
 
     def __str__(self):
         return f"#{self.name}"
-
-
-class HideableModel(UUIDModel):
-    hidden_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta(UUIDModel.Meta):
-        abstract = True
-
-    @property
-    def is_hidden(self):
-        return self.hidden_at is not None
-
-    def hide(self):
-        self.hidden_at = timezone.now()
-        self.save(update_fields=["hidden_at"])
-
-    @transaction.atomic
-    def warn(self, moderator, reason):
-        warning = self.new_warning(moderator, reason)
-        with convert_warning_integrity_error(), transaction.atomic():
-            warning.save()
-        self.reports.resolve()
-        self.hide()
-        return warning
-
-
-class ModeratedQuerySet(BaseQuerySet):
-    target_field = None
-
-    def with_moderation(self, user):
-        warnings = Warning.objects.all()
-        moderation = self.annotate(
-            open_report_count=count_of(Report.objects.open(), self.target_field),
-            is_warned=boolean(Q(pk__in=warnings.values(self.target_field))),
-        )
-        if is_admin(user):
-            return moderation.annotate(can_warn=boolean(Q(is_warned=False)))
-        return moderation.annotate(can_warn=boolean(Q(is_warned=False) & ~by_admin_author()))
 
 
 class PostQuerySet(ModeratedQuerySet, AudienceQuerySet):
@@ -236,21 +127,30 @@ class PostQuerySet(ModeratedQuerySet, AudienceQuerySet):
         return posts
 
     def feed(self, user):
-        reposts = Repost.objects.followed_by(user)
-        reposted_at = Subquery(reposts.filter(post=OuterRef("pk")).values("created_at")[:1])
+        followed = followed_by(user)
         followed_hashtags = Post.objects.filter(hashtags__followers=user).values("pk")
+        created = Q(feed_entries__repost=None) & (
+            Q(author=user)
+            | Q(author__in=followed)
+            | Q(pk__in=followed_hashtags)
+            | Q(visibility=Post.Visibility.GLOBAL)
+        )
+        reposted = Q(feed_entries__repost__user__in=followed)
+        later_repost = Repost.objects.filter(
+            post=OuterRef("pk"),
+            user__in=followed,
+            created_at__gt=OuterRef("feed_entries__shown_at"),
+        )
         return (
             self.apply_acl(user)
-            .filter(
-                Q(author=user)
-                | Q(author__in=followed_by(user))
-                | Q(pk__in=followed_hashtags)
-                | Q(visibility=Post.Visibility.GLOBAL)
-                | Q(pk__in=reposts.values("post"))
-            )
-            .annotate(shown_at=Greatest("created_at", Coalesce(reposted_at, "created_at")))
-            .annotate(day=TruncDate("shown_at"))
+            .filter((created | reposted) & ~Exists(later_repost))
+            .annotate(shown_at=F("feed_entries__shown_at"), day=F("feed_entries__day"))
         )
+
+    def backdate(self, created_at):
+        entries = FeedEntry.objects.filter(post__in=self, repost=None)
+        entries.update(shown_at=created_at, day=timezone.localdate(created_at))
+        return self.update(created_at=created_at)
 
     def with_details(self, user):
         comments = Comment.objects.visible_to(user).filter(parent=None)
@@ -283,17 +183,12 @@ class PostQuerySet(ModeratedQuerySet, AudienceQuerySet):
 
 
 class Post(HideableModel):
-    class Visibility(models.TextChoices):
-        PUBLIC = "public", "Alle"
-        FOLLOWERS = "followers", "Follower"
-        FRIENDS = "friends", "Freunde"
-        GROUPS = "groups", "Gruppen"
-        GLOBAL = "global", "Global"
+    Visibility = Audience
 
     class VideoStatus(models.TextChoices):
-        PROCESSING = "processing", "Wird verarbeitet"
-        READY = "ready", "Bereit"
-        FAILED = "failed", "Fehlgeschlagen"
+        PROCESSING = "processing", _("Wird verarbeitet")
+        READY = "ready", _("Bereit")
+        FAILED = "failed", _("Fehlgeschlagen")
 
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="posts"
@@ -413,93 +308,6 @@ class Like(BaseModel):
         constraints = [models.UniqueConstraint(fields=["user", "post"], name="unique_like")]
 
 
-class StoryQuerySet(AudienceQuerySet):
-    def active(self):
-        return self.filter(created_at__gte=story_cutoff())
-
-    def apply_acl(self, user, action="read"):
-        groups = ContactGroup.objects.filter(stories=OuterRef("pk"))
-        stories = self.active().with_audience(user, groups)
-        if is_admin(user):
-            return stories
-        return stories.filter(Q(author=user) | (shared_with_viewer() & ~by_suspended_author()))
-
-    def with_details(self, user):
-        own = Q(author=user)
-        likes = count_of(StoryLike.objects.all(), "story")
-        views = count_of(StoryView.objects.exclude(user=OuterRef("author")), "story")
-        return self.annotate(
-            is_own=boolean(own),
-            liked=Exists(StoryLike.objects.filter(story=OuterRef("pk"), user=user)),
-            seen=Exists(StoryView.objects.filter(story=OuterRef("pk"), user=user)),
-            like_count=Case(When(own, then=likes), output_field=IntegerField()),
-            view_count=Case(When(own, then=views), output_field=IntegerField()),
-        )
-
-
-class Story(UUIDModel):
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="stories"
-    )
-    image = models.FileField(upload_to="stories/")
-    text = EncryptedTextField(max_length=STORY_TEXT_LENGTH, blank=True)
-    visibility = models.CharField(
-        max_length=20, choices=Post.Visibility.choices, default=Post.Visibility.PUBLIC
-    )
-    groups = models.ManyToManyField(ContactGroup, related_name="stories", blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
-    objects = StoryQuerySet.as_manager()
-
-    def __str__(self):
-        return f"Story({self.author}, {self.pk})"
-
-    @property
-    def image_url(self):
-        return reverse("stories-image", kwargs={"uuid": self.uuid})
-
-    @property
-    def expires_at(self):
-        return self.created_at + STORY_LIFETIME
-
-
-class StoryLike(BaseModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
-    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name="likes")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["user", "story"], name="unique_story_like")]
-
-
-class StoryView(BaseModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
-    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name="views")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["user", "story"], name="unique_story_view")]
-
-
-@receiver(post_delete, sender=Story)
-def delete_story_image(sender, instance, **kwargs):
-    instance.image.delete(save=False)
-
-
-def authors_for(viewer, lookup="author"):
-    authors = Member.objects.select_related("profile").prefetch_related("groups")
-    authors = authors.annotate_visibility(viewer)
-    if viewer.is_anonymous:
-        authors = authors.annotate(has_story=Value(False), has_unseen_story=Value(False))
-    else:
-        stories = Story.objects.apply_acl(viewer).filter(author=OuterRef("pk"))
-        authors = authors.annotate(
-            has_story=Exists(stories),
-            has_unseen_story=Exists(stories.exclude(views__user=viewer)),
-        )
-    return Prefetch(lookup, queryset=authors)
-
-
 def with_profile_media(members, viewer):
     posts = Post.objects.apply_acl(viewer).filter(author=OuterRef("pk"))
     stories = Story.objects.apply_acl(viewer).with_details(viewer).order_by("created_at")
@@ -524,6 +332,48 @@ class Repost(BaseModel):
     class Meta:
         constraints = [models.UniqueConstraint(fields=["user", "post"], name="unique_repost")]
         indexes = [models.Index(fields=["post", "-created_at"], name="repost_latest")]
+
+
+class FeedEntryQuerySet(BaseQuerySet):
+    def oldest_day(self):
+        return self.aggregate(oldest=Min("day"))["oldest"]
+
+
+class FeedEntry(BaseModel):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="feed_entries")
+    repost = models.OneToOneField(
+        Repost, on_delete=models.CASCADE, null=True, blank=True, related_name="feed_entry"
+    )
+    shown_at = models.DateTimeField()
+    day = models.DateField()
+
+    objects = FeedEntryQuerySet.as_manager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["post"], condition=Q(repost=None), name="unique_post_feed_entry"
+            ),
+        ]
+        indexes = [models.Index(fields=["-day", "-shown_at"], name="feed_entry_order")]
+
+    @classmethod
+    def record(cls, post, shown_at, repost=None):
+        return cls.objects.create(
+            post=post, repost=repost, shown_at=shown_at, day=timezone.localdate(shown_at)
+        )
+
+
+@receiver(post_save, sender=Post)
+def add_post_feed_entry(sender, instance, created, **kwargs):
+    if created:
+        FeedEntry.record(instance, instance.created_at)
+
+
+@receiver(post_save, sender=Repost)
+def add_repost_feed_entry(sender, instance, created, **kwargs):
+    if created:
+        FeedEntry.record(instance.post, instance.created_at, instance)
 
 
 class CommentQuerySet(ModeratedQuerySet):
@@ -685,55 +535,4 @@ class SavedPost(BaseModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["user", "post"], name="unique_saved_post"),
-        ]
-
-
-class AlbumQuerySet(BaseQuerySet):
-    def with_details(self, viewer):
-        cover = Post.objects.apply_acl(viewer).filter(pk=OuterRef("cover__post"))
-        return self.select_related("owner", "cover__post").annotate(
-            cover_visible=Exists(cover),
-            is_own=boolean(Q(owner=viewer.pk)),
-        )
-
-
-class Album(UUIDModel):
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="albums"
-    )
-    name = models.CharField(max_length=NAME_LENGTH)
-    cover = models.ForeignKey(
-        "AlbumEntry", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
-    )
-    position = models.PositiveIntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    objects = AlbumQuerySet.as_manager()
-
-    class Meta:
-        ordering = ["position", "-created_at", "-id"]
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def cover_url(self):
-        return self.cover.post.thumbnail_url if self.cover_visible else None
-
-    @property
-    def cover_entry(self):
-        return self.cover.uuid if self.cover_visible else None
-
-
-class AlbumEntry(UUIDModel):
-    album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name="entries")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="+")
-    date = models.DateField(null=True, blank=True)
-    title = models.CharField(max_length=NAME_LENGTH, blank=True)
-    position = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ["position", "id"]
-        constraints = [
-            models.UniqueConstraint(fields=["album", "post"], name="unique_album_post"),
         ]

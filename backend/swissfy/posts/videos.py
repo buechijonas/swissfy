@@ -6,6 +6,7 @@ import uuid
 from pathlib import Path
 
 from django.core.files.base import ContentFile
+from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
 from . import images
@@ -18,6 +19,7 @@ AUDIO_BITRATE = "96k"
 TRANSCODE_TIMEOUT = 600
 FORMATS = {"mov,mp4,m4a,3gp,3g2,mj2", "matroska,webm", "avi"}
 LOCAL_ONLY = ["-protocol_whitelist", "file"]
+NOT_A_VIDEO = _("Die Datei ist kein gültiges Video.")
 
 
 class InvalidVideo(Exception):
@@ -46,20 +48,22 @@ def probe(path):
         )
         info = json.loads(result.stdout)
         if info["format"]["format_name"] not in FORMATS:
-            raise InvalidVideo("Die Datei ist kein gültiges Video.")
+            raise InvalidVideo(NOT_A_VIDEO)
         return info["streams"], float(info["format"]["duration"])
     except (subprocess.SubprocessError, ValueError, KeyError):
-        raise InvalidVideo("Die Datei ist kein gültiges Video.")
+        raise InvalidVideo(NOT_A_VIDEO)
 
 
 def validate(upload):
     if upload.size > MAX_UPLOAD_SIZE:
-        raise InvalidVideo("Das Video ist zu gross (max. 250 MB).")
+        raise InvalidVideo(_("Das Video ist zu gross (max. 250 MB)."))
     streams, duration = probe(upload.temporary_file_path())
     if not streams:
-        raise InvalidVideo("Die Datei ist kein gültiges Video.")
+        raise InvalidVideo(NOT_A_VIDEO)
     if duration > MAX_DURATION + 0.5:
-        raise InvalidVideo(f"Das Video ist zu lang (max. {MAX_DURATION} Sekunden).")
+        raise InvalidVideo(
+            _("Das Video ist zu lang (max. %(seconds)s Sekunden).") % {"seconds": MAX_DURATION}
+        )
     upload.name = uuid.uuid4().hex
     return upload
 

@@ -2,6 +2,7 @@ import io
 import uuid
 
 from django.core.files.base import ContentFile
+from django.utils.translation import gettext_lazy as _
 from PIL import Image, ImageOps
 
 MAX_UPLOAD_SIZE = 15 * 1024 * 1024
@@ -24,13 +25,13 @@ def webp(image):
 
 def load(upload):
     if upload.size > MAX_UPLOAD_SIZE:
-        raise InvalidImage("Ein Bild ist zu gross (max. 15 MB).")
+        raise InvalidImage(_("Ein Bild ist zu gross (max. 15 MB)."))
     try:
         with Image.open(upload, formats=FORMATS) as original:
             image = ImageOps.exif_transpose(original)
             image.load()
     except (OSError, ValueError, Image.DecompressionBombError):
-        raise InvalidImage("Eine Datei ist kein gültiges Bild.")
+        raise InvalidImage(_("Eine Datei ist kein gültiges Bild."))
 
     if image.mode not in ("RGB", "RGBA"):
         image = image.convert("RGBA")
@@ -50,7 +51,9 @@ def resized(upload):
 
 def compress(uploads):
     if len(uploads) > MAX_IMAGES:
-        raise InvalidImage(f"Du kannst höchstens {MAX_IMAGES} Bilder hochladen.")
+        raise InvalidImage(
+            _("Du kannst höchstens %(count)s Bilder hochladen.") % {"count": MAX_IMAGES}
+        )
 
     first, *rest = [resized(upload) for upload in uploads]
     files = [(webp(image), *image.size) for image in [first, *rest]]
