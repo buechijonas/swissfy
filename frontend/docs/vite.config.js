@@ -14,7 +14,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@core': core,
     },
-    dedupe: ['vue', 'vue-router', 'pinia'],
+    dedupe: ['vue', 'vue-router', 'pinia', 'vue-i18n'],
   },
 
   server: {

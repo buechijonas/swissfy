@@ -6,7 +6,7 @@
       >
         <div class="min-w-0">
           <p>{{ label }}</p>
-          <p class="text-app-muted text-sm mt-1">Wähle bis zu {{ max }}.</p>
+          <p class="text-app-muted text-sm mt-1">{{ $t('favorites.max', { max }) }}</p>
         </div>
         <BaseButton
           class="shrink-0"
@@ -16,7 +16,7 @@
           @click="openDialog"
         >
           <AppIcon name="plus" />
-          Hinzufügen
+          {{ $t('favorites.add') }}
         </BaseButton>
       </div>
       <ul v-if="items.length" class="grid grid-cols-3 gap-4">
@@ -31,7 +31,7 @@
             @click="$emit('update', without(ids, item.id))"
           >
             <AppIcon name="trash" />
-            Entfernen
+            {{ $t('favorites.remove') }}
           </BaseButton>
         </li>
       </ul>
@@ -56,7 +56,7 @@
           <div v-for="n in 8" :key="n" class="skeleton aspect-2/3 w-full"></div>
         </div>
         <p v-else-if="query.trim() && !results.length" class="text-app-muted text-center">
-          Nichts gefunden.
+          {{ $t('favorites.nothingFound') }}
         </p>
         <ul v-else class="grid grid-cols-3 sm:grid-cols-4 gap-4">
           <li v-for="item in results" :key="item.id" class="min-w-0">
@@ -90,6 +90,7 @@ import BaseDialog from '@/components/common/BaseDialog.vue'
 import FavoriteCover from '@/components/settings/FavoriteCover.vue'
 import LibraryCredits from '@/components/settings/LibraryCredits.vue'
 import profilesApi from '@/api/profiles.js'
+import { t } from '@/i18n.js'
 
 const DEBOUNCE_MS = 300
 
@@ -157,7 +158,7 @@ export default {
         const data = await profilesApi.searchLibrary(this.kind, query)
         if (query === this.query.trim()) this.results = data.results
       } catch (error) {
-        if (query === this.query.trim()) this.error = error.detail ?? 'Suche fehlgeschlagen.'
+        if (query === this.query.trim()) this.error = error.detail ?? t('favorites.searchFailed')
       } finally {
         if (query === this.query.trim()) this.loading = false
       }

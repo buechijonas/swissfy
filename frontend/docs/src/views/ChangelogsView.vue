@@ -1,6 +1,10 @@
 <template>
-  <DocsPage :breadcrumbs="[{ label: 'Changelog' }]" :loading="!changelogs" :error="error">
-    <p v-if="!changelogs.length" class="text-app-muted">Noch keine Releases.</p>
+  <DocsPage
+    :breadcrumbs="[{ label: $t('navigation.changelog') }]"
+    :loading="!changelogs"
+    :error="error"
+  >
+    <p v-if="!changelogs.length" class="text-app-muted">{{ $t('changelogs.empty') }}</p>
     <ChangelogCard
       v-for="changelog in changelogs"
       :key="changelog.version"

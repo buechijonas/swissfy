@@ -29,7 +29,7 @@
       </div>
       <BaseCard v-else-if="!loading && !error" class="p-6">
         <p class="text-app-muted">
-          {{ resolved ? 'Noch keine erledigten Meldungen.' : 'Keine offenen Meldungen.' }}
+          {{ resolved ? $t('moderation.noResolved') : $t('moderation.noOpen') }}
         </p>
       </BaseCard>
 
@@ -37,7 +37,7 @@
       <div v-if="loading" class="skeleton h-48 w-full mt-4"></div>
       <BaseButton v-else-if="next" class="mt-4" size="sm" block @click="load">
         <AppIcon name="down" />
-        Weitere laden
+        {{ $t('common.loadMore') }}
       </BaseButton>
     </div>
   </div>
@@ -55,6 +55,7 @@ import BaseTabs from '@/components/common/BaseTabs.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
 import PostCard from '@/components/posts/PostCard.vue'
 import moderationApi from '@/api/moderation.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ModerationView',
@@ -71,11 +72,6 @@ export default {
   },
   data() {
     return {
-      breadcrumbs: [{ label: 'Moderation', to: '/moderation' }],
-      tabs: [
-        { key: 'open', label: 'Offen' },
-        { key: 'resolved', label: 'Erledigt' },
-      ],
       items: [],
       next: null,
       loading: false,
@@ -83,6 +79,15 @@ export default {
     }
   },
   computed: {
+    tabs() {
+      return [
+        { key: 'open', label: t('moderation.open') },
+        { key: 'resolved', label: t('moderation.resolved') },
+      ]
+    },
+    breadcrumbs() {
+      return [{ label: t('moderation.title'), to: '/moderation' }]
+    },
     status() {
       return this.$route.query.tab === 'resolved' ? 'resolved' : 'open'
     },
@@ -100,7 +105,10 @@ export default {
   },
   methods: {
     caption(item) {
-      const parts = [item.type === 'post' ? 'Feed' : 'Kommentar', `${item.report_count}× gemeldet`]
+      const parts = [
+        item.type === 'post' ? t('moderation.post') : t('moderation.comment'),
+        `${item.report_count}× gemeldet`,
+      ]
       if (this.resolved) parts.push(item.warned ? 'verwarnt' : 'verworfen')
       return parts.join(' · ')
     },
@@ -122,7 +130,7 @@ export default {
         this.items.push(...data.results)
         this.next = data.next
       } catch {
-        this.error = 'Meldungen konnten nicht geladen werden.'
+        this.error = t('moderation.loadFailed')
       } finally {
         this.loading = false
       }

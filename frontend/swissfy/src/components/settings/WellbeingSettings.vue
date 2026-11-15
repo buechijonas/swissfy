@@ -1,9 +1,8 @@
 <template>
   <div class="mb-10">
-    <h3 class="text-xl my-4">Suchtprävention</h3>
+    <h3 class="text-xl my-4">{{ $t('wellbeing.title') }}</h3>
     <p class="text-app-muted text-sm mb-4">
-      Swissfy verzichtet standardmässig auf Funktionen, die dich länger am Bildschirm halten sollen.
-      Du kannst sie hier bewusst einschalten. Gilt für dieses Gerät.
+      {{ $t('wellbeing.intro') }}
     </p>
     <div class="flex flex-col gap-4">
       <SettingCard
@@ -30,26 +29,27 @@ import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import SettingCard from '@/components/settings/SettingCard.vue'
 import { onOffOptions } from '@/data/settings.js'
 import { videoAutoplay, videoLoop } from '@/lib/preferences.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'WellbeingSettings',
   components: { BaseSwitcher, SettingCard },
-  data() {
-    return {
-      onOffOptions,
-      toggles: markRaw([
+  computed: {
+    onOffOptions,
+    toggles() {
+      return markRaw([
         {
           setting: videoAutoplay,
-          label: 'Autoplay',
-          hint: 'Wenn an, starten Videos von selbst und ohne Ton, sobald du zu ihnen scrollst.',
+          label: t('wellbeing.autoplay'),
+          hint: t('wellbeing.autoplayHint'),
         },
         {
           setting: videoLoop,
-          label: 'Wiederholen',
-          hint: 'Wenn an, beginnen Videos am Ende automatisch von vorne.',
+          label: t('wellbeing.loop'),
+          hint: t('wellbeing.loopHint'),
         },
-      ]),
-    }
+      ])
+    },
   },
 }
 </script>

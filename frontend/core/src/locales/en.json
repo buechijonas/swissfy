@@ -1,0 +1,11 @@
+{
+  "core": {
+    "requestFailed": "Request failed ({status}).",
+    "legal": {
+      "impressum": "Imprint",
+      "privacy": "Privacy policy",
+      "terms": "Terms of use",
+      "disclaimer": "Disclaimer"
+    }
+  }
+}

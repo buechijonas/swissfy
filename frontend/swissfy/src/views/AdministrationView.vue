@@ -11,14 +11,14 @@
             v-model="term"
             type="search"
             class="grow"
-            placeholder="Benutzername oder Name"
+            :placeholder="$t('administration.searchPlaceholder')"
             autocomplete="off"
           />
         </label>
         <select v-model="roleFilter" class="select w-auto">
-          <option value="">Alle Rollen</option>
+          <option value="">{{ $t('administration.allRoles') }}</option>
           <option v-for="role in roles" :key="role.value" :value="role.value">
-            {{ role.label }}
+            {{ $t(`roles.${role.value}`) }}
           </option>
         </select>
       </div>
@@ -40,20 +40,20 @@
             :role="user.role"
             :roles="roles"
             :disabled="user.is_self || !!user.role_locked_until || saving === user.username"
-            :title="user.is_self ? 'Deine eigene Rolle kannst du nicht ändern.' : 'Rolle'"
+            :title="user.is_self ? $t('administration.ownRole') : $t('administration.role')"
             @change="(role) => changeRole(user, role)"
           />
         </li>
       </BaseCard>
       <BaseCard v-else-if="!loading && !error" class="p-6">
-        <p class="text-app-muted">Keine User gefunden.</p>
+        <p class="text-app-muted">{{ $t('administration.noUsers') }}</p>
       </BaseCard>
 
       <ErrorText :message="error" class="mt-4 text-center" />
       <div v-if="loading" class="skeleton h-24 w-full mt-4"></div>
       <BaseButton v-else-if="next" class="mt-4" size="sm" block @click="load">
         <AppIcon name="down" />
-        Weitere laden
+        {{ $t('common.loadMore') }}
       </BaseButton>
     </div>
   </div>
@@ -74,6 +74,7 @@ import RoleBadge from '@/components/common/RoleBadge.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import administrationApi from '@/api/administration.js'
 import { formatDate } from '@/lib/time.js'
+import { t } from '@/i18n.js'
 
 const DEBOUNCE_MS = 300
 
@@ -93,7 +94,6 @@ export default {
   },
   data() {
     return {
-      breadcrumbs: [{ label: 'Administration', to: '/administration' }],
       roles: [],
       users: [],
       term: '',
@@ -104,6 +104,11 @@ export default {
       saving: null,
       error: null,
     }
+  },
+  computed: {
+    breadcrumbs() {
+      return [{ label: t('administration.title'), to: '/administration' }]
+    },
   },
   watch: {
     term(term) {
@@ -126,8 +131,8 @@ export default {
   },
   methods: {
     lockText(user) {
-      if (user.role_locked_until === 'forever') return 'Rolle dauerhaft gesperrt'
-      return `Rolle gesperrt bis ${formatDate(user.role_locked_until)}`
+      if (user.role_locked_until === 'forever') return t('administration.roleLockedForever')
+      return t('administration.roleLockedUntil', { date: formatDate(user.role_locked_until) })
     },
     profileLink(user) {
       return `/profile/${encodeURIComponent(user.username)}`
@@ -150,7 +155,7 @@ export default {
         this.users.push(...data.results)
         this.next = data.next
       } catch {
-        this.error = 'User konnten nicht geladen werden.'
+        this.error = t('administration.loadFailed')
       } finally {
         this.loading = false
       }
@@ -161,7 +166,7 @@ export default {
       try {
         Object.assign(user, await administrationApi.setRole(user.username, role))
       } catch (error) {
-        this.error = error.detail ?? 'Rolle konnte nicht geändert werden.'
+        this.error = error.detail ?? t('administration.changeFailed')
       } finally {
         this.saving = null
       }

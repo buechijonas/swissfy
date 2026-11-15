@@ -4,8 +4,10 @@ import authApi from '@core/api/auth.js'
 import { clearDeviceToken, readDeviceToken, writeDeviceToken } from '@/lib/deviceToken.js'
 import { persistentLogin } from '@/lib/preferences.js'
 import { useChatsStore } from '@/stores/chats.js'
+import { useEventsStore } from '@/stores/events.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
 import { useFoldersStore, useGroupsStore } from '@/stores/posts.js'
+import { t } from '@/i18n.js'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -28,7 +30,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function syncDeviceToken(token) {
     const data = await authApi.syncDevice(token).catch(() => {
-      throw new Error('Speichern fehlgeschlagen.')
+      throw new Error(t('common.saveFailed'))
     })
     await writeDeviceToken(data.token)
     navigator.storage?.persist?.().catch(() => {})
@@ -36,7 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function forgetDevice() {
     await authApi.forgetDevice().catch(() => {
-      throw new Error('Speichern fehlgeschlagen.')
+      throw new Error(t('common.saveFailed'))
     })
     await clearDeviceToken()
   }
@@ -70,10 +72,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout() {
     await authApi.logout().catch((error) => {
-      throw new Error(error.detail ?? 'Abmelden fehlgeschlagen.')
+      throw new Error(error.detail ?? t('auth.logoutFailed'))
     })
     await clearDeviceToken()
     user.value = null
+    useEventsStore().disconnect()
     useChatsStore().reset()
     useNotificationsStore().reset()
     useFoldersStore().reset()
@@ -82,7 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function acceptConsent(field) {
     const consent = await authApi.acceptConsent(field).catch((error) => {
-      throw new Error(error.detail ?? 'Zustimmung fehlgeschlagen.')
+      throw new Error(error.detail ?? t('auth.consentFailed'))
     })
     user.value = { ...user.value, consent }
   }

@@ -8,7 +8,7 @@
   >
     <input v-files="emitFiles" type="file" :accept="accept" class="sr-only" :multiple="multiple" />
     <AppIcon name="picture" class="size-10!" />
-    <span v-if="label" class="text-sm text-center px-4">{{ label }}</span>
+    <span v-if="labelText" class="text-sm text-center px-4">{{ labelText }}</span>
   </label>
 </template>
 
@@ -19,13 +19,14 @@ import some from 'lodash-es/some'
 import take from 'lodash-es/take'
 import AppIcon from '@core/components/AppIcon.vue'
 import files from '@core/directives/files.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ImageDropzone',
   components: { AppIcon },
   directives: { files },
   props: {
-    label: { type: String, default: 'Bilder hierher ziehen oder klicken' },
+    label: { type: String, default: null },
     multiple: { type: Boolean, default: false },
     accept: { type: String, default: 'image/*' },
   },
@@ -34,6 +35,9 @@ export default {
     return { dragging: false }
   },
   computed: {
+    labelText() {
+      return this.label ?? t('dropzone.label')
+    },
     acceptedTypes() {
       return map(this.accept.split(','), (type) => type.trim().replace('*', ''))
     },

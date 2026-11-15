@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "logoutFailed": "退出登录失败。"
+  },
+  "display": {
+    "title": "显示",
+    "appearance": "界面外观。",
+    "accessibility": "无障碍",
+    "dyslexia": "阅读障碍",
+    "contrast": "高对比度模式",
+    "auto": "自动",
+    "light": "浅色",
+    "dark": "深色",
+    "on": "开",
+    "off": "关",
+    "language": "语言",
+    "languageHint": "界面语言。"
+  },
+  "navigation": {
+    "changelog": "更新日志",
+    "donate": "捐赠",
+    "settings": "设置",
+    "version": "版本 {version}"
+  },
+  "changelogs": {
+    "empty": "暂无版本。"
+  },
+  "header": {
+    "settings": "设置",
+    "docs": "文档",
+    "logout": "退出登录",
+    "login": "登录",
+    "menu": "菜单"
+  },
+  "legal": {
+    "imprint": "版本说明",
+    "privacy": "隐私政策",
+    "terms": "使用条款",
+    "disclaimer": "免责声明"
+  }
+}

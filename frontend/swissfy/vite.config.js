@@ -14,11 +14,12 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@core': core,
     },
-    dedupe: ['vue', 'vue-router', 'pinia'],
+    dedupe: ['vue', 'vue-router', 'pinia', 'vue-i18n'],
   },
 
   test: {
     environment: 'jsdom',
+    setupFiles: ['./tests/setup.js'],
   },
 
   server: {
@@ -31,6 +32,10 @@ export default defineConfig({
     },
 
     proxy: {
+      '/api/events': {
+        target: 'http://events:8000',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://backend:8000',
         changeOrigin: true,

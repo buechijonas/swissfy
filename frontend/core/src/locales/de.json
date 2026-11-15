@@ -1,0 +1,11 @@
+{
+  "core": {
+    "requestFailed": "Anfrage fehlgeschlagen ({status}).",
+    "legal": {
+      "impressum": "Impressum",
+      "privacy": "Datenschutzerklärung",
+      "terms": "Nutzungsrichtlinien",
+      "disclaimer": "Haftungsausschluss"
+    }
+  }
+}

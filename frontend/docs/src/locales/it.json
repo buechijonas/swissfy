@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "logoutFailed": "Disconnessione non riuscita."
+  },
+  "display": {
+    "title": "Aspetto",
+    "appearance": "Aspetto dell'interfaccia.",
+    "accessibility": "Accessibilità",
+    "dyslexia": "Dislessia",
+    "contrast": "Modalità contrasto",
+    "auto": "Auto",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "on": "Attivo",
+    "off": "Disattivo",
+    "language": "Lingua",
+    "languageHint": "Lingua dell'interfaccia."
+  },
+  "navigation": {
+    "changelog": "Changelog",
+    "donate": "Dona",
+    "settings": "Impostazioni",
+    "version": "Versione {version}"
+  },
+  "changelogs": {
+    "empty": "Ancora nessuna versione."
+  },
+  "header": {
+    "settings": "Impostazioni",
+    "docs": "Documentazione",
+    "logout": "Esci",
+    "login": "Accedi",
+    "menu": "Menu"
+  },
+  "legal": {
+    "imprint": "Note legali",
+    "privacy": "Informativa sulla privacy",
+    "terms": "Condizioni d'uso",
+    "disclaimer": "Esclusione di responsabilità"
+  }
+}

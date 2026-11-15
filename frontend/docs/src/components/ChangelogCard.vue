@@ -18,11 +18,12 @@
 <script>
 import { RouterLink } from 'vue-router'
 import BaseCard from '@core/components/BaseCard.vue'
+import { locale } from '@core/lib/language.js'
 import MarkdownContent from '@/components/common/MarkdownContent.vue'
 
 const BUMP_LABELS = { major: 'Major', minor: 'Minor', patch: 'Patch' }
 const BUMP_BADGES = { major: 'badge-primary', minor: 'badge-neutral', patch: 'badge-ghost' }
-const DATE_FORMAT = new Intl.DateTimeFormat('de-CH', { dateStyle: 'long' })
+const DATE_FORMAT = new Intl.DateTimeFormat(locale(), { dateStyle: 'long' })
 
 export default {
   name: 'ChangelogCard',

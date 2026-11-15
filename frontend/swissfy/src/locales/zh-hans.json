@@ -1,0 +1,617 @@
+{
+  "common": {
+    "saveFailed": "保存失败。",
+    "loadFailed": "加载失败。",
+    "cancel": "取消",
+    "close": "关闭",
+    "hidden": "已隐藏",
+    "delete": "删除",
+    "loadMore": "加载更多",
+    "edit": "编辑",
+    "save": "保存",
+    "create": "创建",
+    "more": "更多",
+    "actionFailed": "操作失败。",
+    "next": "下一步",
+    "back": "返回"
+  },
+  "auth": {
+    "logoutFailed": "退出登录失败。",
+    "consentFailed": "同意失败。"
+  },
+  "chatKeys": {
+    "settingsFailed": "无法加载聊天设置。",
+    "keyFailed": "无法创建密钥。",
+    "wrongPin": "PIN 错误。"
+  },
+  "connections": {
+    "followers": "关注者",
+    "noFollowers": "暂无关注者。",
+    "following": "关注",
+    "noFollowing": "尚未关注任何人。",
+    "friends": "好友",
+    "noFriends": "暂无好友。"
+  },
+  "favorites": {
+    "movies": "最爱的电影",
+    "searchMovie": "搜索电影",
+    "series": "最爱的剧集",
+    "searchSeries": "搜索剧集",
+    "games": "最爱的游戏",
+    "searchGame": "搜索游戏",
+    "add": "添加",
+    "remove": "移除",
+    "nothingFound": "未找到结果。",
+    "searchFailed": "搜索失败。",
+    "credits": "数据和封面来自 {imdb} 和 {steam}。",
+    "max": "最多选择 {max} 个。"
+  },
+  "legal": {
+    "imprint": "版本说明",
+    "privacy": "隐私政策",
+    "terms": "使用条款",
+    "disclaimer": "免责声明",
+    "agree": "同意"
+  },
+  "navigation": {
+    "home": "首页",
+    "reels": "Seeds",
+    "search": "搜索",
+    "notifications": "通知",
+    "chats": "聊天",
+    "profile": "个人资料",
+    "moderation": "审核",
+    "administration": "管理",
+    "login": "登录",
+    "logout": "退出登录",
+    "closeSidebar": "关闭侧边栏",
+    "version": "版本 {version}"
+  },
+  "settings": {
+    "on": "开",
+    "off": "关",
+    "auto": "自动",
+    "light": "浅色",
+    "dark": "深色",
+    "standard": "标准",
+    "public": "公开",
+    "followers": "关注者",
+    "friends": "好友",
+    "readReceipts": "已读回执",
+    "readReceiptsHint": "关闭后，其他人无法看到你是否已读他们的消息，你也看不到他们的。",
+    "chatRequests": "聊天请求",
+    "chatRequestsHint": "关闭后，任何人都无法向你发送新的聊天请求。现有聊天保留。",
+    "birthdate": "出生日期",
+    "birthdateHint": "开启后，所有能查看你个人资料的人都能在“关于我”中看到你的出生日期。",
+    "device": "仅限此设备",
+    "pin": "聊天 PIN",
+    "standardHint": "加密存储。使用你的账号可在任意设备上访问。",
+    "deviceHint": "端到端加密。只有此设备能读取你的聊天，新设备只能看到新消息。",
+    "pinHint": "端到端加密。在新设备上用你的 PIN 解锁聊天。"
+  },
+  "routes": {
+    "home": "首页",
+    "reels": "Seeds",
+    "search": "搜索",
+    "chats": "聊天",
+    "chat": "聊天",
+    "post": "动态",
+    "comment": "评论",
+    "notifications": "通知",
+    "moderation": "审核",
+    "administration": "管理",
+    "saved": "已收藏",
+    "profile": "个人资料",
+    "album": "相册",
+    "newStory": "新快拍",
+    "newPost": "新动态",
+    "hashtag": "话题",
+    "login": "登录",
+    "logout": "退出登录",
+    "settings": "设置"
+  },
+  "time": {
+    "minutesAgo": "{count} 分钟前",
+    "hoursAgo": "{count} 小时前",
+    "yesterday": "昨天 {time}",
+    "dateTime": "{day} {time}"
+  },
+  "chat": {
+    "send": "发送",
+    "message": "消息",
+    "disconnected": "连接已断开。连接恢复后将显示新消息。",
+    "encrypted": "已加密",
+    "endToEnd": "端到端加密",
+    "requestDeclined": "请求已被拒绝",
+    "noRequests": "不接受聊天请求",
+    "self": "你不能和自己聊天。",
+    "profileNotFound": "未找到个人资料。",
+    "loadFailed": "无法加载聊天。",
+    "refreshFailed": "无法更新聊天。",
+    "sendFailed": "无法发送消息。",
+    "empty": "暂无消息。",
+    "unreadable": "此设备上无法读取。",
+    "tampered": "消息已损坏或被篡改。",
+    "unverified": "未验证",
+    "safetyNumber": "显示安全码",
+    "safetyNumberHint": "请当面或通过其他渠道核对此安全码。如果你们双方的安全码一致，就没有人在中间窃听。",
+    "keysChanged": "{'@'}{username} 有新的密钥。在发送机密内容之前，请核对你们的安全码。",
+    "keysAccepted": "知道了",
+    "enterPin": "输入你的聊天 PIN 以解密聊天。",
+    "unlock": "解锁",
+    "pin": "聊天 PIN",
+    "sendRequest": "发送请求",
+    "declineForGood": "永久拒绝",
+    "decline": "拒绝",
+    "accept": "接受",
+    "withdraw": "撤回请求",
+    "requestFailed": "请求失败。",
+    "retention": "消息将在 {days} 天后自动删除。"
+  },
+  "chats": {
+    "requests": "聊天请求",
+    "archiveTitle": "归档聊天",
+    "archive": "归档",
+    "requestSent": "请求已发送",
+    "noMessages": "暂无消息",
+    "noArchived": "没有已归档的聊天。",
+    "allArchived": "所有聊天均已归档。",
+    "empty": "暂无聊天。你可以在个人资料页发送聊天请求。",
+    "loadFailed": "无法加载聊天。",
+    "archiveFailed": "无法归档聊天。",
+    "restoreFailed": "无法恢复聊天。",
+    "restore": "恢复",
+    "tabChats": "聊天",
+    "tabArchive": "归档",
+    "archiveMessage": "归档与 {'@'}{username} 的聊天？已归档的聊天将不再通知你。"
+  },
+  "header": {
+    "settings": "设置",
+    "saved": "已收藏",
+    "docs": "文档",
+    "menu": "菜单",
+    "logout": "退出登录",
+    "login": "登录",
+    "newNotifications": "新通知",
+    "notifications": "通知"
+  },
+  "dialog": {
+    "confirmDelete": "确认删除"
+  },
+  "dropzone": {
+    "label": "将图片拖到这里或点击"
+  },
+  "search": {
+    "search": "搜索"
+  },
+  "users": {
+    "noneFound": "未找到用户。",
+    "noOthers": "暂无其他用户。",
+    "loadFailed": "无法加载用户。"
+  },
+  "messageStatus": {
+    "sent": "已发送",
+    "delivered": "已送达",
+    "read": "已读"
+  },
+  "administration": {
+    "allRoles": "所有角色",
+    "noUsers": "未找到用户。",
+    "searchPlaceholder": "用户名或姓名",
+    "ownRole": "你不能更改自己的角色。",
+    "role": "角色",
+    "roleLockedForever": "角色已永久锁定",
+    "loadFailed": "无法加载用户。",
+    "changeFailed": "无法更改角色。",
+    "title": "管理",
+    "roleLockedUntil": "角色锁定至 {date}"
+  },
+  "album": {
+    "addToTimeline": "添加到时间线",
+    "deleteMessage": "删除相册？帖子本身会保留。",
+    "notFound": "未找到相册。",
+    "loadFailed": "无法加载相册。",
+    "deleteFailed": "无法删除相册。",
+    "albums": "相册",
+    "album": "相册"
+  },
+  "commentView": {
+    "replyPlaceholder": "写回复…",
+    "deleteMessage": "要删除这条评论吗？其回复也会被删除。",
+    "notFound": "未找到评论。",
+    "loadFailed": "无法加载评论。",
+    "deleteFailed": "无法删除评论。",
+    "moderation": "审核",
+    "post": "动态",
+    "comment": "评论"
+  },
+  "connectionsView": {
+    "searchPlaceholder": "搜索用户",
+    "profile": "个人资料"
+  },
+  "hashtag": {
+    "unfollow": "取消关注",
+    "follow": "关注",
+    "noReels": "暂无 Seeds。",
+    "noPosts": "暂无动态。",
+    "posts": "动态",
+    "reels": "Seeds",
+    "empty": "该话题下暂无动态。",
+    "loadFailed": "无法加载话题。",
+    "postCount": "{count} 条动态",
+    "following": "已关注"
+  },
+  "home": {
+    "welcome": "欢迎",
+    "post": "发布",
+    "empty": "暂无动态。关注用户或话题即可在此看到他们的动态。",
+    "noAnnouncements": "暂无公告。",
+    "home": "首页"
+  },
+  "moderation": {
+    "noResolved": "暂无已处理的举报。",
+    "noOpen": "没有待处理的举报。",
+    "title": "审核",
+    "open": "待处理",
+    "resolved": "已处理",
+    "post": "动态",
+    "comment": "评论",
+    "loadFailed": "无法加载举报。"
+  },
+  "notifications": {
+    "accept": "接受",
+    "decline": "拒绝",
+    "empty": "暂无通知。",
+    "open": "打开",
+    "accepted": "已接受",
+    "declined": "已拒绝",
+    "title": "通知",
+    "loadFailed": "无法加载通知。",
+    "actionFailed": "操作失败。"
+  },
+  "postView": {
+    "post": "动态",
+    "moderation": "审核",
+    "notFound": "未找到动态。",
+    "loadFailed": "无法加载动态。"
+  },
+  "reels": {
+    "empty": "暂无 Seeds。",
+    "emptyFollowing": "你关注的用户或话题暂无 Seeds。",
+    "loadFailed": "无法加载 Seeds。"
+  },
+  "saved": {
+    "rename": "重命名",
+    "folder": "文件夹",
+    "empty": "这里还没有收藏任何内容。",
+    "name": "名称",
+    "deleteMessage": "删除文件夹？已收藏的动态将保留在“未分类”中。",
+    "renameFolder": "重命名文件夹",
+    "newFolder": "新建文件夹",
+    "title": "已收藏",
+    "all": "全部",
+    "noFolder": "未分类",
+    "loadFailed": "无法加载文件夹。"
+  },
+  "searchView": {
+    "title": "搜索",
+    "placeholder": "搜索用户或 #话题"
+  },
+  "settingsView": {
+    "groups": "群组",
+    "title": "设置",
+    "general": "通用",
+    "privacy": "隐私",
+    "profile": "个人资料",
+    "display": "显示",
+    "wellbeing": "身心健康"
+  },
+  "login": {
+    "intro": "Swissfy 使用 govex 登录。你在那里管理用户名和密码。",
+    "button": "使用 govex 登录",
+    "title": "登录",
+    "failed": "通过 govex 登录失败，请重试。"
+  },
+  "logout": {
+    "back": "返回首页",
+    "title": "退出登录",
+    "done": "你已退出登录。",
+    "pending": "正在退出登录…"
+  },
+  "upload": {
+    "cropHint": "所有图片都会按第一张图片的比例裁剪。",
+    "videoHint": "视频会在发布后处理，之后对他人可见。",
+    "removeImage": "移除图片",
+    "storyDrop": "将快拍图片拖到这里或点击",
+    "storyText": "快拍上的文字（可选）",
+    "removeVideo": "移除视频",
+    "postDrop": "将图片或视频拖到这里或点击",
+    "add": "添加",
+    "postText": "有什么新鲜事？用 # 标记话题，例如 #zürich",
+    "posting": "正在发布…",
+    "post": "发布",
+    "imageUnreadable": "无法读取图片。",
+    "videoTooLarge": "视频过大（最大 250 MB）。",
+    "anImageUnreadable": "有图片无法读取。",
+    "storyFailed": "无法创建快拍。",
+    "postFailed": "无法创建动态。",
+    "confirmStory": "我确认我的快拍符合{terms}。",
+    "confirmPost": "我确认我的动态符合{terms}。",
+    "terms": "使用条款",
+    "quotaLeft": "今天还可以发布 {remaining}/{limit} 条动态。",
+    "quotaUsed": "你今天已发布 {limit} 条动态。",
+    "videoTooLong": "视频过长（最长 {seconds} 秒）。",
+    "tooManyImages": "最多只能上传 {count} 张图片。"
+  },
+  "profile": {
+    "followers": "关注者",
+    "following": "关注中",
+    "chat": "聊天",
+    "friends": "好友",
+    "private": "此个人资料为私密。",
+    "birthdate": "出生日期",
+    "noDetails": "暂无信息。",
+    "post": "发布",
+    "viewStory": "查看快拍",
+    "addStory": "添加快拍",
+    "requested": "已请求",
+    "request": "请求",
+    "activity": "动态记录",
+    "grid": "网格",
+    "albums": "相册",
+    "about": "关于我",
+    "achievements": "成就",
+    "status": "状态",
+    "posts": "动态",
+    "noPosts": "暂无动态。",
+    "reels": "Seeds",
+    "noReels": "暂无 Seeds。",
+    "comments": "评论",
+    "noComments": "暂无评论。",
+    "profile": "个人资料",
+    "unfollow": "取消关注",
+    "follow": "关注",
+    "notFound": "未找到个人资料。",
+    "loadFailed": "无法加载个人资料。",
+    "actionFailed": "操作失败。",
+    "requestFailed": "请求失败。"
+  },
+  "comments": {
+    "comment": "评论",
+    "send": "发送",
+    "author": "作者",
+    "hidden": "已隐藏",
+    "replyTo": "回复",
+    "reply": "回复",
+    "reported": "已举报",
+    "report": "举报",
+    "loadMore": "加载更多评论",
+    "deleteMessage": "要删除这条评论吗？其回复也会被删除。",
+    "placeholder": "写评论…",
+    "sendFailed": "无法发送评论。",
+    "deleteFailed": "无法删除评论。",
+    "title": "评论",
+    "replyToUser": "回复 {'@'}{username}",
+    "showReplies": "查看全部 {count} 条回复"
+  },
+  "create": {
+    "title": "你想上传什么？",
+    "post": "动态",
+    "postHint": "保留在你的个人资料中",
+    "story": "快拍",
+    "storyHint": "24 小时后消失"
+  },
+  "folders": {
+    "none": "未分类",
+    "move": "移动到文件夹",
+    "new": "新建文件夹",
+    "loadFailed": "无法加载文件夹。"
+  },
+  "groups": {
+    "intro": "群组可决定谁能看到动态。只有你能看到自己的群组。",
+    "empty": "暂无成员。",
+    "add": "添加",
+    "new": "新建群组",
+    "username": "用户名",
+    "deleteMessage": "删除群组“{name}”？"
+  },
+  "postActions": {
+    "like": "赞",
+    "comments": "评论",
+    "unrepost": "取消转发",
+    "repost": "转发",
+    "unsave": "取消收藏"
+  },
+  "postCard": {
+    "hidden": "已对公众隐藏",
+    "editReel": "编辑 Seed",
+    "move": "移动到文件夹",
+    "reported": "已举报",
+    "report": "举报",
+    "reportReel": "举报 Seed"
+  },
+  "postEdit": {
+    "delete": "删除动态",
+    "title": "编辑动态",
+    "deleteMessage": "要删除这条动态吗？",
+    "saveFailed": "无法保存动态。",
+    "deleteFailed": "无法删除动态。"
+  },
+  "postImages": {
+    "previous": "上一张图片",
+    "next": "下一张图片"
+  },
+  "postList": {
+    "empty": "暂无动态。",
+    "loadFailed": "无法加载动态。"
+  },
+  "video": {
+    "play": "播放",
+    "failed": "视频处理失败。",
+    "processing": "视频处理中…"
+  },
+  "story": {
+    "delete": "删除快拍",
+    "seenBy": "查看者",
+    "deleteMessage": "要删除这个快拍吗？",
+    "unlike": "取消赞",
+    "like": "赞",
+    "noViewers": "还没有人看过你的快拍。",
+    "liked": "已赞"
+  },
+  "visibility": {
+    "visibleTo": "可见范围",
+    "globalHint": "会出现在所有人的首页动态中，包括未关注你的人。",
+    "noGroups": "你还没有群组。",
+    "createGroups": "创建群组",
+    "public": "所有人",
+    "followers": "关注者",
+    "friends": "好友",
+    "groups": "群组",
+    "global": "全局"
+  },
+  "albumPosts": {
+    "empty": "没有更多可添加的动态或 Seeds。",
+    "loadMore": "加载更多",
+    "add": "添加",
+    "selected": "已选择",
+    "date": "日期（可选）",
+    "title": "标题（可选）",
+    "choose": "选择帖子",
+    "setDate": "设置日期",
+    "loadFailed": "无法加载帖子。",
+    "addFailed": "无法添加帖子。"
+  },
+  "albumDialog": {
+    "cover": "封面图片（可选）",
+    "coverHint": "将帖子添加到时间线后即可选择其中一张作为封面。",
+    "name": "名称",
+    "coverAlt": "封面图片",
+    "edit": "编辑相册",
+    "new": "新建相册",
+    "saveFailed": "无法保存相册。"
+  },
+  "albumTimeline": {
+    "title": "时间线",
+    "empty": "此相册中暂无帖子。",
+    "noDate": "无日期"
+  },
+  "albumEntry": {
+    "date": "日期（可选）",
+    "title": "标题（可选）",
+    "remove": "移除",
+    "edit": "编辑条目",
+    "saveFailed": "无法保存条目。"
+  },
+  "albums": {
+    "empty": "暂无相册。",
+    "new": "新建相册",
+    "move": "移动",
+    "loadFailed": "无法加载相册。",
+    "orderFailed": "无法保存顺序。"
+  },
+  "moderationPanel": {
+    "alreadyWarned": "已警告并对公众隐藏。",
+    "reason": "警告原因",
+    "warn": "警告",
+    "dismiss": "驳回",
+    "warned": "已警告：",
+    "noOpen": "没有待处理的举报"
+  },
+  "profileStatus": {
+    "noWarnings": "没有警告。",
+    "view": "查看",
+    "reported": "被举报的内容",
+    "noReported": "没有被举报的内容。",
+    "expiredSince": "失效于",
+    "expiresOn": "失效日期",
+    "loadFailed": "无法加载状态。",
+    "warning": "警告：{reason}",
+    "suspension": "封禁：{duration}",
+    "reportCount": "被举报 {count} 次",
+    "openCount": "{count} 条待处理",
+    "resolved": "已处理"
+  },
+  "achievements": {
+    "empty": "暂无成就。",
+    "next": "下一个目标",
+    "notReached": "尚未达成",
+    "timeline": "时间线",
+    "collection": "收藏",
+    "loadFailed": "无法加载成就。",
+    "unlocked": "已解锁 {count}/{total} 个成就",
+    "eggs": "已发现 {count}/{total} 个彩蛋",
+    "since": "自 {date} 起",
+    "level": "等级 {level}/{total}",
+    "promotedFrom": "由 {title} 晋升",
+    "nextFrom": "{title} 之后",
+    "adminEgg": "彩蛋 · 仅管理员可见"
+  },
+  "roles": {
+    "default": "标准",
+    "verified": "已认证",
+    "support": "客服",
+    "moderator": "审核员",
+    "admin": "管理员"
+  },
+  "chatProtection": {
+    "title": "聊天加密",
+    "warning": "没有 PIN，任何人都无法恢复你的聊天，包括我们。",
+    "setPin": "设置 PIN",
+    "newPin": "新聊天 PIN（至少 6 位）",
+    "repeatPin": "再次输入聊天 PIN"
+  },
+  "display": {
+    "title": "显示",
+    "appearance": "界面外观。",
+    "design": "设计",
+    "accessibility": "无障碍",
+    "dyslexia": "阅读障碍",
+    "contrast": "高对比度模式",
+    "limitedDesign": "此设计可能会影响无障碍体验，例如对比度、可读性和动画。标准设计的无障碍优化最好。",
+    "language": "语言",
+    "languageHint": "界面和消息的语言。"
+  },
+  "general": {
+    "account": "账户",
+    "accountCenter": "govex 账户中心",
+    "accountHint": "你可以在 govex 账户中心管理个人资料、头像、密码和安全设置。",
+    "toAccountCenter": "前往账户中心",
+    "govexAccount": "govex 账户",
+    "loginHint": "使用你的 govex 账户登录。",
+    "login": "登录",
+    "legal": "法律信息",
+    "persistent": "保持登录",
+    "persistentHint": "开启后，即使清除 Cookie 或缓存，你也会在此设备上保持登录。只有清除全部网站数据后才需要重新登录。"
+  },
+  "privacy": {
+    "title": "隐私",
+    "profileVisibility": "个人资料可见范围",
+    "profileVisibilityHint": "也适用于你的姓名以及你的动态和 Seeds。头像不受影响，其可见范围在“个人资料”中设置。如果你的个人资料比某条帖子更私密，则该帖子适用更严格的个人资料设置。",
+    "loadFailed": "无法加载设置。"
+  },
+  "about": {
+    "title": "简介",
+    "biography": "个人简介",
+    "placeholder": "介绍一下你自己",
+    "loadFailed": "无法加载简介。"
+  },
+  "pictures": {
+    "title": "头像",
+    "upload": "上传",
+    "remove": "移除",
+    "public": "公开头像",
+    "publicHint": "所有人可见。若未上传，将使用你的 govex 头像。",
+    "private": "私密头像",
+    "privateHint": "只有选定的人可见，其他人看到的是你的公开头像。",
+    "loadFailed": "无法加载头像。"
+  },
+  "wellbeing": {
+    "title": "防沉迷",
+    "autoplay": "自动播放",
+    "autoplayHint": "开启后，滚动到视频时会自动静音播放。",
+    "loop": "循环播放",
+    "loopHint": "开启后，视频播放结束会自动从头开始。",
+    "intro": "Swissfy 默认不使用旨在延长你屏幕时间的功能。你可以在这里有意识地开启它们。仅适用于此设备。"
+  }
+}

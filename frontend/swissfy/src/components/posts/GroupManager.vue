@@ -1,13 +1,18 @@
 <template>
   <BaseCard class="p-6">
     <p class="text-app-muted text-sm mb-4">
-      Mit Gruppen bestimmst du, wer einen Feed sieht. Nur du siehst deine Gruppen.
+      {{ $t('groups.intro') }}
     </p>
     <form class="flex gap-2" @submit.prevent="createGroup">
-      <input v-model="newName" class="input flex-1" maxlength="50" placeholder="Neue Gruppe" />
+      <input
+        v-model="newName"
+        class="input flex-1"
+        maxlength="50"
+        :placeholder="$t('groups.new')"
+      />
       <BaseButton type="submit" variant="primary" :disabled="!newName.trim()">
         <AppIcon name="plus" />
-        Anlegen
+        {{ $t('common.create') }}
       </BaseButton>
     </form>
   </BaseCard>
@@ -31,20 +36,26 @@
           <AppIcon name="cross" size="sm" />
         </button>
       </span>
-      <span v-if="!group.members.length" class="text-sm text-app-muted">Noch niemand.</span>
+      <span v-if="!group.members.length" class="text-sm text-app-muted">{{
+        $t('groups.empty')
+      }}</span>
     </div>
     <form class="flex gap-2" @submit.prevent="addMember(group)">
-      <input v-model="drafts[group.id]" class="input input-sm flex-1" placeholder="Benutzername" />
+      <input
+        v-model="drafts[group.id]"
+        class="input input-sm flex-1"
+        :placeholder="$t('groups.username')"
+      />
       <BaseButton type="submit" size="sm" :disabled="!drafts[group.id]?.trim()">
         <AppIcon name="plus" />
-        Hinzufügen
+        {{ $t('groups.add') }}
       </BaseButton>
     </form>
   </BaseCard>
 
   <ConfirmDialog
     ref="confirm"
-    :message="`Gruppe «${pendingDelete?.name}» löschen?`"
+    :message="$t('groups.deleteMessage', { name: pendingDelete?.name })"
     @confirm="deleteGroup"
   />
 </template>

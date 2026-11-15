@@ -47,6 +47,7 @@ import PostCard from '@/components/posts/PostCard.vue'
 import ReelFeed from '@/components/posts/ReelFeed.vue'
 import moderationApi from '@/api/moderation.js'
 import postsApi from '@/api/posts.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'PostView',
@@ -82,8 +83,10 @@ export default {
       return Boolean(this.post?.video) && !this.moderation
     },
     breadcrumbs() {
-      const post = { label: 'Feed', to: this.$route.path }
-      return this.moderation ? [{ label: 'Moderation', to: '/moderation' }, post] : [post]
+      const post = { label: t('postView.post'), to: this.$route.path }
+      return this.moderation
+        ? [{ label: t('postView.moderation'), to: '/moderation' }, post]
+        : [post]
     },
   },
   async created() {
@@ -93,8 +96,7 @@ export default {
         ? await moderationApi.get('posts', this.id)
         : await postsApi.get(this.id)
     } catch (error) {
-      this.error =
-        error.status === 404 ? 'Feed nicht gefunden.' : 'Feed konnte nicht geladen werden.'
+      this.error = error.status === 404 ? t('postView.notFound') : t('postView.loadFailed')
       return
     }
     if (this.moderation) {

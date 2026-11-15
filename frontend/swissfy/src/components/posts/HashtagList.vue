@@ -12,9 +12,13 @@
         </span>
         <div class="flex min-w-0 flex-1 flex-col">
           <span class="truncate font-bold">#{{ hashtag.name }}</span>
-          <span class="truncate text-sm text-app-muted">{{ hashtag.post_count }} Feeds</span>
+          <span class="truncate text-sm text-app-muted">{{
+            $t('hashtag.postCount', { count: hashtag.post_count })
+          }}</span>
         </div>
-        <span v-if="hashtag.following" class="text-sm text-app-muted">Gefolgt</span>
+        <span v-if="hashtag.following" class="text-sm text-app-muted">{{
+          $t('hashtag.following')
+        }}</span>
       </RouterLink>
     </li>
   </BaseCard>

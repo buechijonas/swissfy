@@ -17,7 +17,7 @@
       v-else-if="!posts.length || error"
       class="flex h-full items-center justify-center px-6 text-center text-white/70"
     >
-      {{ error || emptyText }}
+      {{ error || emptyTextOrDefault }}
     </div>
     <div v-intersect.ahead="onSentinel" class="h-px"></div>
   </div>
@@ -28,6 +28,7 @@ import reject from 'lodash-es/reject'
 import PostCard from '@/components/posts/PostCard.vue'
 import intersect from '@/directives/intersect.js'
 import postFeedMixin from '@/mixins/postFeedMixin.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ReelFeed',
@@ -37,15 +38,22 @@ export default {
   props: {
     url: { type: String, default: null },
     initialPosts: { type: Array, default: () => [] },
-    emptyText: { type: String, default: 'Noch keine Seeds.' },
+    emptyText: { type: String, default: null },
   },
   emits: ['deleted'],
   data() {
     return {
       posts: [...this.initialPosts],
       hasMore: Boolean(this.url),
-      loadError: 'Seeds konnten nicht geladen werden.',
     }
+  },
+  computed: {
+    emptyTextOrDefault() {
+      return this.emptyText ?? t('reels.empty')
+    },
+    loadError() {
+      return t('reels.loadFailed')
+    },
   },
   methods: {
     remove(id) {

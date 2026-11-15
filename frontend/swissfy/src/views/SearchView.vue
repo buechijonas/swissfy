@@ -23,17 +23,18 @@ import SearchField from '@/components/common/SearchField.vue'
 import UserList from '@/components/common/UserList.vue'
 import HashtagList from '@/components/posts/HashtagList.vue'
 import { searchQuery } from '@/lib/search.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'SearchView',
   components: { BaseBreadcrumbs, BaseFooter, HashtagList, SearchField, UserList },
-  data() {
-    return {
-      breadcrumbs: [{ label: 'Suchen', to: '/search' }],
-      placeholder: 'Nach Benutzern oder #Hashtags suchen',
-    }
-  },
   computed: {
+    placeholder() {
+      return t('searchView.placeholder')
+    },
+    breadcrumbs() {
+      return [{ label: t('searchView.title'), to: '/search' }]
+    },
     query() {
       return searchQuery(this.$route)
     },

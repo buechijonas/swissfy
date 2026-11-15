@@ -1,7 +1,7 @@
 <template>
   <BaseDialog
     ref="dialog"
-    title="Kommentare"
+    :title="$t('comments.title')"
     class="modal-bottom sm:modal-middle"
     box-class="h-[80dvh] max-w-150 pb-0"
   >

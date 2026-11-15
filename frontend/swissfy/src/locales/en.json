@@ -1,0 +1,617 @@
+{
+  "common": {
+    "saveFailed": "Saving failed.",
+    "loadFailed": "Loading failed.",
+    "cancel": "Cancel",
+    "close": "Close",
+    "hidden": "hidden",
+    "delete": "Delete",
+    "loadMore": "Load more",
+    "edit": "Edit",
+    "save": "Save",
+    "create": "Create",
+    "more": "More",
+    "actionFailed": "The action failed.",
+    "next": "Next",
+    "back": "Back"
+  },
+  "auth": {
+    "logoutFailed": "Logging out failed.",
+    "consentFailed": "Consent failed."
+  },
+  "chatKeys": {
+    "settingsFailed": "Chat settings could not be loaded.",
+    "keyFailed": "The key could not be created.",
+    "wrongPin": "Wrong PIN."
+  },
+  "connections": {
+    "followers": "Followers",
+    "noFollowers": "No followers yet.",
+    "following": "follows",
+    "noFollowing": "Not following anyone yet.",
+    "friends": "Friends",
+    "noFriends": "No friends yet."
+  },
+  "favorites": {
+    "movies": "Favourite movies",
+    "searchMovie": "Search movie",
+    "series": "Favourite series",
+    "searchSeries": "Search series",
+    "games": "Favourite games",
+    "searchGame": "Search game",
+    "add": "Add",
+    "remove": "Remove",
+    "nothingFound": "Nothing found.",
+    "searchFailed": "The search failed.",
+    "credits": "Data and covers from {imdb} and {steam}.",
+    "max": "Choose up to {max}."
+  },
+  "legal": {
+    "imprint": "Imprint",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "disclaimer": "Disclaimer",
+    "agree": "Agree"
+  },
+  "navigation": {
+    "home": "Home",
+    "reels": "Seeds",
+    "search": "Search",
+    "notifications": "Notifications",
+    "chats": "Chats",
+    "profile": "Profile",
+    "moderation": "Moderation",
+    "administration": "Administration",
+    "login": "Log in",
+    "logout": "Log out",
+    "closeSidebar": "Close sidebar",
+    "version": "Version {version}"
+  },
+  "settings": {
+    "on": "On",
+    "off": "Off",
+    "auto": "Auto",
+    "light": "Light",
+    "dark": "Dark",
+    "standard": "Standard",
+    "public": "Public",
+    "followers": "Followers",
+    "friends": "Friends",
+    "readReceipts": "Read receipts",
+    "readReceiptsHint": "When off, others cannot see whether you have read their messages, and you cannot see it for theirs either.",
+    "chatRequests": "Chat requests",
+    "chatRequestsHint": "When off, nobody can send you a new chat request. Existing chats stay.",
+    "birthdate": "Birthdate",
+    "birthdateHint": "When on, everyone who may see your profile sees your birthdate under “About me”.",
+    "device": "Only on this device",
+    "pin": "Chat PIN",
+    "standardHint": "Stored encrypted. Access on every device with your login.",
+    "deviceHint": "End-to-end encrypted. Only this device can read your chats, new devices only see new messages.",
+    "pinHint": "End-to-end encrypted. On new devices you unlock your chats with your PIN."
+  },
+  "routes": {
+    "home": "Home",
+    "reels": "Seeds",
+    "search": "Search",
+    "chats": "Chats",
+    "chat": "Chat",
+    "post": "Feed",
+    "comment": "Comment",
+    "notifications": "Notifications",
+    "moderation": "Moderation",
+    "administration": "Administration",
+    "saved": "Saved",
+    "profile": "Profile",
+    "album": "Album",
+    "newStory": "New story",
+    "newPost": "New feed",
+    "hashtag": "Hashtag",
+    "login": "Log in",
+    "logout": "Log out",
+    "settings": "Settings"
+  },
+  "time": {
+    "minutesAgo": "{count} min. ago",
+    "hoursAgo": "{count} hour ago | {count} hours ago",
+    "yesterday": "Yesterday at {time}",
+    "dateTime": "{day}, {time}"
+  },
+  "chat": {
+    "send": "Send",
+    "message": "Message",
+    "disconnected": "Connection lost. New messages will appear as soon as it is back.",
+    "encrypted": "Encrypted",
+    "endToEnd": "End-to-end encrypted",
+    "requestDeclined": "Request was declined",
+    "noRequests": "Does not accept chat requests",
+    "self": "You cannot chat with yourself.",
+    "profileNotFound": "Profile not found.",
+    "loadFailed": "The chat could not be loaded.",
+    "refreshFailed": "The chat could not be updated.",
+    "sendFailed": "The message could not be sent.",
+    "empty": "No messages yet.",
+    "unreadable": "Not readable on this device.",
+    "tampered": "Message damaged or tampered with.",
+    "unverified": "Not verified",
+    "safetyNumber": "Show safety number",
+    "safetyNumberHint": "Compare this safety number in person or over another channel. If it matches for both of you, nobody is listening in.",
+    "keysChanged": "{'@'}{username} has new keys. Compare your safety number before you write anything confidential.",
+    "keysAccepted": "Got it",
+    "enterPin": "Enter your chat PIN to decrypt your chats.",
+    "unlock": "Unlock",
+    "pin": "Chat PIN",
+    "sendRequest": "Send request",
+    "declineForGood": "Decline for good",
+    "decline": "Decline",
+    "accept": "Accept",
+    "withdraw": "Withdraw request",
+    "requestFailed": "The request failed.",
+    "retention": "Messages are deleted automatically after {days} days."
+  },
+  "chats": {
+    "requests": "Chat requests",
+    "archiveTitle": "Archive chat",
+    "archive": "Archive",
+    "requestSent": "Request sent",
+    "noMessages": "No messages yet",
+    "noArchived": "No archived chats.",
+    "allArchived": "All chats are archived.",
+    "empty": "No chats yet. You can send a chat request from a profile.",
+    "loadFailed": "The chats could not be loaded.",
+    "archiveFailed": "The chat could not be archived.",
+    "restoreFailed": "The chat could not be restored.",
+    "restore": "Restore",
+    "tabChats": "Chats",
+    "tabArchive": "Archive",
+    "archiveMessage": "Archive the chat with {'@'}{username}? You will no longer get notifications for archived chats."
+  },
+  "header": {
+    "settings": "Settings",
+    "saved": "Saved",
+    "docs": "Documentation",
+    "menu": "Menu",
+    "logout": "Log out",
+    "login": "Log in",
+    "newNotifications": "New notifications",
+    "notifications": "Notifications"
+  },
+  "dialog": {
+    "confirmDelete": "Confirm deletion"
+  },
+  "dropzone": {
+    "label": "Drag images here or click"
+  },
+  "search": {
+    "search": "Search"
+  },
+  "users": {
+    "noneFound": "No users found.",
+    "noOthers": "No other users yet.",
+    "loadFailed": "The users could not be loaded."
+  },
+  "messageStatus": {
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "read": "Read"
+  },
+  "administration": {
+    "allRoles": "All roles",
+    "noUsers": "No users found.",
+    "searchPlaceholder": "Username or name",
+    "ownRole": "You cannot change your own role.",
+    "role": "Role",
+    "roleLockedForever": "Role locked permanently",
+    "loadFailed": "The users could not be loaded.",
+    "changeFailed": "The role could not be changed.",
+    "title": "Administration",
+    "roleLockedUntil": "Role locked until {date}"
+  },
+  "album": {
+    "addToTimeline": "Add to timeline",
+    "deleteMessage": "Delete the album? The posts themselves are kept.",
+    "notFound": "Album not found.",
+    "loadFailed": "The album could not be loaded.",
+    "deleteFailed": "The album could not be deleted.",
+    "albums": "Albums",
+    "album": "Album"
+  },
+  "commentView": {
+    "replyPlaceholder": "Write a reply…",
+    "deleteMessage": "Do you want to delete this comment? Its replies are deleted too.",
+    "notFound": "Comment not found.",
+    "loadFailed": "The comment could not be loaded.",
+    "deleteFailed": "The comment could not be deleted.",
+    "moderation": "Moderation",
+    "post": "Feed",
+    "comment": "Comment"
+  },
+  "connectionsView": {
+    "searchPlaceholder": "Search users",
+    "profile": "Profile"
+  },
+  "hashtag": {
+    "unfollow": "Unfollow",
+    "follow": "Follow",
+    "noReels": "No seeds yet.",
+    "noPosts": "No feeds yet.",
+    "posts": "Feeds",
+    "reels": "Seeds",
+    "empty": "There are no feeds for this hashtag yet.",
+    "loadFailed": "The hashtag could not be loaded.",
+    "postCount": "{count} feeds",
+    "following": "Following"
+  },
+  "home": {
+    "welcome": "Welcome",
+    "post": "Post",
+    "empty": "No feeds yet. Follow people or hashtags to see their feeds here.",
+    "noAnnouncements": "No announcements yet.",
+    "home": "Home"
+  },
+  "moderation": {
+    "noResolved": "No resolved reports yet.",
+    "noOpen": "No open reports.",
+    "title": "Moderation",
+    "open": "Open",
+    "resolved": "Resolved",
+    "post": "Feed",
+    "comment": "Comment",
+    "loadFailed": "The reports could not be loaded."
+  },
+  "notifications": {
+    "accept": "Accept",
+    "decline": "Decline",
+    "empty": "No notifications yet.",
+    "open": "Open",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "title": "Notifications",
+    "loadFailed": "The notifications could not be loaded.",
+    "actionFailed": "The action failed."
+  },
+  "postView": {
+    "post": "Feed",
+    "moderation": "Moderation",
+    "notFound": "Feed not found.",
+    "loadFailed": "The feed could not be loaded."
+  },
+  "reels": {
+    "empty": "No seeds yet.",
+    "emptyFollowing": "No seeds yet from people or hashtags you follow.",
+    "loadFailed": "The seeds could not be loaded."
+  },
+  "saved": {
+    "rename": "Rename",
+    "folder": "Folder",
+    "empty": "Nothing saved here yet.",
+    "name": "Name",
+    "deleteMessage": "Delete the folder? The saved feeds stay under “Without folder”.",
+    "renameFolder": "Rename folder",
+    "newFolder": "New folder",
+    "title": "Saved",
+    "all": "All",
+    "noFolder": "Without folder",
+    "loadFailed": "The folders could not be loaded."
+  },
+  "searchView": {
+    "title": "Search",
+    "placeholder": "Search users or #hashtags"
+  },
+  "settingsView": {
+    "groups": "Groups",
+    "title": "Settings",
+    "general": "General",
+    "privacy": "Privacy",
+    "profile": "Profile",
+    "display": "Display",
+    "wellbeing": "Wellbeing"
+  },
+  "login": {
+    "intro": "Swissfy uses govex for logging in. You manage your username and password there.",
+    "button": "Log in with govex",
+    "title": "Log in",
+    "failed": "Logging in with govex failed. Please try again."
+  },
+  "logout": {
+    "back": "Back to the home page",
+    "title": "Log out",
+    "done": "You have been logged out.",
+    "pending": "Logging you out …"
+  },
+  "upload": {
+    "cropHint": "All images are cropped to the format of the first image.",
+    "videoHint": "The video is processed after posting and appears for others afterwards.",
+    "removeImage": "Remove image",
+    "storyDrop": "Drag an image for your story here or click",
+    "storyText": "Text on your story (optional)",
+    "removeVideo": "Remove video",
+    "postDrop": "Drag images or a video here or click",
+    "add": "Add",
+    "postText": "What's new? Mark hashtags with #, e.g. #zürich",
+    "posting": "Posting…",
+    "post": "Post",
+    "imageUnreadable": "The image could not be read.",
+    "videoTooLarge": "The video is too large (max. 250 MB).",
+    "anImageUnreadable": "An image could not be read.",
+    "storyFailed": "The story could not be created.",
+    "postFailed": "The feed could not be created.",
+    "confirmStory": "I confirm that my story complies with the {terms}.",
+    "confirmPost": "I confirm that my feed complies with the {terms}.",
+    "terms": "terms of use",
+    "quotaLeft": "{remaining} of {limit} feeds left for today.",
+    "quotaUsed": "You have already created {limit} feeds today.",
+    "videoTooLong": "The video is too long (max. {seconds} seconds).",
+    "tooManyImages": "You can upload at most {count} images."
+  },
+  "profile": {
+    "followers": "Followers",
+    "following": "Following",
+    "chat": "Chat",
+    "friends": "Friends",
+    "private": "This profile is private.",
+    "birthdate": "Birthdate",
+    "noDetails": "No details.",
+    "post": "Post",
+    "viewStory": "View story",
+    "addStory": "Add story",
+    "requested": "Requested",
+    "request": "Request",
+    "activity": "Activity",
+    "grid": "Grid",
+    "albums": "Albums",
+    "about": "About me",
+    "achievements": "Achievements",
+    "status": "Status",
+    "posts": "Feeds",
+    "noPosts": "No feeds yet.",
+    "reels": "Seeds",
+    "noReels": "No seeds yet.",
+    "comments": "Comments",
+    "noComments": "No comments yet.",
+    "profile": "Profile",
+    "unfollow": "Unfollow",
+    "follow": "Follow",
+    "notFound": "Profile not found.",
+    "loadFailed": "The profile could not be loaded.",
+    "actionFailed": "The action failed.",
+    "requestFailed": "The request failed."
+  },
+  "comments": {
+    "comment": "Comment",
+    "send": "Send",
+    "author": "Author",
+    "hidden": "Hidden",
+    "replyTo": "Reply to",
+    "reply": "Reply",
+    "reported": "Reported",
+    "report": "Report",
+    "loadMore": "Load more comments",
+    "deleteMessage": "Do you want to delete this comment? Its replies are deleted too.",
+    "placeholder": "Write a comment…",
+    "sendFailed": "The comment could not be sent.",
+    "deleteFailed": "The comment could not be deleted.",
+    "title": "Comments",
+    "replyToUser": "Reply to {'@'}{username}",
+    "showReplies": "Show all {count} replies"
+  },
+  "create": {
+    "title": "What do you want to upload?",
+    "post": "Feed",
+    "postHint": "Stays on your profile",
+    "story": "Story",
+    "storyHint": "Disappears after 24 hours"
+  },
+  "folders": {
+    "none": "Without folder",
+    "move": "Move to folder",
+    "new": "New folder",
+    "loadFailed": "The folders could not be loaded."
+  },
+  "groups": {
+    "intro": "Groups let you decide who sees a feed. Only you can see your groups.",
+    "empty": "Nobody yet.",
+    "add": "Add",
+    "new": "New group",
+    "username": "Username",
+    "deleteMessage": "Delete the group “{name}”?"
+  },
+  "postActions": {
+    "like": "Like",
+    "comments": "Comments",
+    "unrepost": "Remove repost",
+    "repost": "Repost",
+    "unsave": "Unsave"
+  },
+  "postCard": {
+    "hidden": "Hidden from the public",
+    "editReel": "Edit seed",
+    "move": "Move to folder",
+    "reported": "Reported",
+    "report": "Report",
+    "reportReel": "Report seed"
+  },
+  "postEdit": {
+    "delete": "Delete feed",
+    "title": "Edit feed",
+    "deleteMessage": "Do you want to delete this feed?",
+    "saveFailed": "The feed could not be saved.",
+    "deleteFailed": "The feed could not be deleted."
+  },
+  "postImages": {
+    "previous": "Previous image",
+    "next": "Next image"
+  },
+  "postList": {
+    "empty": "No feeds yet.",
+    "loadFailed": "The feeds could not be loaded."
+  },
+  "video": {
+    "play": "Play",
+    "failed": "The video could not be processed.",
+    "processing": "Processing video…"
+  },
+  "story": {
+    "delete": "Delete story",
+    "seenBy": "Seen by",
+    "deleteMessage": "Do you want to delete this story?",
+    "unlike": "Unlike",
+    "like": "Like",
+    "noViewers": "Nobody has seen your story yet.",
+    "liked": "Liked"
+  },
+  "visibility": {
+    "visibleTo": "Visible to",
+    "globalHint": "Appears in everyone's feed on the home page, even for people who don't follow you.",
+    "noGroups": "You don't have any groups yet.",
+    "createGroups": "Create groups",
+    "public": "Everyone",
+    "followers": "Followers",
+    "friends": "Friends",
+    "groups": "Groups",
+    "global": "Global"
+  },
+  "albumPosts": {
+    "empty": "No more feeds or seeds to add.",
+    "loadMore": "Load more",
+    "add": "Add",
+    "selected": "Selected",
+    "date": "Date (optional)",
+    "title": "Title (optional)",
+    "choose": "Choose posts",
+    "setDate": "Set date",
+    "loadFailed": "The posts could not be loaded.",
+    "addFailed": "The posts could not be added."
+  },
+  "albumDialog": {
+    "cover": "Cover image (optional)",
+    "coverHint": "Add posts to the timeline to choose one of them as the cover image.",
+    "name": "Name",
+    "coverAlt": "Cover image",
+    "edit": "Edit album",
+    "new": "New album",
+    "saveFailed": "The album could not be saved."
+  },
+  "albumTimeline": {
+    "title": "Timeline",
+    "empty": "No posts in this album yet.",
+    "noDate": "No date"
+  },
+  "albumEntry": {
+    "date": "Date (optional)",
+    "title": "Title (optional)",
+    "remove": "Remove",
+    "edit": "Edit entry",
+    "saveFailed": "The entry could not be saved."
+  },
+  "albums": {
+    "empty": "No albums yet.",
+    "new": "New album",
+    "move": "Move",
+    "loadFailed": "The albums could not be loaded.",
+    "orderFailed": "The order could not be saved."
+  },
+  "moderationPanel": {
+    "alreadyWarned": "Already warned and hidden from the public.",
+    "reason": "Reason for the warning",
+    "warn": "Warn",
+    "dismiss": "Dismiss",
+    "warned": "Warned:",
+    "noOpen": "No open reports"
+  },
+  "profileStatus": {
+    "noWarnings": "No warnings.",
+    "view": "View",
+    "reported": "Reported content",
+    "noReported": "No reported content.",
+    "expiredSince": "Expired since",
+    "expiresOn": "Expires on",
+    "loadFailed": "The status could not be loaded.",
+    "warning": "Warning: {reason}",
+    "suspension": "Suspension: {duration}",
+    "reportCount": "reported {count}×",
+    "openCount": "{count} open",
+    "resolved": "resolved"
+  },
+  "achievements": {
+    "empty": "No achievements yet.",
+    "next": "Next goals",
+    "notReached": "Not reached yet",
+    "timeline": "Timeline",
+    "collection": "Collection",
+    "loadFailed": "The achievements could not be loaded.",
+    "unlocked": "{count} of {total} achievements unlocked",
+    "eggs": "{count} of {total} easter eggs found",
+    "since": "Since {date}",
+    "level": "Level {level}/{total}",
+    "promotedFrom": "Promoted from {title}",
+    "nextFrom": "Next after {title}",
+    "adminEgg": "Easter egg · only visible to admins"
+  },
+  "roles": {
+    "default": "Standard",
+    "verified": "Verified",
+    "support": "Support",
+    "moderator": "Moderator",
+    "admin": "Admin"
+  },
+  "chatProtection": {
+    "title": "Chat encryption",
+    "warning": "Without the PIN nobody can restore your chats, not even we can.",
+    "setPin": "Set PIN",
+    "newPin": "New chat PIN (at least 6 characters)",
+    "repeatPin": "Repeat chat PIN"
+  },
+  "display": {
+    "title": "Display",
+    "appearance": "Appearance of the interface.",
+    "design": "Design",
+    "accessibility": "Accessibility",
+    "dyslexia": "Dyslexia",
+    "contrast": "Contrast mode",
+    "limitedDesign": "This design can limit accessibility, for example in contrast, readability and animations. The standard design is the one best optimised for accessibility.",
+    "language": "Language",
+    "languageHint": "Language of the interface and of messages."
+  },
+  "general": {
+    "account": "Account",
+    "accountCenter": "govex Account Center",
+    "accountHint": "You manage your profile, profile picture, password and security in the govex Account Center.",
+    "toAccountCenter": "Go to the Account Center",
+    "govexAccount": "govex account",
+    "loginHint": "Log in with your govex account.",
+    "login": "Log in",
+    "legal": "Legal",
+    "persistent": "Persistent login",
+    "persistentHint": "When on, you stay logged in on this device even if cookies or the cache are cleared. Only when all site data is cleared do you have to log in again."
+  },
+  "privacy": {
+    "title": "Privacy",
+    "profileVisibility": "Profile visible to",
+    "profileVisibilityHint": "Also applies to your first and last name as well as your feeds and seeds. Your profile pictures are not affected, you set their visibility under “Profile”. If your profile is more private than a post, the stricter profile setting applies to that post.",
+    "loadFailed": "The settings could not be loaded."
+  },
+  "about": {
+    "title": "Info",
+    "biography": "Biography",
+    "placeholder": "Tell something about yourself",
+    "loadFailed": "The info could not be loaded."
+  },
+  "pictures": {
+    "title": "Profile pictures",
+    "upload": "Upload",
+    "remove": "Remove",
+    "public": "Public profile picture",
+    "publicHint": "Visible to everyone. Without your own picture, your govex profile picture is used.",
+    "private": "Private profile picture",
+    "privateHint": "Only the selected people see it, everyone else sees your public picture.",
+    "loadFailed": "The profile pictures could not be loaded."
+  },
+  "wellbeing": {
+    "title": "Addiction prevention",
+    "autoplay": "Autoplay",
+    "autoplayHint": "When on, videos start by themselves and muted as soon as you scroll to them.",
+    "loop": "Loop",
+    "loopHint": "When on, videos automatically start over at the end.",
+    "intro": "By default, Swissfy does without features meant to keep you on the screen longer. You can deliberately switch them on here. Applies to this device."
+  }
+}

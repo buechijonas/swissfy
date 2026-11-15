@@ -4,7 +4,7 @@
     <div v-else-if="!albums" class="grid grid-cols-2 gap-4 sm:grid-cols-3">
       <div v-for="n in 3" :key="n" class="skeleton aspect-square rounded-box"></div>
     </div>
-    <p v-else-if="!albums.length && !editable" class="text-app-muted">Noch keine Alben.</p>
+    <p v-else-if="!albums.length && !editable" class="text-app-muted">{{ $t('albums.empty') }}</p>
     <div
       v-else
       class="grid grid-cols-2 gap-4 sm:grid-cols-3"
@@ -16,7 +16,7 @@
         v-if="editable"
         type="button"
         class="group flex flex-col gap-2 text-left"
-        title="Neues Album"
+        :title="$t('albums.new')"
         @click="$refs.dialog.open()"
       >
         <span
@@ -24,7 +24,7 @@
         >
           <AppIcon name="plus" class="size-8!" />
         </span>
-        <span class="text-sm font-medium text-app-muted">Neues Album</span>
+        <span class="text-sm font-medium text-app-muted">{{ $t('albums.new') }}</span>
       </button>
       <div
         v-for="album in shownAlbums"
@@ -55,10 +55,10 @@
           v-if="editable && albums.length > 1"
           type="button"
           class="btn btn-circle btn-sm absolute top-2 right-2 border-0 bg-black/50 text-white shadow-none cursor-grab touch-none"
-          title="Verschieben"
+          :title="$t('albums.move')"
           v-grab="() => startDrag(album)"
         >
-          <AppIcon name="menu-burger" alt="Verschieben" size="sm" />
+          <AppIcon name="menu-burger" :alt="$t('albums.move')" size="sm" />
         </button>
       </div>
     </div>
@@ -77,6 +77,7 @@ import BaseCard from '@core/components/BaseCard.vue'
 import albumsApi from '@/api/albums.js'
 import grab from '@/directives/grab.js'
 import { moveItem, sameOrder } from '@/lib/sortable.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ProfileAlbums',
@@ -104,7 +105,7 @@ export default {
     try {
       this.albums = await albumsApi.ofUser(this.username)
     } catch {
-      this.error = 'Alben konnten nicht geladen werden.'
+      this.error = t('albums.loadFailed')
     }
   },
   methods: {
@@ -131,7 +132,7 @@ export default {
       try {
         this.albums = await albumsApi.reorder(map(order, 'id'))
       } catch {
-        this.orderError = 'Reihenfolge konnte nicht gespeichert werden.'
+        this.orderError = t('albums.orderFailed')
       }
       this.order = null
     },

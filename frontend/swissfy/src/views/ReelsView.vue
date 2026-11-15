@@ -7,6 +7,7 @@
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ReelFeed from '@/components/posts/ReelFeed.vue'
 import postsApi from '@/api/posts.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ReelsView',
@@ -19,9 +20,7 @@ export default {
       return postsApi.reelsUrl()
     },
     emptyText() {
-      return this.$route.params.id
-        ? 'Noch keine Seeds.'
-        : 'Noch keine Seeds von Leuten oder Hashtags, denen du folgst.'
+      return this.$route.params.id ? t('reels.empty') : t('reels.emptyFollowing')
     },
   },
 }

@@ -3,7 +3,12 @@
     <AuthorHeader :author="comment.author" />
     <div class="flex flex-col gap-3 px-4 py-3">
       <p class="text-xs text-app-muted">
-        {{ comment.reply_to ? `Antwort an @${comment.reply_to}` : 'Kommentar' }} ·
+        {{
+          comment.reply_to
+            ? $t('comments.replyToUser', { username: comment.reply_to })
+            : $t('comments.comment')
+        }}
+        ·
         {{ formatRelativeTime(comment.created_at) }}
       </p>
       <RouterLink :to="commentLink(comment)" class="whitespace-pre-line break-words">

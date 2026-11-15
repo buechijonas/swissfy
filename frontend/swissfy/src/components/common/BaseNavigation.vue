@@ -8,7 +8,11 @@
     <div
       class="app-nav drawer-side z-40 flex flex-col overflow-y-auto bg-base-100 top-12 h-[calc(100dvh-48px)]"
     >
-      <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
+      <label
+        for="my-drawer-3"
+        :aria-label="$t('navigation.closeSidebar')"
+        class="drawer-overlay"
+      ></label>
       <ul class="menu w-full lg:w-80 p-4 gap-2">
         <template v-for="item in visibleNavigationItems" :key="item.key">
           <li
@@ -20,7 +24,7 @@
             <component
               :is="linkComponent(item)"
               v-bind="linkAttributes(item)"
-              class="nav-item flex items-center gap-3 p-4"
+              class="nav-item flex min-w-0 items-center gap-3 p-4"
               :class="{
                 'active bg-swissfy-highlight text-primary shadow-none':
                   activeNavigation === item.key,
@@ -34,7 +38,7 @@
                 :user="authStore.user"
               />
               <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-6! lg:size-5!" />
-              <span>{{ item.label }}</span>
+              <span class="min-w-0 truncate" :title="item.label">{{ item.label }}</span>
               <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
                 {{ item.badge() }}
               </span>
@@ -50,7 +54,7 @@
       </div>
       <div v-else class="mt-auto p-4 w-full">
         <div class="mb-4 text-xs text-app-muted font-light">
-          <div>Version {{ version }}</div>
+          <div>{{ $t('navigation.version', { version }) }}</div>
           <div>Created by NEOTYRA</div>
         </div>
         <BaseButton
@@ -60,10 +64,10 @@
           to="/login"
           @click="isNavDrawerOpen = false"
         >
-          <AppIcon name="enter" />Anmelden
+          <AppIcon name="enter" />{{ $t('navigation.login') }}
         </BaseButton>
         <BaseButton v-else variant="primary" block to="/logout" @click="isNavDrawerOpen = false">
-          <AppIcon name="exit" />Abmelden
+          <AppIcon name="exit" />{{ $t('navigation.logout') }}
         </BaseButton>
       </div>
     </div>
@@ -93,7 +97,6 @@ export default {
   },
   data() {
     return {
-      navigationItems,
       RouterLink,
       appName: packageJson.name,
       version: packageJson.version,
@@ -102,7 +105,7 @@ export default {
   computed: {
     ...mapStores(useAuthStore),
     visibleNavigationItems() {
-      return this.navigationItems.filter((item) => isListed(item, this.authStore))
+      return navigationItems().filter((item) => isListed(item, this.authStore))
     },
     hasAvatar() {
       return Boolean(avatarSrc(this.authStore.user))

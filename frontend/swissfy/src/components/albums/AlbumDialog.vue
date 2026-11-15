@@ -1,15 +1,15 @@
 <template>
-  <BaseDialog ref="dialog" :title="album ? 'Album bearbeiten' : 'Neues Album'">
+  <BaseDialog ref="dialog" :title="album ? $t('albumDialog.edit') : $t('albumDialog.new')">
     <div class="flex flex-col gap-4">
       <input
         v-model="name"
         class="input w-full"
         maxlength="50"
-        placeholder="Name"
+        :placeholder="$t('albumDialog.name')"
         @keyup.enter="save"
       />
       <div v-if="album?.entries.length" class="flex min-h-0 flex-col gap-2">
-        <span class="text-sm text-app-muted">Titelbild (optional)</span>
+        <span class="text-sm text-app-muted">{{ $t('albumDialog.cover') }}</span>
         <div class="grid max-h-72 grid-cols-3 gap-2 overflow-y-auto">
           <button
             v-for="entry in album.entries"
@@ -31,19 +31,24 @@
               class="absolute top-1 right-1 flex size-6 items-center justify-center rounded-full border-2 border-white"
               :class="cover === entry.id ? 'bg-primary text-primary-content' : 'bg-black/30'"
             >
-              <AppIcon v-if="cover === entry.id" name="check" size="sm" alt="Titelbild" />
+              <AppIcon
+                v-if="cover === entry.id"
+                name="check"
+                size="sm"
+                :alt="$t('albumDialog.coverAlt')"
+              />
             </span>
           </button>
         </div>
       </div>
       <p v-else-if="album" class="text-sm text-app-muted">
-        Füge Posts zur Timeline hinzu, um eines davon als Titelbild zu wählen.
+        {{ $t('albumDialog.coverHint') }}
       </p>
       <ErrorText :message="error" />
     </div>
     <template #actions>
       <BaseButton
-        title="Löschen"
+        :title="$t('common.delete')"
         v-if="album"
         variant="error"
         outline
@@ -51,20 +56,20 @@
         @click="remove"
       >
         <AppIcon name="trash" />
-        <span class="max-sm:hidden">Löschen</span>
+        <span class="max-sm:hidden">{{ $t('common.delete') }}</span>
       </BaseButton>
-      <BaseButton title="Abbrechen" @click="$refs.dialog.close()">
+      <BaseButton :title="$t('common.cancel')" @click="$refs.dialog.close()">
         <AppIcon name="cross" />
-        <span class="max-sm:hidden">Abbrechen</span>
+        <span class="max-sm:hidden">{{ $t('common.cancel') }}</span>
       </BaseButton>
       <BaseButton
-        title="Speichern"
+        :title="$t('common.save')"
         variant="primary"
         :disabled="!name.trim() || busy"
         @click="save"
       >
         <AppIcon name="disk" />
-        <span class="max-sm:hidden">Speichern</span>
+        <span class="max-sm:hidden">{{ $t('common.save') }}</span>
       </BaseButton>
     </template>
   </BaseDialog>
@@ -77,6 +82,7 @@ import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import albumsApi from '@/api/albums.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'AlbumDialog',
@@ -109,7 +115,7 @@ export default {
       if (!this.name.trim() || this.busy) return
       const album = await this.runAction(
         () => this.request(this.name.trim()),
-        'Album konnte nicht gespeichert werden.',
+        t('albumDialog.saveFailed'),
       )
       if (!album) return
       this.$refs.dialog.close()

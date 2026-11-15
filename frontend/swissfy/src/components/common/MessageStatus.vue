@@ -9,6 +9,7 @@
 
 <script>
 import AppIcon from '@core/components/AppIcon.vue'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'MessageStatus',
@@ -16,8 +17,14 @@ export default {
   props: {
     status: { type: String, required: true },
   },
-  data() {
-    return { labels: { sent: 'Gesendet', delivered: 'Angekommen', read: 'Gelesen' } }
+  computed: {
+    labels() {
+      return {
+        sent: t('messageStatus.sent'),
+        delivered: t('messageStatus.delivered'),
+        read: t('messageStatus.read'),
+      }
+    },
   },
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
   <BaseDialog
     ref="dialog"
-    title="Gesehen von"
+    :title="$t('story.seenBy')"
     class="modal-bottom sm:modal-middle"
     box-class="h-[80dvh] max-w-150 pb-0"
   >
@@ -10,14 +10,14 @@
         v-if="storyId"
         :key="storyId"
         :url="viewersUrl"
-        empty-text="Noch niemand hat deine Story gesehen."
+        :empty-text="$t('story.noViewers')"
         :link-to="(user) => `/profile/${encodeURIComponent(user.username)}`"
       >
         <template #default="{ user }">
           <AppIcon
             v-if="user.liked"
             name="heart-filled"
-            alt="Gefällt"
+            :alt="$t('story.liked')"
             class="size-6! text-primary"
           />
         </template>

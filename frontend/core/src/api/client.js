@@ -1,9 +1,11 @@
 import { getCookie } from '@core/lib/cookies.js'
+import { t } from '@core/i18n.js'
+import { language } from '@core/lib/language.js'
 
 export class ApiError extends Error {
   constructor(status, data) {
     const detail = detailOf(data)
-    super(detail ?? `Anfrage fehlgeschlagen (${status}).`)
+    super(detail ?? t('core.requestFailed', { status }))
     this.status = status
     this.detail = detail
     this.data = data
@@ -39,6 +41,7 @@ async function request(url, { method = 'GET', body } = {}) {
     method,
     credentials: 'include',
     headers: {
+      'Accept-Language': language.value,
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(method !== 'GET' ? { 'X-CSRFToken': getCookie('swissfy_csrf') } : {}),
     },

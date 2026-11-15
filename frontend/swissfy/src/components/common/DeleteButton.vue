@@ -1,6 +1,6 @@
 <template>
-  <BaseButton variant="error" outline shape="square" size="sm" title="Löschen">
-    <AppIcon name="trash" alt="Löschen" />
+  <BaseButton variant="error" outline shape="square" size="sm" :title="$t('common.delete')">
+    <AppIcon name="trash" :alt="$t('common.delete')" />
   </BaseButton>
 </template>
 

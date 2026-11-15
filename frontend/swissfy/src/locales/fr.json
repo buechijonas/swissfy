@@ -1,0 +1,617 @@
+{
+  "common": {
+    "saveFailed": "L'enregistrement a échoué.",
+    "loadFailed": "Le chargement a échoué.",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "hidden": "masqué",
+    "delete": "Supprimer",
+    "loadMore": "Charger plus",
+    "edit": "Modifier",
+    "save": "Enregistrer",
+    "create": "Créer",
+    "more": "Plus",
+    "actionFailed": "L'action a échoué.",
+    "next": "Suivant",
+    "back": "Retour"
+  },
+  "auth": {
+    "logoutFailed": "La déconnexion a échoué.",
+    "consentFailed": "Le consentement a échoué."
+  },
+  "chatKeys": {
+    "settingsFailed": "Les paramètres du chat n'ont pas pu être chargés.",
+    "keyFailed": "La clé n'a pas pu être créée.",
+    "wrongPin": "PIN incorrect."
+  },
+  "connections": {
+    "followers": "Abonnés",
+    "noFollowers": "Pas encore d'abonnés.",
+    "following": "suit",
+    "noFollowing": "Ne suit encore personne.",
+    "friends": "Amis",
+    "noFriends": "Pas encore d'amis."
+  },
+  "favorites": {
+    "movies": "Films préférés",
+    "searchMovie": "Rechercher un film",
+    "series": "Séries préférées",
+    "searchSeries": "Rechercher une série",
+    "games": "Jeux préférés",
+    "searchGame": "Rechercher un jeu",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "nothingFound": "Aucun résultat.",
+    "searchFailed": "La recherche a échoué.",
+    "credits": "Données et couvertures de {imdb} et {steam}.",
+    "max": "Choisis jusqu'à {max}."
+  },
+  "legal": {
+    "imprint": "Mentions légales",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "disclaimer": "Clause de non-responsabilité",
+    "agree": "Accepter"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "reels": "Seeds",
+    "search": "Rechercher",
+    "notifications": "Notifications",
+    "chats": "Chats",
+    "profile": "Profil",
+    "moderation": "Modération",
+    "administration": "Administration",
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "closeSidebar": "Fermer la barre latérale",
+    "version": "Version {version}"
+  },
+  "settings": {
+    "on": "Activé",
+    "off": "Désactivé",
+    "auto": "Auto",
+    "light": "Clair",
+    "dark": "Sombre",
+    "standard": "Standard",
+    "public": "Public",
+    "followers": "Abonnés",
+    "friends": "Amis",
+    "readReceipts": "Confirmations de lecture",
+    "readReceiptsHint": "Si désactivé, les autres ne voient pas si tu as lu leurs messages, et tu ne le vois pas non plus chez eux.",
+    "chatRequests": "Demandes de chat",
+    "chatRequestsHint": "Si désactivé, personne ne peut t'envoyer de nouvelle demande de chat. Les chats existants restent.",
+    "birthdate": "Date de naissance",
+    "birthdateHint": "Si activé, toutes les personnes autorisées à voir ton profil voient ta date de naissance sous « À propos ».",
+    "device": "Uniquement sur cet appareil",
+    "pin": "PIN de chat",
+    "standardHint": "Stocké chiffré. Accès sur chaque appareil avec ta connexion.",
+    "deviceHint": "Chiffré de bout en bout. Seul cet appareil peut lire tes chats, les nouveaux appareils ne voient que les nouveaux messages.",
+    "pinHint": "Chiffré de bout en bout. Sur les nouveaux appareils, tu déverrouilles tes chats avec ton PIN."
+  },
+  "routes": {
+    "home": "Accueil",
+    "reels": "Seeds",
+    "search": "Rechercher",
+    "chats": "Chats",
+    "chat": "Chat",
+    "post": "Feed",
+    "comment": "Commentaire",
+    "notifications": "Notifications",
+    "moderation": "Modération",
+    "administration": "Administration",
+    "saved": "Enregistrés",
+    "profile": "Profil",
+    "album": "Album",
+    "newStory": "Nouvelle story",
+    "newPost": "Nouveau feed",
+    "hashtag": "Hashtag",
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "settings": "Paramètres"
+  },
+  "time": {
+    "minutesAgo": "Il y a {count} min",
+    "hoursAgo": "Il y a {count} heure | Il y a {count} heures",
+    "yesterday": "Hier à {time}",
+    "dateTime": "{day}, {time}"
+  },
+  "chat": {
+    "send": "Envoyer",
+    "message": "Message",
+    "disconnected": "Connexion interrompue. Les nouveaux messages apparaîtront dès qu'elle sera rétablie.",
+    "encrypted": "Chiffré",
+    "endToEnd": "Chiffré de bout en bout",
+    "requestDeclined": "La demande a été refusée",
+    "noRequests": "N'accepte pas de demandes de chat",
+    "self": "Tu ne peux pas discuter avec toi-même.",
+    "profileNotFound": "Profil introuvable.",
+    "loadFailed": "Le chat n'a pas pu être chargé.",
+    "refreshFailed": "Le chat n'a pas pu être actualisé.",
+    "sendFailed": "Le message n'a pas pu être envoyé.",
+    "empty": "Pas encore de messages.",
+    "unreadable": "Illisible sur cet appareil.",
+    "tampered": "Message endommagé ou manipulé.",
+    "unverified": "Non vérifié",
+    "safetyNumber": "Afficher le numéro de sécurité",
+    "safetyNumberHint": "Comparez ce numéro de sécurité en personne ou par un autre canal. S’il est identique chez vous deux, personne n’écoute entre vous.",
+    "keysChanged": "{'@'}{username} a de nouvelles clés. Comparez votre numéro de sécurité avant d’écrire quelque chose de confidentiel.",
+    "keysAccepted": "Compris",
+    "enterPin": "Saisis ton PIN de chat pour déchiffrer tes chats.",
+    "unlock": "Déverrouiller",
+    "pin": "PIN de chat",
+    "sendRequest": "Envoyer une demande",
+    "declineForGood": "Refuser définitivement",
+    "decline": "Refuser",
+    "accept": "Accepter",
+    "withdraw": "Retirer la demande",
+    "requestFailed": "La demande a échoué.",
+    "retention": "Les messages sont supprimés automatiquement après {days} jours."
+  },
+  "chats": {
+    "requests": "Demandes de chat",
+    "archiveTitle": "Archiver le chat",
+    "archive": "Archiver",
+    "requestSent": "Demande envoyée",
+    "noMessages": "Pas encore de messages",
+    "noArchived": "Aucun chat archivé.",
+    "allArchived": "Tous les chats sont archivés.",
+    "empty": "Pas encore de chats. Tu peux envoyer une demande de chat depuis un profil.",
+    "loadFailed": "Les chats n'ont pas pu être chargés.",
+    "archiveFailed": "Le chat n'a pas pu être archivé.",
+    "restoreFailed": "Le chat n'a pas pu être restauré.",
+    "restore": "Restaurer",
+    "tabChats": "Chats",
+    "tabArchive": "Archives",
+    "archiveMessage": "Archiver le chat avec {'@'}{username} ? Tu ne recevras plus de notifications pour les chats archivés."
+  },
+  "header": {
+    "settings": "Paramètres",
+    "saved": "Enregistrés",
+    "docs": "Documentation",
+    "menu": "Menu",
+    "logout": "Se déconnecter",
+    "login": "Se connecter",
+    "newNotifications": "Nouvelles notifications",
+    "notifications": "Notifications"
+  },
+  "dialog": {
+    "confirmDelete": "Confirmer la suppression"
+  },
+  "dropzone": {
+    "label": "Glisse des images ici ou clique"
+  },
+  "search": {
+    "search": "Rechercher"
+  },
+  "users": {
+    "noneFound": "Aucun utilisateur trouvé.",
+    "noOthers": "Pas encore d'autres utilisateurs.",
+    "loadFailed": "Les utilisateurs n'ont pas pu être chargés."
+  },
+  "messageStatus": {
+    "sent": "Envoyé",
+    "delivered": "Distribué",
+    "read": "Lu"
+  },
+  "administration": {
+    "allRoles": "Tous les rôles",
+    "noUsers": "Aucun utilisateur trouvé.",
+    "searchPlaceholder": "Nom d'utilisateur ou nom",
+    "ownRole": "Tu ne peux pas modifier ton propre rôle.",
+    "role": "Rôle",
+    "roleLockedForever": "Rôle bloqué définitivement",
+    "loadFailed": "Les utilisateurs n'ont pas pu être chargés.",
+    "changeFailed": "Le rôle n'a pas pu être modifié.",
+    "title": "Administration",
+    "roleLockedUntil": "Rôle bloqué jusqu'au {date}"
+  },
+  "album": {
+    "addToTimeline": "Ajouter à la timeline",
+    "deleteMessage": "Supprimer l'album ? Les posts eux-mêmes sont conservés.",
+    "notFound": "Album introuvable.",
+    "loadFailed": "L'album n'a pas pu être chargé.",
+    "deleteFailed": "L'album n'a pas pu être supprimé.",
+    "albums": "Albums",
+    "album": "Album"
+  },
+  "commentView": {
+    "replyPlaceholder": "Écrire une réponse…",
+    "deleteMessage": "Veux-tu supprimer ce commentaire ? Ses réponses seront aussi supprimées.",
+    "notFound": "Commentaire introuvable.",
+    "loadFailed": "Le commentaire n'a pas pu être chargé.",
+    "deleteFailed": "Le commentaire n'a pas pu être supprimé.",
+    "moderation": "Modération",
+    "post": "Feed",
+    "comment": "Commentaire"
+  },
+  "connectionsView": {
+    "searchPlaceholder": "Rechercher des utilisateurs",
+    "profile": "Profil"
+  },
+  "hashtag": {
+    "unfollow": "Ne plus suivre",
+    "follow": "Suivre",
+    "noReels": "Pas encore de seeds.",
+    "noPosts": "Pas encore de feeds.",
+    "posts": "Feeds",
+    "reels": "Seeds",
+    "empty": "Il n'y a pas encore de feeds pour ce hashtag.",
+    "loadFailed": "Le hashtag n'a pas pu être chargé.",
+    "postCount": "{count} feeds",
+    "following": "Suivi"
+  },
+  "home": {
+    "welcome": "Bienvenue",
+    "post": "Publier",
+    "empty": "Pas encore de feeds. Suis des personnes ou des hashtags pour voir leurs feeds ici.",
+    "noAnnouncements": "Pas encore d'annonces.",
+    "home": "Accueil"
+  },
+  "moderation": {
+    "noResolved": "Pas encore de signalements traités.",
+    "noOpen": "Aucun signalement ouvert.",
+    "title": "Modération",
+    "open": "Ouverts",
+    "resolved": "Traités",
+    "post": "Feed",
+    "comment": "Commentaire",
+    "loadFailed": "Les signalements n'ont pas pu être chargés."
+  },
+  "notifications": {
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "empty": "Pas encore de notifications.",
+    "open": "Ouvrir",
+    "accepted": "Acceptée",
+    "declined": "Refusée",
+    "title": "Notifications",
+    "loadFailed": "Les notifications n'ont pas pu être chargées.",
+    "actionFailed": "L'action a échoué."
+  },
+  "postView": {
+    "post": "Feed",
+    "moderation": "Modération",
+    "notFound": "Feed introuvable.",
+    "loadFailed": "Le feed n'a pas pu être chargé."
+  },
+  "reels": {
+    "empty": "Pas encore de seeds.",
+    "emptyFollowing": "Pas encore de seeds des personnes ou hashtags que tu suis.",
+    "loadFailed": "Les seeds n'ont pas pu être chargés."
+  },
+  "saved": {
+    "rename": "Renommer",
+    "folder": "Dossier",
+    "empty": "Rien n'est encore enregistré ici.",
+    "name": "Nom",
+    "deleteMessage": "Supprimer le dossier ? Les feeds enregistrés restent sous « Sans dossier ».",
+    "renameFolder": "Renommer le dossier",
+    "newFolder": "Nouveau dossier",
+    "title": "Enregistrés",
+    "all": "Tous",
+    "noFolder": "Sans dossier",
+    "loadFailed": "Les dossiers n'ont pas pu être chargés."
+  },
+  "searchView": {
+    "title": "Rechercher",
+    "placeholder": "Rechercher des utilisateurs ou des #hashtags"
+  },
+  "settingsView": {
+    "groups": "Groupes",
+    "title": "Paramètres",
+    "general": "Général",
+    "privacy": "Confidentialité",
+    "profile": "Profil",
+    "display": "Affichage",
+    "wellbeing": "Bien-être"
+  },
+  "login": {
+    "intro": "Swissfy utilise govex pour la connexion. Tu y gères ton nom d'utilisateur et ton mot de passe.",
+    "button": "Se connecter avec govex",
+    "title": "Se connecter",
+    "failed": "La connexion via govex a échoué. Merci de réessayer."
+  },
+  "logout": {
+    "back": "Retour à l'accueil",
+    "title": "Se déconnecter",
+    "done": "Tu as été déconnecté.",
+    "pending": "Déconnexion en cours …"
+  },
+  "upload": {
+    "cropHint": "Toutes les images sont recadrées au format de la première.",
+    "videoHint": "La vidéo est traitée après la publication et apparaît ensuite pour les autres.",
+    "removeImage": "Retirer l'image",
+    "storyDrop": "Glisse une image pour ta story ici ou clique",
+    "storyText": "Texte sur ta story (facultatif)",
+    "removeVideo": "Retirer la vidéo",
+    "postDrop": "Glisse des images ou une vidéo ici ou clique",
+    "add": "Ajouter",
+    "postText": "Quoi de neuf ? Marque les hashtags avec #, p. ex. #zürich",
+    "posting": "Publication…",
+    "post": "Publier",
+    "imageUnreadable": "L'image n'a pas pu être lue.",
+    "videoTooLarge": "La vidéo est trop grande (max. 250 Mo).",
+    "anImageUnreadable": "Une image n'a pas pu être lue.",
+    "storyFailed": "La story n'a pas pu être créée.",
+    "postFailed": "Le feed n'a pas pu être créé.",
+    "confirmStory": "Je confirme que ma story respecte les {terms}.",
+    "confirmPost": "Je confirme que mon feed respecte les {terms}.",
+    "terms": "conditions d'utilisation",
+    "quotaLeft": "Encore {remaining} feeds sur {limit} possibles aujourd'hui.",
+    "quotaUsed": "Tu as déjà créé {limit} feeds aujourd'hui.",
+    "videoTooLong": "La vidéo est trop longue (max. {seconds} secondes).",
+    "tooManyImages": "Tu peux téléverser au maximum {count} images."
+  },
+  "profile": {
+    "followers": "Abonnés",
+    "following": "Abonnements",
+    "chat": "Chat",
+    "friends": "Amis",
+    "private": "Ce profil est privé.",
+    "birthdate": "Date de naissance",
+    "noDetails": "Aucune information.",
+    "post": "Publier",
+    "viewStory": "Voir la story",
+    "addStory": "Ajouter une story",
+    "requested": "Demandé",
+    "request": "Demander",
+    "activity": "Activité",
+    "grid": "Grille",
+    "albums": "Albums",
+    "about": "À propos",
+    "achievements": "Succès",
+    "status": "Statut",
+    "posts": "Feeds",
+    "noPosts": "Pas encore de feeds.",
+    "reels": "Seeds",
+    "noReels": "Pas encore de seeds.",
+    "comments": "Commentaires",
+    "noComments": "Pas encore de commentaires.",
+    "profile": "Profil",
+    "unfollow": "Ne plus suivre",
+    "follow": "Suivre",
+    "notFound": "Profil introuvable.",
+    "loadFailed": "Le profil n'a pas pu être chargé.",
+    "actionFailed": "L'action a échoué.",
+    "requestFailed": "La demande a échoué."
+  },
+  "comments": {
+    "comment": "Commentaire",
+    "send": "Envoyer",
+    "author": "Auteur",
+    "hidden": "Masqué",
+    "replyTo": "Réponse à",
+    "reply": "Répondre",
+    "reported": "Signalé",
+    "report": "Signaler",
+    "loadMore": "Charger plus de commentaires",
+    "deleteMessage": "Veux-tu supprimer ce commentaire ? Ses réponses seront aussi supprimées.",
+    "placeholder": "Écrire un commentaire…",
+    "sendFailed": "Le commentaire n'a pas pu être envoyé.",
+    "deleteFailed": "Le commentaire n'a pas pu être supprimé.",
+    "title": "Commentaires",
+    "replyToUser": "Réponse à {'@'}{username}",
+    "showReplies": "Afficher les {count} réponses"
+  },
+  "create": {
+    "title": "Que veux-tu publier ?",
+    "post": "Feed",
+    "postHint": "Reste sur ton profil",
+    "story": "Story",
+    "storyHint": "Disparaît après 24 heures"
+  },
+  "folders": {
+    "none": "Sans dossier",
+    "move": "Déplacer dans un dossier",
+    "new": "Nouveau dossier",
+    "loadFailed": "Les dossiers n'ont pas pu être chargés."
+  },
+  "groups": {
+    "intro": "Les groupes te permettent de décider qui voit un feed. Toi seul vois tes groupes.",
+    "empty": "Personne pour l'instant.",
+    "add": "Ajouter",
+    "new": "Nouveau groupe",
+    "username": "Nom d'utilisateur",
+    "deleteMessage": "Supprimer le groupe « {name} » ?"
+  },
+  "postActions": {
+    "like": "J'aime",
+    "comments": "Commentaires",
+    "unrepost": "Retirer le repost",
+    "repost": "Reposter",
+    "unsave": "Ne plus enregistrer"
+  },
+  "postCard": {
+    "hidden": "Masqué au public",
+    "editReel": "Modifier le seed",
+    "move": "Déplacer dans un dossier",
+    "reported": "Signalé",
+    "report": "Signaler",
+    "reportReel": "Signaler le seed"
+  },
+  "postEdit": {
+    "delete": "Supprimer le feed",
+    "title": "Modifier le feed",
+    "deleteMessage": "Veux-tu supprimer ce feed ?",
+    "saveFailed": "Le feed n'a pas pu être enregistré.",
+    "deleteFailed": "Le feed n'a pas pu être supprimé."
+  },
+  "postImages": {
+    "previous": "Image précédente",
+    "next": "Image suivante"
+  },
+  "postList": {
+    "empty": "Pas encore de feeds.",
+    "loadFailed": "Les feeds n'ont pas pu être chargés."
+  },
+  "video": {
+    "play": "Lire",
+    "failed": "La vidéo n'a pas pu être traitée.",
+    "processing": "Traitement de la vidéo…"
+  },
+  "story": {
+    "delete": "Supprimer la story",
+    "seenBy": "Vu par",
+    "deleteMessage": "Veux-tu supprimer cette story ?",
+    "unlike": "Je n'aime plus",
+    "like": "J'aime",
+    "noViewers": "Personne n'a encore vu ta story.",
+    "liked": "Aimé"
+  },
+  "visibility": {
+    "visibleTo": "Visible par",
+    "globalHint": "Apparaît dans le feed de tout le monde sur l'accueil, même chez les personnes qui ne te suivent pas.",
+    "noGroups": "Tu n'as pas encore de groupes.",
+    "createGroups": "Créer des groupes",
+    "public": "Tout le monde",
+    "followers": "Abonnés",
+    "friends": "Amis",
+    "groups": "Groupes",
+    "global": "Global"
+  },
+  "albumPosts": {
+    "empty": "Plus aucun feed ni seed à ajouter.",
+    "loadMore": "Charger plus",
+    "add": "Ajouter",
+    "selected": "Sélectionné",
+    "date": "Date (facultatif)",
+    "title": "Titre (facultatif)",
+    "choose": "Choisir des posts",
+    "setDate": "Définir la date",
+    "loadFailed": "Les posts n'ont pas pu être chargés.",
+    "addFailed": "Les posts n'ont pas pu être ajoutés."
+  },
+  "albumDialog": {
+    "cover": "Image de couverture (facultatif)",
+    "coverHint": "Ajoute des posts à la timeline pour en choisir un comme image de couverture.",
+    "name": "Nom",
+    "coverAlt": "Image de couverture",
+    "edit": "Modifier l'album",
+    "new": "Nouvel album",
+    "saveFailed": "L'album n'a pas pu être enregistré."
+  },
+  "albumTimeline": {
+    "title": "Timeline",
+    "empty": "Pas encore de posts dans cet album.",
+    "noDate": "Sans date"
+  },
+  "albumEntry": {
+    "date": "Date (facultatif)",
+    "title": "Titre (facultatif)",
+    "remove": "Retirer",
+    "edit": "Modifier l'entrée",
+    "saveFailed": "L'entrée n'a pas pu être enregistrée."
+  },
+  "albums": {
+    "empty": "Pas encore d'albums.",
+    "new": "Nouvel album",
+    "move": "Déplacer",
+    "loadFailed": "Les albums n'ont pas pu être chargés.",
+    "orderFailed": "L'ordre n'a pas pu être enregistré."
+  },
+  "moderationPanel": {
+    "alreadyWarned": "Déjà averti et masqué au public.",
+    "reason": "Motif de l'avertissement",
+    "warn": "Avertir",
+    "dismiss": "Rejeter",
+    "warned": "Averti :",
+    "noOpen": "Aucun signalement ouvert"
+  },
+  "profileStatus": {
+    "noWarnings": "Aucun avertissement.",
+    "view": "Voir",
+    "reported": "Contenus signalés",
+    "noReported": "Aucun contenu signalé.",
+    "expiredSince": "Prescrit depuis le",
+    "expiresOn": "Prescrit le",
+    "loadFailed": "Le statut n'a pas pu être chargé.",
+    "warning": "Avertissement : {reason}",
+    "suspension": "Suspension : {duration}",
+    "reportCount": "signalé {count}×",
+    "openCount": "{count} ouverts",
+    "resolved": "traité"
+  },
+  "achievements": {
+    "empty": "Pas encore de succès.",
+    "next": "Prochains objectifs",
+    "notReached": "Pas encore atteint",
+    "timeline": "Timeline",
+    "collection": "Collection",
+    "loadFailed": "Les succès n'ont pas pu être chargés.",
+    "unlocked": "{count} succès débloqués sur {total}",
+    "eggs": "{count} easter eggs trouvés sur {total}",
+    "since": "Depuis le {date}",
+    "level": "Niveau {level}/{total}",
+    "promotedFrom": "Promu depuis {title}",
+    "nextFrom": "Après {title}",
+    "adminEgg": "Easter egg · visible uniquement par les administrateurs"
+  },
+  "roles": {
+    "default": "Standard",
+    "verified": "Vérifié",
+    "support": "Support",
+    "moderator": "Modérateur",
+    "admin": "Admin"
+  },
+  "chatProtection": {
+    "title": "Chiffrement des chats",
+    "warning": "Sans le PIN, personne ne peut restaurer tes chats, pas même nous.",
+    "setPin": "Définir le PIN",
+    "newPin": "Nouveau PIN de chat (au moins 6 caractères)",
+    "repeatPin": "Répéter le PIN de chat"
+  },
+  "display": {
+    "title": "Affichage",
+    "appearance": "Apparence de l'interface.",
+    "design": "Design",
+    "accessibility": "Accessibilité",
+    "dyslexia": "Dyslexie",
+    "contrast": "Mode contraste",
+    "limitedDesign": "Ce design peut limiter l'accessibilité, par exemple au niveau du contraste, de la lisibilité et des animations. Le design standard est le mieux optimisé pour l'accessibilité.",
+    "language": "Langue",
+    "languageHint": "Langue de l'interface et des messages."
+  },
+  "general": {
+    "account": "Compte",
+    "accountCenter": "govex Account Center",
+    "accountHint": "Tu gères ton profil, ta photo de profil, ton mot de passe et ta sécurité dans le govex Account Center.",
+    "toAccountCenter": "Aller à l'Account Center",
+    "govexAccount": "Compte govex",
+    "loginHint": "Connecte-toi avec ton compte govex.",
+    "login": "Se connecter",
+    "legal": "Mentions juridiques",
+    "persistent": "Connexion persistante",
+    "persistentHint": "Si activé, tu restes connecté sur cet appareil même si les cookies ou le cache sont effacés. Tu dois te reconnecter uniquement si toutes les données du site sont effacées."
+  },
+  "privacy": {
+    "title": "Confidentialité",
+    "profileVisibility": "Profil visible par",
+    "profileVisibilityHint": "S'applique aussi à ton prénom et ton nom ainsi qu'à tes feeds et seeds. Tes photos de profil ne sont pas concernées, tu définis leur visibilité sous « Profil ». Si ton profil est plus privé qu'un post, le réglage plus strict de ton profil s'applique à ce post.",
+    "loadFailed": "Les paramètres n'ont pas pu être chargés."
+  },
+  "about": {
+    "title": "Infos",
+    "biography": "Biographie",
+    "placeholder": "Raconte quelque chose sur toi",
+    "loadFailed": "Les infos n'ont pas pu être chargées."
+  },
+  "pictures": {
+    "title": "Photos de profil",
+    "upload": "Téléverser",
+    "remove": "Retirer",
+    "public": "Photo de profil publique",
+    "publicHint": "Visible par tous. Sans photo personnelle, ta photo de profil govex est utilisée.",
+    "private": "Photo de profil privée",
+    "privateHint": "Seules les personnes sélectionnées la voient, tous les autres voient ta photo publique.",
+    "loadFailed": "Les photos de profil n'ont pas pu être chargées."
+  },
+  "wellbeing": {
+    "title": "Prévention de l'addiction",
+    "autoplay": "Lecture automatique",
+    "autoplayHint": "Si activé, les vidéos démarrent seules et sans son dès que tu défiles jusqu'à elles.",
+    "loop": "Répéter",
+    "loopHint": "Si activé, les vidéos recommencent automatiquement à la fin.",
+    "intro": "Par défaut, Swissfy renonce aux fonctions conçues pour te garder plus longtemps devant l'écran. Tu peux les activer ici en connaissance de cause. S'applique à cet appareil."
+  }
+}

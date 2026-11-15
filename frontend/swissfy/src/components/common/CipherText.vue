@@ -1,5 +1,5 @@
 <template>
-  <span role="img" aria-label="verborgen" class="text-app-muted select-none">
+  <span role="img" :aria-label="$t('common.hidden')" class="text-app-muted select-none">
     <span aria-hidden="true">{{ glyphs.join('') }}</span>
   </span>
 </template>

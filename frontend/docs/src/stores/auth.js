@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import authApi from '@core/api/auth.js'
+import { t } from '@/i18n.js'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -21,7 +22,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout() {
     await authApi.logout().catch((error) => {
-      throw new Error(error.detail ?? 'Abmelden fehlgeschlagen.')
+      throw new Error(error.detail ?? t('auth.logoutFailed'))
     })
     user.value = null
   }

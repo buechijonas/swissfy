@@ -4,10 +4,10 @@
   >
     <component
       :is="item.href ? 'a' : 'RouterLink'"
-      v-for="item in app.navigationItems"
+      v-for="item in app.navigationItems()"
       :key="item.key"
       v-bind="item.href ? { href: item.href, target: '_blank', rel: 'noopener' } : { to: item.to }"
-      class="flex h-10 shrink-0 items-center gap-3 rounded-box px-3 text-sm"
+      class="flex h-10 shrink-0 items-center gap-3 rounded-box px-3 text-sm lg:min-w-0"
       :class="
         activeNavigation === item.key
           ? 'bg-base-200 text-base-content'
@@ -15,10 +15,10 @@
       "
     >
       <AppIcon :name="item.icon" />
-      <span>{{ item.label }}</span>
+      <span class="lg:min-w-0 lg:truncate" :title="item.label">{{ item.label }}</span>
     </component>
     <div class="hidden text-xs font-light text-app-muted lg:mt-auto lg:block lg:px-3 lg:pt-6">
-      Version {{ app.version }}
+      {{ $t('navigation.version', { version: app.version }) }}
     </div>
   </nav>
 </template>

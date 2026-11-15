@@ -1,5 +1,5 @@
 <template>
-  <h3 class="text-xl my-4">Profilbilder</h3>
+  <h3 class="text-xl my-4">{{ $t('pictures.title') }}</h3>
   <div class="flex flex-col gap-4">
     <BaseCard v-for="card in cards" :key="card.kind" class="p-6 flex flex-col gap-4">
       <div class="flex flex-col items-center text-center gap-4 sm:flex-row sm:text-left">
@@ -29,7 +29,7 @@
             @files="(files) => upload(card.kind, files)"
           >
             <AppIcon name="picture" />
-            Hochladen
+            {{ $t('pictures.upload') }}
           </BaseButton>
           <BaseButton
             v-if="settings[`${card.kind}_picture`]"
@@ -40,7 +40,7 @@
             @click="remove(card.kind)"
           >
             <AppIcon name="trash" />
-            Entfernen
+            {{ $t('pictures.remove') }}
           </BaseButton>
         </div>
         <div v-else-if="!error" class="skeleton h-8 w-28"></div>
@@ -73,6 +73,7 @@ import profilesApi from '@/api/profiles.js'
 import { compressImage } from '@/lib/image.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useGroupsStore } from '@/stores/posts.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ProfilePictures',
@@ -89,14 +90,14 @@ export default {
       return [
         {
           kind: 'public',
-          label: 'Öffentliches Profilbild',
-          hint: 'Sehen alle. Ohne eigenes Bild wird dein govex Profilbild verwendet.',
+          label: t('pictures.public'),
+          hint: t('pictures.publicHint'),
           fallback: avatars[this.authStore.user?.avatar],
         },
         {
           kind: 'private',
-          label: 'Privates Profilbild',
-          hint: 'Sehen nur die ausgewählten Personen, alle anderen sehen dein öffentliches Bild.',
+          label: t('pictures.private'),
+          hint: t('pictures.privateHint'),
         },
       ]
     },
@@ -112,11 +113,11 @@ export default {
       try {
         this.settings = await profilesApi.pictures()
       } catch {
-        this.error = 'Profilbilder konnten nicht geladen werden.'
+        this.error = t('pictures.loadFailed')
       }
     },
     async request(action) {
-      const settings = await this.runAction(action, 'Speichern fehlgeschlagen.')
+      const settings = await this.runAction(action, t('common.saveFailed'))
       if (!settings) return
       this.settings = settings
       this.authStore.user = {

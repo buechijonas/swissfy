@@ -1,11 +1,11 @@
 <template>
-  <AuthPage title="Abmelden" breadcrumb-label="Abmelden">
+  <AuthPage :title="$t('logout.title')" :breadcrumb-label="$t('logout.title')">
     <p class="font-light">
-      {{ done ? 'Sie wurden erfolgreich abgemeldet.' : 'Sie werden abgemeldet …' }}
+      {{ done ? $t('logout.done') : $t('logout.pending') }}
     </p>
     <BaseButton variant="primary" block class="mt-6" to="/">
       <AppIcon name="house-blank" />
-      Zurück zur Startseite
+      {{ $t('logout.back') }}
     </BaseButton>
   </AuthPage>
 </template>

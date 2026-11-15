@@ -1,31 +1,32 @@
 <template>
   <div class="flex flex-col gap-3">
     <p class="text-sm" :class="reportCount ? 'text-error' : 'text-app-muted'">
-      {{ reportCount ? `${reportCount}× gemeldet` : 'Keine offenen Meldungen' }}
+      {{ reportCount ? `${reportCount}× gemeldet` : $t('moderationPanel.noOpen') }}
     </p>
     <form class="flex flex-wrap gap-2" @submit.prevent="warn">
       <p v-if="!canWarn" class="flex-1 self-center text-sm text-app-muted">
-        Bereits verwarnt und öffentlich verborgen.
+        {{ $t('moderationPanel.alreadyWarned') }}
       </p>
       <select v-else v-model="reason" class="select min-w-0 flex-1">
-        <option value="" disabled>Grund der Verwarnung</option>
+        <option value="" disabled>{{ $t('moderationPanel.reason') }}</option>
         <option v-for="option in reasons" :key="option.value" :value="option.value">
           {{ option.label }}
         </option>
       </select>
       <BaseButton v-if="canWarn" type="submit" variant="primary" :disabled="busy || !reason">
         <AppIcon name="shield-exclamation" />
-        Verwarnen
+        {{ $t('moderationPanel.warn') }}
       </BaseButton>
       <BaseButton v-if="reportCount" :disabled="busy" @click="dismiss">
         <AppIcon name="cross" />
-        Verwerfen
+        {{ $t('moderationPanel.dismiss') }}
       </BaseButton>
     </form>
     <ErrorText :message="error" />
     <ul v-if="warnings.length" class="flex flex-col gap-1 text-sm">
       <li v-for="warning in warnings" :key="warning.id" class="text-app-muted">
-        Verwarnt: <span class="text-base-content">{{ warning.reason }}</span> ·
+        {{ $t('moderationPanel.warned') }}
+        <span class="text-base-content">{{ warning.reason }}</span> ·
         {{ formatDate(warning.created_at) }}
       </li>
     </ul>
@@ -39,6 +40,7 @@ import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import moderationApi from '@/api/moderation.js'
 import { formatDate } from '@/lib/time.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'ModerationPanel',
@@ -65,7 +67,7 @@ export default {
   methods: {
     formatDate,
     async send(action) {
-      const data = await this.runAction(action, 'Aktion fehlgeschlagen.')
+      const data = await this.runAction(action, t('common.actionFailed'))
       if (data) this.reportCount = data.report_count
       return data
     },

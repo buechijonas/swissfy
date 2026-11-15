@@ -3,8 +3,8 @@
     v-if="role && badges[role.key]"
     class="size-4 shrink-0"
     :src="badges[role.key]"
-    :alt="role.label"
-    :title="role.label"
+    :alt="$t(`roles.${role.key}`)"
+    :title="$t(`roles.${role.key}`)"
   />
 </template>
 

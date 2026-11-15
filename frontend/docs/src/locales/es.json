@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "logoutFailed": "No se pudo cerrar la sesión."
+  },
+  "display": {
+    "title": "Apariencia",
+    "appearance": "Apariencia de la interfaz.",
+    "accessibility": "Accesibilidad",
+    "dyslexia": "Dislexia",
+    "contrast": "Modo de contraste",
+    "auto": "Auto",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "on": "Activado",
+    "off": "Desactivado",
+    "language": "Idioma",
+    "languageHint": "Idioma de la interfaz."
+  },
+  "navigation": {
+    "changelog": "Registro de cambios",
+    "donate": "Donar",
+    "settings": "Ajustes",
+    "version": "Versión {version}"
+  },
+  "changelogs": {
+    "empty": "Aún no hay versiones."
+  },
+  "header": {
+    "settings": "Ajustes",
+    "docs": "Documentación",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "menu": "Menú"
+  },
+  "legal": {
+    "imprint": "Aviso legal",
+    "privacy": "Política de privacidad",
+    "terms": "Condiciones de uso",
+    "disclaimer": "Exención de responsabilidad"
+  }
+}

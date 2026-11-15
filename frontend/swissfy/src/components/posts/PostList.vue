@@ -28,7 +28,7 @@
     </div>
 
     <BaseCard v-else-if="!hasMore && !loading" class="p-6">
-      <p class="text-app-muted">{{ emptyText }}</p>
+      <p class="text-app-muted">{{ emptyTextOrDefault }}</p>
     </BaseCard>
 
     <ErrorText :message="error" class="mt-4 text-center" />
@@ -51,6 +51,7 @@ import PostCard from '@/components/posts/PostCard.vue'
 import PostTile from '@/components/posts/PostTile.vue'
 import intersect from '@/directives/intersect.js'
 import postFeedMixin from '@/mixins/postFeedMixin.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'PostList',
@@ -62,12 +63,17 @@ export default {
     grid: { type: Boolean, default: false },
     folderPicker: { type: Boolean, default: false },
     edgeToEdge: { type: Boolean, default: false },
-    emptyText: { type: String, default: 'Noch keine Feeds.' },
+    emptyText: { type: String, default: null },
     reelBase: { type: String, default: null },
   },
   emits: ['saved-change'],
-  data() {
-    return { loadError: 'Feeds konnten nicht geladen werden.' }
+  computed: {
+    emptyTextOrDefault() {
+      return this.emptyText ?? t('postList.empty')
+    },
+    loadError() {
+      return t('postList.loadFailed')
+    },
   },
   methods: {
     postKey(item) {

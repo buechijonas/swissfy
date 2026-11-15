@@ -1,0 +1,11 @@
+{
+  "core": {
+    "requestFailed": "La solicitud ha fallado ({status}).",
+    "legal": {
+      "impressum": "Aviso legal",
+      "privacy": "Política de privacidad",
+      "terms": "Condiciones de uso",
+      "disclaimer": "Exención de responsabilidad"
+    }
+  }
+}

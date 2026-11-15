@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "logoutFailed": "La deconnexiun n'è betg reussida."
+  },
+  "display": {
+    "title": "Visualisaziun",
+    "appearance": "Aspect da la surfatscha.",
+    "accessibility": "Accessibladad",
+    "dyslexia": "Dislexia",
+    "contrast": "Modus da cuntrast",
+    "auto": "Auto",
+    "light": "Cler",
+    "dark": "Stgir",
+    "on": "Activ",
+    "off": "Inactiv",
+    "language": "Lingua",
+    "languageHint": "Lingua da la surfatscha."
+  },
+  "navigation": {
+    "changelog": "Changelog",
+    "donate": "Donar",
+    "settings": "Configuraziuns",
+    "version": "Versiun {version}"
+  },
+  "changelogs": {
+    "empty": "Anc naginas versiuns."
+  },
+  "header": {
+    "settings": "Configuraziuns",
+    "docs": "Documentaziun",
+    "logout": "Sa deconnectar",
+    "login": "S'annunziar",
+    "menu": "Menu"
+  },
+  "legal": {
+    "imprint": "Impressum",
+    "privacy": "Decleraziun da protecziun da datas",
+    "terms": "Directivas d'utilisaziun",
+    "disclaimer": "Exclusiun da responsabladad"
+  }
+}

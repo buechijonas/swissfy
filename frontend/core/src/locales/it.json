@@ -1,0 +1,11 @@
+{
+  "core": {
+    "requestFailed": "Richiesta non riuscita ({status}).",
+    "legal": {
+      "impressum": "Note legali",
+      "privacy": "Informativa sulla privacy",
+      "terms": "Condizioni d’uso",
+      "disclaimer": "Esclusione di responsabilità"
+    }
+  }
+}

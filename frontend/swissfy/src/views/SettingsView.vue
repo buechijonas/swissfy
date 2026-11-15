@@ -23,7 +23,7 @@
         </div>
 
         <div v-else-if="activeTab === 'groups'" class="mb-10">
-          <h3 class="text-xl my-4">Gruppen</h3>
+          <h3 class="text-xl my-4">{{ $t('settingsView.groups') }}</h3>
           <GroupManager />
         </div>
 
@@ -49,6 +49,7 @@ import ProfileAbout from '@/components/settings/ProfileAbout.vue'
 import ProfilePictures from '@/components/settings/ProfilePictures.vue'
 import WellbeingSettings from '@/components/settings/WellbeingSettings.vue'
 import { useAuthStore } from '@/stores/auth.js'
+import { t } from '@/i18n.js'
 
 export default {
   name: 'SettingsView',
@@ -64,25 +65,23 @@ export default {
     ProfilePictures,
     WellbeingSettings,
   },
-  data() {
-    return {
-      breadcrumbs: [{ label: 'Einstellungen', to: '/' }],
-    }
-  },
   computed: {
+    breadcrumbs() {
+      return [{ label: t('settingsView.title'), to: '/' }]
+    },
     ...mapStores(useAuthStore),
     tabs() {
       return [
-        { key: 'general', label: 'Allgemein' },
+        { key: 'general', label: t('settingsView.general') },
         ...(this.authStore.isAuthenticated
           ? [
-              { key: 'privacy', label: 'Datenschutz' },
-              { key: 'profile', label: 'Profil' },
-              { key: 'groups', label: 'Gruppen' },
+              { key: 'privacy', label: t('settingsView.privacy') },
+              { key: 'profile', label: t('settingsView.profile') },
+              { key: 'groups', label: t('settingsView.groups') },
             ]
           : []),
-        { key: 'display', label: 'Darstellung' },
-        { key: 'wellbeing', label: 'Wohlbefinden' },
+        { key: 'display', label: t('settingsView.display') },
+        { key: 'wellbeing', label: t('settingsView.wellbeing') },
       ]
     },
     activeTab() {

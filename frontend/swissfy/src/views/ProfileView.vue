@@ -1,7 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs">
     <template v-if="ownProfile" #actions>
-      <AddButton label="Posten" :loading="loading" @click="$refs.composer.open()" />
+      <AddButton :label="$t('profile.post')" :loading="loading" @click="$refs.composer.open()" />
     </template>
   </BaseBreadcrumbs>
   <div
@@ -31,7 +31,7 @@
               v-if="profile.stories?.length"
               type="button"
               class="block cursor-pointer rounded-full"
-              title="Story ansehen"
+              :title="$t('profile.viewStory')"
               @click="$refs.storyViewer.open()"
             >
               <UserAvatar
@@ -45,7 +45,7 @@
               v-else-if="profile.is_self"
               type="button"
               class="block cursor-pointer rounded-full"
-              title="Story hinzufügen"
+              :title="$t('profile.addStory')"
               @click="$router.push('/upload/story')"
             >
               <UserAvatar class="size-20" :user="profile" />
@@ -55,10 +55,10 @@
               v-if="profile.is_self && !profile.stories?.length"
               type="button"
               class="absolute -right-0.5 -bottom-0.5 flex size-6 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-content ring-2 ring-base-100"
-              title="Story hinzufügen"
+              :title="$t('profile.addStory')"
               @click="$router.push('/upload/story')"
             >
-              <AppIcon name="plus" alt="Story hinzufügen" class="size-3!" />
+              <AppIcon name="plus" :alt="$t('profile.addStory')" class="size-3!" />
             </button>
           </div>
           <div class="flex flex-col min-w-0">
@@ -74,9 +74,9 @@
             shape="square"
             class="shrink-0"
             to="/settings?tab=profile"
-            title="Bearbeiten"
+            :title="$t('common.edit')"
           >
-            <AppIcon name="pencil" alt="Bearbeiten" />
+            <AppIcon name="pencil" :alt="$t('common.edit')" />
           </BaseButton>
         </div>
 
@@ -88,11 +88,11 @@
               class="flex flex-col items-center gap-2 hover:underline"
             >
               <span class="text-xl font-bold">{{ profile.follower_count }}</span>
-              <span class="text-app-muted text-sm">Follower</span>
+              <span class="text-app-muted text-sm">{{ $t('profile.followers') }}</span>
             </RouterLink>
             <template v-else>
               <CipherText class="text-xl font-bold" />
-              <span class="text-app-muted text-sm">Follower</span>
+              <span class="text-app-muted text-sm">{{ $t('profile.followers') }}</span>
             </template>
             <BaseButton
               v-if="!profile.is_self"
@@ -113,11 +113,11 @@
               class="flex flex-col items-center gap-2 hover:underline"
             >
               <span class="text-xl font-bold">{{ profile.following_count }}</span>
-              <span class="text-app-muted text-sm">Gefolgt</span>
+              <span class="text-app-muted text-sm">{{ $t('profile.following') }}</span>
             </RouterLink>
             <template v-else>
               <CipherText class="text-xl font-bold" />
-              <span class="text-app-muted text-sm">Gefolgt</span>
+              <span class="text-app-muted text-sm">{{ $t('profile.following') }}</span>
             </template>
             <BaseButton
               v-if="!profile.is_self"
@@ -128,7 +128,7 @@
               :disabled="!profile.can_chat"
             >
               <AppIcon name="comments" />
-              Chat
+              {{ $t('profile.chat') }}
             </BaseButton>
           </div>
           <div class="flex flex-col items-center gap-2">
@@ -138,11 +138,11 @@
               class="flex flex-col items-center gap-2 hover:underline"
             >
               <span class="text-xl font-bold">{{ profile.friend_count }}</span>
-              <span class="text-app-muted text-sm">Freunde</span>
+              <span class="text-app-muted text-sm">{{ $t('profile.friends') }}</span>
             </RouterLink>
             <template v-else>
               <CipherText class="text-xl font-bold" />
-              <span class="text-app-muted text-sm">Freunde</span>
+              <span class="text-app-muted text-sm">{{ $t('profile.friends') }}</span>
             </template>
             <BaseButton
               v-if="canRequestFriendship"
@@ -153,7 +153,7 @@
               @click="sendFriendRequest"
             >
               <AppIcon :name="profile.friend_request_sent ? 'clock' : 'users'" />
-              {{ profile.friend_request_sent ? 'Angefragt' : 'Anfragen' }}
+              {{ profile.friend_request_sent ? $t('profile.requested') : $t('profile.request') }}
             </BaseButton>
           </div>
         </div>
@@ -163,7 +163,7 @@
           class="flex items-center justify-center gap-2 text-app-muted text-sm mt-6"
         >
           <AppIcon name="lock" size="sm" />
-          Dieses Profil ist privat.
+          {{ $t('profile.private') }}
         </p>
 
         <ErrorText :message="actionError" class="mt-4 text-center" />
@@ -176,7 +176,7 @@
             {{ profile.biography }}
           </p>
           <dl v-if="profile.birthdate" class="flex justify-between gap-4">
-            <dt class="text-app-muted">Geburtsdatum</dt>
+            <dt class="text-app-muted">{{ $t('profile.birthdate') }}</dt>
             <dd>{{ formatDate(profile.birthdate) }}</dd>
           </dl>
           <section v-for="favorite in favorites" :key="favorite.kind">
@@ -194,7 +194,7 @@
             v-if="!profile.biography && !profile.birthdate && !favorites.length"
             class="text-app-muted"
           >
-            Keine Angaben.
+            {{ $t('profile.noDetails') }}
           </p>
         </BaseCard>
         <ProfileAchievements
@@ -275,46 +275,55 @@ import postsApi from '@/api/posts.js'
 import profilesApi from '@/api/profiles.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { formatDate } from '@/lib/time.js'
+import { t } from '@/i18n.js'
 
-const TABS = [
-  { key: 'activities', label: 'Aktivitäten', icon: 'list-timeline' },
-  { key: 'tiles', label: 'Kachel', icon: 'grid' },
-  { key: 'albums', label: 'Alben', icon: 'gallery' },
-  { key: 'about', label: 'Über mich', icon: 'info' },
-  { key: 'achievements', label: 'Erfolge', icon: 'trophy' },
-  { key: 'status', label: 'Status', icon: 'map-marker-smile' },
-]
-const MEDIA = {
-  pictures: {
-    flag: 'pictures',
-    label: 'Feeds',
-    icon: 'picture',
-    query: '?images=1',
-    emptyText: 'Noch keine Feeds.',
-  },
-  clips: {
-    flag: 'reels',
-    label: 'Seeds',
-    icon: 'clapperboard-play',
-    query: '?videos=1',
-    emptyText: 'Noch keine Seeds.',
-  },
+function profileTabs() {
+  return [
+    { key: 'activities', label: t('profile.activity'), icon: 'list-timeline' },
+    { key: 'tiles', label: t('profile.grid'), icon: 'grid' },
+    { key: 'albums', label: t('profile.albums'), icon: 'gallery' },
+    { key: 'about', label: t('profile.about'), icon: 'info' },
+    { key: 'achievements', label: t('profile.achievements'), icon: 'trophy' },
+    { key: 'status', label: t('profile.status'), icon: 'map-marker-smile' },
+  ]
 }
-const ACTIVITIES = {
-  feeds: {
-    label: 'Feeds',
-    icon: 'list-timeline',
-    query: 'activities/',
-    emptyText: 'Noch keine Feeds.',
-  },
-  comments: {
-    label: 'Kommentare',
-    icon: 'comments',
-    query: 'activities/?comments=1',
-    emptyText: 'Noch keine Kommentare.',
-  },
+function mediaKinds() {
+  return {
+    pictures: {
+      flag: 'pictures',
+      label: t('profile.posts'),
+      icon: 'picture',
+      query: '?images=1',
+      emptyText: t('profile.noPosts'),
+    },
+    clips: {
+      flag: 'reels',
+      label: t('profile.reels'),
+      icon: 'clapperboard-play',
+      query: '?videos=1',
+      emptyText: t('profile.noReels'),
+    },
+  }
 }
-const MODERATION_TABS = TABS.filter((tab) => ['tiles', 'activities', 'status'].includes(tab.key))
+function activityKinds() {
+  return {
+    feeds: {
+      label: t('profile.posts'),
+      icon: 'list-timeline',
+      query: 'activities/',
+      emptyText: t('profile.noPosts'),
+    },
+    comments: {
+      label: t('profile.comments'),
+      icon: 'comments',
+      query: 'activities/?comments=1',
+      emptyText: t('profile.noComments'),
+    },
+  }
+}
+function moderationTabs() {
+  return profileTabs().filter((tab) => ['tiles', 'activities', 'status'].includes(tab.key))
+}
 
 export default {
   name: 'ProfileView',
@@ -360,21 +369,23 @@ export default {
       return !this.username || this.username === this.authStore.user?.username
     },
     tabs() {
-      if (!this.profile?.can_view) return this.profile?.can_view_warnings ? MODERATION_TABS : []
-      return TABS.filter((tab) => tab.key !== 'status' || this.profile.can_view_warnings)
+      if (!this.profile?.can_view) return this.profile?.can_view_warnings ? moderationTabs() : []
+      return profileTabs().filter((tab) => tab.key !== 'status' || this.profile.can_view_warnings)
     },
     activeTab() {
       const tab = this.$route.query.tab
-      return this.tabs.some((t) => t.key === tab) ? tab : (this.tabs[0]?.key ?? TABS[0].key)
+      return this.tabs.some((t) => t.key === tab)
+        ? tab
+        : (this.tabs[0]?.key ?? profileTabs()[0].key)
     },
     timeline() {
       return this.activeTab === 'activities'
     },
     favorites() {
-      return favoriteKinds.filter((favorite) => this.profile[favorite.field]?.length)
+      return favoriteKinds().filter((favorite) => this.profile[favorite.field]?.length)
     },
     availableMedia() {
-      return Object.keys(MEDIA).filter((key) => this.profile.media?.[MEDIA[key].flag])
+      return Object.keys(mediaKinds()).filter((key) => this.profile.media?.[mediaKinds()[key].flag])
     },
     media() {
       const requested = this.$route.query.media
@@ -383,34 +394,38 @@ export default {
     },
     activity() {
       const requested = this.$route.query.activity
-      return Object.hasOwn(ACTIVITIES, requested) ? requested : 'feeds'
+      return Object.hasOwn(activityKinds(), requested) ? requested : 'feeds'
     },
     switcher() {
       if (this.timeline) {
-        return { param: 'activity', options: this.toOptions(ACTIVITIES), active: this.activity }
+        return {
+          param: 'activity',
+          options: this.toOptions(activityKinds()),
+          active: this.activity,
+        }
       }
       if (this.activeTab === 'tiles' && this.availableMedia.length > 1) {
-        return { param: 'media', options: this.toOptions(MEDIA), active: this.media }
+        return { param: 'media', options: this.toOptions(mediaKinds()), active: this.media }
       }
       return null
     },
     postList() {
-      if (this.timeline) return ACTIVITIES[this.activity]
-      return this.activeTab === 'tiles' ? MEDIA[this.media] : null
+      if (this.timeline) return activityKinds()[this.activity]
+      return this.activeTab === 'tiles' ? mediaKinds()[this.media] : null
     },
     breadcrumbs() {
       return this.username
         ? [{ label: this.username, to: `/profile/${this.username}` }]
-        : [{ label: 'Profil', to: '/profile' }]
+        : [{ label: t('profile.profile'), to: '/profile' }]
     },
     postsUrl() {
       return `${postsApi.userPostsUrl(this.profile.username)}${this.postList.query}`
     },
     followLabel() {
       const p = this.profile
-      if (p.is_following) return 'Entfolgen'
-      if (p.follow_requested) return 'Angefragt'
-      return p.requires_follow_request ? 'Anfragen' : 'Folgen'
+      if (p.is_following) return t('profile.unfollow')
+      if (p.follow_requested) return t('profile.requested')
+      return p.requires_follow_request ? t('profile.request') : t('profile.follow')
     },
     followIcon() {
       const p = this.profile
@@ -445,8 +460,7 @@ export default {
       try {
         this.profile = await profilesApi.get(this.username)
       } catch (error) {
-        this.error =
-          error.status === 404 ? 'Profil nicht gefunden.' : 'Profil konnte nicht geladen werden.'
+        this.error = error.status === 404 ? t('profile.notFound') : t('profile.loadFailed')
       } finally {
         this.loading = false
       }
@@ -467,13 +481,13 @@ export default {
       const leave = is_following || follow_requested
       return this.runAction(
         () => (leave ? profilesApi.unfollow(username) : profilesApi.follow(username)),
-        'Aktion fehlgeschlagen.',
+        t('profile.actionFailed'),
       )
     },
     sendFriendRequest() {
       return this.runAction(
         () => profilesApi.requestFriendship(this.profile.username),
-        'Anfrage fehlgeschlagen.',
+        t('profile.requestFailed'),
       )
     },
     async refreshProfile() {

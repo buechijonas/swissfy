@@ -1,7 +1,7 @@
 import { ref, watch } from 'vue'
 import { getCookie, setSharedCookie } from '@core/lib/cookies.js'
 
-const SHARED_MAX_AGE = 60 * 60 * 24 * 400
+export const SHARED_MAX_AGE = 60 * 60 * 24 * 400
 const sharedSettings = []
 
 function readStored(key) {
