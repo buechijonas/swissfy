@@ -6,8 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 
+from commons.media import serve_image
 from commons.views import BaseViewSet
-from swissfy.posts.views.media import serve_image
 
 from .models import UserProfile
 

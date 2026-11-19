@@ -1,4 +1,3 @@
-from django.db.models import Exists, OuterRef, Subquery
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
@@ -9,11 +8,11 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from commons.exceptions import BadRequest
+from commons.media import serve_image
 from commons.views import BaseViewSet
 from main.pagination import NextPagePagination
 from swissfy.chats.models import annotate_chat_availability
-from swissfy.posts.models import Story, StoryLike, StoryView, story_cutoff, with_profile_media
-from swissfy.posts.views.media import serve_image
+from swissfy.posts.models import with_profile_media
 
 from . import library, relations
 from .models import FollowRequest, FriendRequest, Member
@@ -63,7 +62,7 @@ class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
     def connected(self):
         target = self.get_object()
         if not Member.objects.can_view(self.request.user, target):
-            raise PermissionDenied(_("Dieses Profil ist privat."))
+            raise PermissionDenied(_("This profile is private."))
         return target
 
     def get_object(self):
@@ -100,7 +99,7 @@ class ProfileViewSet(BaseViewSet, mixins.ListModelMixin, mixins.RetrieveModelMix
     def follow(self, request, username):
         target = self.get_object()
         if target == request.user:
-            raise BadRequest(_("Du kannst dir nicht selbst folgen."))
+            raise BadRequest(_("You cannot follow yourself."))
         relations.follow(request.user, target)
         return self.respond(target)
 
@@ -234,24 +233,3 @@ class LibraryViewSet(BaseViewSet):
         response = HttpResponse(content, content_type=content_type)
         response["Cache-Control"] = "private, max-age=31536000, immutable"
         return response
-
-
-class StoryViewerViewSet(BaseViewSet, mixins.ListModelMixin):
-    pagination_class = NextPagePagination
-
-    def get_serializer_class(self):
-        return ProfileModelSerializer.story_viewer
-
-    def get_queryset(self):
-        stories = Story.objects.filter(author=self.request.user, created_at__gte=story_cutoff())
-        story = get_object_or_404(stories, uuid=self.kwargs["uuid"])
-        views = StoryView.objects.filter(story=story, user=OuterRef("pk"))
-        users = Member.objects.filter(pk__in=views.values("user")).exclude(pk=self.request.user.pk)
-        return (
-            users.with_viewer_relations(self.request.user)
-            .annotate(
-                viewed_at=Subquery(views.values("created_at")),
-                liked=Exists(StoryLike.objects.filter(story=story, user=OuterRef("pk"))),
-            )
-            .order_by("-viewed_at")
-        )

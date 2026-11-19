@@ -3,6 +3,7 @@ from commons.routers import Router
 from . import views
 
 router = Router()
+router.register("social/profiles", views.StatusViewSet, basename="profile-status")
 router.register("posts", views.PostReportViewSet, basename="post-report")
 router.register("comments", views.CommentReportViewSet, basename="comment-report")
 router.register("moderation/reports", views.ReportQueueViewSet, basename="moderation-reports")

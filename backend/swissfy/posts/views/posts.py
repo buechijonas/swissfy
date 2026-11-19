@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from commons.exceptions import BadRequest
 from commons.views import BaseViewSet, CreateModelMixin
 from main.parsers import JSONParser
+from swissfy.moderation.permissions import IsNotSuspended
 from swissfy.notifications.models import Notification
 
 from ..models import (
@@ -25,7 +26,7 @@ from ..models import (
     SavedFolder,
     SavedPost,
 )
-from ..permissions import HasPostQuota, IsAuthor, IsNotSuspended
+from ..permissions import HasPostQuota, IsAuthor
 from ..serializers import PostModelSerializer
 from .pagination import FeedOrder, NewestFirst, SavedOrder
 
@@ -135,7 +136,7 @@ class PostViewSet(
     def repost(self, request, uuid):
         post = self.get_object()
         if post.is_own:
-            raise BadRequest(_("Du kannst deine eigenen Feeds nicht reposten."))
+            raise BadRequest(_("You cannot repost your own feeds."))
         Repost.objects.get_or_create(user=request.user, post=post)
         return self.respond(post)
 

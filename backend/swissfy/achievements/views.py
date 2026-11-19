@@ -12,7 +12,7 @@ from .catalog import achievements_of
 
 
 class CanViewAchievements(BasePermission):
-    message = _("Du kannst die Erfolge dieses Profils nicht sehen.")
+    message = _("You cannot see the achievements of this profile.")
 
     def has_object_permission(self, request, view, obj):
         return Member.objects.can_view(request.user, obj)
