@@ -77,8 +77,8 @@
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
-import { contrastMode, dyslexiaFont, themeMode } from '@core/lib/appearance.js'
 import LanguageSelect from '@core/components/LanguageSelect.vue'
+import { contrastMode, dyslexiaFont, themeMode } from '@core/lib/appearance.js'
 import { t } from '@/i18n.js'
 
 function themeOptions() {

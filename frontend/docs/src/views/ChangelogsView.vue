@@ -2,7 +2,7 @@
   <DocsPage
     :breadcrumbs="[{ label: $t('navigation.changelog') }]"
     :loading="!changelogs"
-    :error="error"
+    :error="action.error"
   >
     <p v-if="!changelogs.length" class="text-app-muted">{{ $t('changelogs.empty') }}</p>
     <ChangelogCard
@@ -14,22 +14,22 @@
 </template>
 
 <script>
+import { useAsyncAction } from '@core/composables/asyncAction.js'
 import ChangelogCard from '@/components/ChangelogCard.vue'
 import DocsPage from '@/components/layout/DocsPage.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import { useChangelogsStore } from '@/stores/changelogs.js'
 
 export default {
   name: 'ChangelogsView',
   components: { ChangelogCard, DocsPage },
-  mixins: [asyncActionMixin],
   data() {
     return {
+      action: useAsyncAction(),
       changelogs: null,
     }
   },
   mounted() {
-    this.runAction(async () => {
+    this.action.run(async () => {
       this.changelogs = await useChangelogsStore().list()
     })
   },

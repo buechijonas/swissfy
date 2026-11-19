@@ -1,5 +1,5 @@
-import { ref, computed } from 'vue'
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import authApi from '@core/api/auth.js'
 import { t } from '@/i18n.js'
 

@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="flex shrink-0 gap-1 overflow-x-auto border-b border-app-border px-6 py-4 [scrollbar-width:none] lg:w-64 lg:flex-col lg:overflow-y-auto lg:border-r lg:border-b-0 lg:pr-4"
+    class="flex shrink-0 [scrollbar-width:none] gap-1 overflow-x-auto border-b border-app-border px-6 py-4 lg:w-64 lg:flex-col lg:overflow-y-auto lg:border-r lg:border-b-0 lg:pr-4"
   >
     <component
       :is="item.href ? 'a' : 'RouterLink'"
