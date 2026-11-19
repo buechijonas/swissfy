@@ -13,10 +13,10 @@
     </template>
     <BaseCard v-if="comments.length || $slots.head" :class="{ 'mt-4': !nested }">
       <slot name="head" />
-      <div v-if="nested" class="relative pl-15 pr-4 py-3">
+      <div v-if="nested" class="relative py-3 pr-4 pl-15">
         <span
           v-if="comments.length"
-          class="absolute left-8 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-app-border"
+          class="absolute top-0 bottom-0 left-8 w-0.5 -translate-x-1/2 bg-app-border"
         ></span>
         <slot name="composer">
           <CommentForm
@@ -56,7 +56,7 @@
             <RouterLink
               v-if="comment.reply_count > 1"
               :to="commentLink(comment, moderation)"
-              class="block pl-15 pb-3 text-sm text-app-muted link"
+              class="block link pb-3 pl-15 text-sm text-app-muted"
             >
               {{ $t('comments.showReplies', { count: comment.reply_count }) }}
             </RouterLink>
@@ -78,17 +78,17 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import commentsApi from '@/api/comments.js'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import CommentForm from '@/components/posts/CommentForm.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
-import commentsApi from '@/api/comments.js'
-import { commentLink } from '@/lib/comments.js'
 import { t } from '@/i18n.js'
+import { commentLink } from '@/lib/comments.js'
 
 export default {
   name: 'CommentSection',
@@ -108,11 +108,6 @@ export default {
     nested: { type: Boolean, default: false },
     moderation: { type: Boolean, default: false },
   },
-  computed: {
-    placeholderText() {
-      return this.placeholder ?? t('comments.placeholder')
-    },
-  },
   emits: ['created', 'deleted'],
   data() {
     return {
@@ -123,6 +118,11 @@ export default {
       error: null,
       pending: null,
     }
+  },
+  computed: {
+    placeholderText() {
+      return this.placeholder ?? t('comments.placeholder')
+    },
   },
   created() {
     this.load()

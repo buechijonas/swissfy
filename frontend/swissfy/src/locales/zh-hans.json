@@ -425,6 +425,7 @@
   "postCard": {
     "hidden": "已对公众隐藏",
     "editReel": "编辑 Seed",
+    "reel": "Seed",
     "move": "移动到文件夹",
     "reported": "已举报",
     "report": "举报",

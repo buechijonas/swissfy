@@ -1,6 +1,6 @@
+import { t } from '@/i18n.js'
 import { useChatsStore } from '@/stores/chats.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
-import { t } from '@/i18n.js'
 
 export const docsUrl = import.meta.env.VITE_DOCS_URL ?? 'https://docs.swissfy.ch'
 

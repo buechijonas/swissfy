@@ -6,7 +6,7 @@
       shape="circle"
       :title="action.label"
       :aria-busy="action.loading"
-      class="app-floating fixed bottom-[calc(var(--footer-height)+1.5rem)] right-6 z-10 size-14 lg:hidden"
+      class="app-floating fixed right-6 bottom-[calc(var(--footer-height)+1.5rem)] z-10 size-14 lg:hidden"
       @click="!action.loading && action.onClick()"
     >
       <span v-if="action.loading" class="loading loading-spinner"></span>

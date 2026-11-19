@@ -1,6 +1,6 @@
 <template>
   <BaseCard class="p-6">
-    <p class="text-app-muted text-sm mb-4">
+    <p class="mb-4 text-sm text-app-muted">
       {{ $t('groups.intro') }}
     </p>
     <form class="flex gap-2" @submit.prevent="createGroup">
@@ -17,16 +17,16 @@
     </form>
   </BaseCard>
 
-  <ErrorText :message="error" class="mt-4 text-center" />
+  <ErrorText :message="action.error" class="mt-4 text-center" />
 
-  <BaseCard v-for="group in groups" :key="group.id" class="p-6 mt-4 flex flex-col gap-3">
+  <BaseCard v-for="group in groups" :key="group.id" class="mt-4 flex flex-col gap-3 p-6">
     <div class="flex items-center gap-2">
       <AppIcon name="users" />
-      <h4 class="font-bold truncate">{{ group.name }}</h4>
+      <h4 class="truncate font-bold">{{ group.name }}</h4>
       <DeleteButton class="ml-auto" @click="confirmDelete(group)" />
     </div>
     <div class="flex flex-wrap gap-2">
-      <span v-for="member in group.members" :key="member" class="badge badge-neutral gap-1">
+      <span v-for="member in group.members" :key="member" class="badge gap-1 badge-neutral">
         @{{ member }}
         <button
           type="button"
@@ -43,7 +43,7 @@
     <form class="flex gap-2" @submit.prevent="addMember(group)">
       <input
         v-model="drafts[group.id]"
-        class="input input-sm flex-1"
+        class="input flex-1 input-sm"
         :placeholder="$t('groups.username')"
       />
       <BaseButton type="submit" size="sm" :disabled="!drafts[group.id]?.trim()">
@@ -61,21 +61,21 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import { useAsyncAction } from '@core/composables/asyncAction.js'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import { useGroupsStore } from '@/stores/posts.js'
 
 export default {
   name: 'GroupManager',
-  mixins: [asyncActionMixin],
   components: { AppIcon, BaseButton, BaseCard, ConfirmDialog, DeleteButton, ErrorText },
   data() {
     return {
+      action: useAsyncAction(),
       newName: '',
       drafts: {},
       pendingDelete: null,
@@ -94,8 +94,8 @@ export default {
   },
   methods: {
     async run(action) {
-      await this.runAction(action)
-      return !this.error
+      await this.action.run(action)
+      return !this.action.error
     },
     async createGroup() {
       if (await this.run(() => this.groupsStore.create({ name: this.newName, members: [] }))) {

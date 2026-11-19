@@ -5,12 +5,11 @@ import '@fontsource-variable/lora'
 import './assets/main.css'
 import './lib/preferences.js'
 
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-
+import { createApp } from 'vue'
 import App from './App.vue'
-import { i18n, i18nReady } from './i18n.js'
 import { iconSource } from './assets/icons.js'
+import { i18n, i18nReady } from './i18n.js'
 import router from './router'
 
 const app = createApp(App)

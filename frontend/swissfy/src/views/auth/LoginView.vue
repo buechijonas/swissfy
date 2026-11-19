@@ -1,6 +1,6 @@
 <template>
   <AuthPage :title="$t('login.title')" :breadcrumb-label="$t('login.title')">
-    <p class="font-light mb-6">
+    <p class="mb-6 font-light">
       {{ $t('login.intro') }}
     </p>
     <ErrorText :message="error" class="mb-4" />
@@ -12,13 +12,13 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import { mapStores } from 'pinia'
-import AuthPage from '@/components/layout/AuthPage.vue'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
-import { useAuthStore } from '@/stores/auth.js'
+import ErrorText from '@core/components/ErrorText.vue'
+import AuthPage from '@/components/layout/AuthPage.vue'
 import { t } from '@/i18n.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 function errorMessages() {
   return {

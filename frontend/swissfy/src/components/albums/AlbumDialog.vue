@@ -24,7 +24,7 @@
               :src="entry.post.thumbnail"
               alt=""
               loading="lazy"
-              class="aspect-square w-full rounded-box object-cover bg-base-200"
+              class="aspect-square w-full rounded-box bg-base-200 object-cover"
               :class="{ 'opacity-60': cover === entry.id }"
             />
             <span
@@ -44,12 +44,12 @@
       <p v-else-if="album" class="text-sm text-app-muted">
         {{ $t('albumDialog.coverHint') }}
       </p>
-      <ErrorText :message="error" />
+      <ErrorText :message="action.error" />
     </div>
     <template #actions>
       <BaseButton
-        :title="$t('common.delete')"
         v-if="album"
+        :title="$t('common.delete')"
         variant="error"
         outline
         class="mr-auto"
@@ -65,7 +65,7 @@
       <BaseButton
         :title="$t('common.save')"
         variant="primary"
-        :disabled="!name.trim() || busy"
+        :disabled="!name.trim() || action.busy"
         @click="save"
       >
         <AppIcon name="disk" />
@@ -76,21 +76,21 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
-import BaseDialog from '@/components/common/BaseDialog.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import { useAsyncAction } from '@core/composables/asyncAction.js'
 import albumsApi from '@/api/albums.js'
+import BaseDialog from '@/components/common/BaseDialog.vue'
 import { t } from '@/i18n.js'
 
 export default {
   name: 'AlbumDialog',
-  mixins: [asyncActionMixin],
   components: { AppIcon, BaseButton, BaseDialog, ErrorText },
   emits: ['saved', 'delete'],
   data() {
     return {
+      action: useAsyncAction(),
       album: null,
       name: '',
       cover: null,
@@ -101,7 +101,7 @@ export default {
       this.album = album
       this.name = album?.name ?? ''
       this.cover = album?.cover_entry ?? null
-      this.error = null
+      this.action.error = null
       this.$refs.dialog.open()
     },
     remove() {
@@ -112,8 +112,8 @@ export default {
       this.cover = this.cover === entry.id ? null : entry.id
     },
     async save() {
-      if (!this.name.trim() || this.busy) return
-      const album = await this.runAction(
+      if (!this.name.trim() || this.action.busy) return
+      const album = await this.action.run(
         () => this.request(this.name.trim()),
         t('albumDialog.saveFailed'),
       )

@@ -5,8 +5,8 @@
 </template>
 
 <script>
-import BaseButton from '@core/components/BaseButton.vue'
 import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 
 export default {
   name: 'DeleteButton',

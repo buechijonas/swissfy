@@ -8,19 +8,19 @@
     "
     @click="openProfile"
   >
-    <RouterLink :to="profileLink" class="flex items-center gap-3 min-w-0" @click.stop>
+    <RouterLink :to="profileLink" class="flex min-w-0 items-center gap-3" @click.stop>
       <UserAvatar
         class="size-10"
         :user="author"
         :story-ring="author.has_story"
         :story-seen="author.story_seen"
       />
-      <div class="flex flex-col min-w-0">
+      <div class="flex min-w-0 flex-col">
         <span class="flex min-w-0 items-center gap-2">
-          <span class="font-bold truncate">{{ author.display_name }}</span>
+          <span class="truncate font-bold">{{ author.display_name }}</span>
           <RoleBadge :role="author.role" />
         </span>
-        <span class="text-sm truncate" :class="overlay ? 'text-white/80' : 'text-app-muted'"
+        <span class="truncate text-sm" :class="overlay ? 'text-white/80' : 'text-app-muted'"
           >@{{ author.username }}</span
         >
       </div>
@@ -43,14 +43,14 @@ export default {
     author: { type: Object, required: true },
     overlay: { type: Boolean, default: false },
   },
-  methods: {
-    openProfile() {
-      this.$router.push(this.profileLink)
-    },
-  },
   computed: {
     profileLink() {
       return `/profile/${encodeURIComponent(this.author.username)}`
+    },
+  },
+  methods: {
+    openProfile() {
+      this.$router.push(this.profileLink)
     },
   },
 }

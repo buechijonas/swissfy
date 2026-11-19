@@ -1,5 +1,5 @@
 <template>
-  <label class="input w-full mb-4 max-lg:hidden">
+  <label class="input mb-4 w-full max-lg:hidden">
     <AppIcon name="search" class="text-app-muted" />
     <input
       v-model="term"
@@ -42,8 +42,8 @@ import debounce from 'lodash-es/debounce'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
-import { useAddButtonStore } from '@/stores/addButton.js'
 import { t } from '@/i18n.js'
+import { useAddButtonStore } from '@/stores/addButton.js'
 
 const DEBOUNCE_MS = 300
 

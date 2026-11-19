@@ -6,7 +6,7 @@
       </template>
     </BaseBreadcrumbs>
     <div
-      class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+      class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 max-sm:pb-0 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
     >
       <div class="mx-auto w-full max-w-150 pt-4 max-sm:pt-0">
         <PostList :url="feedUrl" edge-to-edge :empty-text="$t('home.empty')" />
@@ -18,12 +18,12 @@
   <template v-else>
     <BaseBreadcrumbs :items="breadcrumbs" />
     <div
-      class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+      class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 max-sm:pb-0 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
     >
       <div class="mx-auto w-full max-w-150 pt-4 max-sm:pt-0">
-        <div class="flex flex-col my-16">
-          <h1 class="text-title my-8 text-center font-light">{{ $t('home.welcome') }}</h1>
-          <p class="subtitle mx-auto text-app-muted font-light">swissfy.ch</p>
+        <div class="my-16 flex flex-col">
+          <h1 class="my-8 text-center text-title font-light">{{ $t('home.welcome') }}</h1>
+          <p class="subtitle mx-auto font-light text-app-muted">swissfy.ch</p>
         </div>
         <PostList :url="globalUrl" edge-to-edge :empty-text="$t('home.noAnnouncements')" />
       </div>
@@ -34,14 +34,14 @@
 
 <script>
 import { mapStores } from 'pinia'
+import postsApi from '@/api/posts.js'
 import AddButton from '@/components/common/AddButton.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import CreateDialog from '@/components/posts/CreateDialog.vue'
 import PostList from '@/components/posts/PostList.vue'
-import postsApi from '@/api/posts.js'
-import { useAuthStore } from '@/stores/auth.js'
 import { t } from '@/i18n.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'HomeView',

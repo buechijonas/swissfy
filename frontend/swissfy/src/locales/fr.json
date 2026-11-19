@@ -425,6 +425,7 @@
   "postCard": {
     "hidden": "Masqué au public",
     "editReel": "Modifier le seed",
+    "reel": "Seed",
     "move": "Déplacer dans un dossier",
     "reported": "Signalé",
     "report": "Signaler",

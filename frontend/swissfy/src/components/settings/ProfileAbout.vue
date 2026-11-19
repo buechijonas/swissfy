@@ -1,13 +1,13 @@
 <template>
-  <h3 class="text-xl mt-10 mb-4">{{ $t('about.title') }}</h3>
-  <BaseCard class="p-6 flex flex-col gap-2">
+  <h3 class="mt-10 mb-4 text-xl">{{ $t('about.title') }}</h3>
+  <BaseCard class="flex flex-col gap-2 p-6">
     <label for="biography">{{ $t('about.biography') }}</label>
     <textarea
       id="biography"
       v-model="biography"
-      class="textarea w-full h-28 resize-none"
+      class="textarea h-28 w-full resize-none"
       :maxlength="maxLength"
-      :disabled="!about || busy"
+      :disabled="!about || action.busy"
       :placeholder="$t('about.placeholder')"
     ></textarea>
     <div class="flex items-center justify-between gap-4">
@@ -15,7 +15,7 @@
       <BaseButton
         size="sm"
         variant="primary"
-        :disabled="!about || busy || biography === about.biography"
+        :disabled="!about || action.busy || biography === about.biography"
         @click="save({ biography })"
       >
         <AppIcon name="disk" />
@@ -33,31 +33,31 @@
       :icon="favorite.icon"
       :placeholder="favorite.placeholder"
       :items="about[favorite.field]"
-      :disabled="busy"
+      :disabled="action.busy"
       @update="save({ [favorite.field]: $event })"
     />
   </template>
-  <div v-else-if="!error" class="skeleton mt-4 h-24 w-full rounded-box"></div>
-  <ErrorText :message="error" class="mt-4 text-center" />
+  <div v-else-if="!action.error" class="mt-4 h-24 w-full skeleton rounded-box"></div>
+  <ErrorText :message="action.error" class="mt-4 text-center" />
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import { useAsyncAction } from '@core/composables/asyncAction.js'
+import profilesApi from '@/api/profiles.js'
 import FavoritePicker from '@/components/settings/FavoritePicker.vue'
 import { favoriteKinds } from '@/data/favorites.js'
-import profilesApi from '@/api/profiles.js'
 import { t } from '@/i18n.js'
 
 export default {
   name: 'ProfileAbout',
-  mixins: [asyncActionMixin],
   components: { AppIcon, BaseButton, BaseCard, FavoritePicker, ErrorText },
   data() {
     return {
+      action: useAsyncAction(),
       maxLength: 500,
       about: null,
       biography: '',
@@ -75,11 +75,11 @@ export default {
         this.about = await profilesApi.about()
         this.biography = this.about.biography
       } catch {
-        this.error = t('about.loadFailed')
+        this.action.error = t('about.loadFailed')
       }
     },
     async save(changes) {
-      const about = await this.runAction(
+      const about = await this.action.run(
         () => profilesApi.updateAbout(changes),
         t('common.saveFailed'),
       )

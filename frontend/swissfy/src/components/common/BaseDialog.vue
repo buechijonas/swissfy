@@ -7,7 +7,7 @@
           variant="ghost"
           shape="circle"
           size="sm"
-          class="absolute right-2 top-2"
+          class="absolute top-2 right-2"
           :title="$t('common.close')"
         >
           <AppIcon name="cross" size="sm" :alt="$t('common.close')" />
@@ -16,7 +16,7 @@
       <slot name="header">
         <h3 v-if="title" class="text-lg font-bold">{{ title }}</h3>
       </slot>
-      <div class="py-4 flex-1 min-h-0 flex flex-col">
+      <div class="flex min-h-0 flex-1 flex-col py-4">
         <slot>
           <p v-if="description">{{ description }}</p>
         </slot>

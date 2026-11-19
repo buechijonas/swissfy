@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import UserAvatar from '@/components/common/UserAvatar.vue'
+import { describe, expect, it } from 'vitest'
 import { icons } from '@/assets/icons.js'
 import { avatars } from '@/assets/images.js'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 
 const animal = Object.keys(avatars)[0]
 

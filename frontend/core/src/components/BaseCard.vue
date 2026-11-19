@@ -1,7 +1,7 @@
 <template>
   <component
     :is="tag"
-    class="app-surface bg-base-100 shadow-none border-app-border border-solid border-1"
+    class="app-surface border-1 border-solid border-app-border bg-base-100 shadow-none"
     :class="{ 'max-sm:-mx-6 max-sm:border-x-0': !inset }"
   >
     <slot />

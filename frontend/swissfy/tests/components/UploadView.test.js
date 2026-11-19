@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import UploadView from '@/views/UploadView.vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useGroupsStore } from '@/stores/posts.js'
+import UploadView from '@/views/UploadView.vue'
 
 async function mountUpload(kind, remaining = 3) {
   vi.stubGlobal(

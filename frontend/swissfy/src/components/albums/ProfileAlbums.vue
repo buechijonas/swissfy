@@ -1,8 +1,8 @@
 <template>
-  <BaseCard class="p-4 border-t-0">
+  <BaseCard class="border-t-0 p-4">
     <ErrorText v-if="error" :message="error" class="text-center" />
     <div v-else-if="!albums" class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-      <div v-for="n in 3" :key="n" class="skeleton aspect-square rounded-box"></div>
+      <div v-for="n in 3" :key="n" class="aspect-square skeleton rounded-box"></div>
     </div>
     <p v-else-if="!albums.length && !editable" class="text-app-muted">{{ $t('albums.empty') }}</p>
     <div
@@ -53,10 +53,10 @@
         </RouterLink>
         <button
           v-if="editable && albums.length > 1"
-          type="button"
-          class="btn btn-circle btn-sm absolute top-2 right-2 border-0 bg-black/50 text-white shadow-none cursor-grab touch-none"
-          :title="$t('albums.move')"
           v-grab="() => startDrag(album)"
+          type="button"
+          class="btn absolute top-2 right-2 btn-circle cursor-grab touch-none border-0 bg-black/50 text-white shadow-none btn-sm"
+          :title="$t('albums.move')"
         >
           <AppIcon name="menu-burger" :alt="$t('albums.move')" size="sm" />
         </button>
@@ -68,16 +68,16 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import { RouterLink } from 'vue-router'
 import map from 'lodash-es/map'
-import AlbumDialog from '@/components/albums/AlbumDialog.vue'
+import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
 import albumsApi from '@/api/albums.js'
+import AlbumDialog from '@/components/albums/AlbumDialog.vue'
 import grab from '@/directives/grab.js'
-import { moveItem, sameOrder } from '@/lib/sortable.js'
 import { t } from '@/i18n.js'
+import { moveItem, sameOrder } from '@/lib/sortable.js'
 
 export default {
   name: 'ProfileAlbums',

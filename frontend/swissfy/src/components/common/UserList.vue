@@ -17,12 +17,12 @@
 
   <ErrorText :message="error" class="mt-4 text-center" />
 
-  <div v-if="loading" class="flex flex-col gap-3 mt-3">
+  <div v-if="loading" class="mt-3 flex flex-col gap-3">
     <div v-for="n in 3" :key="n" class="flex items-center gap-4 px-6 py-3">
-      <div class="skeleton size-12 rounded-full"></div>
+      <div class="size-12 skeleton rounded-full"></div>
       <div class="flex flex-col gap-2">
-        <div class="skeleton h-4 w-40"></div>
-        <div class="skeleton h-3 w-24"></div>
+        <div class="h-4 w-40 skeleton"></div>
+        <div class="h-3 w-24 skeleton"></div>
       </div>
     </div>
   </div>
@@ -31,11 +31,11 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import BaseCard from '@core/components/BaseCard.vue'
-import UserRow from '@/components/common/UserRow.vue'
 import api from '@core/api/client.js'
+import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
 import profilesApi from '@/api/profiles.js'
+import UserRow from '@/components/common/UserRow.vue'
 import intersect from '@/directives/intersect.js'
 import { t } from '@/i18n.js'
 
@@ -49,11 +49,6 @@ export default {
     url: { type: String, default: profilesApi.listUrl() },
     emptyText: { type: String, default: null },
   },
-  computed: {
-    emptyTextOrDefault() {
-      return this.emptyText ?? t('users.noOthers')
-    },
-  },
   data() {
     return {
       users: [],
@@ -62,6 +57,11 @@ export default {
       loading: false,
       error: null,
     }
+  },
+  computed: {
+    emptyTextOrDefault() {
+      return this.emptyText ?? t('users.noOthers')
+    },
   },
   watch: {
     query() {

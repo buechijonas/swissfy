@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import AddPostsDialog from '@/components/albums/AddPostsDialog.vue'
 import AlbumTimeline from '@/components/albums/AlbumTimeline.vue'
 import ProfileAlbums from '@/components/albums/ProfileAlbums.vue'
@@ -66,7 +66,7 @@ describe('ProfileAlbums', () => {
     expect(albumIds(wrapper)).toEqual(['a1', 'a2'])
 
     wrapper.vm.addAlbum({ id: 'a3', name: 'Neu', cover: null })
-    await wrapper.vm.$nextTick()
+    await flushPromises()
     expect(albumIds(wrapper)).toEqual(['a3', 'a1', 'a2'])
   })
 

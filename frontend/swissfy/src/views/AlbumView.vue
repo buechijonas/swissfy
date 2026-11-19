@@ -10,13 +10,13 @@
     </template>
   </BaseBreadcrumbs>
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
   >
-    <div class="mx-auto w-full max-w-150 sm:pt-4 flex flex-col gap-4">
+    <div class="mx-auto flex w-full max-w-150 flex-col gap-4 sm:pt-4">
       <BaseCard v-if="!album && !error" class="p-6">
         <div class="flex items-center gap-4">
-          <div class="skeleton size-24"></div>
-          <div class="skeleton h-6 w-40"></div>
+          <div class="size-24 skeleton"></div>
+          <div class="h-6 w-40 skeleton"></div>
         </div>
       </BaseCard>
 
@@ -39,7 +39,7 @@
             >
               <AppIcon name="gallery" class="size-8!" />
             </div>
-            <div class="flex-1 min-w-0">
+            <div class="min-w-0 flex-1">
               <h2 class="truncate text-xl font-semibold">{{ album.name }}</h2>
               <RouterLink :to="profileLink" class="text-sm text-app-muted">
                 {{ album.owner }}
@@ -78,23 +78,23 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
+import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
+import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import albumsApi from '@/api/albums.js'
 import AddPostsDialog from '@/components/albums/AddPostsDialog.vue'
 import AlbumDialog from '@/components/albums/AlbumDialog.vue'
 import AlbumTimeline from '@/components/albums/AlbumTimeline.vue'
 import EntryDialog from '@/components/albums/EntryDialog.vue'
 import AddButton from '@/components/common/AddButton.vue'
-import AppIcon from '@core/components/AppIcon.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@core/components/BaseButton.vue'
-import BaseCard from '@core/components/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
-import albumsApi from '@/api/albums.js'
-import { useAuthStore } from '@/stores/auth.js'
 import { t } from '@/i18n.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'AlbumView',

@@ -1,7 +1,7 @@
 <template>
-  <BaseCard class="p-6 border-t-0">
+  <BaseCard class="border-t-0 p-6">
     <ErrorText v-if="error" :message="error" />
-    <div v-else-if="!achievements" class="skeleton h-16 w-full"></div>
+    <div v-else-if="!achievements" class="h-16 w-full skeleton"></div>
     <template v-else>
       <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
         <p class="text-sm text-app-muted">
@@ -33,7 +33,7 @@
             <AppIcon name="trophy" />
           </span>
           <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span class="font-bold truncate" :class="accent(achievement).title">
+            <span class="truncate font-bold" :class="accent(achievement).title">
               {{ achievement.title }}
             </span>
             <span class="text-sm text-app-muted">{{ achievement.description }}</span>
@@ -59,7 +59,7 @@
           class="group/achievement relative flex gap-4 pb-6 last:pb-0"
         >
           <span
-            class="group-last/achievement:hidden absolute left-5 top-10 -bottom-0.5 w-0.5 -translate-x-1/2 bg-app-border"
+            class="absolute top-10 -bottom-0.5 left-5 w-0.5 -translate-x-1/2 bg-app-border group-last/achievement:hidden"
           ></span>
           <span
             class="app-badge relative flex size-10 shrink-0 items-center justify-center rounded-full"
@@ -80,14 +80,14 @@
                 }}
               </template>
             </span>
-            <span v-if="previousTitle(achievement)" class="text-sm text-app-muted truncate">
+            <span v-if="previousTitle(achievement)" class="truncate text-sm text-app-muted">
               <i18n-t keypath="achievements.promotedFrom">
                 <template #title>
                   <span class="line-through">{{ previousTitle(achievement) }}</span>
                 </template>
               </i18n-t>
             </span>
-            <span class="font-bold truncate" :class="accent(achievement).title">
+            <span class="truncate font-bold" :class="accent(achievement).title">
               {{ achievement.title }}
             </span>
             <span class="text-sm text-app-muted">{{ achievement.description }}</span>
@@ -111,17 +111,17 @@
               <AppIcon name="lock" />
             </span>
             <div class="flex min-w-0 flex-1 flex-col gap-1">
-              <span v-if="previousTitle(achievement)" class="text-sm text-app-muted truncate">
+              <span v-if="previousTitle(achievement)" class="truncate text-sm text-app-muted">
                 {{ $t('achievements.nextFrom', { title: previousTitle(achievement) }) }}
               </span>
               <span v-if="achievement.secret" class="text-xs text-app-muted">
                 {{ $t('achievements.adminEgg') }}
               </span>
-              <span class="font-bold truncate">{{ achievement.title }}</span>
+              <span class="truncate font-bold">{{ achievement.title }}</span>
               <span class="text-sm text-app-muted">{{ achievement.description }}</span>
               <template v-if="achievement.target">
                 <progress
-                  class="progress progress-primary h-1.5 w-full"
+                  class="progress h-1.5 w-full progress-primary"
                   :value="achievement.count - achievement.previous"
                   :max="achievement.target - achievement.previous"
                 ></progress>
@@ -138,13 +138,13 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
 import profilesApi from '@/api/profiles.js'
-import { formatDate } from '@/lib/time.js'
 import { t } from '@/i18n.js'
+import { formatDate } from '@/lib/time.js'
 
 function achievementViews() {
   return [
@@ -202,7 +202,7 @@ export default {
     timeline() {
       return this.achievements
         .filter((achievement) => achievement.unlocked)
-        .sort((a, b) => new Date(b.unlocked_at) - new Date(a.unlocked_at) || b.level - a.level)
+        .toSorted((a, b) => new Date(b.unlocked_at) - new Date(a.unlocked_at) || b.level - a.level)
     },
     collection() {
       const highest = {}

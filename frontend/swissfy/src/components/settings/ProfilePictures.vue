@@ -1,8 +1,8 @@
 <template>
-  <h3 class="text-xl my-4">{{ $t('pictures.title') }}</h3>
+  <h3 class="my-4 text-xl">{{ $t('pictures.title') }}</h3>
   <div class="flex flex-col gap-4">
-    <BaseCard v-for="card in cards" :key="card.kind" class="p-6 flex flex-col gap-4">
-      <div class="flex flex-col items-center text-center gap-4 sm:flex-row sm:text-left">
+    <BaseCard v-for="card in cards" :key="card.kind" class="flex flex-col gap-4 p-6">
+      <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
         <img
           v-if="settings?.[`${card.kind}_picture`]"
           class="size-20 shrink-0 rounded-full object-cover"
@@ -18,14 +18,14 @@
         </div>
         <div class="min-w-0 flex-1">
           <p>{{ card.label }}</p>
-          <p class="text-app-muted text-sm mt-1">{{ card.hint }}</p>
+          <p class="mt-1 text-sm text-app-muted">{{ card.hint }}</p>
         </div>
-        <div v-if="settings" class="flex flex-wrap justify-center gap-2 shrink-0">
+        <div v-if="settings" class="flex shrink-0 flex-wrap justify-center gap-2">
           <BaseButton
             size="sm"
             variant="primary"
             accept="image/*"
-            :disabled="busy"
+            :disabled="action.busy"
             @files="(files) => upload(card.kind, files)"
           >
             <AppIcon name="picture" />
@@ -36,14 +36,14 @@
             size="sm"
             variant="error"
             outline
-            :disabled="busy"
+            :disabled="action.busy"
             @click="remove(card.kind)"
           >
             <AppIcon name="trash" />
             {{ $t('pictures.remove') }}
           </BaseButton>
         </div>
-        <div v-else-if="!error" class="skeleton h-8 w-28"></div>
+        <div v-else-if="!action.error" class="h-8 w-28 skeleton"></div>
       </div>
       <div v-if="card.kind === 'private' && settings">
         <VisibilityPicker
@@ -56,31 +56,31 @@
       </div>
     </BaseCard>
   </div>
-  <ErrorText :message="error" class="mt-4 text-center" />
+  <ErrorText :message="action.error" class="mt-4 text-center" />
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
-import { mapStores } from 'pinia'
 import head from 'lodash-es/head'
+import { mapStores } from 'pinia'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
-import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
-import { avatars } from '@/assets/images.js'
+import ErrorText from '@core/components/ErrorText.vue'
+import { useAsyncAction } from '@core/composables/asyncAction.js'
 import profilesApi from '@/api/profiles.js'
+import { avatars } from '@/assets/images.js'
+import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
+import { t } from '@/i18n.js'
 import { compressImage } from '@/lib/image.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useGroupsStore } from '@/stores/posts.js'
-import { t } from '@/i18n.js'
 
 export default {
   name: 'ProfilePictures',
-  mixins: [asyncActionMixin],
   components: { AppIcon, BaseButton, BaseCard, VisibilityPicker, ErrorText },
   data() {
     return {
+      action: useAsyncAction(),
       settings: null,
     }
   },
@@ -113,11 +113,11 @@ export default {
       try {
         this.settings = await profilesApi.pictures()
       } catch {
-        this.error = t('pictures.loadFailed')
+        this.action.error = t('pictures.loadFailed')
       }
     },
     async request(action) {
-      const settings = await this.runAction(action, t('common.saveFailed'))
+      const settings = await this.action.run(action, t('common.saveFailed'))
       if (!settings) return
       this.settings = settings
       this.authStore.user = {

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative flex gap-3 pr-4 py-3"
+    class="relative flex gap-3 py-3 pr-4"
     :class="[PADDING[depth], { 'cursor-pointer hover:bg-base-200/50': !focused }]"
     @click="open"
   >
@@ -10,7 +10,7 @@
         :class="CENTER[depth - 1]"
       ></span>
       <span
-        class="hidden group-not-last/thread:block absolute top-0 bottom-0 w-0.5 -translate-x-1/2 bg-app-border"
+        class="absolute top-0 bottom-0 hidden w-0.5 -translate-x-1/2 bg-app-border group-not-last/thread:block"
         :class="CENTER[depth - 1]"
       ></span>
     </template>
@@ -32,19 +32,19 @@
       <div class="flex flex-wrap items-center gap-x-2">
         <RouterLink
           :to="profileLink(comment.author)"
-          class="font-bold truncate max-w-full"
+          class="max-w-full truncate font-bold"
           @click.stop
         >
           {{ comment.author.username }}
         </RouterLink>
         <RoleBadge :role="comment.author.role" />
-        <span v-if="comment.is_post_author" class="text-xs font-bold text-error shrink-0">
+        <span v-if="comment.is_post_author" class="shrink-0 text-xs font-bold text-error">
           {{ $t('comments.author') }}
         </span>
-        <span class="text-xs text-app-muted shrink-0">
+        <span class="shrink-0 text-xs text-app-muted">
           {{ formatRelativeTime(comment.created_at) }}
         </span>
-        <span v-if="comment.hidden" class="text-xs font-bold text-error shrink-0">{{
+        <span v-if="comment.hidden" class="shrink-0 text-xs font-bold text-error">{{
           $t('comments.hidden')
         }}</span>
       </div>
@@ -56,14 +56,14 @@
       </p>
       <p
         v-if="comment.text"
-        class="whitespace-pre-line break-words"
-        :class="{ 'text-lg mt-1': focused }"
+        class="break-words whitespace-pre-line"
+        :class="{ 'mt-1 text-lg': focused }"
       >
         {{ comment.text }}
       </p>
       <img
         v-if="comment.thumbnail"
-        class="mt-2 size-20 object-cover bg-base-200"
+        class="mt-2 size-20 bg-base-200 object-cover"
         :src="comment.thumbnail"
         alt=""
         loading="lazy"
@@ -116,10 +116,10 @@
 import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
+import commentsApi from '@/api/comments.js'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import commentsApi from '@/api/comments.js'
 import { commentLink } from '@/lib/comments.js'
 import { formatRelativeTime } from '@/lib/time.js'
 

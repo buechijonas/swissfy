@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { LANGUAGE_OPTIONS } from '@core/lib/language.js'
+import { afterEach, describe, expect, it } from 'vitest'
+import { applyLanguage } from '@core/i18n.js'
+import { language, LANGUAGE_OPTIONS } from '@core/lib/language.js'
 import ChatMessageList from '@/components/chats/ChatMessageList.vue'
 import { i18n } from '@/i18n.js'
 import { formatRelativeTime } from '@/lib/time.js'
@@ -14,20 +15,27 @@ function keys(messages, prefix = '') {
 const NOW = new Date('2026-11-14T15:00:00')
 
 describe('i18n', () => {
-  afterEach(() => {
-    i18n.global.locale.value = 'de'
+  afterEach(async () => {
+    language.value = 'de'
+    await applyLanguage('de')
   })
 
   const appLocales = import.meta.glob('@/locales/*.json', { eager: true, import: 'default' })
   const coreLocales = import.meta.glob('@core/locales/*.json', { eager: true, import: 'default' })
 
-  it.each(LANGUAGE_OPTIONS.map(({ value }) => value))('has every key in %s', (language) => {
-    const app = Object.entries(appLocales).find(([path]) => path.endsWith(`/${language}.json`))
-    const core = Object.entries(coreLocales).find(([path]) => path.endsWith(`/${language}.json`))
+  it.each(LANGUAGE_OPTIONS.map(({ value }) => value))('has every key in %s', (code) => {
+    const app = Object.entries(appLocales).find(([path]) => path.endsWith(`/${code}.json`))
+    const core = Object.entries(coreLocales).find(([path]) => path.endsWith(`/${code}.json`))
     const source = Object.entries(appLocales).find(([path]) => path.endsWith('/de.json'))[1]
     const coreSource = Object.entries(coreLocales).find(([path]) => path.endsWith('/de.json'))[1]
-    expect(keys(app[1]).sort()).toEqual(keys(source).sort())
-    expect(keys(core[1]).sort()).toEqual(keys(coreSource).sort())
+    expect(keys(app[1]).toSorted()).toEqual(keys(source).toSorted())
+    expect(keys(core[1]).toSorted()).toEqual(keys(coreSource).toSorted())
+  })
+
+  it('tells the browser the active language for hyphenation and screen readers', async () => {
+    language.value = 'fr'
+    await applyLanguage('fr')
+    expect(document.documentElement.lang).toBe('fr')
   })
 
   it('formats relative times in German by default', () => {

@@ -1,7 +1,7 @@
 <template>
   <RouterLink :to="link" class="relative">
     <img
-      class="aspect-square w-full object-cover bg-base-200"
+      class="aspect-square w-full bg-base-200 object-cover"
       :src="post.thumbnail"
       alt=""
       loading="lazy"

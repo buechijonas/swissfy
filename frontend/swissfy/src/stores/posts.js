@@ -1,5 +1,5 @@
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import { foldersApi, groupsApi } from '@/api/collections.js'
 import { t } from '@/i18n.js'
 
@@ -22,7 +22,7 @@ function ownedCollection(collection) {
 
   async function create(body) {
     const item = await send(collection.create(body))
-    items.value = [...(items.value ?? []), item].sort((a, b) => a.name.localeCompare(b.name))
+    items.value = [...(items.value ?? []), item].toSorted((a, b) => a.name.localeCompare(b.name))
     return item
   }
 

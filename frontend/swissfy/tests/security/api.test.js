@@ -46,7 +46,7 @@ describe('api client', () => {
 
   it('throws server text as plain string', async () => {
     vi.stubGlobal('fetch', respond('{"detail":"<b>x</b>"}', 400))
-    const error = await api.get('/api/x/').catch((error) => error)
+    const error = await api.get('/api/x/').catch((failure) => failure)
     expect(error).toBeInstanceOf(ApiError)
     expect(error.status).toBe(400)
     expect(error.detail).toBe('<b>x</b>')
@@ -54,10 +54,10 @@ describe('api client', () => {
 
   it('has no detail on unexpected shapes', async () => {
     vi.stubGlobal('fetch', respond('<html>oops</html>', 500))
-    const error = await api.get('/api/x/').catch((error) => error)
+    const error = await api.get('/api/x/').catch((failure) => failure)
     expect(error.detail).toBeNull()
     vi.stubGlobal('fetch', respond('{"a":{"b":1}}', 400))
-    expect((await api.get('/api/x/').catch((error) => error)).detail).toBeNull()
+    expect((await api.get('/api/x/').catch((failure) => failure)).detail).toBeNull()
   })
 })
 

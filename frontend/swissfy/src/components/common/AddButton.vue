@@ -2,11 +2,11 @@
   <BaseButton
     variant="primary"
     size="sm"
-    class="hidden lg:inline-flex -my-1.5"
+    class="-my-1.5 hidden lg:inline-flex"
     :aria-busy="loading"
     @click="!loading && $emit('click')"
   >
-    <span v-if="loading" class="loading loading-spinner loading-xs"></span>
+    <span v-if="loading" class="loading loading-xs loading-spinner"></span>
     <AppIcon v-else :name="icon" />
     {{ label }}
   </BaseButton>

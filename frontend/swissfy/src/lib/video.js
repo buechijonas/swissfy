@@ -5,8 +5,8 @@ export function videoDuration(src) {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video')
     video.preload = 'metadata'
-    video.onloadedmetadata = () => resolve(video.duration)
-    video.onerror = reject
+    video.addEventListener('loadedmetadata', () => resolve(video.duration))
+    video.addEventListener('error', reject)
     video.src = src
   })
 }

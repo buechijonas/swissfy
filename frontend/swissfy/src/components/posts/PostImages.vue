@@ -2,7 +2,7 @@
   <div class="group relative">
     <slot />
     <div
-      class="flex snap-x snap-mandatory items-center overflow-x-auto bg-base-200 [scrollbar-width:none]"
+      class="flex snap-x snap-mandatory [scrollbar-width:none] items-center overflow-x-auto bg-base-200"
     >
       <div
         v-for="image in images"
@@ -26,7 +26,7 @@
         variant="neutral"
         shape="circle"
         size="sm"
-        class="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden"
+        class="absolute top-1/2 left-2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden"
         :title="$t('postImages.previous')"
         @click.stop="requestedUrl = previous.url"
       >
@@ -37,7 +37,7 @@
         variant="neutral"
         shape="circle"
         size="sm"
-        class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden"
+        class="absolute top-1/2 right-2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden"
         :title="$t('postImages.next')"
         @click.stop="requestedUrl = next.url"
       >

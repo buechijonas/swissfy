@@ -2,10 +2,10 @@
   <Teleport to="body">
     <div
       v-if="current"
-      class="fixed inset-0 z-50 flex touch-manipulation select-none flex-col bg-black pb-[env(safe-area-inset-bottom)] text-white"
+      class="fixed inset-0 z-50 flex touch-manipulation flex-col bg-black pb-[env(safe-area-inset-bottom)] text-white select-none"
       role="dialog"
       aria-label="Story"
-      @click="tap(next)"
+      @click="taps.tap(next, doubleTap)"
     >
       <div class="absolute inset-x-0 top-0 z-10 flex flex-col gap-3 p-3">
         <div class="flex gap-1">
@@ -23,7 +23,7 @@
           <span class="text-xs text-white/80">{{ formatRelativeTime(current.created_at) }}</span>
           <button
             type="button"
-            class="ml-auto flex cursor-pointer p-2 -m-2"
+            class="-m-2 ml-auto flex cursor-pointer p-2"
             :title="$t('common.close')"
             @click.stop="close"
           >
@@ -36,7 +36,7 @@
         <img :src="current.image" alt="Story" class="size-full object-contain" />
         <p
           v-if="current.text"
-          class="absolute inset-x-0 bottom-0 whitespace-pre-line bg-black/50 px-4 py-3 text-center"
+          class="absolute inset-x-0 bottom-0 bg-black/50 px-4 py-3 text-center whitespace-pre-line"
         >
           {{ current.text }}
         </p>
@@ -60,9 +60,9 @@
         <div class="flex flex-col items-center gap-1">
           <button
             type="button"
-            class="flex cursor-pointer p-2 -m-2"
+            class="-m-2 flex cursor-pointer p-2"
             :title="current.liked ? $t('story.unlike') : $t('story.like')"
-            :disabled="busy"
+            :disabled="action.busy"
             @click.stop="toggleLike"
           >
             <AppIcon
@@ -77,15 +77,15 @@
         <button
           v-if="current.is_own"
           type="button"
-          class="flex cursor-pointer p-2 -m-2"
+          class="-m-2 flex cursor-pointer p-2"
           :title="$t('common.more')"
           @click.stop="openMenu"
         >
           <AppIcon name="menu-dots-vertical" :alt="$t('common.more')" class="size-6!" />
         </button>
       </div>
-      <p v-if="error" class="absolute inset-x-0 top-24 text-center text-sm text-error">
-        {{ error }}
+      <p v-if="action.error" class="absolute inset-x-0 top-24 text-center text-sm text-error">
+        {{ action.error }}
       </p>
     </div>
   </Teleport>
@@ -95,7 +95,7 @@
     class="modal-bottom sm:modal-middle"
     @close="menuOpen = false"
   >
-    <BaseButton variant="error" outline block :disabled="busy" @click="confirmRemove">
+    <BaseButton variant="error" outline block :disabled="action.busy" @click="confirmRemove">
       <AppIcon name="trash" />
       {{ $t('story.delete') }}
     </BaseButton>
@@ -110,8 +110,6 @@
 </template>
 
 <script>
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
-import doubleTapMixin from '@/mixins/doubleTapMixin.js'
 import { onKeyStroke, useIntervalFn } from '@vueuse/core'
 import clone from 'lodash-es/clone'
 import find from 'lodash-es/find'
@@ -122,21 +120,22 @@ import reject from 'lodash-es/reject'
 import takeWhile from 'lodash-es/takeWhile'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
+import { useAsyncAction } from '@core/composables/asyncAction.js'
+import storiesApi from '@/api/stories.js'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import HeartBurst from '@/components/posts/HeartBurst.vue'
 import StoryViewersSheet from '@/components/posts/StoryViewersSheet.vue'
-import storiesApi from '@/api/stories.js'
-import { formatRelativeTime } from '@/lib/time.js'
+import { useDoubleTap } from '@/composables/doubleTap.js'
 import { t } from '@/i18n.js'
+import { formatRelativeTime } from '@/lib/time.js'
 
 const DURATION_MS = 5000
 const TICK_MS = 50
 
 export default {
   name: 'StoryViewer',
-  mixins: [asyncActionMixin, doubleTapMixin],
   components: {
     AppIcon,
     BaseButton,
@@ -153,6 +152,8 @@ export default {
   emits: ['deleted', 'closed'],
   data() {
     return {
+      action: useAsyncAction(),
+      taps: useDoubleTap(),
       items: [],
       currentId: null,
       passedIds: [],
@@ -202,7 +203,7 @@ export default {
         'id',
       )
       this.currentId = start?.id ?? null
-      this.error = null
+      this.action.error = null
       this.keyListeners = [onKeyStroke('Escape', this.close), onKeyStroke('ArrowRight', this.next)]
       this.start()
     },
@@ -212,7 +213,7 @@ export default {
         this.pendingViews = []
       }
       this.ticker.pause()
-      this.tapTimer.stop()
+      this.taps.stop()
       forEach(this.keyListeners, (stop) => stop())
       this.keyListeners = []
       this.items = []
@@ -249,7 +250,7 @@ export default {
       if (!this.current.liked) this.toggleLike()
     },
     run(action) {
-      return this.runAction(action, t('common.actionFailed'))
+      return this.action.run(action, t('common.actionFailed'))
     },
     toggleLike() {
       const story = this.current

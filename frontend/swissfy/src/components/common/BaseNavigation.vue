@@ -2,18 +2,18 @@
   <div class="app-nav col-start-2 row-start-1 hidden h-12 w-80 items-center pl-8 lg:flex">
     <h1 class="text-[1.2rem]">{{ appName }}</h1>
   </div>
-  <div class="col-start-2 row-start-1 drawer drawer-end lg:drawer-open">
+  <div class="drawer drawer-end col-start-2 row-start-1 lg:drawer-open">
     <input id="my-drawer-3" v-model="isNavDrawerOpen" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content"></div>
     <div
-      class="app-nav drawer-side z-40 flex flex-col overflow-y-auto bg-base-100 top-12 h-[calc(100dvh-48px)]"
+      class="app-nav drawer-side top-12 z-40 flex h-[calc(100dvh-48px)] flex-col overflow-y-auto bg-base-100"
     >
       <label
         for="my-drawer-3"
         :aria-label="$t('navigation.closeSidebar')"
         class="drawer-overlay"
       ></label>
-      <ul class="menu w-full lg:w-80 p-4 gap-2">
+      <ul class="menu w-full gap-2 p-4 lg:w-80">
         <template v-for="item in visibleNavigationItems" :key="item.key">
           <li
             v-if="item.divider"
@@ -39,7 +39,7 @@
               />
               <AppIcon v-else :name="item.avatar ? 'user' : item.icon" class="size-6! lg:size-5!" />
               <span class="min-w-0 truncate" :title="item.label">{{ item.label }}</span>
-              <span v-if="item.badge?.()" class="badge badge-primary badge-sm ml-auto">
+              <span v-if="item.badge?.()" class="ml-auto badge badge-sm badge-primary">
                 {{ item.badge() }}
               </span>
               <AppIcon v-if="isLocked(item)" name="lock" class="ml-auto size-3!" />
@@ -48,12 +48,12 @@
         </template>
       </ul>
       <div v-if="!authStore.ready" class="mt-auto flex w-full flex-col gap-1 p-4">
-        <div class="skeleton h-3 w-20"></div>
-        <div class="skeleton mb-4 h-3 w-32"></div>
-        <div class="skeleton h-10 w-full"></div>
+        <div class="h-3 w-20 skeleton"></div>
+        <div class="mb-4 h-3 w-32 skeleton"></div>
+        <div class="h-10 w-full skeleton"></div>
       </div>
-      <div v-else class="mt-auto p-4 w-full">
-        <div class="mb-4 text-xs text-app-muted font-light">
+      <div v-else class="mt-auto w-full p-4">
+        <div class="mb-4 text-xs font-light text-app-muted">
           <div>{{ $t('navigation.version', { version }) }}</div>
           <div>Created by NEOTYRA</div>
         </div>
@@ -77,8 +77,8 @@
 <script>
 import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
-import BaseButton from '@core/components/BaseButton.vue'
 import AppIcon from '@core/components/AppIcon.vue'
+import BaseButton from '@core/components/BaseButton.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import { isListed, isLocked, navigationItems } from '@/data/navigation.js'
 import { avatarSrc } from '@/lib/avatar.js'

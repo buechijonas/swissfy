@@ -1,12 +1,12 @@
 <template>
   <div>
-    <BaseCard class="p-6 flex flex-col gap-4">
+    <BaseCard class="flex flex-col gap-4 p-6">
       <div
-        class="flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
+        class="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left"
       >
         <div class="min-w-0">
           <p>{{ label }}</p>
-          <p class="text-app-muted text-sm mt-1">{{ $t('favorites.max', { max }) }}</p>
+          <p class="mt-1 text-sm text-app-muted">{{ $t('favorites.max', { max }) }}</p>
         </div>
         <BaseButton
           class="shrink-0"
@@ -20,9 +20,9 @@
         </BaseButton>
       </div>
       <ul v-if="items.length" class="grid grid-cols-3 gap-4">
-        <li v-for="item in items" :key="item.id" class="flex flex-col gap-2 min-w-0">
+        <li v-for="item in items" :key="item.id" class="flex min-w-0 flex-col gap-2">
           <FavoriteCover :item="item" :icon="icon" />
-          <p class="text-sm truncate" :title="item.title">{{ item.title }}</p>
+          <p class="truncate text-sm" :title="item.title">{{ item.title }}</p>
           <BaseButton
             size="sm"
             variant="error"
@@ -50,24 +50,24 @@
           enterkeyhint="search"
         />
       </label>
-      <div class="mt-4 flex-1 min-h-0 overflow-y-auto">
+      <div class="mt-4 min-h-0 flex-1 overflow-y-auto">
         <ErrorText v-if="error" :message="error" class="text-center" />
-        <div v-else-if="loading" class="grid grid-cols-3 sm:grid-cols-4 gap-4">
-          <div v-for="n in 8" :key="n" class="skeleton aspect-2/3 w-full"></div>
+        <div v-else-if="loading" class="grid grid-cols-3 gap-4 sm:grid-cols-4">
+          <div v-for="n in 8" :key="n" class="aspect-2/3 w-full skeleton"></div>
         </div>
-        <p v-else-if="query.trim() && !results.length" class="text-app-muted text-center">
+        <p v-else-if="query.trim() && !results.length" class="text-center text-app-muted">
           {{ $t('favorites.nothingFound') }}
         </p>
-        <ul v-else class="grid grid-cols-3 sm:grid-cols-4 gap-4">
+        <ul v-else class="grid grid-cols-3 gap-4 sm:grid-cols-4">
           <li v-for="item in results" :key="item.id" class="min-w-0">
             <button
               type="button"
-              class="flex w-full flex-col gap-2 text-left rounded-box disabled:opacity-50"
+              class="flex w-full flex-col gap-2 rounded-box text-left disabled:opacity-50"
               :disabled="ids.includes(item.id)"
               @click="select(item)"
             >
               <FavoriteCover :item="item" :icon="icon" />
-              <span class="text-sm truncate w-full" :title="item.title">{{ item.title }}</span>
+              <span class="w-full truncate text-sm" :title="item.title">{{ item.title }}</span>
               <span v-if="item.year" class="text-xs text-app-muted">{{ item.year }}</span>
             </button>
           </li>
@@ -79,17 +79,17 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import debounce from 'lodash-es/debounce'
 import map from 'lodash-es/map'
 import without from 'lodash-es/without'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import profilesApi from '@/api/profiles.js'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import FavoriteCover from '@/components/settings/FavoriteCover.vue'
 import LibraryCredits from '@/components/settings/LibraryCredits.vue'
-import profilesApi from '@/api/profiles.js'
 import { t } from '@/i18n.js'
 
 const DEBOUNCE_MS = 300

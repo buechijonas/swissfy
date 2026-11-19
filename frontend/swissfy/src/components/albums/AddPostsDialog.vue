@@ -3,7 +3,7 @@
     ref="dialog"
     :title="step === 'select' ? $t('albumPosts.choose') : $t('albumPosts.setDate')"
   >
-    <div v-if="step === 'select'" class="min-h-0 overflow-y-auto max-h-96">
+    <div v-if="step === 'select'" class="max-h-96 min-h-0 overflow-y-auto">
       <p v-if="!available.length && !loading && !next" class="text-app-muted">
         {{ $t('albumPosts.empty') }}
       </p>
@@ -21,7 +21,7 @@
             :src="post.thumbnail"
             alt=""
             loading="lazy"
-            class="aspect-square w-full rounded-box object-cover bg-base-200"
+            class="aspect-square w-full rounded-box bg-base-200 object-cover"
             :class="{ 'opacity-60': isSelected(post) }"
           />
           <span
@@ -37,8 +37,8 @@
           </span>
         </button>
       </div>
-      <div v-if="loading" class="grid grid-cols-3 gap-1 mt-1">
-        <div v-for="n in 3" :key="n" class="skeleton aspect-square"></div>
+      <div v-if="loading" class="mt-1 grid grid-cols-3 gap-1">
+        <div v-for="n in 3" :key="n" class="aspect-square skeleton"></div>
       </div>
       <BaseButton v-else-if="next" size="sm" block class="mt-2" @click="loadPosts">
         <AppIcon name="down" />
@@ -46,19 +46,19 @@
       </BaseButton>
     </div>
 
-    <ul v-else class="flex min-h-0 flex-col gap-3 overflow-y-auto max-h-96">
+    <ul v-else class="flex max-h-96 min-h-0 flex-col gap-3 overflow-y-auto">
       <li v-for="item in selected" :key="item.post.id" class="flex items-center gap-3">
-        <img :src="item.post.thumbnail" alt="" class="size-16 shrink-0 object-cover bg-base-200" />
-        <div class="flex flex-1 min-w-0 flex-col gap-1">
+        <img :src="item.post.thumbnail" alt="" class="size-16 shrink-0 bg-base-200 object-cover" />
+        <div class="flex min-w-0 flex-1 flex-col gap-1">
           <input
             v-model="item.date"
             type="date"
-            class="input input-sm w-full"
+            class="input w-full input-sm"
             :aria-label="$t('albumPosts.date')"
           />
           <input
             v-model="item.title"
-            class="input input-sm w-full"
+            class="input w-full input-sm"
             maxlength="50"
             :placeholder="$t('albumPosts.title')"
           />
@@ -66,7 +66,7 @@
       </li>
     </ul>
 
-    <ErrorText :message="error" class="mt-2" />
+    <ErrorText :message="action.error" class="mt-2" />
 
     <template #actions>
       <template v-if="step === 'select'">
@@ -89,7 +89,12 @@
           <AppIcon name="angle-left" />
           <span class="max-sm:hidden">{{ $t('common.back') }}</span>
         </BaseButton>
-        <BaseButton :title="$t('albumPosts.add')" variant="primary" :disabled="busy" @click="save">
+        <BaseButton
+          :title="$t('albumPosts.add')"
+          variant="primary"
+          :disabled="action.busy"
+          @click="save"
+        >
           <AppIcon name="disk" />
           <span class="max-sm:hidden">{{ $t('albumPosts.add') }}</span>
         </BaseButton>
@@ -99,19 +104,18 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import api, { nextPage } from '@core/api/client.js'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
-import BaseDialog from '@/components/common/BaseDialog.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import { useAsyncAction } from '@core/composables/asyncAction.js'
 import albumsApi from '@/api/albums.js'
-import api, { nextPage } from '@core/api/client.js'
 import postsApi from '@/api/posts.js'
+import BaseDialog from '@/components/common/BaseDialog.vue'
 import { t } from '@/i18n.js'
 
 export default {
   name: 'AddPostsDialog',
-  mixins: [asyncActionMixin],
   components: { AppIcon, BaseButton, BaseDialog, ErrorText },
   props: {
     album: { type: Object, required: true },
@@ -119,6 +123,7 @@ export default {
   emits: ['saved'],
   data() {
     return {
+      action: useAsyncAction(),
       step: 'select',
       posts: [],
       next: null,
@@ -137,7 +142,7 @@ export default {
       this.step = 'select'
       this.selected = []
       this.posts = []
-      this.error = null
+      this.action.error = null
       this.next = postsApi.userPostsUrl(this.album.owner, { media: 1 })
       this.loadPosts()
       this.$refs.dialog.open()
@@ -150,7 +155,7 @@ export default {
         this.posts.push(...data.results)
         this.next = nextPage(data.next)
       } catch {
-        this.error = t('albumPosts.loadFailed')
+        this.action.error = t('albumPosts.loadFailed')
       } finally {
         this.loading = false
       }
@@ -169,7 +174,7 @@ export default {
         date: item.date || null,
         title: item.title.trim(),
       }))
-      const album = await this.runAction(
+      const album = await this.action.run(
         () => albumsApi.addEntries(this.album.id, entries),
         t('albumPosts.addFailed'),
       )

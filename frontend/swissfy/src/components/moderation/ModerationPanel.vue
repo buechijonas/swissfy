@@ -13,16 +13,16 @@
           {{ option.label }}
         </option>
       </select>
-      <BaseButton v-if="canWarn" type="submit" variant="primary" :disabled="busy || !reason">
+      <BaseButton v-if="canWarn" type="submit" variant="primary" :disabled="action.busy || !reason">
         <AppIcon name="shield-exclamation" />
         {{ $t('moderationPanel.warn') }}
       </BaseButton>
-      <BaseButton v-if="reportCount" :disabled="busy" @click="dismiss">
+      <BaseButton v-if="reportCount" :disabled="action.busy" @click="dismiss">
         <AppIcon name="cross" />
         {{ $t('moderationPanel.dismiss') }}
       </BaseButton>
     </form>
-    <ErrorText :message="error" />
+    <ErrorText :message="action.error" />
     <ul v-if="warnings.length" class="flex flex-col gap-1 text-sm">
       <li v-for="warning in warnings" :key="warning.id" class="text-app-muted">
         {{ $t('moderationPanel.warned') }}
@@ -34,17 +34,16 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import { useAsyncAction } from '@core/composables/asyncAction.js'
 import moderationApi from '@/api/moderation.js'
-import { formatDate } from '@/lib/time.js'
 import { t } from '@/i18n.js'
+import { formatDate } from '@/lib/time.js'
 
 export default {
   name: 'ModerationPanel',
-  mixins: [asyncActionMixin],
   components: { AppIcon, BaseButton, ErrorText },
   props: {
     kind: { type: String, required: true },
@@ -53,6 +52,7 @@ export default {
   },
   data() {
     return {
+      action: useAsyncAction(),
       reason: '',
       reportCount: this.details.report_count,
       canWarn: this.details.can_warn,
@@ -67,7 +67,7 @@ export default {
   methods: {
     formatDate,
     async send(action) {
-      const data = await this.runAction(action, t('common.actionFailed'))
+      const data = await this.action.run(action, t('common.actionFailed'))
       if (data) this.reportCount = data.report_count
       return data
     },

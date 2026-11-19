@@ -1,11 +1,11 @@
 <template>
   <div class="mb-10">
-    <h3 class="text-xl my-4">{{ $t('display.title') }}</h3>
+    <h3 class="my-4 text-xl">{{ $t('display.title') }}</h3>
     <BaseCard
-      class="p-6 flex flex-col items-center text-center gap-4"
-      :class="{ 'sm:flex-row sm:items-center sm:text-left sm:justify-between': !dyslexiaFont }"
+      class="flex flex-col items-center gap-4 p-6 text-center"
+      :class="{ 'sm:flex-row sm:items-center sm:justify-between sm:text-left': !dyslexiaFont }"
     >
-      <p class="text-app-muted min-w-0">{{ $t('display.appearance') }}</p>
+      <p class="min-w-0 text-app-muted">{{ $t('display.appearance') }}</p>
       <BaseSwitcher
         class="flex-wrap justify-center gap-2"
         size="sm"
@@ -17,22 +17,22 @@
   </div>
 
   <div class="mb-10">
-    <h3 class="text-xl my-4">{{ $t('display.language') }}</h3>
+    <h3 class="my-4 text-xl">{{ $t('display.language') }}</h3>
     <BaseCard
-      class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
+      class="flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left"
     >
-      <p class="text-app-muted min-w-0">{{ $t('display.languageHint') }}</p>
+      <p class="min-w-0 text-app-muted">{{ $t('display.languageHint') }}</p>
       <LanguageSelect :label="$t('display.language')" />
     </BaseCard>
   </div>
 
   <div class="mb-10">
-    <h3 class="text-xl my-4">{{ $t('display.design') }}</h3>
+    <h3 class="my-4 text-xl">{{ $t('display.design') }}</h3>
     <div class="grid grid-cols-3 gap-3">
       <BaseButton
         v-for="option in designOptions"
         :key="option.value"
-        class="app-design-tile aspect-square h-auto flex-col gap-3 whitespace-normal px-2 text-center leading-tight"
+        class="app-design-tile aspect-square h-auto flex-col gap-3 px-2 text-center leading-tight whitespace-normal"
         :variant="design === option.value ? 'primary' : 'neutral'"
         :aria-pressed="design === option.value"
         @click="design = option.value"
@@ -41,18 +41,18 @@
         {{ option.label }}
       </BaseButton>
     </div>
-    <div v-if="limitedDesigns.includes(design)" role="status" class="alert alert-warning mt-4">
+    <div v-if="limitedDesigns.includes(design)" role="status" class="mt-4 alert alert-warning">
       <AppIcon name="shield-exclamation" />
       <span>{{ $t('display.limitedDesign') }}</span>
     </div>
   </div>
 
   <div class="mb-10">
-    <h3 class="text-xl my-4">{{ $t('display.accessibility') }}</h3>
+    <h3 class="my-4 text-xl">{{ $t('display.accessibility') }}</h3>
     <BaseCard
-      class="p-6 flex flex-col items-center text-center gap-4 mb-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
+      class="mb-4 flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left"
     >
-      <p class="text-app-muted min-w-0">{{ $t('display.dyslexia') }}</p>
+      <p class="min-w-0 text-app-muted">{{ $t('display.dyslexia') }}</p>
       <BaseSwitcher
         class="flex-wrap justify-center gap-2"
         size="sm"
@@ -62,9 +62,9 @@
       />
     </BaseCard>
     <BaseCard
-      class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
+      class="flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left"
     >
-      <p class="text-app-muted min-w-0">{{ $t('display.contrast') }}</p>
+      <p class="min-w-0 text-app-muted">{{ $t('display.contrast') }}</p>
       <BaseSwitcher
         class="flex-wrap justify-center gap-2"
         size="sm"
@@ -80,8 +80,8 @@
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
-import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import LanguageSelect from '@core/components/LanguageSelect.vue'
+import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import { designOptions, limitedDesigns, onOffOptions, themeOptions } from '@/data/settings.js'
 import { contrastMode, design, dyslexiaFont, themeMode } from '@/lib/preferences.js'
 

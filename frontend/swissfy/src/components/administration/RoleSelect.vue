@@ -1,12 +1,12 @@
 <template>
   <select
     v-model="selected"
-    class="select select-sm w-auto"
+    class="select w-auto select-sm"
     :disabled="disabled"
     :title="titleText"
   >
-    <option v-for="role in roles" :key="role.value" :value="role.value">
-      {{ $t(`roles.${role.value}`) }}
+    <option v-for="option in roles" :key="option.value" :value="option.value">
+      {{ $t(`roles.${option.value}`) }}
     </option>
   </select>
 </template>
