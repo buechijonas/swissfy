@@ -119,7 +119,6 @@ export default {
       messages: [],
       chatRequest: null,
       canRequest: true,
-      refreshing: false,
       refreshError: null,
       ownMessages: 0,
     }
@@ -169,6 +168,8 @@ export default {
     },
   },
   created() {
+    this.refreshing = null
+    this.refreshQueued = false
     this.load()
   },
   methods: {
@@ -226,16 +227,25 @@ export default {
       await trustKeys(this.authStore.user.id, this.username, toRaw(this.conversationKeys))
       this.keysChanged = false
     },
-    async refresh() {
-      if (this.refreshing) return
-      this.refreshing = true
+    refresh() {
+      if (this.refreshing) {
+        this.refreshQueued = true
+        return this.refreshing
+      }
+      this.refreshing = this.receiveUntilCurrent().finally(() => {
+        this.refreshing = null
+      })
+      return this.refreshing
+    },
+    async receiveUntilCurrent() {
       try {
-        await this.receive()
+        do {
+          this.refreshQueued = false
+          await this.receive()
+        } while (this.refreshQueued)
         this.refreshError = null
       } catch {
         this.refreshError = t('chat.refreshFailed')
-      } finally {
-        this.refreshing = false
       }
     },
     async receive() {

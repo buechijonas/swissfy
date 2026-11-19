@@ -87,6 +87,24 @@ describe('ChatConversation', () => {
     expect(wrapper.text()).toContain('Grüezi')
   })
 
+  it('catches up on chat changes that arrive during a refresh', async () => {
+    const wrapper = await mountConversation()
+    const pending = Promise.withResolvers()
+    chatsApi.receive.mockReturnValueOnce(pending.promise)
+    useEventsStore().chat += 1
+    await flushPromises()
+    useEventsStore().chat += 1
+    await flushPromises()
+    expect(chatsApi.receive).toHaveBeenCalledTimes(2)
+
+    chatsApi.receive.mockResolvedValue(page([message(3, 'Spät')]))
+    pending.resolve(page([message(2, 'Grüezi')]))
+    await flushPromises()
+    expect(chatsApi.receive).toHaveBeenCalledTimes(3)
+    expect(chatsApi.receive).toHaveBeenLastCalledWith('anna', true, 2)
+    expect(wrapper.text()).toContain('Spät')
+  })
+
   it('shows a failed refresh and clears it after the next one', async () => {
     const wrapper = await mountConversation()
     chatsApi.receive.mockRejectedValue(new Error('offline'))
