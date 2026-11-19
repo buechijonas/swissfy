@@ -64,36 +64,36 @@ DEFAULT_ROLE = "Standard"
 
 class UserProfile(models.Model):
     class Sex(models.TextChoices):
-        MALE = "male", _("Männlich")
-        FEMALE = "female", _("Weiblich")
-        DIVERS = "divers", _("Divers")
+        MALE = "male", _("Male")
+        FEMALE = "female", _("Female")
+        DIVERS = "divers", _("Diverse")
 
     class Relationship(models.TextChoices):
         SINGLE = "single", _("Single")
-        GETTING_TO_KNOW = "getting_to_know", _("Kennenlernphase")
-        IN_RELATIONSHIP = "in_relationship", _("In einer Beziehung")
-        ENGAGED = "engaged", _("Verlobt")
-        MARRIED = "married", _("Verheiratet")
-        COMPLICATED = "complicated", _("Es ist kompliziert")
-        SEPARATED = "separated", _("Getrennt")
-        DIVORCED = "divorced", _("Geschieden")
-        WIDOWED = "widowed", _("Verwitwet")
-        OTHER = "other", _("Sonstiges")
+        GETTING_TO_KNOW = "getting_to_know", _("Getting to know someone")
+        IN_RELATIONSHIP = "in_relationship", _("In a relationship")
+        ENGAGED = "engaged", _("Engaged")
+        MARRIED = "married", _("Married")
+        COMPLICATED = "complicated", _("It's complicated")
+        SEPARATED = "separated", _("Separated")
+        DIVORCED = "divorced", _("Divorced")
+        WIDOWED = "widowed", _("Widowed")
+        OTHER = "other", _("Other")
 
     class Visibility(models.TextChoices):
-        PUBLIC = "public", _("Öffentlich")
-        FOLLOWERS = "followers", _("Nur Follower")
-        FRIENDS = "friends", _("Nur Freunde")
+        PUBLIC = "public", _("Public")
+        FOLLOWERS = "followers", _("Followers only")
+        FRIENDS = "friends", _("Friends only")
 
     class PictureAudience(models.TextChoices):
-        FOLLOWERS = "followers", _("Follower")
-        FRIENDS = "friends", _("Freunde")
-        GROUPS = "groups", _("Gruppen")
+        FOLLOWERS = "followers", _("Followers")
+        FRIENDS = "friends", _("Friends")
+        GROUPS = "groups", _("Groups")
 
     class ChatProtection(models.TextChoices):
         STANDARD = "standard", _("Standard")
-        DEVICE = "device", _("Nur auf diesem Gerät")
-        PIN = "pin", _("Chat-PIN")
+        DEVICE = "device", _("Only on this device")
+        PIN = "pin", _("Chat PIN")
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
@@ -104,11 +104,13 @@ class UserProfile(models.Model):
         max_length=20, blank=True, default="", choices=[(a, a) for a in AVATAR_CHOICES]
     )
     public_picture = models.FileField(
-        _("Öffentliches Profilbild"), upload_to="profiles/", blank=True
+        _("Public profile picture"), upload_to="profiles/", blank=True
     )
-    private_picture = models.FileField(_("Privates Profilbild"), upload_to="profiles/", blank=True)
+    private_picture = models.FileField(
+        _("Private profile picture"), upload_to="profiles/", blank=True
+    )
     private_picture_visibility = models.CharField(
-        _("Privates Profilbild sichtbar für"),
+        _("Private profile picture visible to"),
         max_length=20,
         choices=PictureAudience.choices,
         default=PictureAudience.FRIENDS,
@@ -116,35 +118,35 @@ class UserProfile(models.Model):
     private_picture_groups = models.ManyToManyField(
         "posts.ContactGroup", related_name="+", blank=True
     )
-    birthdate = models.DateField(_("Geburtsdatum"), null=True, blank=True)
+    birthdate = models.DateField(_("Birthdate"), null=True, blank=True)
 
-    biography = EncryptedTextField(_("Biografie"), max_length=500, blank=True)
-    sex = models.CharField(_("Geschlecht"), max_length=20, choices=Sex.choices, blank=True)
-    profession = models.CharField(_("Tätigkeit"), max_length=50, blank=True)
-    place_of_residence = models.CharField(_("Wohnort"), max_length=100, blank=True)
-    place_of_origin = models.CharField(_("Heimatort"), max_length=100, blank=True)
+    biography = EncryptedTextField(_("Biography"), max_length=500, blank=True)
+    sex = models.CharField(_("Sex"), max_length=20, choices=Sex.choices, blank=True)
+    profession = models.CharField(_("Occupation"), max_length=50, blank=True)
+    place_of_residence = models.CharField(_("Place of residence"), max_length=100, blank=True)
+    place_of_origin = models.CharField(_("Place of origin"), max_length=100, blank=True)
     relationship = models.CharField(
-        _("Beziehungsstatus"), max_length=20, choices=Relationship.choices, blank=True
+        _("Relationship status"), max_length=20, choices=Relationship.choices, blank=True
     )
-    favorite_movies = models.JSONField(_("Lieblingsfilme"), default=list, blank=True)
-    favorite_series = models.JSONField(_("Lieblingsserien"), default=list, blank=True)
-    favorite_games = models.JSONField(_("Lieblingsspiele"), default=list, blank=True)
+    favorite_movies = models.JSONField(_("Favourite movies"), default=list, blank=True)
+    favorite_series = models.JSONField(_("Favourite series"), default=list, blank=True)
+    favorite_games = models.JSONField(_("Favourite games"), default=list, blank=True)
 
     profile_visibility = models.CharField(
-        _("Profil sichtbar für"),
+        _("Profile visible to"),
         max_length=20,
         choices=Visibility.choices,
         default=Visibility.PUBLIC,
     )
     chat_protection = models.CharField(
-        _("Chat-Verschlüsselung"),
+        _("Chat encryption"),
         max_length=20,
         choices=ChatProtection.choices,
         default=ChatProtection.STANDARD,
     )
-    read_receipts = models.BooleanField(_("Lesebestätigungen"), default=True)
-    chat_requests = models.BooleanField(_("Chat-Anfragen erlauben"), default=True)
-    show_birthdate = models.BooleanField(_("Geburtsdatum anzeigen"), default=False)
+    read_receipts = models.BooleanField(_("Read receipts"), default=True)
+    chat_requests = models.BooleanField(_("Allow chat requests"), default=True)
+    show_birthdate = models.BooleanField(_("Show birthdate"), default=False)
 
     def __str__(self):
         return f"Profile({self.user})"
@@ -191,9 +193,9 @@ class UserConsent(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="consent"
     )
-    privacy = models.BooleanField(_("Datenschutzerklärung"), default=False)
-    terms = models.BooleanField(_("Nutzungsrichtlinien"), default=False)
-    disclaimer = models.BooleanField(_("Haftungsausschluss"), default=False)
+    privacy = models.BooleanField(_("Privacy policy"), default=False)
+    terms = models.BooleanField(_("Terms of use"), default=False)
+    disclaimer = models.BooleanField(_("Disclaimer"), default=False)
 
     FIELDS = ["privacy", "terms", "disclaimer"]
 

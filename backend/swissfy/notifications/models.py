@@ -80,18 +80,18 @@ class NotificationQuerySet(BaseQuerySet):
 
 class Notification(BaseModel):
     class Resolution(models.TextChoices):
-        ACCEPTED = "accepted", _("Angenommen")
-        DECLINED = "declined", _("Abgelehnt")
+        ACCEPTED = "accepted", _("Accepted")
+        DECLINED = "declined", _("Declined")
 
     class Kind(models.TextChoices):
-        WARNING = "warning", _("Verwarnung")
-        WARNING_EXPIRED = "warning_expired", _("Verwarnung verjährt")
-        SUSPENSION = "suspension", _("Kontosperre")
-        COMMENT = "comment", _("Kommentar")
-        LIKE = "like", _("Gefällt mir")
-        FOLLOW = "follow", _("Neuer Follower")
-        FOLLOW_REQUEST = "follow_request", _("Followeranfrage")
-        FRIEND_REQUEST = "friend_request", _("Freundschaftsanfrage")
+        WARNING = "warning", _("Warning")
+        WARNING_EXPIRED = "warning_expired", _("Warning expired")
+        SUSPENSION = "suspension", _("Suspension")
+        COMMENT = "comment", _("Comment")
+        LIKE = "like", _("Like")
+        FOLLOW = "follow", _("New follower")
+        FOLLOW_REQUEST = "follow_request", _("Follow request")
+        FRIEND_REQUEST = "friend_request", _("Friend request")
 
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications"
@@ -145,36 +145,36 @@ class Notification(BaseModel):
         Kind = self.Kind
         match self.kind:
             case Kind.WARNING:
-                return _("Du wurdest verwarnt: %(reason)s.") % {
+                return _("You have been warned: %(reason)s.") % {
                     "reason": self.warning.get_reason_display()
                 }
             case Kind.WARNING_EXPIRED:
-                return _("Deine Verwarnung «%(reason)s» vom %(created)s ist verjährt.") % {
+                return _("Your warning “%(reason)s” from %(created)s has expired.") % {
                     "reason": self.warning.get_reason_display(),
                     "created": local_date(self.warning.created_at),
                 }
             case Kind.SUSPENSION:
                 return self.suspension_message
             case Kind.COMMENT:
-                return _("%(actor)s hat deinen Feed kommentiert: %(text)s") % {
+                return _("%(actor)s commented on your feed: %(text)s") % {
                     "actor": self.actor_name,
                     "text": quote(self.comment.text),
                 }
             case Kind.LIKE:
-                return _("%(actor)s gefällt dein Feed.") % {"actor": self.actor_name}
+                return _("%(actor)s likes your feed.") % {"actor": self.actor_name}
             case Kind.FOLLOW:
-                return _("%(actor)s folgt dir jetzt.") % {"actor": self.actor_name}
+                return _("%(actor)s is now following you.") % {"actor": self.actor_name}
             case Kind.FOLLOW_REQUEST:
-                return _("%(actor)s möchte dir folgen.") % {"actor": self.actor_name}
+                return _("%(actor)s wants to follow you.") % {"actor": self.actor_name}
             case Kind.FRIEND_REQUEST:
-                return _("%(actor)s möchte mit dir befreundet sein.") % {"actor": self.actor_name}
+                return _("%(actor)s wants to be your friend.") % {"actor": self.actor_name}
         return ""
 
     @property
     def suspension_message(self):
         suspension = self.suspension
         if suspension.ends_at is None:
-            return _("Dein Konto wurde dauerhaft gesperrt.")
+            return _("Your account has been suspended permanently.")
         dates = {
             "duration": suspension.duration_label,
             "start": local_date(suspension.starts_at),
@@ -182,9 +182,13 @@ class Notification(BaseModel):
         }
         if suspension.starts_at > timezone.now():
             return (
-                _("Dein Konto wird für %(duration)s gesperrt, ab %(start)s bis %(until)s.") % dates
+                _(
+                    "Your account will be suspended for %(duration)s, "
+                    "from %(start)s until %(until)s."
+                )
+                % dates
             )
-        return _("Dein Konto wurde für %(duration)s gesperrt, bis %(until)s.") % dates
+        return _("Your account has been suspended for %(duration)s, until %(until)s.") % dates
 
     @property
     def link(self):

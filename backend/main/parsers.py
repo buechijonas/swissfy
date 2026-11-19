@@ -8,4 +8,4 @@ class JSONParser(parsers.JSONParser):
         try:
             return super().parse(stream, media_type, parser_context)
         except RecursionError:
-            raise ParseError(_("JSON ist zu tief verschachtelt."))
+            raise ParseError(_("The JSON is nested too deeply.")) from None

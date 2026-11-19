@@ -13,46 +13,46 @@ from swissfy.accounts.roles import Role, is_admin, role_of, set_role
 
 
 class Reason(models.TextChoices):
-    ANTISEMITISM = "antisemitism", _("Antisemitismus")
-    EXPLOITATION = "exploitation", _("Ausbeuterische Inhalte")
-    INSULT = "insult", _("Beleidigung")
-    REWARD_HUNTING = "reward_hunting", _("Belohnungsjagd")
-    HARASSMENT = "harassment", _("Belästigung")
-    FRAUD = "fraud", _("Betrug")
-    CHRISTOPHOBIA = "christophobia", _("Christophobie")
+    ANTISEMITISM = "antisemitism", _("Antisemitism")
+    EXPLOITATION = "exploitation", _("Exploitative content")
+    INSULT = "insult", _("Insult")
+    REWARD_HUNTING = "reward_hunting", _("Reward hunting")
+    HARASSMENT = "harassment", _("Harassment")
+    FRAUD = "fraud", _("Fraud")
+    CHRISTOPHOBIA = "christophobia", _("Christophobia")
     CYBERGROOMING = "cybergrooming", _("Cybergrooming")
-    CYBERBULLYING = "cyberbullying", _("Cybermobbing")
-    DISCRIMINATION = "discrimination", _("Diskriminierung")
+    CYBERBULLYING = "cyberbullying", _("Cyberbullying")
+    DISCRIMINATION = "discrimination", _("Discrimination")
     DOXXING = "doxxing", _("Doxxing")
-    THREAT = "threat", _("Drohung")
-    EXTORTION = "extortion", _("Erpressung")
-    MISINFORMATION = "misinformation", _("Falschinformationen")
-    FASCISM = "fascism", _("Faschismus")
-    XENOPHOBIA = "xenophobia", _("Fremdenfeindlichkeit")
-    CONSPIRACY = "conspiracy", _("Gefährliche Verschwörungstheorien")
-    VIOLENT_CONTENT = "violent_content", _("Gewaltbasierter Inhalt")
-    GLORIFYING_VIOLENCE = "glorifying_violence", _("Gewaltverherrlichung")
-    HATE_SPEECH = "hate_speech", _("Hassrede")
-    HOMOPHOBIA = "homophobia", _("Homophobie")
-    IDENTITY_THEFT = "identity_theft", _("Identitätsdiebstahl")
-    ILLEGAL_CONTENT = "illegal_content", _("Illegale Inhalte")
-    ISLAMOPHOBIA = "islamophobia", _("Islamophobie")
-    CULTURAL_APPROPRIATION = "cultural_appropriation", _("Kulturelle Aneignung")
-    PROTECTION_OF_MINORS = "protection_of_minors", _("Minderjährigenschutz")
-    PRIVILEGE_ABUSE = "privilege_abuse", _("Missbrauch von Privilegien")
-    PLAGIARISM = "plagiarism", _("Plagiate")
-    PORNOGRAPHY = "pornography", _("Pornografische Inhalte")
+    THREAT = "threat", _("Threat")
+    EXTORTION = "extortion", _("Extortion")
+    MISINFORMATION = "misinformation", _("Misinformation")
+    FASCISM = "fascism", _("Fascism")
+    XENOPHOBIA = "xenophobia", _("Xenophobia")
+    CONSPIRACY = "conspiracy", _("Dangerous conspiracy theories")
+    VIOLENT_CONTENT = "violent_content", _("Violent content")
+    GLORIFYING_VIOLENCE = "glorifying_violence", _("Glorification of violence")
+    HATE_SPEECH = "hate_speech", _("Hate speech")
+    HOMOPHOBIA = "homophobia", _("Homophobia")
+    IDENTITY_THEFT = "identity_theft", _("Identity theft")
+    ILLEGAL_CONTENT = "illegal_content", _("Illegal content")
+    ISLAMOPHOBIA = "islamophobia", _("Islamophobia")
+    CULTURAL_APPROPRIATION = "cultural_appropriation", _("Cultural appropriation")
+    PROTECTION_OF_MINORS = "protection_of_minors", _("Protection of minors")
+    PRIVILEGE_ABUSE = "privilege_abuse", _("Abuse of privileges")
+    PLAGIARISM = "plagiarism", _("Plagiarism")
+    PORNOGRAPHY = "pornography", _("Pornographic content")
     PROPAGANDA = "propaganda", _("Propaganda")
-    RACISM = "racism", _("Rassismus")
-    RELATIVIZATION = "relativization", _("Relativierung")
-    SELF_HARM = "self_harm", _("Selbstgefährdung")
-    VIGILANTISM = "vigilantism", _("Selbstjustiz")
-    SEXISM = "sexism", _("Sexismus")
+    RACISM = "racism", _("Racism")
+    RELATIVIZATION = "relativization", _("Relativisation")
+    SELF_HARM = "self_harm", _("Self-harm")
+    VIGILANTISM = "vigilantism", _("Vigilantism")
+    SEXISM = "sexism", _("Sexism")
     SEXTORTION = "sextortion", _("Sextortion")
     SPAM = "spam", _("Spam")
-    INAPPROPRIATE_LANGUAGE = "inappropriate_language", _("Unangemessene Wortwahl")
-    UNETHICAL_ADVERTISING = "unethical_advertising", _("Unethische Werbung")
-    WHATABOUTISM = "whataboutism", _("Whataboutismus")
+    INAPPROPRIATE_LANGUAGE = "inappropriate_language", _("Inappropriate language")
+    UNETHICAL_ADVERTISING = "unethical_advertising", _("Unethical advertising")
+    WHATABOUTISM = "whataboutism", _("Whataboutism")
 
     @classmethod
     def options(cls):
@@ -73,11 +73,11 @@ def convert_warning_integrity_error():
 
 WARNING_EXPIRY = timedelta(days=90)
 SUSPENSION_STEPS = [
-    (timedelta(days=3), _("3 Tage")),
-    (timedelta(weeks=1), _("1 Woche")),
-    (timedelta(days=30), _("1 Monat")),
-    (timedelta(days=365), _("1 Jahr")),
-    (None, _("Lebenslang")),
+    (timedelta(days=3), _("3 days")),
+    (timedelta(weeks=1), _("1 week")),
+    (timedelta(days=30), _("1 month")),
+    (timedelta(days=365), _("1 year")),
+    (None, _("for life")),
 ]
 WARNINGS_BEFORE_SUSPENSION = 3
 LOCKED_FOREVER = "forever"
@@ -213,7 +213,7 @@ class Warning(BaseModel):
     @property
     def target_label(self):
         if self.comment_id:
-            return _("Kommentar")
+            return _("Comment")
         return _("Feed") if self.post_id else None
 
     @property
@@ -302,11 +302,11 @@ class Suspension(BaseModel):
     @property
     def status_text(self):
         ends_at = self.ends_at and timezone.localtime(self.ends_at)
-        until = {"until": date_format(ends_at, _("j. F Y"))} if ends_at else None
+        until = {"until": date_format(ends_at, _("j F Y"))} if ends_at else None
         if self.state == "ended":
-            return _("Abgelaufen am %(until)s") % until
+            return _("Ended on %(until)s") % until
         if self.state == "scheduled":
             if until:
-                return _("Beginnt nach der laufenden Sperre, bis %(until)s") % until
-            return _("Beginnt nach der laufenden Sperre, dauerhaft")
-        return _("Gesperrt bis %(until)s") % until if until else _("Dauerhaft gesperrt")
+                return _("Starts after the current suspension, until %(until)s") % until
+            return _("Starts after the current suspension, permanently")
+        return _("Suspended until %(until)s") % until if until else _("Permanently suspended")

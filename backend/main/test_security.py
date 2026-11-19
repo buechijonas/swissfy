@@ -106,9 +106,7 @@ class Fixtures(TestCase):
             "<int:position>", "0"
         ).replace("<int:pk>", "1").replace("<str:username>", "jonas").replace(
             "<str:name>", "swiss"
-        ).replace(
-            "<str:field>", "terms"
-        )
+        ).replace("<str:field>", "terms")
 
     def api_routes(self):
         return [(self.fill(route), name) for route, name in routes()]
@@ -240,9 +238,8 @@ class InjectionTests(Fixtures):
             return self.client.get(path, data)
 
     def is_safe(self, response):
-        return response.status_code < 500 and b"Traceback" not in response.content
-        self.assertNotIn(b"syntax error", response.content)
-        self.assertNotIn(b"psycopg", response.content)
+        leaks = [b"Traceback", b"syntax error", b"psycopg"]
+        return response.status_code < 500 and not any(leak in response.content for leak in leaks)
 
     def test_query_parameters_are_never_interpreted(self):
         users = User.objects.count()

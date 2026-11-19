@@ -188,15 +188,17 @@ class ProfileSettingsModelSerializer:
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            self.fields["private_picture_groups"].child_relation.queryset = (
-                ContactGroup.objects.filter(owner=self.context["request"].user)
+            self.fields[
+                "private_picture_groups"
+            ].child_relation.queryset = ContactGroup.objects.filter(
+                owner=self.context["request"].user
             )
 
         def compress(self, upload):
             try:
                 return images.thumbnail(images.load(upload))
             except images.InvalidImage as error:
-                raise serializers.ValidationError(str(error))
+                raise serializers.ValidationError(str(error)) from error
 
         def validate_public_picture(self, upload):
             return self.compress(upload)
@@ -209,7 +211,7 @@ class ProfileSettingsModelSerializer:
             if visibility == UserProfile.PictureAudience.GROUPS:
                 if not data.get("private_picture_groups"):
                     raise serializers.ValidationError(
-                        {"private_picture_groups": _("Wähle mindestens eine Gruppe.")}
+                        {"private_picture_groups": _("Choose at least one group.")}
                     )
             elif visibility:
                 data["private_picture_groups"] = []

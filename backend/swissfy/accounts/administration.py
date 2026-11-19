@@ -52,12 +52,12 @@ class AdminUserModelSerializer(BaseModelSerializer):
 
         def validate(self, data):
             if self.instance.is_self:
-                raise PermissionDenied(_("Du kannst deine eigene Rolle nicht ändern."))
+                raise PermissionDenied(_("You cannot change your own role."))
             if self.instance.role_lock:
                 raise PermissionDenied(
                     _(
-                        "Die Rolle ist gesperrt, bis alle Verwarnungen verjährt "
-                        "und Sperren abgelaufen sind."
+                        "The role is locked until all warnings have expired "
+                        "and all suspensions have ended."
                     )
                 )
             return data

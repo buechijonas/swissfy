@@ -44,14 +44,12 @@ class StoryModelSerializer(UUIDModelSerializer):
             try:
                 files, *_ = images.compress([upload])
             except images.InvalidImage as error:
-                raise serializers.ValidationError(str(error))
+                raise serializers.ValidationError(str(error)) from error
             return files[0][0]
 
         def validate(self, data):
             if data.get("visibility") == Post.Visibility.GLOBAL:
-                raise serializers.ValidationError(
-                    {"visibility": _("Stories können nicht global sein.")}
-                )
+                raise serializers.ValidationError({"visibility": _("Stories cannot be global.")})
             return self.clean_audience(data)
 
         def create(self, data):

@@ -8,7 +8,7 @@ from swissfy.posts.serializers import CommentModelSerializer, PostModelSerialize
 from .models import Reason, Report, Suspension, Warning
 from .reviews import ReportedContent
 
-CHOOSE_REASON = _("Wähle einen Grund.")
+CHOOSE_REASON = _("Choose a reason.")
 
 
 class WarningModelSerializer(BaseModelSerializer):

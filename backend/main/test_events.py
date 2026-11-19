@@ -146,8 +146,9 @@ class HubTests(TransactionTestCase):
                 raise ValueError("broken payload")
             await stopped.wait()
 
-        with mock.patch.object(hub, "receive", receive), mock.patch(
-            "commons.events.RECONNECT_SECONDS", 0
+        with (
+            mock.patch.object(hub, "receive", receive),
+            mock.patch("commons.events.RECONNECT_SECONDS", 0),
         ):
             hub.subscribe(1)
             await asyncio.sleep(0.05)

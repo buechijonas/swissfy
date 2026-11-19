@@ -103,8 +103,8 @@ class PostModelSerializer(UUIDModelSerializer):
             fields = UUIDModelSerializer.read.Meta.fields + ["author", "thumbnail", "video"]
 
     class unavailable(UnavailableSerializer):
-        blocked = _("Dieser Feed wurde gesperrt.")
-        hidden = _("Dieser Feed ist nicht sichtbar.")
+        blocked = _("This feed has been blocked.")
+        hidden = _("This feed is not visible.")
 
         class Meta(UnavailableSerializer.Meta):
             model = Post
@@ -132,26 +132,24 @@ class PostModelSerializer(UUIDModelSerializer):
             try:
                 return images.compress(uploads)
             except images.InvalidImage as error:
-                raise serializers.ValidationError(str(error))
+                raise serializers.ValidationError(str(error)) from error
 
         def validate_video(self, upload):
             try:
                 return videos.validate(upload)
             except videos.InvalidVideo as error:
-                raise serializers.ValidationError(str(error))
+                raise serializers.ValidationError(str(error)) from error
 
         def validate(self, data):
             if data.get("images") and data.get("video"):
-                raise serializers.ValidationError(
-                    {"video": _("Wähle entweder Bilder oder ein Video.")}
-                )
+                raise serializers.ValidationError({"video": _("Choose either images or a video.")})
             if (
                 not data.get("text", "").strip()
                 and not data.get("images")
                 and not data.get("video")
             ):
                 raise serializers.ValidationError(
-                    {"text": _("Schreib etwas oder wähle ein Bild oder Video.")}
+                    {"text": _("Write something or choose an image or video.")}
                 )
             return self.clean_audience(data)
 

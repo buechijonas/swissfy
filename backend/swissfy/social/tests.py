@@ -9,6 +9,7 @@ from django.test import TestCase, override_settings
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 
 from swissfy.accounts.models import UserProfile, get_or_create_profile
+from swissfy.accounts.roles import Role, set_role
 from swissfy.chats.models import ChatRequest
 from swissfy.posts.models import ContactGroup, Post
 from swissfy.posts.tests import image_upload
@@ -320,8 +321,6 @@ class CanChatTests(TestCase):
 
 class SearchOrderTests(TestCase):
     def test_staff_first_then_alphabetical(self):
-        from swissfy.accounts.roles import Role, set_role
-
         viewer = User.objects.create(username="viewer")
         names = {
             "zoe": Role.ADMIN,

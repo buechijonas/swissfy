@@ -18,10 +18,10 @@ class FeedOrder(NewestFirst):
 
     def newest_day(self, request):
         cursor = self.decode_cursor(request)
-        if cursor is None:
-            return timezone.localdate()
-        if cursor.reverse or cursor.position is None:
+        if cursor is not None and cursor.reverse:
             return None
+        if cursor is None or cursor.position is None:
+            return timezone.localdate()
         return date.fromisoformat(cursor.position)
 
     def paginate_queryset(self, queryset, request, view=None):

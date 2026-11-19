@@ -141,6 +141,21 @@ class ModerationTests(TestCase):
             self.assertEqual((post["comment_count"], comments["results"]), (0, []))
             self.assertEqual(self.client.get(f"/api/comments/{reply.uuid}/").status_code, 404)
 
+    def test_hiding_a_comment_hides_its_whole_thread_in_two_queries(self):
+        parent = self.comment
+        for depth in range(5):
+            parent = Comment.objects.create(
+                post=self.post, parent=parent, author=self.jonas, text=str(depth)
+            )
+        other = Comment.objects.create(post=self.post, author=self.jonas, text="Andere")
+        Comment.objects.create(post=self.post, parent=other, author=self.jonas, text="Re")
+
+        with self.assertNumQueries(2):
+            self.comment.hide()
+
+        hidden = Comment.objects.filter(post=self.post, hidden_at__isnull=False)
+        self.assertEqual((hidden.count(), Comment.objects.filter(hidden_at=None).count()), (6, 2))
+
     def test_dismiss(self):
         Report.objects.create(reporter=self.jonas, post=self.post)
         self.as_user(self.mod)
@@ -494,9 +509,11 @@ class IssueWarningTests(TestCase):
     def test_failure_leaves_no_half_issued_warning(self):
         self.client.force_login(self.mod)
         url = f"/api/moderation/posts/{self.post.uuid}/warnings/"
-        with mock.patch.object(Warning, "suspend_if_needed", side_effect=RuntimeError):
-            with self.assertRaises(RuntimeError):
-                self.client.post(url, {"reason": Reason.SPAM}, content_type="application/json")
+        with (
+            mock.patch.object(Warning, "suspend_if_needed", side_effect=RuntimeError),
+            self.assertRaises(RuntimeError),
+        ):
+            self.client.post(url, {"reason": Reason.SPAM}, content_type="application/json")
 
         self.post.refresh_from_db()
         self.assertFalse(Warning.objects.exists())

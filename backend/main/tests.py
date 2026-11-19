@@ -16,9 +16,10 @@ class CompactNumberTests(SimpleTestCase):
             12_345: "12 Tsd.",
             100_000: "100 Tsd.",
             999_999: "999 Tsd.",
-            1_000_000: "1M",
-            1_250_000: "1.2M",
-            15_000_000: "15M",
+            1_000_000: "1 Mio.",
+            1_250_000: "1,2 Mio.",
+            15_000_000: "15 Mio.",
+            -2_500_000: "-2,5 Mio.",
             -12_000: "-12 Tsd.",
         }
         for value, expected in cases.items():
@@ -71,5 +72,14 @@ class LanguageTests(TestCase):
         self.assertEqual(self.missing_version(accept_language="zh-CN"), "此版本不存在。")
 
     def test_compact_numbers_follow_the_language(self):
-        with translation.override("en"):
-            self.assertEqual(compact_number(12_345), "12K")
+        cases = {
+            "en": ("12K", "1.5M"),
+            "fr": ("12 k", "1,5 M"),
+            "it": ("12 mila", "1,5 Mln"),
+            "rm": ("12 milli", "1.5 mio."),
+            "es": ("12 mil", "1,5 M"),
+            "zh-hans": ("12千", "1.5百万"),
+        }
+        for language, expected in cases.items():
+            with translation.override(language):
+                self.assertEqual((compact_number(12_345), compact_number(1_500_000)), expected)
