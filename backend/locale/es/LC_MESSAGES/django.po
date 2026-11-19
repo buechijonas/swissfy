@@ -283,6 +283,10 @@ msgid "Signature and key belong together."
 msgstr "La firma y la clave van juntas."
 
 #: swissfy/chats/views.py
+msgid "This chat PIN is outdated. Please set up your chat protection again."
+msgstr "Este PIN de chat está obsoleto. Vuelve a configurar la protección del chat."
+
+#: swissfy/chats/views.py
 msgid "Too many wrong attempts. Please try again later."
 msgstr "Demasiados intentos fallidos. Vuelve a intentarlo más tarde."
 

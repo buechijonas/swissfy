@@ -283,6 +283,10 @@ msgid "Signature and key belong together."
 msgstr "签名和密钥必须同时提供。"
 
 #: swissfy/chats/views.py
+msgid "This chat PIN is outdated. Please set up your chat protection again."
+msgstr "此聊天 PIN 已过时，请重新设置聊天保护。"
+
+#: swissfy/chats/views.py
 msgid "Too many wrong attempts. Please try again later."
 msgstr "错误尝试次数过多，请稍后再试。"
 

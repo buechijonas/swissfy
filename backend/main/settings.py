@@ -1,4 +1,5 @@
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 import django.conf.locale
@@ -74,6 +75,7 @@ CHAT_RETENTION_DAYS = 14
 CHAT_SLOW_MODE_SECONDS = 5
 CHAT_PIN_ATTEMPTS = 5
 CHAT_PIN_LOCKOUT_SECONDS = 3600
+CHAT_LEGACY_PIN_UNTIL = datetime(2026, 12, 31, tzinfo=UTC)
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG

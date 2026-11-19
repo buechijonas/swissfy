@@ -1,5 +1,5 @@
 import base64
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 from cryptography.exceptions import InvalidTag
 from django.contrib.auth import get_user_model
@@ -464,6 +464,7 @@ class PinUnlockSecurityTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
+@override_settings(CHAT_LEGACY_PIN_UNTIL=datetime(9999, 1, 1, tzinfo=UTC))
 class LegacyPinKeyTests(TestCase):
     def setUp(self):
         self.jonas = User.objects.create(username="jonas")
@@ -497,6 +498,30 @@ class LegacyPinKeyTests(TestCase):
         self.key.refresh_from_db()
         self.assertFalse(self.key.needs_verifier)
         self.assertEqual(self.set_verifier().status_code, 409)
+
+    @override_settings(CHAT_LEGACY_PIN_UNTIL=datetime(2000, 1, 1, tzinfo=UTC))
+    def test_expired_legacy_key_is_neither_released_nor_secured(self):
+        response = self.client.post(
+            "/api/chats/protection/unlock/",
+            {"verifier": WRONG_VERIFIER},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 410)
+        self.assertNotIn("wrapped_private_key", response.json())
+        self.assertEqual(self.set_verifier().status_code, 410)
+        self.key.refresh_from_db()
+        self.assertTrue(self.key.needs_verifier)
+
+    @override_settings(CHAT_LEGACY_PIN_UNTIL=datetime(2000, 1, 1, tzinfo=UTC))
+    def test_secured_key_outlives_the_legacy_deadline(self):
+        self.key.set_verifier(base64.b64decode(PIN_VERIFIER))
+        self.key.save()
+        response = self.client.post(
+            "/api/chats/protection/unlock/",
+            {"verifier": PIN_VERIFIER},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
 
 
 @override_settings(CHAT_SLOW_MODE_SECONDS=0)

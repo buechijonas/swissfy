@@ -283,6 +283,10 @@ msgid "Signature and key belong together."
 msgstr "La signatura e la clav tutgan ensemen."
 
 #: swissfy/chats/views.py
+msgid "This chat PIN is outdated. Please set up your chat protection again."
+msgstr "Quest PIN dal chat è antiquà. Configurescha danovamain tia protecziun dal chat."
+
+#: swissfy/chats/views.py
 msgid "Too many wrong attempts. Please try again later."
 msgstr "Memia blers sbagls. Emprova pli tard anc ina giada."
 

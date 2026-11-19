@@ -9,7 +9,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from commons.exceptions import BadRequest, Conflict, RetryLater
+from commons.exceptions import BadRequest, Conflict, Gone, RetryLater
 from commons.views import BaseViewSet
 from swissfy.moderation.permissions import IsNotSuspended
 from swissfy.social.models import Member
@@ -54,7 +54,10 @@ class ChatViewSet(BaseViewSet):
         return self.protection(request)
 
     def pin_key(self):
-        return get_object_or_404(ChatKey.objects.of(self.request.user), kind=ChatKey.Kind.PIN)
+        key = get_object_or_404(ChatKey.objects.of(self.request.user), kind=ChatKey.Kind.PIN)
+        if key.is_expired_legacy:
+            raise Gone(_("This chat PIN is outdated. Please set up your chat protection again."))
+        return key
 
     @action(detail=False, methods=["post"], url_path="protection/unlock")
     def unlock(self, request):

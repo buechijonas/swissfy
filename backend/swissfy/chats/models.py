@@ -75,6 +75,10 @@ class ChatKey(BaseModel):
         return self.kind == self.Kind.PIN and not self.pin_verifier
 
     @property
+    def is_expired_legacy(self):
+        return self.needs_verifier and timezone.now() >= settings.CHAT_LEGACY_PIN_UNTIL
+
+    @property
     def unlock_wait(self):
         if self.unlock_blocked_until is None:
             return 0
