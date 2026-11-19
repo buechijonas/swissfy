@@ -62,6 +62,7 @@ import some from 'lodash-es/some'
 import unionBy from 'lodash-es/unionBy'
 import { mapStores } from 'pinia'
 import { toRaw } from 'vue'
+import { ApiError } from '@core/api/client.js'
 import BaseCard from '@core/components/BaseCard.vue'
 import ErrorText from '@core/components/ErrorText.vue'
 import chatsApi from '@/api/chats.js'
@@ -153,6 +154,7 @@ export default {
       return request.incoming ? 'incoming' : 'outgoing'
     },
     blockedReason() {
+      if (this.endToEnd && this.keysChanged) return t('chat.confirmKeys')
       const request = this.chatRequest
       if (request?.status === 'declined' && !request.incoming) return t('chat.requestDeclined')
       if (!this.canRequest && (!request || this.declinedByMe)) return t('chat.noRequests')
@@ -295,6 +297,7 @@ export default {
         if (error.status === 403) await this.refresh()
         if (error.status !== 409) throw error
         await this.loadConversationKeys()
+        if (this.blockedReason) throw new ApiError(409, { detail: this.blockedReason })
         return this.sendMessage(text)
       })
       await this.refresh()

@@ -176,6 +176,36 @@ describe('ChatConversation', () => {
       expect(wrapper.text()).not.toContain('neue Schlüssel')
     })
 
+    it('blocks writing until new partner keys are confirmed', async () => {
+      trustedKeys.mockResolvedValue([OWN_KEY])
+      const wrapper = await mountConversation()
+      const composer = wrapper.find('textarea')
+      expect(composer.attributes('disabled')).toBeDefined()
+      expect(composer.attributes('placeholder')).toBe('Bestätige zuerst die neuen Schlüssel')
+
+      await wrapper.find('.btn-primary').trigger('click')
+      await flushPromises()
+      expect(wrapper.find('textarea').attributes('disabled')).toBeUndefined()
+    })
+
+    it('does not resend to keys that changed while sending', async () => {
+      trustedKeys.mockResolvedValue([OWN_KEY, ANNA_KEY])
+      encryptMessage.mockResolvedValue({})
+      chatsApi.send.mockRejectedValue({ status: 409 })
+      const wrapper = await mountConversation()
+      const newKey = { ...ANNA_KEY, id: 8 }
+      chatsApi.keys.mockResolvedValue({
+        keys: [OWN_KEY, newKey],
+        server_key: false,
+        retention_days: 14,
+      })
+      await expect(wrapper.vm.deliver('Hoi')).rejects.toMatchObject({
+        status: 409,
+        detail: 'Bestätige zuerst die neuen Schlüssel',
+      })
+      expect(chatsApi.send).toHaveBeenCalledTimes(1)
+    })
+
     it('marks a replayed message as unverified', async () => {
       const replayed = { text: 'alt', error: null, sentAt: Date.parse('2026-11-01'), nonce: 'bg==' }
       decryptMessage.mockResolvedValueOnce(replayed)
