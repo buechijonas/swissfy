@@ -1,7 +1,3 @@
-"""swissfy keeps the consents to its own contracts. govex only shows them, as
-a status swissfy signs here (ES256 JWS) and pushes to govex, so govex can
-store it but not forge it."""
-
 import base64
 import json
 import logging
@@ -45,8 +41,6 @@ def sign(payload):
 
 
 def attested_status(attestation):
-    """The status govex has. Not verified: it is only compared with our own
-    records to see if govex is outdated."""
     try:
         body = attestation.split(".")[1]
         payload = json.loads(base64.urlsafe_b64decode(body + "=" * (-len(body) % 4)))
@@ -56,8 +50,6 @@ def attested_status(attestation):
 
 
 def push_to_govex(govex_sub):
-    """Hands govex the current, signed status through its public attestation
-    flow. Never raises: a failed push is retried on the next login."""
     if not govex_sub or not settings.CONSENT_PRIVATE_KEY:
         return False
     attestation = sign(

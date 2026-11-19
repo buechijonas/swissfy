@@ -16,7 +16,6 @@ from .serializers import ConsentModelSerializer, DeviceTokenModelSerializer, Use
 
 
 class AuthViewSet(BaseViewSet):
-
     def user_data(self, user):
         user = Member.objects.select_related("profile").annotate_visibility(user).get(pk=user.pk)
         return UserModelSerializer.read(user, context=self.get_serializer_context()).data

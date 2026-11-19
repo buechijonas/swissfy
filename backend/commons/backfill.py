@@ -29,7 +29,7 @@ def encrypt_stored(name):
         decrypted = DecryptedFile(encrypted.open("rb"), encrypted.stat().st_size)
         with decrypted:
             same = decrypted.size == path.stat().st_size and all(
-                a == b for a, b in zip(chunks(original), chunks(decrypted))
+                a == b for a, b in zip(chunks(original), chunks(decrypted), strict=True)
             )
     if not same:
         encrypted.unlink()

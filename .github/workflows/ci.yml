@@ -54,9 +54,14 @@ jobs:
 
       - name: Check formatting
         run: |
-          black --check .
-          isort --check-only .
-          flake8 .
+          ruff format --check .
+          ruff check .
+
+      - name: Check house rules
+        run: bin/house-rules
+
+      - name: Check app boundaries
+        run: lint-imports
 
       - name: Check migrations
         run: python manage.py makemigrations --check --dry-run
@@ -67,6 +72,7 @@ jobs:
           git diff --exit-code locale
           for po in locale/*/LC_MESSAGES/django.po; do
             test -z "$(msgattrib --untranslated "$po")"
+            test -z "$(msgattrib --only-fuzzy "$po")"
           done
 
       - name: Run tests
@@ -96,7 +102,8 @@ jobs:
         run: |
           npx oxlint .
           npx eslint .
-          npx prettier --check src/
+          npx prettier --check src/ tests/
+          npx prettier --check --config .prettierrc.json ../core/src/
 
       - name: Run tests
         run: npm test

@@ -4,9 +4,7 @@ from .content import EGGS
 
 
 def phrase_pattern(phrase):
-    words = []
-    for word in phrase.lower().split():
-        words.append(r"\W*".join(re.findall(r"\w+", word)))
+    words = [r"\W*".join(re.findall(r"\w+", word)) for word in phrase.lower().split()]
     return r"\W+".join(words)
 
 

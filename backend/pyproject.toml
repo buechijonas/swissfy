@@ -1,8 +1,49 @@
-[tool.black]
+[tool.ruff]
 line-length = 100
-extend-exclude = "/(migrations|\\.venv)/"
+target-version = "py313"
+extend-exclude = ["*/migrations/*"]
 
-[tool.isort]
-profile = "black"
-line_length = 100
-skip_glob = ["*/migrations/*", ".venv/*"]
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I",
+    "B", "PERF", "SIM", "RET", "C4", "PIE", "UP",
+    "C90", "PLC0415", "DJ", "ERA", "TID251",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"collections.defaultdict".msg = "Use an explicit mapping or dict.setdefault."
+"operator.attrgetter".msg = "Use a lambda or a named function."
+
+[tool.importlinter]
+root_packages = ["swissfy", "commons", "main"]
+include_external_packages = false
+
+[[tool.importlinter.contracts]]
+name = "Domain models only depend on lower apps"
+type = "layers"
+layers = [
+    "swissfy.achievements",
+    "swissfy.chats.models",
+    "swissfy.notifications.models",
+    "swissfy.posts.models",
+    "swissfy.social.models",
+    "swissfy.moderation.models",
+    "swissfy.accounts.models",
+]
+
+[[tool.importlinter.contracts]]
+name = "Domain never depends on the API"
+type = "forbidden"
+source_modules = ["swissfy.*.models", "commons.models"]
+forbidden_modules = ["swissfy.*.views", "swissfy.*.serializers", "swissfy.*.urls", "swissfy.*.permissions"]
+
+[[tool.importlinter.contracts]]
+name = "Apps never import each other's views"
+type = "independence"
+modules = ["swissfy.*.views"]
+ignore_imports = [
+    "swissfy.moderation.views -> swissfy.posts.views.comments",
+]
