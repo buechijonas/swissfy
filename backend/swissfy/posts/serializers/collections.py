@@ -35,7 +35,7 @@ class ContactGroupModelSerializer(BaseModelSerializer):
             slug_field="username",
             many=True,
             queryset=User.objects.filter(is_active=True),
-            error_messages={"does_not_exist": _("Den Benutzer «{value}» gibt es nicht.")},
+            error_messages={"does_not_exist": _("The user “{value}” does not exist.")},
         )
 
         class Meta(BaseModelSerializer.write.Meta):
@@ -44,5 +44,5 @@ class ContactGroupModelSerializer(BaseModelSerializer):
 
         def validate_members(self, members):
             if self.context["request"].user in members:
-                raise serializers.ValidationError(_("Du kannst dich nicht selbst hinzufügen."))
+                raise serializers.ValidationError(_("You cannot add yourself."))
             return members

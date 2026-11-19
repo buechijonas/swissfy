@@ -1,14 +1,14 @@
 <template>
-  <BaseCard v-if="partner" class="sm:mt-4 max-sm:border-t-0 px-4 py-3 flex items-center gap-4">
-    <RouterLink :to="profileLink" class="flex items-center gap-4 min-w-0">
+  <BaseCard v-if="partner" class="flex items-center gap-4 px-4 py-3 max-sm:border-t-0 sm:mt-4">
+    <RouterLink :to="profileLink" class="flex min-w-0 items-center gap-4">
       <UserAvatar class="size-12" :user="partner" />
-      <div class="flex flex-col min-w-0">
+      <div class="flex min-w-0 flex-col">
         <span class="flex min-w-0 items-center gap-2">
           <CipherText v-if="!partner.can_view" :length="10" class="font-bold" />
-          <span v-else class="font-bold truncate">{{ partner.display_name }}</span>
+          <span v-else class="truncate font-bold">{{ partner.display_name }}</span>
           <RoleBadge :role="partner.role" />
         </span>
-        <span class="text-app-muted text-sm truncate">@{{ partner.username }}</span>
+        <span class="truncate text-sm text-app-muted">@{{ partner.username }}</span>
       </div>
     </RouterLink>
     <BaseButton
@@ -24,17 +24,17 @@
     </BaseButton>
     <span
       v-else-if="encryption"
-      class="ml-auto flex items-center gap-2 text-xs text-app-muted shrink-0"
+      class="ml-auto flex shrink-0 items-center gap-2 text-xs text-app-muted"
     >
       <AppIcon name="lock" size="sm" />
       {{ encryption }}
     </span>
   </BaseCard>
-  <BaseCard v-else class="sm:mt-4 max-sm:border-t-0 px-4 py-3 flex items-center gap-4">
-    <div class="skeleton size-12 rounded-full"></div>
+  <BaseCard v-else class="flex items-center gap-4 px-4 py-3 max-sm:border-t-0 sm:mt-4">
+    <div class="size-12 skeleton rounded-full"></div>
     <div class="flex flex-col gap-2">
-      <div class="skeleton h-4 w-40"></div>
-      <div class="skeleton h-3 w-24"></div>
+      <div class="h-4 w-40 skeleton"></div>
+      <div class="h-3 w-24 skeleton"></div>
     </div>
   </BaseCard>
 </template>

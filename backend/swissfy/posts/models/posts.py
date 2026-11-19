@@ -8,7 +8,6 @@ from django.db.models import (
     Exists,
     F,
     IntegerField,
-    Min,
     OuterRef,
     Prefetch,
     Q,
@@ -17,7 +16,7 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Coalesce
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
@@ -41,6 +40,8 @@ from .audience import (
     reportable_by,
     shared_with_viewer,
 )
+from .feed import FeedEntry, Repost
+from .saved import SavedPost
 from .stories import Story, authors_for
 
 POSTS_PER_DAY = 10
@@ -116,13 +117,13 @@ class PostQuerySet(ModeratedQuerySet, AudienceQuerySet):
     def media(self):
         return self.exclude(thumbnail="").filter(video_status__in=["", Post.VideoStatus.READY])
 
-    def by_media(self, params):
+    def by_media(self, images=False, videos=False, media=False):
         posts = self
-        if params.get("images"):
+        if images:
             posts = posts.images()
-        if params.get("videos"):
+        if videos:
             posts = posts.videos()
-        if params.get("media"):
+        if media:
             posts = posts.media()
         return posts
 
@@ -173,7 +174,7 @@ class PostQuerySet(ModeratedQuerySet, AudienceQuerySet):
         return posts.annotate(
             is_own=boolean(Q(author=user)),
             can_report=reportable_by(user),
-            reported=Exists(Post.objects.filter(pk=OuterRef("pk"), reports__reporter=user)),
+            reported=Exists(Report.objects.filter(post=OuterRef("pk"), reporter=user)),
             liked=Exists(Like.objects.filter(user=user, post=OuterRef("pk"))),
             reposted=Exists(Repost.objects.filter(user=user, post=OuterRef("pk"))),
             reposter=Subquery(reposter.values("user__username")[:1]),
@@ -186,9 +187,9 @@ class Post(HideableModel):
     Visibility = Audience
 
     class VideoStatus(models.TextChoices):
-        PROCESSING = "processing", _("Wird verarbeitet")
-        READY = "ready", _("Bereit")
-        FAILED = "failed", _("Fehlgeschlagen")
+        PROCESSING = "processing", _("Processing")
+        READY = "ready", _("Ready")
+        FAILED = "failed", _("Failed")
 
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="posts"
@@ -317,65 +318,6 @@ def with_profile_media(members, viewer):
     ).prefetch_related(Prefetch("stories", queryset=stories, to_attr="visible_stories"))
 
 
-class RepostQuerySet(BaseQuerySet):
-    def followed_by(self, user):
-        return self.filter(user__in=followed_by(user)).order_by("-created_at")
-
-
-class Repost(BaseModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reposts")
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
-    objects = RepostQuerySet.as_manager()
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["user", "post"], name="unique_repost")]
-        indexes = [models.Index(fields=["post", "-created_at"], name="repost_latest")]
-
-
-class FeedEntryQuerySet(BaseQuerySet):
-    def oldest_day(self):
-        return self.aggregate(oldest=Min("day"))["oldest"]
-
-
-class FeedEntry(BaseModel):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="feed_entries")
-    repost = models.OneToOneField(
-        Repost, on_delete=models.CASCADE, null=True, blank=True, related_name="feed_entry"
-    )
-    shown_at = models.DateTimeField()
-    day = models.DateField()
-
-    objects = FeedEntryQuerySet.as_manager()
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["post"], condition=Q(repost=None), name="unique_post_feed_entry"
-            ),
-        ]
-        indexes = [models.Index(fields=["-day", "-shown_at"], name="feed_entry_order")]
-
-    @classmethod
-    def record(cls, post, shown_at, repost=None):
-        return cls.objects.create(
-            post=post, repost=repost, shown_at=shown_at, day=timezone.localdate(shown_at)
-        )
-
-
-@receiver(post_save, sender=Post)
-def add_post_feed_entry(sender, instance, created, **kwargs):
-    if created:
-        FeedEntry.record(instance, instance.created_at)
-
-
-@receiver(post_save, sender=Repost)
-def add_repost_feed_entry(sender, instance, created, **kwargs):
-    if created:
-        FeedEntry.record(instance.post, instance.created_at, instance)
-
-
 class CommentQuerySet(ModeratedQuerySet):
     target_field = "comment"
 
@@ -387,6 +329,9 @@ class CommentQuerySet(ModeratedQuerySet):
         visible = NOT_HIDDEN & (~by_suspended_author() | Q(author=user))
         return self.filter(visible | reported_comments() if is_moderator(user) else visible)
 
+    def parent_ids(self):
+        return self.filter(parent__isnull=False).order_by("pk").values_list("pk", "parent_id")
+
     def on_reported_posts(self):
         return self.filter(post__in=Post.objects.reported())
 
@@ -397,7 +342,7 @@ class CommentQuerySet(ModeratedQuerySet):
     def with_details(self, user):
         votes = CommentVote.objects.filter(comment=OuterRef("pk"))
         score = votes.order_by().values("comment").annotate(score=Sum("value")).values("score")
-        reports = Comment.objects.filter(pk=OuterRef("pk"), reports__reporter=user)
+        reports = Report.objects.filter(comment=OuterRef("pk"), reporter=user)
         return (
             self.select_related("post", "parent__author")
             .prefetch_related(authors_for(user))
@@ -441,12 +386,12 @@ class Comment(HideableModel):
         return Warning(user_id=self.author_id, moderator=moderator, reason=reason, comment=self)
 
     def hide(self):
-        now = timezone.now()
-        thread = [self.pk]
-        while thread:
-            Comment.objects.filter(pk__in=thread).update(hidden_at=now)
-            replies = Comment.objects.filter(parent__in=thread, hidden_at=None)
-            thread = list(replies.values_list("pk", flat=True))
+        thread = {self.pk}
+        for pk, parent_id in Comment.objects.filter(post=self.post_id, pk__gt=self.pk).parent_ids():
+            if parent_id in thread:
+                thread.add(pk)
+        visible = Comment.objects.filter(pk__in=thread).filter(NOT_HIDDEN | Q(pk=self.pk))
+        visible.update(hidden_at=timezone.now())
 
     @property
     def parent_uuid(self):
@@ -462,8 +407,7 @@ class Comment(HideableModel):
 
     @property
     def ancestor_ids(self):
-        replies = Comment.objects.filter(post=self.post_id, parent__isnull=False)
-        parents = dict(replies.values_list("pk", "parent_id"))
+        parents = dict(Comment.objects.filter(post=self.post_id, pk__lt=self.pk).parent_ids())
         ids = []
         parent_id = self.parent_id
         while parent_id:
@@ -492,47 +436,4 @@ class CommentVote(BaseModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["user", "comment"], name="unique_comment_vote"),
-        ]
-
-
-class SavedFolder(BaseModel):
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="saved_folders"
-    )
-    name = models.CharField(max_length=NAME_LENGTH)
-
-    class Meta:
-        ordering = ["name"]
-        constraints = [
-            models.UniqueConstraint(fields=["owner", "name"], name="unique_saved_folder"),
-        ]
-
-    def __str__(self):
-        return f"{self.owner}: {self.name}"
-
-
-class SavedPostQuerySet(BaseQuerySet):
-    def in_folder(self, folder):
-        if not folder:
-            return self
-        if folder == "none":
-            return self.filter(folder=None)
-        return self.filter(folder=folder) if folder.isdigit() else self.none()
-
-
-class SavedPost(BaseModel):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="saved_posts"
-    )
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="saves")
-    folder = models.ForeignKey(
-        SavedFolder, on_delete=models.SET_NULL, null=True, blank=True, related_name="saved_posts"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    objects = SavedPostQuerySet.as_manager()
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["user", "post"], name="unique_saved_post"),
         ]

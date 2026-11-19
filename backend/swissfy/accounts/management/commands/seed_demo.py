@@ -69,6 +69,13 @@ SANCTIONS = [
     "suspended_year",
     "lifetime",
 ]
+SUSPENSIONS = {
+    "suspended": (0, 1),
+    "suspension_ended": (0, 40),
+    "suspended_month": (2, 3),
+    "suspended_year": (3, 10),
+    "lifetime": (4, 5),
+}
 
 
 class Command(BaseCommand):
@@ -146,6 +153,11 @@ class Command(BaseCommand):
 
     def create_relations(self, users):
         everyone = users + self.admins()
+        self.follow_randomly(everyone, users)
+        self.follow_each_other(everyone, users)
+        self.befriend_mutual_follows(everyone)
+
+    def follow_randomly(self, everyone, users):
         for user in everyone:
             for other in self.random.sample(users, self.random.randint(0, 12)):
                 if other == user:
@@ -157,12 +169,14 @@ class Command(BaseCommand):
                 else:
                     Follow.objects.get_or_create(follower=user, following=other)
 
+    def follow_each_other(self, everyone, users):
         for user in everyone:
             for other in self.random.sample(users, self.random.randint(0, 4)):
                 if other != user:
                     Follow.objects.get_or_create(follower=user, following=other)
                     Follow.objects.get_or_create(follower=other, following=user)
 
+    def befriend_mutual_follows(self, everyone):
         follows = set(
             Follow.objects.filter(follower__in=everyone).values_list("follower", "following")
         )
@@ -341,78 +355,66 @@ class Command(BaseCommand):
 
     def warnings_then_suspension(self, user, step, starts_days_ago):
         warnings = [self.warn(user, starts_days_ago + offset) for offset in (2, 1, 0)]
-        for _ in range(step):
-            warnings.append(self.warn(user, starts_days_ago))
+        warnings.extend(self.warn(user, starts_days_ago) for _ in range(step))
         start = self.now - timedelta(days=starts_days_ago)
         return self.suspend(user, warnings[-1], step, start)
 
     def create_sanctions(self, users):
         expired = WARNING_EXPIRY.days + 10
+        warning_days = {
+            "one_warning": [5],
+            "two_warnings": [20, 2],
+            "expired_warnings": [expired + 30, expired, 10],
+        }
         for user in users:
-            match user.sanction:
-                case "one_warning":
-                    self.warn(user, 5)
-                case "two_warnings":
-                    self.warn(user, 20)
-                    self.warn(user, 2)
-                case "expired_warnings":
-                    self.warn(user, expired + 30)
-                    self.warn(user, expired)
-                    self.warn(user, 10)
-                case "suspended":
-                    self.warnings_then_suspension(user, 0, 1)
-                case "suspended_with_queue":
-                    first = self.warnings_then_suspension(user, 0, 1)
-                    queued = self.warn(user, 0)
-                    self.suspend(user, queued, 1, first.ends_at)
-                case "suspension_ended":
-                    self.warnings_then_suspension(user, 0, 40)
-                case "suspended_month":
-                    self.warnings_then_suspension(user, 2, 3)
-                case "suspended_year":
-                    self.warnings_then_suspension(user, 3, 10)
-                case "lifetime":
-                    self.warnings_then_suspension(user, 4, 5)
+            for days_ago in warning_days.get(user.sanction, []):
+                self.warn(user, days_ago)
+            if user.sanction in SUSPENSIONS:
+                self.warnings_then_suspension(user, *SUSPENSIONS[user.sanction])
+            if user.sanction == "suspended_with_queue":
+                first = self.warnings_then_suspension(user, 0, 1)
+                queued = self.warn(user, 0)
+                self.suspend(user, queued, 1, first.ends_at)
 
-    def create_notifications(self, users):
+    def activities(self, users):
         Kind = Notification.Kind
         everyone = users + self.admins()
-        read_before = self.now - timedelta(days=2)
-        notifications = []
-
-        def add(recipient_id, kind, created_at, actor_id=None, **targets):
-            if recipient_id == actor_id:
-                return
-            notifications.append(
-                Notification(
-                    recipient_id=recipient_id,
-                    kind=kind,
-                    actor_id=actor_id,
-                    created_at=created_at,
-                    read_at=created_at if created_at < read_before else None,
-                    **targets,
-                )
-            )
-
         for comment in Comment.objects.filter(post__author__in=everyone).select_related("post"):
-            add(
+            targets = {"post_id": comment.post_id, "comment": comment}
+            yield (
                 comment.post.author_id,
                 Kind.COMMENT,
                 comment.created_at,
                 comment.author_id,
-                post_id=comment.post_id,
-                comment=comment,
+                targets,
             )
         for like in Like.objects.filter(post__author__in=everyone).select_related("post"):
-            add(like.post.author_id, Kind.LIKE, self.past(10), like.user_id, post_id=like.post_id)
+            targets = {"post_id": like.post_id}
+            yield like.post.author_id, Kind.LIKE, self.past(10), like.user_id, targets
         for follow in Follow.objects.filter(following__in=everyone):
-            add(follow.following_id, Kind.FOLLOW, self.past(30), follow.follower_id)
+            yield follow.following_id, Kind.FOLLOW, self.past(30), follow.follower_id, {}
         for request in FollowRequest.objects.filter(following__in=everyone):
-            add(request.following_id, Kind.FOLLOW_REQUEST, self.past(5), request.follower_id)
+            yield request.following_id, Kind.FOLLOW_REQUEST, self.past(5), request.follower_id, {}
         for request in FriendRequest.objects.filter(receiver__in=everyone):
-            add(request.receiver_id, Kind.FRIEND_REQUEST, self.past(5), request.sender_id)
+            yield request.receiver_id, Kind.FRIEND_REQUEST, self.past(5), request.sender_id, {}
         for warning in Warning.objects.filter(user__in=users):
-            add(warning.user_id, Kind.WARNING, warning.created_at, warning=warning)
+            yield warning.user_id, Kind.WARNING, warning.created_at, None, {"warning": warning}
+
+    def create_notifications(self, users):
+        Kind = Notification.Kind
+        read_before = self.now - timedelta(days=2)
+        notifications = [
+            Notification(
+                recipient_id=recipient_id,
+                kind=kind,
+                actor_id=actor_id,
+                created_at=created_at,
+                read_at=created_at if created_at < read_before else None,
+                **targets,
+            )
+            for recipient_id, kind, created_at, actor_id, targets in self.activities(users)
+            if recipient_id != actor_id
+        ]
         Notification.objects.bulk_create(notifications, batch_size=2000)
         for notification in Notification.objects.filter(
             kind=Kind.SUSPENSION, recipient__in=users, suspension__warning__isnull=False

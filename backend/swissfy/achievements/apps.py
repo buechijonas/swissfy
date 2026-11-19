@@ -1,10 +1,10 @@
 from django.apps import AppConfig
 from django.utils.autoreload import autoreload_started
 
+from .content import DATA
+
 
 def watch_content(sender, **kwargs):
-    from .content import DATA
-
     sender.watch_dir(DATA, "*.json")
 
 

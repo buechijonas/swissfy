@@ -135,8 +135,9 @@
     "unverified": "Non verificato",
     "safetyNumber": "Mostra numero di sicurezza",
     "safetyNumberHint": "Confrontate questo numero di sicurezza di persona o tramite un altro canale. Se coincide per entrambi, nessuno legge nel mezzo.",
-    "keysChanged": "{'@'}{username} ha nuove chiavi. Confrontate il vostro numero di sicurezza prima di scrivere qualcosa di riservato.",
+    "keysChanged": "{'@'}{username} ha nuove chiavi. Confrontate il vostro numero di sicurezza e confermalo per continuare a scrivere.",
     "keysAccepted": "Capito",
+    "confirmKeys": "Conferma prima le nuove chiavi",
     "enterPin": "Inserisci il PIN della chat per decifrare le tue chat.",
     "unlock": "Sblocca",
     "pin": "PIN della chat",
@@ -425,6 +426,7 @@
   "postCard": {
     "hidden": "Nascosto al pubblico",
     "editReel": "Modifica seed",
+    "reel": "Seed",
     "move": "Sposta nella cartella",
     "reported": "Segnalato",
     "report": "Segnala",

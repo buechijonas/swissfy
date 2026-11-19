@@ -1,13 +1,13 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseCard v-if="error" class="p-6">
         <p class="text-app-muted">{{ error }}</p>
       </BaseCard>
-      <div v-else-if="!comment" class="skeleton h-96 w-full"></div>
+      <div v-else-if="!comment" class="h-96 w-full skeleton"></div>
       <template v-else>
         <CommentSection
           :key="repliesUrl"
@@ -67,18 +67,18 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import commentsApi from '@/api/comments.js'
+import moderationApi from '@/api/moderation.js'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import ModerationPanel from '@/components/moderation/ModerationPanel.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
 import CommentSection from '@/components/posts/CommentSection.vue'
-import commentsApi from '@/api/comments.js'
-import moderationApi from '@/api/moderation.js'
-import { commentLink } from '@/lib/comments.js'
 import { t } from '@/i18n.js'
+import { commentLink } from '@/lib/comments.js'
 
 export default {
   name: 'CommentView',

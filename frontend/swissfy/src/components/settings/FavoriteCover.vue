@@ -1,7 +1,7 @@
 <template>
   <img
     v-if="item.cover"
-    class="app-cover aspect-2/3 w-full rounded-box object-cover bg-base-200"
+    class="app-cover aspect-2/3 w-full rounded-box bg-base-200 object-cover"
     :src="item.cover"
     :alt="item.title"
     loading="lazy"

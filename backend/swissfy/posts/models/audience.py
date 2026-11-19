@@ -18,10 +18,10 @@ NOT_HIDDEN = Q(hidden_at__isnull=True)
 
 
 class Audience(models.TextChoices):
-    PUBLIC = "public", _("Alle")
-    FOLLOWERS = "followers", _("Follower")
-    FRIENDS = "friends", _("Freunde")
-    GROUPS = "groups", _("Gruppen")
+    PUBLIC = "public", _("Everyone")
+    FOLLOWERS = "followers", _("Followers")
+    FRIENDS = "friends", _("Friends")
+    GROUPS = "groups", _("Groups")
     GLOBAL = "global", _("Global")
 
 

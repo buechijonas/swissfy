@@ -1,53 +1,64 @@
 <template>
-  <BaseCard
-    v-bounds="storeList"
-    v-pointer-drag="{ grab, move: drag, release, cancel }"
-    role="tablist"
-    class="app-tabs tabs relative flex-nowrap overflow-x-auto px-2 [scrollbar-width:none]"
-    :class="{ 'is-dragging': dragging, 'is-scrollable': scrollable }"
-    @dragstart.prevent
+  <BubbleNavigation
+    v-slot="nav"
+    :active="active"
+    :track-width="list?.scrollWidth"
+    :grab-active-only="scrollable"
+    @select="select"
   >
-    <span
-      v-if="bubble"
-      v-wobble="wobbles"
-      class="app-bubble"
-      :style="{ left: `${bubble.left}px`, width: `${bubble.width}px`, '--stretch': stretch }"
-    />
-    <RouterLink
-      v-for="tab in tabs"
-      :key="tab.key"
-      v-bounds="(box) => storeBox(tab.key, box)"
-      role="tab"
-      class="tab relative h-12 shrink-0 whitespace-nowrap border-y-2 border-t-transparent"
-      :class="[
-        active === tab.key ? 'tab-active border-b-primary' : 'border-b-transparent',
-        { 'flex-1': tab.icon },
-      ]"
-      :aria-selected="active === tab.key"
-      :title="tab.icon && tab.label"
-      :to="tabLink(tab)"
-      replace
+    <BaseCard
+      v-bounds="storeList"
+      v-pointer-drag="nav.handlers"
+      role="tablist"
+      class="app-tabs tabs relative [scrollbar-width:none] flex-nowrap overflow-x-auto px-2"
+      :class="{ 'is-dragging': nav.dragging, 'is-scrollable': scrollable }"
+      @dragstart.prevent
     >
-      <AppIcon v-if="tab.icon" :name="tab.icon" :alt="tab.label" class="size-5!" />
-      <template v-else>{{ tab.label }}</template>
-    </RouterLink>
-  </BaseCard>
+      <span
+        v-if="nav.bubble"
+        v-wobble="nav.wobbles"
+        class="app-bubble"
+        :style="{
+          left: `${nav.bubble.left}px`,
+          width: `${nav.bubble.width}px`,
+          '--stretch': nav.stretch,
+        }"
+      />
+      <RouterLink
+        v-for="tab in tabs"
+        :key="tab.key"
+        v-bounds="(box) => nav.storeBox(tab.key, box)"
+        role="tab"
+        class="tab relative h-12 shrink-0 border-y-2 border-t-transparent whitespace-nowrap"
+        :class="[
+          active === tab.key ? 'border-b-primary tab-active' : 'border-b-transparent',
+          { 'flex-1': tab.icon },
+        ]"
+        :aria-selected="active === tab.key"
+        :title="tab.icon && tab.label"
+        :to="tabLink(tab)"
+        replace
+      >
+        <AppIcon v-if="tab.icon" :name="tab.icon" :alt="tab.label" class="size-5!" />
+        <template v-else>{{ tab.label }}</template>
+      </RouterLink>
+    </BaseCard>
+  </BubbleNavigation>
 </template>
 
 <script>
 import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import BubbleNavigation from '@/components/common/BubbleNavigation.vue'
 import bounds from '@/directives/bounds.js'
 import pointerDrag from '@/directives/pointerDrag.js'
 import wobble from '@/directives/wobble.js'
-import bubbleNavigationMixin from '@/mixins/bubbleNavigationMixin.js'
 
 export default {
   name: 'BaseTabs',
-  components: { RouterLink, AppIcon, BaseCard },
+  components: { RouterLink, AppIcon, BaseCard, BubbleNavigation },
   directives: { bounds, pointerDrag, wobble },
-  mixins: [bubbleNavigationMixin],
   props: {
     tabs: { type: Array, required: true },
     active: { type: String, required: true },
@@ -56,14 +67,8 @@ export default {
     return { list: null }
   },
   computed: {
-    activeKey() {
-      return this.active
-    },
     scrollable() {
       return Boolean(this.list) && this.list.scrollWidth > this.list.clientWidth
-    },
-    trackWidth() {
-      return this.list.scrollWidth
     },
   },
   methods: {
@@ -72,12 +77,6 @@ export default {
     },
     storeList(box) {
       this.list = box
-    },
-    canGrab(x) {
-      return !this.scrollable || this.keyAt(x) === this.active
-    },
-    dragWidth(x) {
-      return this.boxes[this.keyAt(x) ?? this.active].width
     },
     select(key) {
       this.$router.replace(this.tabLink({ key }))

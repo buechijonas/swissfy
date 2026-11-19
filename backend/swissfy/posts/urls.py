@@ -1,5 +1,4 @@
 from commons.routers import Router
-from swissfy.social.views import StoryViewerViewSet
 
 from .views.albums import (
     AlbumEntryCollectionViewSet,
@@ -12,7 +11,7 @@ from .views.comments import CommentReplyViewSet, CommentViewSet, PostCommentView
 from .views.hashtags import HashtagPostViewSet, HashtagViewSet
 from .views.media import PostMediaViewSet
 from .views.posts import PostViewSet
-from .views.stories import StoryViewSet
+from .views.stories import StoryViewerViewSet, StoryViewSet
 from .views.users import UserPostViewSet
 
 router = Router()

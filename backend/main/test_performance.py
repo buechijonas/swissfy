@@ -157,6 +157,23 @@ class LargeDataTests(TestCase):
             seen.update(ids)
             url = page["next"]
 
+    def test_later_feed_pages_of_one_day_stay_in_the_day_window(self):
+        viewer = User.objects.create(username="viewer")
+        author = User.objects.create(username="author")
+        Follow.objects.create(follower=viewer, following=author)
+        old = Post.objects.create(author=author, text="alt")
+        Post.objects.filter(pk=old.pk).backdate(timezone.now() - timedelta(days=40))
+        today = [Post.objects.create(author=author, text=str(i)) for i in range(30)]
+        self.client.force_login(viewer)
+
+        first = self.client.get("/api/posts/").json()
+        with CaptureQueriesContext(connection) as queries:
+            second = self.client.get(first["next"]).json()
+        ids = [item["id"] for item in first["results"] + second["results"]]
+        self.assertEqual(ids, [str(post.uuid) for post in [*reversed(today), old]])
+        windowed = [query for query in queries if '"posts_feedentry"."day" >' in query["sql"]]
+        self.assertTrue(windowed)
+
     def test_search_with_many_users_returns_one_page(self):
         users = User.objects.bulk_create(User(username=f"user{i:04}") for i in range(1500))
         UserProfile.objects.bulk_create(UserProfile(user=user) for user in users)

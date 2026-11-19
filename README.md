@@ -1,14 +1,16 @@
 # Swissfy
 
 Swissfy is a social network: posts with images and videos, reels, stories,
-comments, hashtags, friends and followers, end-to-end encrypted chats,
-notifications, achievements and moderation.
+comments, hashtags, friends and followers, encrypted chats (end-to-end on
+request, see [Chat encryption](#chat-encryption)), notifications, achievements
+and moderation.
 
 The repo holds a Django REST backend (`backend/`) and two Vue frontends that
 share `frontend/core`: `frontend/swissfy` is the app itself, `frontend/docs` is
 the public changelog and the legal pages (imprint, privacy policy, terms of use,
 disclaimer) at `docs.swissfy.ch`. Logged-in users still have to agree to the
-privacy policy, terms and disclaimer inside swissfy (`/consent/<page>`). The setup mirrors wintersehn.
+privacy policy, terms and disclaimer inside swissfy (`/consent/<page>`). The
+setup mirrors wintersehn.
 
 Login goes through [govex](https://github.com/NEOTYRA/govex) (authentik, OIDC).
 swissfy stores no passwords; username, email, name, birthdate and avatar come
@@ -68,22 +70,43 @@ there are no tokens in the browser.
 ### Backend apps
 
 All apps live under `backend/swissfy/` and revolve around the user from
-`accounts`. They depend on each other on purpose and import each other freely
-instead of forming layers. For example, a like creates a notification, a block
-hides posts and chats, and a suspension stops posting.
+`accounts`. They depend on each other on purpose: a like creates a
+notification, a block hides posts and chats, a suspension stops posting. The
+direction of those dependencies is fixed, and `lint-imports` checks it in CI
+(contracts in `backend/pyproject.toml`).
 
-| URL prefix             | App                                         |
-| ---------------------- | ------------------------------------------- |
-| `/api/auth/`           | `accounts`: login, me, consent              |
-| `/api/social/`         | `social`: friends, follows, blocks, nicknames |
-| `/api/chats/`          | `chats`                                     |
-| `/api/` (posts, …)     | `posts`, `moderation`                       |
-| `/api/administration/` | `accounts.administration`                   |
-| `/api/notifications/`  | `notifications`                             |
+Models only import models of the apps below them:
+
+```text
+achievements → chats → notifications → posts → social → moderation → accounts
+```
+
+A reference against that direction is a lazy string: `posts.models` imports
+`Report`, and `Report` points back with `"posts.Post"`.
+
+Models and querysets never import views, serializers, URLs or permissions.
+Apps never import each other's views. Every app registers its own viewsets,
+even below another app's prefix: `achievements/urls.py` and
+`moderation/urls.py` add endpoints below `/api/social/profiles/`. The only
+exception is the moderation queue, which extends the comment viewsets of
+`posts`.
+
+Serializers may nest serializers of other apps. Helpers that several apps need
+go to `commons` (`commons.media`), permissions to the app that owns the
+concept (`IsNotSuspended` in `moderation`).
+
+| URL prefix             | App                                                             |
+| ---------------------- | --------------------------------------------------------------- |
+| `/api/auth/`           | `accounts`: login, me, consent                                  |
+| `/api/social/`         | `social`: friends, follows, blocks, nicknames                   |
+| `/api/chats/`          | `chats`                                                         |
+| `/api/` (posts, …)     | `posts`, `moderation`                                           |
+| `/api/administration/` | `accounts.administration`                                       |
+| `/api/notifications/`  | `notifications`                                                 |
 | `/api/internal/`       | `accounts`: profiles for wintersehn's monolith, token protected |
-| `/api/docs/`           | `docs`: changelogs, public                  |
-| `/api/health/`         | `main`                                      |
-| `/django-admin/`       | Django admin                                |
+| `/api/docs/`           | `docs`: changelogs, public                                      |
+| `/api/health/`         | `main`                                                          |
+| `/django-admin/`       | Django admin                                                    |
 
 Every user has a `UserProfile` that holds the link to govex (`govex_sub`).
 Roles are Django groups: `Admin`, `Moderator`, `Verifiziert`, `Standard`.
@@ -124,21 +147,69 @@ govex notifies swissfy about account changes through
 Both requests are signed with HMAC-SHA256, and swissfy accepts at most 5
 minutes of clock skew.
 
+swissfy keeps the consents to its own contracts; govex only shows them.
+`accounts/consent.py` signs the consent status (ES256 JWS,
+`CONSENT_PRIVATE_KEY`) and pushes it through govex's public attestation flow,
+so govex can store it but not forge it. A failed push never raises and is
+retried on the next login. The status govex sends back is not verified: it is
+only compared with swissfy's own records to see whether govex is outdated.
+
 ### Chat encryption
 
 Messages are encrypted in the browser. Each message gets a random AES-256-GCM
 key. That key is sealed once per recipient device with ML-KEM-768 + ECDH P-256
 combined through HKDF. The backend stores ciphertext and envelopes only.
 
-| Protection | Where the private key lives                          | Server can read? |
-| ---------- | ---------------------------------------------------- | ---------------- |
-| `standard` | the message key is also wrapped with `CHAT_ENCRYPTION_KEY`, so chats work on every device | yes |
-| `device`   | non-extractable key in this browser only             | no               |
-| `pin`      | encrypted with a PIN (PBKDF2, 600k iterations), stored on the server | no |
+| Protection | Where the private key lives                                                               | Server can read? | Forward secrecy |
+| ---------- | ----------------------------------------------------------------------------------------- | ---------------- | --------------- |
+| `standard` | the message key is also wrapped with `CHAT_ENCRYPTION_KEY`, so chats work on every device | yes              | no              |
+| `device`   | non-extractable key in this browser only                                                  | no               | 14 days         |
+| `pin`      | encrypted with a PIN (PBKDF2, 600k iterations), stored on the server                      | no               | no              |
 
 If either participant uses `standard`, the server key is attached. Messages
 are deleted after 14 days by `chat-cleanup`. Slow mode allows one message
 every 5 seconds per chat.
+
+Every key has a signing identity (ECDSA P-256) that endorses its encryption
+keys. In `device` mode the browser rotates the encryption keys every 7 days
+under the same identity (`prepareChatKeys` in `src/lib/chatKeys.js`) and
+deletes a retired private key once `CHAT_RETENTION_DAYS` have passed, when no
+message sealed for it can be left on the server. Someone who steals a device
+key therefore reads at most the last two weeks. Partners keep trusting a
+rotated key because a trusted identity endorsed it, and safety numbers cover
+the identity only, so rotation never changes them. `pin` cannot offer forward
+secrecy: new devices are meant to read old messages with the PIN. A server
+that keeps handing out an old, still endorsed key is not detected; that only
+affects messages sent after a key was stolen.
+
+Messages are versioned (`Message.version`). Clients send v2, which binds every
+part of a message to its context:
+
+- The key that wraps the message key is derived from the whole exchange. The
+  HKDF salt is a hash of key id, KEM ciphertext and ephemeral ECDH key, as in
+  X-Wing, and the same data is the AAD of the wrapped key.
+- The text is encrypted with sender and recipient as AAD, so the server cannot
+  show it in another chat or turn its direction.
+- The signature covers version, sender, recipient, signing key, ciphertext and
+  all envelopes, and the signing key has to belong to the sender.
+- Send time and a random nonce travel inside the ciphertext. A message that
+  arrives more than 24 hours after it was sent, or whose nonce the chat
+  already holds, shows as not verified.
+
+v1 messages stay readable. A v2 message cannot be read or verified as v1, so
+it cannot be downgraded. `tests/security/chatCrypto.test.js` covers all of
+this.
+
+The server still hands out the keys, and only people who compare safety
+numbers notice a key it slipped in. Replays are caught within the loaded
+history, and by send time alone once `chat-cleanup` deleted the original. The
+server sees who writes to whom, when and how much. A PIN holds against a
+database dump, because the wrapped key is encrypted at rest and the PIN
+verifier is an HMAC with `CHAT_ENCRYPTION_KEY`. It does not hold against
+someone who controls the server and its keys: they can try PINs offline, and
+six digits do not last long. The building blocks are standard (WebCrypto,
+`@noble/post-quantum`), but the protocol that combines them is our own and
+has not been audited.
 
 ### Live updates
 
@@ -211,8 +282,8 @@ This codebase does not accept that. The style is narrow on purpose, so that
 kind of code stands out in review right away. Every change has to fit the
 existing patterns, and fitting them means understanding them first.
 
-When in doubt, find the place where the same problem
-is already solved and do it the same way.
+When in doubt, find the place where the same problem is already solved and do
+it the same way.
 
 ### Backend
 
@@ -263,23 +334,29 @@ first: `select_for_update` for the post quota and `lock_users` before chat
 messages and chat requests, both inside `transaction.atomic`.
 
 **User-facing messages are translated** into English, German, French, Italian,
-Romansh, Spanish and simplified Chinese. The source language is German, wrapped
-in `gettext_lazy` (`_("…")`), with one catalog per language in
-`backend/locale/*/LC_MESSAGES/django.po`. Placeholders are named
-(`_("Dein Konto ist bis %(until)s gesperrt.") % {"until": until}`), never
-f-strings. Messages are raised directly from the backend (`BadRequest`,
+Romansh, Spanish and simplified Chinese. The source language is English, the
+same as `LANGUAGE_CODE`, wrapped in `gettext_lazy` (`_("…")`), with one
+catalog per language in `backend/locale/*/LC_MESSAGES/django.po`. Placeholders
+are named (`_("Your account is suspended until %(until)s.") % {"until": until}`),
+never f-strings. Messages are raised directly from the backend (`BadRequest`,
 `Conflict`, `RetryLater` in `commons.exceptions`), and the frontend shows
 `error.detail` as it is. Larger content that is not code, like the achievement
 texts, lives as JSON with one entry per language (`achievements/data/`) and is
 read through `commons.i18n.localized`, which falls back to English.
+
+`bin/translations` updates the catalogs. When a msgid changes, gettext guesses
+a translation and marks it fuzzy. CI rejects fuzzy entries, so check the guess
+in every language. Compact numbers (`main.numbers.compact_number`) are
+translated too, unit and decimal separator: `12 Tsd.`, `1,5 Mio.`, `1.5M`.
 
 The language is resolved the same way everywhere: the `language` cookie if the
 user picked one, otherwise the first supported browser language, otherwise
 English. The cookie is only written when someone picks a language. The API
 client sends the resolved language as `Accept-Language`, so frontend and
 backend always agree. `LANGUAGE_CODE` is English for that fallback; the test
-runner (`main.testing.SourceLanguageTestRunner`) switches to German, because the
-tests assert the source texts.
+runner (`main.testing.GermanTestRunner`) switches to German, so the tests
+assert the German texts and cover the German catalog on the way. Run
+`compilemessages` before the tests (`compose.yml` and CI do).
 
 ### Rules that apply everywhere
 
@@ -291,9 +368,14 @@ tests assert the source texts.
   variant or a separate method instead.
 - Short names from the domain: `respond`, `paginated`, `like_state`,
   `incoming_request`.
-- Formatting is not up for discussion: black and isort (line length 100),
-  flake8, Prettier, ESLint and oxlint. CI fails otherwise, as it does for
-  missing migrations.
+- An exception raised in `except` names its cause: `from error` when the cause
+  helps to debug (an image, ffmpeg, the network), `from None` when it is only
+  control flow (an invalid page number, a duplicate warning).
+- Formatting is not up for discussion. CI fails otherwise, as it does for
+  missing migrations. The backend uses `ruff format` and `ruff check` (rules in
+  `backend/pyproject.toml`), `bin/house-rules` for what Ruff cannot check (the
+  calls above and docstrings) and `lint-imports` for the app boundaries. The
+  frontend uses Prettier with the Tailwind plugin, ESLint and oxlint.
 
 ### Frontend
 
@@ -304,7 +386,18 @@ tests assert the source texts.
 - Styling uses Tailwind and daisyUI classes in the template, with the shared
   components from `components/common` (`BaseButton`, `BaseCard`, `AppIcon`,
   …). Every button has an `AppIcon`.
-- Reusable logic without UI goes into `src/lib/` (chat crypto, time, links).
+- Shared logic never comes from mixins, so every name in a component has a
+  visible origin. Pick by what is shared:
+  - Stateless logic is a plain function in `src/lib/` (chat crypto, time,
+    links, bubble geometry).
+  - State with its own lifecycle is a composable in `src/composables/` (or
+    `core/src/composables/`). Components create it under one name in
+    `data()`, not in `setup()`, and use it as `action.busy`, `feed.posts`,
+    `taps.tap(…)`, `clock.now`. `data()` runs in the component's scope, so
+    timers stop when the component unmounts. Props are read through `this`:
+    `usePostFeed({ url: () => this.url })`.
+  - State that has to be wired into the template of its user is a renderless
+    component that hands its state to a scoped slot (`BubbleNavigation`).
 - Every text goes through vue-i18n: `$t('…')` in templates, `t('…')` from
   `@/i18n.js` in scripts. Messages live in `src/locales/<language>.json`,
   shared ones in `core/src/locales`. The language switches without a reload,
@@ -317,20 +410,52 @@ tests assert the source texts.
   CI runs it.
 - Live data reacts to `useEventsStore()` (`chat`, `notification` counters)
   instead of polling.
+- ESLint and oxlint enforce the rules above: no `setup()`, `mixins`,
+  `setTimeout` or `nextTick` (tests wait with `flushPromises()`), a fixed order
+  of component options and template attributes, and sorted imports (packages,
+  `@core/…`, `@/…`, relative). Prettier sorts Tailwind classes. `frontend/core`
+  has no config of its own and is checked with the swissfy config.
+- Exceptions live in `.oxlintrc.json`, not in comments.
+  `unicorn/consistent-function-scoping` is off for Pinia setup stores, and
+  `PostMediaPicker.vue` may await in a loop: it compresses one image at a time,
+  because ten at once can crash a phone's tab.
+- Dependencies use `^` ranges, and `package-lock.json` pins them. Prettier, its
+  Tailwind plugin and `@noble/post-quantum` are pinned exactly, because their
+  updates change the formatting or the crypto.
 
 ### Tests
 
 Tests are Django `TestCase`s next to the app and split by intent:
 
-| File               | What it covers                                          |
-| ------------------ | ------------------------------------------------------- |
-| `tests.py`         | behaviour of the endpoints                              |
-| `test_security.py` | access control, input that must be rejected             |
-| `test_matrix.py`   | every combination of visibility, audience and relation  |
-| `main/test_performance.py` | query counts, so N+1 regressions fail          |
+| File                       | What it covers                                         |
+| -------------------------- | ------------------------------------------------------ |
+| `tests.py`                 | behaviour of the endpoints                             |
+| `test_security.py`         | access control, input that must be rejected            |
+| `test_matrix.py`           | every combination of visibility, audience and relation |
+| `main/test_performance.py` | query counts, so N+1 regressions fail                  |
 
 Frontend tests (Vitest) live in `frontend/swissfy/tests`, with security tests
 for rendering, links and chat crypto under `tests/security`.
+
+### Performance
+
+`with_details` adds about ten subqueries per post, but PostgreSQL evaluates
+them after `LIMIT`, for the rows of one page only. What grows with the data is
+the set of rows before the sort, so `FeedOrder` pages through day windows
+(`FEED_WINDOW`) and widens a window only when it holds too few posts.
+
+Measured with 5000 users, 200,000 posts, a million likes and 200,000 comments
+on PostgreSQL 17, best of three:
+
+| Endpoint                                    | Time     | Queries |
+| ------------------------------------------- | -------- | ------- |
+| feed, pages 1 to 5                          | 45–58 ms | 9       |
+| global feed                                 | 33 ms    | 8       |
+| reels                                       | 17 ms    | 4       |
+| saved, profile posts, post detail, comments | 21–33 ms | 5–8     |
+
+`main/test_performance.py` makes sure the number of queries does not grow with
+the data, and that later pages of a busy day still stay inside the window.
 
 ## Getting started
 
@@ -361,25 +486,25 @@ Then start swissfy:
 cd ~/projects/swissfy && docker compose up --build
 ```
 
-| Container      | What it does                                                    |
-| -------------- | --------------------------------------------------------------- |
-| `db`           | PostgreSQL 17                                                   |
-| `backend`      | migrates, creates the admin user, runs `runserver` with reload  |
-| `swissfy`      | Vite dev server for the app                                     |
-| `docs`         | Vite dev server for the changelog                               |
-| `events`       | server-sent events (uvicorn), `/api/events/`                    |
-| `video-worker` | transcodes uploaded videos                                      |
-| `chat-cleanup` | deletes chat messages older than 14 days, hourly                |
+| Container      | What it does                                                   |
+| -------------- | -------------------------------------------------------------- |
+| `db`           | PostgreSQL 17                                                  |
+| `backend`      | migrates, creates the admin user, runs `runserver` with reload |
+| `swissfy`      | Vite dev server for the app                                    |
+| `docs`         | Vite dev server for the changelog                              |
+| `events`       | server-sent events (uvicorn), `/api/events/`                   |
+| `video-worker` | transcodes uploaded videos                                     |
+| `chat-cleanup` | deletes chat messages older than 14 days, hourly               |
 
-| Service         | URL                                 | Login             |
-| --------------- | ----------------------------------- | ----------------- |
-| swissfy         | http://localhost:5175               | via govex         |
-| docs            | http://localhost:5176               | public            |
-| API             | http://localhost:8001/api/          | –                 |
-| Django admin    | http://localhost:8001/django-admin/ | `admin` / `admin` |
-| govex           | http://localhost:5174               | –                 |
+| Service         | URL                                 | Login               |
+| --------------- | ----------------------------------- | ------------------- |
+| swissfy         | http://localhost:5175               | via govex           |
+| docs            | http://localhost:5176               | public              |
+| API             | http://localhost:8001/api/          | –                   |
+| Django admin    | http://localhost:8001/django-admin/ | `admin` / `admin`   |
+| govex           | http://localhost:5174               | –                   |
 | authentik admin | http://localhost:9000/if/admin/     | `akadmin` / `admin` |
-| Mailpit         | http://localhost:8025               | –                 |
+| Mailpit         | http://localhost:8025               | –                   |
 
 The ports do not collide with wintersehn (5173/8000), so all three stacks can
 run at once. The source code is mounted into the containers. Only changes to
@@ -404,21 +529,21 @@ chats and sanctions. `--seed <n>` changes the seed.
 
 Run these from the repo root while the stack is up.
 
-| Task                  | Command                                                               |
-| --------------------- | --------------------------------------------------------------------- |
-| Backend tests         | `docker compose run --rm backend python manage.py test`               |
-| Tests of one app      | `docker compose run --rm backend python manage.py test swissfy.posts` |
-| Migrations            | `docker compose exec backend python manage.py makemigrations`         |
-| Django shell          | `docker compose exec backend python manage.py shell`                  |
-| Format backend        | `docker compose exec backend sh -c "isort . && black ."`              |
-| Lint backend          | `docker compose exec backend flake8`                                  |
-| Update translations   | `docker compose exec backend bin/translations`                        |
-| Check translations    | `bin/i18n`                                                            |
-| Frontend tests        | `docker compose exec swissfy npm test`                                |
-| Lint / format frontend | `docker compose exec swissfy npm run lint` / `npm run format` (same for `docs`) |
-| Production build      | `docker compose exec swissfy npm run build`                           |
-| Proxy image test      | `bin/test-proxy`                                                      |
-| Wipe all data         | `docker compose down -v`                                              |
+| Task                   | Command                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| Backend tests          | `docker compose run --rm backend python manage.py test`                               |
+| Tests of one app       | `docker compose run --rm backend python manage.py test swissfy.posts`                 |
+| Migrations             | `docker compose exec backend python manage.py makemigrations`                         |
+| Django shell           | `docker compose exec backend python manage.py shell`                                  |
+| Format backend         | `docker compose exec backend sh -c "ruff format . && ruff check --fix ."`             |
+| Lint backend           | `docker compose exec backend sh -c "ruff check . && bin/house-rules && lint-imports"` |
+| Update translations    | `docker compose exec backend bin/translations`                                        |
+| Check translations     | `bin/i18n`                                                                            |
+| Frontend tests         | `docker compose exec swissfy npm test`                                                |
+| Lint / format frontend | `docker compose exec swissfy npm run lint` / `npm run format` (same for `docs`)       |
+| Production build       | `docker compose exec swissfy npm run build`                                           |
+| Proxy image test       | `bin/test-proxy`                                                                      |
+| Wipe all data          | `docker compose down -v`                                                              |
 
 After adding a frontend dependency, the `node_modules` volume needs to be
 recreated:
@@ -467,18 +592,18 @@ on the server, usually in `/opt/swissfy`. The DNS records for the domain and
 `.env.example` is the template. Hostnames, origins, the cookie domain and the
 redirect URI are derived from `DOMAIN` in `compose.prod.yml`.
 
-| Variable                  | Purpose                                                        |
-| ------------------------- | -------------------------------------------------------------- |
-| `DOMAIN`, `ACME_EMAIL`    | public domain and Let's Encrypt contact                        |
-| `DJANGO_SECRET_KEY`       | Django secret key                                              |
-| `CONTENT_ENCRYPTION_KEYS` | `id:key` list, newest first, for content and media at rest     |
-| `CHAT_ENCRYPTION_KEY`     | server key for `standard` chat protection                      |
-| `CONSENT_PRIVATE_KEY`     | signs the consent status pushed to govex (`manage.py consent_signing_key`) |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL                                           |
-| `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Django admin, created once and never overwritten |
-| `GOVEX_PUBLIC_URL`, `GOVEX_ACCOUNT_URL` | govex login and account page                     |
-| `GOVEX_CLIENT_ID`, `GOVEX_CLIENT_SECRET` | must match `SWISSFY_CLIENT_*` in govex's `.env` |
-| `MONOLITH_API_TOKEN`      | enables `/api/internal/` for wintersehn; empty disables it     |
+| Variable                                          | Purpose                                                                    |
+| ------------------------------------------------- | -------------------------------------------------------------------------- |
+| `DOMAIN`, `ACME_EMAIL`                            | public domain and Let's Encrypt contact                                    |
+| `DJANGO_SECRET_KEY`                               | Django secret key                                                          |
+| `CONTENT_ENCRYPTION_KEYS`                         | `id:key` list, newest first, for content and media at rest                 |
+| `CHAT_ENCRYPTION_KEY`                             | server key for `standard` chat protection                                  |
+| `CONSENT_PRIVATE_KEY`                             | signs the consent status pushed to govex (`manage.py consent_signing_key`) |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD`               | PostgreSQL                                                                 |
+| `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Django admin, created once and never overwritten                           |
+| `GOVEX_PUBLIC_URL`, `GOVEX_ACCOUNT_URL`           | govex login and account page                                               |
+| `GOVEX_CLIENT_ID`, `GOVEX_CLIENT_SECRET`          | must match `SWISSFY_CLIENT_*` in govex's `.env`                            |
+| `MONOLITH_API_TOKEN`                              | enables `/api/internal/` for wintersehn; empty disables it                 |
 
 Generate the secrets:
 
@@ -491,6 +616,8 @@ python3 -c "import base64, os; print(base64.b64encode(os.urandom(32)).decode())"
 hand. Do not change it once chats exist, and never drop a content key that is
 still in use, or the data can no longer be decrypted.
 
+`DJANGO_DEBUG` defaults to `false`, so a missing variable can never turn on
+debug mode in production; `compose.yml` sets it to `true` for development.
 With `DJANGO_DEBUG=false` the backend refuses to start if a secret, an
 encryption key, the consent key or a govex variable is missing.
 

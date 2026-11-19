@@ -9,7 +9,7 @@
         {{ title }}
       </RouterLink>
     </div>
-    <span v-if="!authStore.ready" class="skeleton h-4 w-24"></span>
+    <span v-if="!authStore.ready" class="h-4 w-24 skeleton"></span>
     <span v-else-if="authStore.isAuthenticated" class="text-sm">
       {{ authStore.user.display_name }}
     </span>
@@ -30,8 +30,8 @@
       <div v-if="isMenuOpen" class="fixed inset-0 z-30" @click="isMenuOpen = false"></div>
       <ul
         v-if="isMenuOpen"
+        class="menu dropdown-content z-40 w-56 rounded-box border border-app-border bg-base-100 p-1 [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)]"
         @click="isMenuOpen = false"
-        class="dropdown-content menu z-40 w-56 rounded-box border border-app-border bg-base-100 p-1 [--menu-active-bg:transparent] [--menu-active-fg:var(--color-base-content)] [&_li>*:hover]:[--menu-active-bg:color-mix(in_oklab,var(--color-base-content)_10%,transparent)]"
       >
         <li>
           <RouterLink
@@ -90,8 +90,8 @@
 
 <script>
 import { RouterLink } from 'vue-router'
-import AppIcon from '@core/components/AppIcon.vue'
 import govexLogo from '@core/assets/govex.svg'
+import AppIcon from '@core/components/AppIcon.vue'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {

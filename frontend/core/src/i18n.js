@@ -26,7 +26,9 @@ async function loadMessages(value) {
 
 export async function applyLanguage(value) {
   await loadMessages(value)
-  if (language.value === value) i18n.global.locale.value = value
+  if (language.value !== value) return
+  i18n.global.locale.value = value
+  document.documentElement.lang = value
 }
 
 export function createAppI18n(messages) {

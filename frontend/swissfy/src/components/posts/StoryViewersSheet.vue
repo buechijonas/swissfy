@@ -28,9 +28,9 @@
 
 <script>
 import AppIcon from '@core/components/AppIcon.vue'
+import storiesApi from '@/api/stories.js'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import UserList from '@/components/common/UserList.vue'
-import storiesApi from '@/api/stories.js'
 
 export default {
   name: 'StoryViewersSheet',

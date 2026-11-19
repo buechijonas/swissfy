@@ -10,8 +10,8 @@ def localized(texts):
 
 
 def local_date(value):
-    return timezone.localtime(value).strftime(_("%d.%m.%Y"))
+    return timezone.localtime(value).strftime(_("%d/%m/%Y"))
 
 
 def local_datetime(value):
-    return timezone.localtime(value).strftime(_("%d.%m.%Y, %H:%M Uhr"))
+    return timezone.localtime(value).strftime(_("%d/%m/%Y, %H:%M"))

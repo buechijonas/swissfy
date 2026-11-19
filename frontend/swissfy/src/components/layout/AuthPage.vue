@@ -1,12 +1,12 @@
 <template>
-  <div class="flex flex-col max-h-[calc(100dvh-var(--header-height))] lg:max-h-full">
+  <div class="flex max-h-[calc(100dvh-var(--header-height))] flex-col lg:max-h-full">
     <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col flex-1 min-h-0 pb-16 px-6 overflow-y-auto">
+    <div class="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-16">
       <div class="mx-auto w-full max-w-100">
         <div
-          class="list bg-base-100 rounded-box max-sm:-mx-6 max-sm:rounded-none max-sm:border-x-0 shadow-none border-app-border border-solid border-1 mt-16 p-8"
+          class="list mt-16 rounded-box border-1 border-solid border-app-border bg-base-100 p-8 shadow-none max-sm:-mx-6 max-sm:rounded-none max-sm:border-x-0"
         >
-          <h2 class="text-xl font-light mb-6">{{ title }}</h2>
+          <h2 class="mb-6 text-xl font-light">{{ title }}</h2>
           <div class="text-swissfy-slate">
             <slot />
           </div>

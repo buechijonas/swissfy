@@ -1,6 +1,6 @@
 <template>
   <div
-    class="app-header max-lg:hidden sticky top-0 z-10 bg-base-200 flex items-center justify-between gap-4 border-b border-app-border py-2 px-6"
+    class="app-header sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-app-border bg-base-200 px-6 py-2 max-lg:hidden"
   >
     <BreadcrumbTrail :items="items" />
     <slot name="actions" />

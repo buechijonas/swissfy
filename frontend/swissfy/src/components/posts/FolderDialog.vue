@@ -1,6 +1,6 @@
 <template>
   <BaseDialog ref="dialog" :title="$t('folders.move')">
-    <ul class="menu w-full p-0 gap-1">
+    <ul class="menu w-full gap-1 p-0">
       <li>
         <button type="button" :class="{ 'menu-active': selected === null }" @click="select(null)">
           <AppIcon name="bookmark" />
@@ -19,7 +19,7 @@
       </li>
     </ul>
 
-    <form class="flex gap-2 mt-4" @submit.prevent="createFolder">
+    <form class="mt-4 flex gap-2" @submit.prevent="createFolder">
       <input
         v-model="newName"
         class="input flex-1"
@@ -36,12 +36,12 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
+import ErrorText from '@core/components/ErrorText.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
-import { useFoldersStore } from '@/stores/posts.js'
 import { t } from '@/i18n.js'
+import { useFoldersStore } from '@/stores/posts.js'
 
 export default {
   name: 'FolderDialog',

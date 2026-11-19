@@ -11,7 +11,7 @@
         ·
         {{ formatRelativeTime(comment.created_at) }}
       </p>
-      <RouterLink :to="commentLink(comment)" class="whitespace-pre-line break-words">
+      <RouterLink :to="commentLink(comment)" class="break-words whitespace-pre-line">
         {{ comment.text }}
       </RouterLink>
       <RouterLink
@@ -27,10 +27,10 @@
         />
         <div class="flex min-w-0 flex-col">
           <span class="flex min-w-0 items-center gap-1">
-            <span class="text-sm font-bold truncate">@{{ post.author.username }}</span>
+            <span class="truncate text-sm font-bold">@{{ post.author.username }}</span>
             <RoleBadge :role="post.author.role" />
           </span>
-          <p v-if="post.text" class="text-sm text-app-muted line-clamp-2 break-words">
+          <p v-if="post.text" class="line-clamp-2 text-sm break-words text-app-muted">
             {{ post.text }}
           </p>
         </div>

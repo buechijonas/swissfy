@@ -1,11 +1,11 @@
 <template>
   <div
     v-swipe="{ direction: setDirection, move, end, cancel: reset }"
-    class="relative overflow-hidden touch-pan-y"
+    class="relative touch-pan-y overflow-hidden"
   >
     <div
       v-show="offset"
-      class="absolute inset-0 flex items-center justify-end gap-2 px-6 bg-primary text-primary-content font-bold"
+      class="absolute inset-0 flex items-center justify-end gap-2 bg-primary px-6 font-bold text-primary-content"
       :class="{ 'opacity-60': !armed }"
     >
       <AppIcon :name="icon" />

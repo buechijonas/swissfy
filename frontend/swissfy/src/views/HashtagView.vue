@@ -1,13 +1,13 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseCard v-if="error" class="p-6">
         <p class="text-app-muted">{{ error }}</p>
       </BaseCard>
-      <div v-else-if="!hashtag" class="skeleton h-28 w-full"></div>
+      <div v-else-if="!hashtag" class="h-28 w-full skeleton"></div>
       <template v-else>
         <BaseCard class="flex items-center gap-4 p-6">
           <span
@@ -49,13 +49,13 @@
 
 <script>
 import AppIcon from '@core/components/AppIcon.vue'
-import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import postsApi from '@/api/posts.js'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import PostList from '@/components/posts/PostList.vue'
-import postsApi from '@/api/posts.js'
 import { t } from '@/i18n.js'
 
 function hashtagTabs() {

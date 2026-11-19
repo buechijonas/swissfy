@@ -1,13 +1,13 @@
-import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import authApi from '@core/api/auth.js'
+import { t } from '@/i18n.js'
 import { clearDeviceToken, readDeviceToken, writeDeviceToken } from '@/lib/deviceToken.js'
 import { persistentLogin } from '@/lib/preferences.js'
 import { useChatsStore } from '@/stores/chats.js'
 import { useEventsStore } from '@/stores/events.js'
 import { useNotificationsStore } from '@/stores/notifications.js'
 import { useFoldersStore, useGroupsStore } from '@/stores/posts.js'
-import { t } from '@/i18n.js'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)

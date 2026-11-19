@@ -1,62 +1,13 @@
-import re
-
-from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from commons.media import serve_image, serve_video
 from commons.views import BaseViewSet
 
 from ..models import Post, PostImage
-
-BYTE_RANGE = re.compile(r"bytes=(\d*)-(\d*)$")
-CHUNK_SIZE = 64 * 1024
-
-
-def serve_image(file):
-    response = FileResponse(file.open("rb"), content_type="image/webp")
-    response["Cache-Control"] = "private, max-age=31536000, immutable"
-    return response
-
-
-def read_range(file, start, length):
-    try:
-        file.seek(start)
-        while length > 0:
-            chunk = file.read(min(CHUNK_SIZE, length))
-            if not chunk:
-                break
-            length -= len(chunk)
-            yield chunk
-    finally:
-        file.close()
-
-
-def serve_video(request, file):
-    size = file.size
-    match = BYTE_RANGE.match(request.headers.get("Range", ""))
-    if not match or match.groups() == ("", ""):
-        response = FileResponse(file.open("rb"), content_type="video/mp4")
-    else:
-        first, last = match.groups()
-        if first:
-            start, end = int(first), min(int(last), size - 1) if last else size - 1
-        else:
-            start, end = max(0, size - int(last)), size - 1
-        if start > end:
-            return HttpResponse(status=416, headers={"Content-Range": f"bytes */{size}"})
-        response = StreamingHttpResponse(
-            read_range(file.open("rb"), start, end - start + 1),
-            status=206,
-            content_type="video/mp4",
-        )
-        response["Content-Length"] = end - start + 1
-        response["Content-Range"] = f"bytes {start}-{end}/{size}"
-    response["Accept-Ranges"] = "bytes"
-    response["Cache-Control"] = "private, max-age=31536000, immutable"
-    return response
 
 
 class PostMediaViewSet(BaseViewSet):

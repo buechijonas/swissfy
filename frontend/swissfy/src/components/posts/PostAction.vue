@@ -3,7 +3,7 @@
     <component
       :is="interactive ? 'button' : 'span'"
       :type="interactive ? 'button' : null"
-      class="relative flex size-6 box-content p-2.5 -m-2.5"
+      class="relative -m-2.5 box-content flex size-6 p-2.5"
       :class="{ 'cursor-pointer': interactive }"
       :disabled="interactive && disabled"
       :title="title"

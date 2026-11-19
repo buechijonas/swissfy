@@ -25,13 +25,13 @@ def webp(image):
 
 def load(upload):
     if upload.size > MAX_UPLOAD_SIZE:
-        raise InvalidImage(_("Ein Bild ist zu gross (max. 15 MB)."))
+        raise InvalidImage(_("An image is too large (max. 15 MB)."))
     try:
         with Image.open(upload, formats=FORMATS) as original:
             image = ImageOps.exif_transpose(original)
             image.load()
-    except (OSError, ValueError, Image.DecompressionBombError):
-        raise InvalidImage(_("Eine Datei ist kein gültiges Bild."))
+    except (OSError, ValueError, Image.DecompressionBombError) as error:
+        raise InvalidImage(_("A file is not a valid image.")) from error
 
     if image.mode not in ("RGB", "RGBA"):
         image = image.convert("RGBA")
@@ -51,9 +51,7 @@ def resized(upload):
 
 def compress(uploads):
     if len(uploads) > MAX_IMAGES:
-        raise InvalidImage(
-            _("Du kannst höchstens %(count)s Bilder hochladen.") % {"count": MAX_IMAGES}
-        )
+        raise InvalidImage(_("You can upload at most %(count)s images.") % {"count": MAX_IMAGES})
 
     first, *rest = [resized(upload) for upload in uploads]
     files = [(webp(image), *image.size) for image in [first, *rest]]

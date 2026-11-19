@@ -8,7 +8,7 @@
   >
     <input v-files="emitFiles" type="file" :accept="accept" class="sr-only" :multiple="multiple" />
     <AppIcon name="picture" class="size-10!" />
-    <span v-if="labelText" class="text-sm text-center px-4">{{ labelText }}</span>
+    <span v-if="labelText" class="px-4 text-center text-sm">{{ labelText }}</span>
   </label>
 </template>
 
@@ -50,8 +50,8 @@ export default {
     isAccepted(file) {
       return some(this.acceptedTypes, (type) => this.matchesType(file, type))
     },
-    emitFiles(files) {
-      const accepted = filter(files, this.isAccepted)
+    emitFiles(selected) {
+      const accepted = filter(selected, this.isAccepted)
       if (!accepted.length) return
       this.$emit('select', this.multiple ? accepted : take(accepted, 1))
     },

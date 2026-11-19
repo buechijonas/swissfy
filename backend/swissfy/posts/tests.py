@@ -507,6 +507,7 @@ class PostTests(TestCase):
         self.assertEqual(saved(), [second, first])
         self.assertEqual(saved(f"?folder={folder['id']}"), [first])
         self.assertEqual(saved("?folder=none"), [second])
+        self.assertEqual(self.client.get("/api/posts/saved/?folder=recipes").status_code, 400)
 
         self.client.delete(f"/api/posts/folders/{folder['id']}/")
         self.assertEqual(saved("?folder=none"), [second, first])
@@ -659,6 +660,7 @@ class VideoTests(TestCase):
         self.assertEqual(self.ids("?videos=1"), [data["id"]])
         self.assertEqual(self.ids("?images=1"), [])
         self.assertEqual(self.ids("?media=1"), [data["id"]])
+        self.assertEqual(self.client.get("/api/posts/users/anna/?videos=maybe").status_code, 400)
 
         response = self.client.get(data["video"])
         self.assertEqual(response["Content-Type"], "video/mp4")

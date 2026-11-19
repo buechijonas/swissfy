@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest'
 import { mount, RouterLinkStub } from '@vue/test-utils'
+import { describe, expect, it } from 'vitest'
 import BaseButton from '@core/components/BaseButton.vue'
 import PostText from '@/components/posts/PostText.vue'
-import LoginView from '@/views/auth/LoginView.vue'
 import { extractHashtags, hashtagLink } from '@/lib/hashtags.js'
+import LoginView from '@/views/auth/LoginView.vue'
 
 const PAYLOADS = [
   '<script>alert(1)</script>',

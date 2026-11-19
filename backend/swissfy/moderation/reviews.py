@@ -48,7 +48,7 @@ class ReportedContent:
 
     @property
     def kind(self):
-        return _("Feed") if self.is_post else _("Kommentar")
+        return _("Feed") if self.is_post else _("Comment")
 
     @property
     def text(self):

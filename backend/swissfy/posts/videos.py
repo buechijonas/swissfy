@@ -19,7 +19,7 @@ AUDIO_BITRATE = "96k"
 TRANSCODE_TIMEOUT = 600
 FORMATS = {"mov,mp4,m4a,3gp,3g2,mj2", "matroska,webm", "avi"}
 LOCAL_ONLY = ["-protocol_whitelist", "file"]
-NOT_A_VIDEO = _("Die Datei ist kein gültiges Video.")
+NOT_A_VIDEO = _("The file is not a valid video.")
 
 
 class InvalidVideo(Exception):
@@ -50,19 +50,19 @@ def probe(path):
         if info["format"]["format_name"] not in FORMATS:
             raise InvalidVideo(NOT_A_VIDEO)
         return info["streams"], float(info["format"]["duration"])
-    except (subprocess.SubprocessError, ValueError, KeyError):
-        raise InvalidVideo(NOT_A_VIDEO)
+    except (subprocess.SubprocessError, ValueError, KeyError) as error:
+        raise InvalidVideo(NOT_A_VIDEO) from error
 
 
 def validate(upload):
     if upload.size > MAX_UPLOAD_SIZE:
-        raise InvalidVideo(_("Das Video ist zu gross (max. 250 MB)."))
+        raise InvalidVideo(_("The video is too large (max. 250 MB)."))
     streams, duration = probe(upload.temporary_file_path())
     if not streams:
         raise InvalidVideo(NOT_A_VIDEO)
     if duration > MAX_DURATION + 0.5:
         raise InvalidVideo(
-            _("Das Video ist zu lang (max. %(seconds)s Sekunden).") % {"seconds": MAX_DURATION}
+            _("The video is too long (max. %(seconds)s seconds).") % {"seconds": MAX_DURATION}
         )
     upload.name = uuid.uuid4().hex
     return upload
@@ -96,7 +96,7 @@ def transcode(upload):
             with Image.open(frame) as image:
                 poster = image.convert("RGB")
         except (subprocess.SubprocessError, OSError) as error:
-            raise InvalidVideo(str(error))
+            raise InvalidVideo(str(error)) from error
 
         video = ContentFile(output.read_bytes(), name=f"{uuid.uuid4().hex}.mp4")
         return video, images.thumbnail(poster), *poster.size

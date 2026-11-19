@@ -6,7 +6,7 @@
       <BaseHeader />
       <div
         ref="scrollArea"
-        class="flex flex-1 flex-col lg:flex-none lg:h-[calc(100dvh-var(--header-height))] lg:overflow-y-auto"
+        class="flex flex-1 flex-col lg:h-[calc(100dvh-var(--header-height))] lg:flex-none lg:overflow-y-auto"
       >
         <slot />
       </div>
@@ -16,8 +16,8 @@
 </template>
 
 <script>
-import BaseNavigation from '@/components/common/BaseNavigation.vue'
 import BaseHeader from '@/components/common/BaseHeader.vue'
+import BaseNavigation from '@/components/common/BaseNavigation.vue'
 import FloatingAddButton from '@/components/common/FloatingAddButton.vue'
 
 export default {

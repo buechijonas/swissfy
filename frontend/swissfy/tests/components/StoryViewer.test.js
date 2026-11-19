@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import StoryViewer from '@/components/posts/StoryViewer.vue'
 
 function story(id, overrides = {}) {
@@ -23,7 +23,7 @@ async function mountViewer(stories) {
     global: { stubs: { teleport: true }, mocks: { $route: { path: '/profile/anna' } } },
   })
   wrapper.vm.open()
-  await wrapper.vm.$nextTick()
+  await flushPromises()
   return wrapper
 }
 
@@ -116,7 +116,7 @@ describe('StoryViewer', () => {
   it('closes on escape', async () => {
     const wrapper = await mountViewer([story('a')])
     document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-    await wrapper.vm.$nextTick()
+    await flushPromises()
     expect(wrapper.find('img[alt="Story"]').exists()).toBe(false)
   })
 

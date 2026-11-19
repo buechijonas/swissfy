@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="select select-sm w-48 gap-2 bg-base-100 text-left"
+    class="select w-48 gap-2 bg-base-100 text-left select-sm"
     :disabled="disabled"
     :aria-label="label"
     :aria-expanded="isOpen"

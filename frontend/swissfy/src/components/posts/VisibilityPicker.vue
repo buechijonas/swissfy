@@ -43,9 +43,9 @@ import { mapStores } from 'pinia'
 import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
+import { t } from '@/i18n.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useGroupsStore } from '@/stores/posts.js'
-import { t } from '@/i18n.js'
 
 export default {
   name: 'VisibilityPicker',

@@ -1,10 +1,10 @@
 <template>
   <BaseCard
-    class="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
+    class="flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left"
   >
     <div class="min-w-0">
       <p>{{ title }}</p>
-      <p v-if="hint" class="text-app-muted text-sm mt-1">{{ hint }}</p>
+      <p v-if="hint" class="mt-1 text-sm text-app-muted">{{ hint }}</p>
     </div>
     <slot />
   </BaseCard>

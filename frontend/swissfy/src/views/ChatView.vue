@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col h-[calc(100dvh-var(--mobile-chrome-height))] lg:h-full">
+  <div class="flex h-[calc(100dvh-var(--mobile-chrome-height))] flex-col lg:h-full">
     <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col flex-1 min-h-0 px-6">
+    <div class="flex min-h-0 flex-1 flex-col px-6">
       <ChatConversation :key="username" :username="username" />
     </div>
   </div>
@@ -9,9 +9,9 @@
 </template>
 
 <script>
+import ChatConversation from '@/components/chats/ChatConversation.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
-import ChatConversation from '@/components/chats/ChatConversation.vue'
 import { t } from '@/i18n.js'
 
 export default {

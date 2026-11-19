@@ -2,9 +2,9 @@
 @import '../../../core/src/assets/dyslexia.css';
 @import '../../../core/src/assets/theme.css';
 @source '../../../core/src';
-@plugin "daisyui";
+@plugin 'daisyui';
 
-@plugin "daisyui/theme" {
+@plugin 'daisyui/theme' {
   name: 'swissfy';
   default: true;
 
@@ -12,7 +12,7 @@
   --color-primary-content: #ffffff;
 }
 
-@plugin "daisyui/theme" {
+@plugin 'daisyui/theme' {
   name: 'dark';
   prefersdark: true;
 

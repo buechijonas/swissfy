@@ -7,7 +7,7 @@
       'cursor-pointer': !detail,
       'relative max-w-full border-0! bg-black!': reel,
       relative: !hasMedia,
-      'select-none': tapPending,
+      'select-none': taps.pending,
     }"
     class="touch-manipulation"
     @click="onCardClick"
@@ -29,7 +29,7 @@
             outline
             shape="square"
             size="sm"
-            :disabled="busy"
+            :disabled="action.busy"
             :title="$t('postCard.move')"
             @click="$refs.folderDialog.open(post.saved_folder)"
           >
@@ -39,7 +39,7 @@
             v-if="post.can_report"
             outline
             size="sm"
-            :disabled="busy || post.reported"
+            :disabled="action.busy || post.reported"
             @click="report"
           >
             <AppIcon name="flag" />
@@ -61,7 +61,7 @@
         <PostText
           v-if="post.text"
           :parts="post.text_parts"
-          class="px-4 py-3 whitespace-pre-line break-words"
+          class="px-4 py-3 break-words whitespace-pre-line"
         />
       </template>
 
@@ -72,7 +72,7 @@
         :detail="detail"
         :reel="reel"
         :overlay="overlay"
-        @tap="tap(togglePlay)"
+        @tap="taps.tap(togglePlay, doubleTap)"
       >
         <HeartBurst ref="heart" />
       </PostVideo>
@@ -83,7 +83,7 @@
     <PostText
       v-if="post.video && !overlay && post.text"
       :parts="post.text_parts"
-      class="px-4 pt-3 whitespace-pre-line break-words"
+      class="px-4 pt-3 break-words whitespace-pre-line"
     />
 
     <PostImages v-if="post.images.length" :images="post.images">
@@ -96,7 +96,7 @@
       v-if="!moderation"
       :post="post"
       :reel="reel"
-      :busy="busy"
+      :busy="action.busy"
       :commentable="hasCommentSheet"
       :has-menu="hasMenu"
       @like="toggleLike"
@@ -105,12 +105,12 @@
       @save="toggleSave"
       @menu="$refs.menu.open()"
     />
-    <ErrorText :message="error" class="px-4 pb-3" />
+    <ErrorText :message="action.error" class="px-4 pb-3" />
 
     <BaseDialog
       v-if="reel && hasMenu"
       ref="menu"
-      title="Seed"
+      :title="$t('postCard.reel')"
       class="modal-bottom sm:modal-middle"
       @click.stop
     >
@@ -122,7 +122,7 @@
         <BaseButton
           v-if="post.can_report"
           block
-          :disabled="busy || post.reported"
+          :disabled="action.busy || post.reported"
           @click="reportFromMenu"
         >
           <AppIcon name="shield-exclamation" />
@@ -151,13 +151,13 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
-import doubleTapMixin from '@/mixins/doubleTapMixin.js'
 import { mapStores } from 'pinia'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import { useAsyncAction } from '@core/composables/asyncAction.js'
+import postsApi from '@/api/posts.js'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import AuthorHeader from '@/components/posts/AuthorHeader.vue'
 import CommentSheet from '@/components/posts/CommentSheet.vue'
@@ -169,13 +169,12 @@ import PostEditDialog from '@/components/posts/PostEditDialog.vue'
 import PostImages from '@/components/posts/PostImages.vue'
 import PostText from '@/components/posts/PostText.vue'
 import PostVideo from '@/components/posts/PostVideo.vue'
-import postsApi from '@/api/posts.js'
-import { useAuthStore } from '@/stores/auth.js'
+import { useDoubleTap } from '@/composables/doubleTap.js'
 import { t } from '@/i18n.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'PostCard',
-  mixins: [asyncActionMixin, doubleTapMixin],
   components: {
     AppIcon,
     AuthorHeader,
@@ -202,6 +201,12 @@ export default {
     reel: { type: Boolean, default: false },
   },
   emits: ['update', 'deleted', 'saved-change'],
+  data() {
+    return {
+      action: useAsyncAction(),
+      taps: useDoubleTap(),
+    }
+  },
   computed: {
     ...mapStores(useAuthStore),
     hasMedia() {
@@ -223,7 +228,7 @@ export default {
         if (!this.detail) this.$router.push(`/moderation/posts/${this.post.id}`)
         return
       }
-      this.tap(this.hasCommentSheet && !this.reel ? this.openComments : null)
+      this.taps.tap(this.hasCommentSheet && !this.reel ? this.openComments : null, this.doubleTap)
     },
     doubleTap() {
       if (this.moderation) return
@@ -244,7 +249,7 @@ export default {
         this.$router.push('/login')
         return null
       }
-      const post = await this.runAction(request, t('common.actionFailed'))
+      const post = await this.action.run(request, t('common.actionFailed'))
       if (post) this.$emit('update', post)
       return post
     },

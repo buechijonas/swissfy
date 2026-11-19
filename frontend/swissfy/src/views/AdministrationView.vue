@@ -1,10 +1,10 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
   >
     <div class="mx-auto w-full max-w-150 pt-4">
-      <div class="flex flex-wrap gap-2 mb-4">
+      <div class="mb-4 flex flex-wrap gap-2">
         <label class="input min-w-0 flex-1">
           <AppIcon name="search" class="text-app-muted" />
           <input
@@ -28,11 +28,11 @@
           <UserAvatar class="size-12" :user="user" />
           <RouterLink :to="profileLink(user)" class="flex min-w-0 flex-1 flex-col">
             <span class="flex min-w-0 items-center gap-2">
-              <span class="font-bold truncate">{{ user.display_name }}</span>
+              <span class="truncate font-bold">{{ user.display_name }}</span>
               <RoleBadge :role="user.badge" />
             </span>
-            <span class="text-app-muted text-sm truncate">@{{ user.username }}</span>
-            <span v-if="user.role_locked_until" class="text-error text-xs">
+            <span class="truncate text-sm text-app-muted">@{{ user.username }}</span>
+            <span v-if="user.role_locked_until" class="text-xs text-error">
               {{ lockText(user) }}
             </span>
           </RouterLink>
@@ -50,7 +50,7 @@
       </BaseCard>
 
       <ErrorText :message="error" class="mt-4 text-center" />
-      <div v-if="loading" class="skeleton h-24 w-full mt-4"></div>
+      <div v-if="loading" class="mt-4 h-24 w-full skeleton"></div>
       <BaseButton v-else-if="next" class="mt-4" size="sm" block @click="load">
         <AppIcon name="down" />
         {{ $t('common.loadMore') }}
@@ -61,20 +61,20 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import debounce from 'lodash-es/debounce'
-import RoleSelect from '@/components/administration/RoleSelect.vue'
 import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/AppIcon.vue'
-import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import administrationApi from '@/api/administration.js'
+import RoleSelect from '@/components/administration/RoleSelect.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import RoleBadge from '@/components/common/RoleBadge.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import administrationApi from '@/api/administration.js'
-import { formatDate } from '@/lib/time.js'
 import { t } from '@/i18n.js'
+import { formatDate } from '@/lib/time.js'
 
 const DEBOUNCE_MS = 300
 

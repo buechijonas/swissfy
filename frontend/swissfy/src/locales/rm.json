@@ -135,8 +135,9 @@
     "unverified": "Betg verifitgà",
     "safetyNumber": "Mussar il numer da segirezza",
     "safetyNumberHint": "Cumparegliai quest numer da segirezza persunalmain u sur in auter chanal. Sch'el correspunda per vus dus, na legia nagin tranteren.",
-    "keysChanged": "{'@'}{username} ha novas clavs. Cumparegliai voss numer da segirezza avant che ti scrivas insatge confidenzial.",
+    "keysChanged": "{'@'}{username} ha novas clavs. Cumparegliai voss numer da segirezza e confermescha el per cuntinuar a scriver.",
     "keysAccepted": "Chapì",
+    "confirmKeys": "Confermescha l’emprim las novas clavs",
     "enterPin": "Endatescha tes PIN dal chat per decriptar tes chats.",
     "unlock": "Debloccar",
     "pin": "PIN dal chat",
@@ -425,6 +426,7 @@
   "postCard": {
     "hidden": "Zuppà per il public",
     "editReel": "Modifitgar il seed",
+    "reel": "Seed",
     "move": "Spustar en in ordinatur",
     "reported": "Annunzià",
     "report": "Annunziar",

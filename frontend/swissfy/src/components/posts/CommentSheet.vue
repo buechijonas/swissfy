@@ -17,9 +17,9 @@
 </template>
 
 <script>
+import postsApi from '@/api/posts.js'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import CommentSection from '@/components/posts/CommentSection.vue'
-import postsApi from '@/api/posts.js'
 
 export default {
   name: 'CommentSheet',

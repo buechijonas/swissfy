@@ -7,10 +7,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from commons.views import BaseViewSet, CreateModelMixin
+from swissfy.moderation.permissions import IsNotSuspended
 from swissfy.notifications.models import Notification
 
 from ..models import Comment, CommentVote, Post
-from ..permissions import IsAuthor, IsNotSuspended
+from ..permissions import IsAuthor
 from ..serializers import CommentModelSerializer, PostModelSerializer
 from .pagination import OldestFirst
 
@@ -83,7 +84,7 @@ class CommentReplyViewSet(CommentReplyListViewSet, CreateModelMixin):
     def perform_create(self, serializer):
         parent = self.get_parent()
         if not Post.objects.apply_acl(self.request.user).filter(pk=parent.post_id).exists():
-            raise PermissionDenied(_("Dieser Feed ist nicht mehr verfügbar."))
+            raise PermissionDenied(_("This feed is no longer available."))
         comment = serializer.save(post=parent.post, parent=parent, author=self.request.user)
         notify_comment(comment)
         return comment
@@ -146,7 +147,7 @@ class CommentViewSet(CommentDetailViewSet, mixins.DestroyModelMixin):
     def vote(self, request, uuid):
         comment = self.get_object()
         if not comment.can_vote:
-            raise PermissionDenied(_("Du kannst nicht über eigene Kommentare abstimmen."))
+            raise PermissionDenied(_("You cannot vote on your own comments."))
         serializer = CommentModelSerializer.vote(data=request.data)
         serializer.is_valid(raise_exception=True)
         value = serializer.validated_data["value"]

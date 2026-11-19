@@ -1,4 +1,5 @@
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 import django.conf.locale
@@ -7,7 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
+DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
@@ -74,6 +75,7 @@ CHAT_RETENTION_DAYS = 14
 CHAT_SLOW_MODE_SECONDS = 5
 CHAT_PIN_ATTEMPTS = 5
 CHAT_PIN_LOCKOUT_SECONDS = 3600
+CHAT_LEGACY_PIN_UNTIL = datetime(2026, 12, 31, tzinfo=UTC)
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
@@ -231,4 +233,4 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-TEST_RUNNER = "main.testing.SourceLanguageTestRunner"
+TEST_RUNNER = "main.testing.GermanTestRunner"

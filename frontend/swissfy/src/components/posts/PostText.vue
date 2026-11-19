@@ -4,8 +4,8 @@
       <RouterLink
         v-if="part.hashtag"
         :to="hashtagLink(part.hashtag)"
-        @click.stop
         class="pointer-events-auto font-semibold text-primary hover:underline"
+        @click.stop
         >{{ part.text }}</RouterLink
       >
       <template v-else>{{ part.text }}</template>

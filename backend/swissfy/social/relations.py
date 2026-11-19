@@ -39,9 +39,9 @@ def unfollow(viewer, target):
 
 def send_friend_request(viewer, target):
     if not (follows(viewer, target) and follows(target, viewer)):
-        raise BadRequest(_("Freundschaftsanfragen gehen nur, wenn ihr euch gegenseitig folgt."))
+        raise BadRequest(_("Friend requests only work if you follow each other."))
     if are_friends(viewer, target):
-        raise BadRequest(_("Ihr seid bereits befreundet."))
+        raise BadRequest(_("You are already friends."))
     friend_request, created = FriendRequest.objects.get_or_create(sender=viewer, receiver=target)
     if created:
         Notification.notify(target, Kind.FRIEND_REQUEST, actor=viewer)

@@ -1,6 +1,7 @@
 import base64
 import io
 import os
+from functools import cache
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
@@ -15,9 +16,14 @@ PREFIX = len(FILE_MAGIC) + 1
 HEADER = PREFIX + NONCE + KEY + TAG
 
 
-def keys():
-    entries = (entry.split(":", 1) for entry in settings.CONTENT_ENCRYPTION_KEYS.split(","))
+@cache
+def parse_keys(value):
+    entries = (entry.split(":", 1) for entry in value.split(","))
     return {int(key_id): base64.b64decode(key) for key_id, key in entries}
+
+
+def keys():
+    return parse_keys(settings.CONTENT_ENCRYPTION_KEYS)
 
 
 def current_key():

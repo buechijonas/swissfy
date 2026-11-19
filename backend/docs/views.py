@@ -18,5 +18,5 @@ class ChangelogViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Re
     def get_object(self):
         changelog = Changelog.get(self.kwargs["version"])
         if changelog is None:
-            raise NotFound(_("Diese Version gibt es nicht."))
+            raise NotFound(_("This version does not exist."))
         return changelog

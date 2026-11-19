@@ -1,8 +1,7 @@
 import { fileURLToPath, URL } from 'node:url'
-
-import { defineConfig, searchForWorkspaceRoot } from 'vite'
-import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
+import vue from '@vitejs/plugin-vue'
+import { defineConfig, searchForWorkspaceRoot } from 'vite'
 
 const core = fileURLToPath(new URL('../core/src', import.meta.url))
 

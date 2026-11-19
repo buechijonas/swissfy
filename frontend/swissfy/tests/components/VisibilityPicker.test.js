@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it } from 'vitest'
 import { mount, RouterLinkStub } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
 import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useGroupsStore } from '@/stores/posts.js'

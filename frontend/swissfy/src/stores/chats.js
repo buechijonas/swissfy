@@ -1,5 +1,5 @@
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import chatsApi from '@/api/chats.js'
 
 export const useChatsStore = defineStore('chats', () => {

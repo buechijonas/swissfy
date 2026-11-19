@@ -5,198 +5,35 @@
     </template>
   </BaseBreadcrumbs>
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
     :class="{ 'max-sm:pb-0': timeline }"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseCard v-if="loading" class="p-6">
         <div class="flex items-center justify-center gap-4">
-          <div class="skeleton size-20 rounded-full"></div>
+          <div class="size-20 skeleton rounded-full"></div>
           <div class="flex flex-col gap-2">
-            <div class="skeleton h-5 w-40"></div>
-            <div class="skeleton h-4 w-24"></div>
+            <div class="h-5 w-40 skeleton"></div>
+            <div class="h-4 w-24 skeleton"></div>
           </div>
         </div>
-        <div class="skeleton mt-6 h-16 w-full"></div>
+        <div class="mt-6 h-16 w-full skeleton"></div>
       </BaseCard>
 
       <BaseCard v-else-if="error" class="p-6">
         <p class="text-app-muted">{{ error }}</p>
       </BaseCard>
 
-      <BaseCard v-else class="p-6">
-        <div class="flex items-center justify-center gap-4">
-          <div class="relative shrink-0">
-            <button
-              v-if="profile.stories?.length"
-              type="button"
-              class="block cursor-pointer rounded-full"
-              :title="$t('profile.viewStory')"
-              @click="$refs.storyViewer.open()"
-            >
-              <UserAvatar
-                class="size-20"
-                :user="profile"
-                story-ring
-                :story-seen="profile.stories.every((story) => story.seen)"
-              />
-            </button>
-            <button
-              v-else-if="profile.is_self"
-              type="button"
-              class="block cursor-pointer rounded-full"
-              :title="$t('profile.addStory')"
-              @click="$router.push('/upload/story')"
-            >
-              <UserAvatar class="size-20" :user="profile" />
-            </button>
-            <UserAvatar v-else class="size-20" :user="profile" />
-            <button
-              v-if="profile.is_self && !profile.stories?.length"
-              type="button"
-              class="absolute -right-0.5 -bottom-0.5 flex size-6 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-content ring-2 ring-base-100"
-              :title="$t('profile.addStory')"
-              @click="$router.push('/upload/story')"
-            >
-              <AppIcon name="plus" :alt="$t('profile.addStory')" class="size-3!" />
-            </button>
-          </div>
-          <div class="flex flex-col min-w-0">
-            <span class="flex min-w-0 items-center gap-2">
-              <CipherText v-if="!profile.can_view" :length="10" class="text-lg font-bold" />
-              <span v-else class="text-lg font-bold truncate">{{ profile.display_name }}</span>
-              <RoleBadge :role="profile.role" />
-            </span>
-            <span class="text-app-muted truncate">@{{ profile.username }}</span>
-          </div>
-          <BaseButton
-            v-if="profile.is_self"
-            shape="square"
-            class="shrink-0"
-            to="/settings?tab=profile"
-            :title="$t('common.edit')"
-          >
-            <AppIcon name="pencil" :alt="$t('common.edit')" />
-          </BaseButton>
-        </div>
-
-        <div class="grid grid-cols-3 gap-4 mt-6 text-center">
-          <div class="flex flex-col items-center gap-2">
-            <RouterLink
-              v-if="profile.can_view"
-              :to="connectionLink('followers')"
-              class="flex flex-col items-center gap-2 hover:underline"
-            >
-              <span class="text-xl font-bold">{{ profile.follower_count }}</span>
-              <span class="text-app-muted text-sm">{{ $t('profile.followers') }}</span>
-            </RouterLink>
-            <template v-else>
-              <CipherText class="text-xl font-bold" />
-              <span class="text-app-muted text-sm">{{ $t('profile.followers') }}</span>
-            </template>
-            <BaseButton
-              v-if="!profile.is_self"
-              size="sm"
-              block
-              :variant="profile.is_following || profile.follow_requested ? 'neutral' : 'primary'"
-              :disabled="busy"
-              @click="toggleFollow"
-            >
-              <AppIcon :name="followIcon" />
-              {{ followLabel }}
-            </BaseButton>
-          </div>
-          <div class="flex flex-col items-center gap-2">
-            <RouterLink
-              v-if="profile.can_view"
-              :to="connectionLink('following')"
-              class="flex flex-col items-center gap-2 hover:underline"
-            >
-              <span class="text-xl font-bold">{{ profile.following_count }}</span>
-              <span class="text-app-muted text-sm">{{ $t('profile.following') }}</span>
-            </RouterLink>
-            <template v-else>
-              <CipherText class="text-xl font-bold" />
-              <span class="text-app-muted text-sm">{{ $t('profile.following') }}</span>
-            </template>
-            <BaseButton
-              v-if="!profile.is_self"
-              size="sm"
-              block
-              variant="primary"
-              :to="profile.can_chat ? `/chats/${encodeURIComponent(profile.username)}` : null"
-              :disabled="!profile.can_chat"
-            >
-              <AppIcon name="comments" />
-              {{ $t('profile.chat') }}
-            </BaseButton>
-          </div>
-          <div class="flex flex-col items-center gap-2">
-            <RouterLink
-              v-if="profile.can_view"
-              :to="connectionLink('friends')"
-              class="flex flex-col items-center gap-2 hover:underline"
-            >
-              <span class="text-xl font-bold">{{ profile.friend_count }}</span>
-              <span class="text-app-muted text-sm">{{ $t('profile.friends') }}</span>
-            </RouterLink>
-            <template v-else>
-              <CipherText class="text-xl font-bold" />
-              <span class="text-app-muted text-sm">{{ $t('profile.friends') }}</span>
-            </template>
-            <BaseButton
-              v-if="canRequestFriendship"
-              size="sm"
-              block
-              variant="primary"
-              :disabled="busy || profile.friend_request_sent"
-              @click="sendFriendRequest"
-            >
-              <AppIcon :name="profile.friend_request_sent ? 'clock' : 'users'" />
-              {{ profile.friend_request_sent ? $t('profile.requested') : $t('profile.request') }}
-            </BaseButton>
-          </div>
-        </div>
-
-        <p
-          v-if="!profile.can_view"
-          class="flex items-center justify-center gap-2 text-app-muted text-sm mt-6"
-        >
-          <AppIcon name="lock" size="sm" />
-          {{ $t('profile.private') }}
-        </p>
-
-        <ErrorText :message="actionError" class="mt-4 text-center" />
-      </BaseCard>
+      <ProfileHeader
+        v-else
+        :key="profile.username"
+        v-model:profile="profile"
+        @open-story="$refs.storyViewer.open()"
+      />
 
       <template v-if="!loading && !error && tabs.length">
         <BaseTabs class="border-t-0" :tabs="tabs" :active="activeTab" />
-        <BaseCard v-if="activeTab === 'about'" class="p-6 border-t-0 flex flex-col gap-6">
-          <p v-if="profile.biography" class="whitespace-pre-line break-words">
-            {{ profile.biography }}
-          </p>
-          <dl v-if="profile.birthdate" class="flex justify-between gap-4">
-            <dt class="text-app-muted">{{ $t('profile.birthdate') }}</dt>
-            <dd>{{ formatDate(profile.birthdate) }}</dd>
-          </dl>
-          <section v-for="favorite in favorites" :key="favorite.kind">
-            <h4 class="text-app-muted mb-2">{{ favorite.label }}</h4>
-            <ul class="grid grid-cols-3 gap-4">
-              <li v-for="item in profile[favorite.field]" :key="item.id" class="min-w-0">
-                <FavoriteCover :item="item" :icon="favorite.icon" />
-                <p class="text-sm truncate mt-2" :title="item.title">{{ item.title }}</p>
-                <p v-if="item.year" class="text-xs text-app-muted">{{ item.year }}</p>
-              </li>
-            </ul>
-          </section>
-          <LibraryCredits v-if="favorites.length" />
-          <p
-            v-if="!profile.biography && !profile.birthdate && !favorites.length"
-            class="text-app-muted"
-          >
-            {{ $t('profile.noDetails') }}
-          </p>
-        </BaseCard>
+        <ProfileAbout v-if="activeTab === 'about'" :profile="profile" />
         <ProfileAchievements
           v-else-if="activeTab === 'achievements'"
           :key="`${profile.username}-achievements`"
@@ -213,24 +50,7 @@
           :key="`${profile.username}-status`"
           :username="profile.username"
         />
-        <div v-if="switcher" class="flex max-sm:-mx-6 lg:mt-2 lg:justify-end">
-          <BaseSwitcher
-            class="join w-full lg:w-auto"
-            item-class="join-item max-lg:flex-1 max-lg:rounded-none"
-            :options="switcher.options"
-            :active="switcher.active"
-            @select="$router.replace({ query: { ...$route.query, [switcher.param]: $event } })"
-          />
-        </div>
-        <PostList
-          v-if="postList"
-          :key="`${profile.username}-${activeTab}-${switcher?.active}`"
-          :class="switcher ? 'lg:mt-2' : 'mt-4'"
-          :url="postsUrl"
-          :grid="!timeline"
-          :edge-to-edge="timeline"
-          :empty-text="postList.emptyText"
-        />
+        <ProfilePosts v-else :profile="profile" :timeline="timeline" />
       </template>
     </div>
   </div>
@@ -247,35 +67,23 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import { mapStores } from 'pinia'
-import map from 'lodash-es/map'
-import { RouterLink } from 'vue-router'
-import AddButton from '@/components/common/AddButton.vue'
-import AppIcon from '@core/components/AppIcon.vue'
-import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
-import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
-import BaseFooter from '@/components/common/BaseFooter.vue'
-import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
-import BaseTabs from '@/components/common/BaseTabs.vue'
-import CipherText from '@/components/common/CipherText.vue'
-import RoleBadge from '@/components/common/RoleBadge.vue'
+import profilesApi from '@/api/profiles.js'
 import ProfileAchievements from '@/components/achievements/ProfileAchievements.vue'
 import ProfileAlbums from '@/components/albums/ProfileAlbums.vue'
-import CreateDialog from '@/components/posts/CreateDialog.vue'
-import PostList from '@/components/posts/PostList.vue'
-import StoryViewer from '@/components/posts/StoryViewer.vue'
+import AddButton from '@/components/common/AddButton.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseTabs from '@/components/common/BaseTabs.vue'
 import ProfileStatus from '@/components/moderation/ProfileStatus.vue'
-import FavoriteCover from '@/components/settings/FavoriteCover.vue'
-import LibraryCredits from '@/components/settings/LibraryCredits.vue'
-import { favoriteKinds } from '@/data/favorites.js'
-import UserAvatar from '@/components/common/UserAvatar.vue'
-import postsApi from '@/api/posts.js'
-import profilesApi from '@/api/profiles.js'
-import { useAuthStore } from '@/stores/auth.js'
-import { formatDate } from '@/lib/time.js'
+import CreateDialog from '@/components/posts/CreateDialog.vue'
+import StoryViewer from '@/components/posts/StoryViewer.vue'
+import ProfileAbout from '@/components/profile/ProfileAbout.vue'
+import ProfileHeader from '@/components/profile/ProfileHeader.vue'
+import ProfilePosts from '@/components/profile/ProfilePosts.vue'
 import { t } from '@/i18n.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 function profileTabs() {
   return [
@@ -287,40 +95,7 @@ function profileTabs() {
     { key: 'status', label: t('profile.status'), icon: 'map-marker-smile' },
   ]
 }
-function mediaKinds() {
-  return {
-    pictures: {
-      flag: 'pictures',
-      label: t('profile.posts'),
-      icon: 'picture',
-      query: '?images=1',
-      emptyText: t('profile.noPosts'),
-    },
-    clips: {
-      flag: 'reels',
-      label: t('profile.reels'),
-      icon: 'clapperboard-play',
-      query: '?videos=1',
-      emptyText: t('profile.noReels'),
-    },
-  }
-}
-function activityKinds() {
-  return {
-    feeds: {
-      label: t('profile.posts'),
-      icon: 'list-timeline',
-      query: 'activities/',
-      emptyText: t('profile.noPosts'),
-    },
-    comments: {
-      label: t('profile.comments'),
-      icon: 'comments',
-      query: 'activities/?comments=1',
-      emptyText: t('profile.noComments'),
-    },
-  }
-}
+
 function moderationTabs() {
   return profileTabs().filter((tab) => ['tiles', 'activities', 'status'].includes(tab.key))
 }
@@ -328,35 +103,25 @@ function moderationTabs() {
 export default {
   name: 'ProfileView',
   components: {
-    CreateDialog,
-    RouterLink,
     AddButton,
-    AppIcon,
     BaseBreadcrumbs,
-    BaseButton,
     BaseCard,
     BaseFooter,
-    BaseSwitcher,
     BaseTabs,
-    CipherText,
-    FavoriteCover,
-    LibraryCredits,
-    PostList,
+    CreateDialog,
+    ProfileAbout,
     ProfileAchievements,
     ProfileAlbums,
+    ProfileHeader,
+    ProfilePosts,
     ProfileStatus,
-    RoleBadge,
     StoryViewer,
-    UserAvatar,
-    ErrorText,
   },
   data() {
     return {
       profile: null,
       loading: true,
       error: null,
-      busy: false,
-      actionError: null,
     }
   },
   computed: {
@@ -374,67 +139,17 @@ export default {
     },
     activeTab() {
       const tab = this.$route.query.tab
-      return this.tabs.some((t) => t.key === tab)
+      return this.tabs.some(({ key }) => key === tab)
         ? tab
         : (this.tabs[0]?.key ?? profileTabs()[0].key)
     },
     timeline() {
       return this.activeTab === 'activities'
     },
-    favorites() {
-      return favoriteKinds().filter((favorite) => this.profile[favorite.field]?.length)
-    },
-    availableMedia() {
-      return Object.keys(mediaKinds()).filter((key) => this.profile.media?.[mediaKinds()[key].flag])
-    },
-    media() {
-      const requested = this.$route.query.media
-      if (this.availableMedia.includes(requested)) return requested
-      return this.availableMedia[0] ?? 'pictures'
-    },
-    activity() {
-      const requested = this.$route.query.activity
-      return Object.hasOwn(activityKinds(), requested) ? requested : 'feeds'
-    },
-    switcher() {
-      if (this.timeline) {
-        return {
-          param: 'activity',
-          options: this.toOptions(activityKinds()),
-          active: this.activity,
-        }
-      }
-      if (this.activeTab === 'tiles' && this.availableMedia.length > 1) {
-        return { param: 'media', options: this.toOptions(mediaKinds()), active: this.media }
-      }
-      return null
-    },
-    postList() {
-      if (this.timeline) return activityKinds()[this.activity]
-      return this.activeTab === 'tiles' ? mediaKinds()[this.media] : null
-    },
     breadcrumbs() {
       return this.username
         ? [{ label: this.username, to: `/profile/${this.username}` }]
         : [{ label: t('profile.profile'), to: '/profile' }]
-    },
-    postsUrl() {
-      return `${postsApi.userPostsUrl(this.profile.username)}${this.postList.query}`
-    },
-    followLabel() {
-      const p = this.profile
-      if (p.is_following) return t('profile.unfollow')
-      if (p.follow_requested) return t('profile.requested')
-      return p.requires_follow_request ? t('profile.request') : t('profile.follow')
-    },
-    followIcon() {
-      const p = this.profile
-      if (p.is_following) return 'user-minus'
-      return p.follow_requested ? 'clock' : 'user-add'
-    },
-    canRequestFriendship() {
-      const p = this.profile
-      return !p.is_self && !p.is_friend && p.is_following && p.follows_you
     },
   },
   watch: {
@@ -446,17 +161,9 @@ export default {
     },
   },
   methods: {
-    toOptions(entries) {
-      return map(entries, ({ label, icon }, value) => ({ value, label, icon }))
-    },
-    connectionLink(connection) {
-      return `/profile/${encodeURIComponent(this.profile.username)}/${connection}`
-    },
-    formatDate,
     async loadProfile() {
       this.loading = true
       this.error = null
-      this.actionError = null
       try {
         this.profile = await profilesApi.get(this.username)
       } catch (error) {
@@ -464,31 +171,6 @@ export default {
       } finally {
         this.loading = false
       }
-    },
-    async runAction(action, fallback) {
-      this.busy = true
-      this.actionError = null
-      try {
-        this.profile = await action()
-      } catch (error) {
-        this.actionError = error.detail ?? fallback
-      } finally {
-        this.busy = false
-      }
-    },
-    toggleFollow() {
-      const { username, is_following, follow_requested } = this.profile
-      const leave = is_following || follow_requested
-      return this.runAction(
-        () => (leave ? profilesApi.unfollow(username) : profilesApi.follow(username)),
-        t('profile.actionFailed'),
-      )
-    },
-    sendFriendRequest() {
-      return this.runAction(
-        () => profilesApi.requestFriendship(this.profile.username),
-        t('profile.requestFailed'),
-      )
     },
     async refreshProfile() {
       const profile = await profilesApi.get(this.username).catch(() => null)

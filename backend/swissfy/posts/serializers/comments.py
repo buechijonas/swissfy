@@ -50,8 +50,8 @@ class CommentModelSerializer(UUIDModelSerializer):
             return CommentModelSerializer.read(obj.latest_reply, context=self.context).data
 
     class unavailable(UnavailableSerializer):
-        blocked = _("Dieser Kommentar wurde gesperrt.")
-        hidden = _("Dieser Kommentar ist nicht sichtbar.")
+        blocked = _("This comment has been blocked.")
+        hidden = _("This comment is not visible.")
 
         class Meta(UnavailableSerializer.Meta):
             model = Comment
@@ -66,5 +66,5 @@ class CommentModelSerializer(UUIDModelSerializer):
 
         def validate_value(self, value):
             if value not in (*CommentVote.Value.values, 0):
-                raise serializers.ValidationError(_("Ungültige Stimme."))
+                raise serializers.ValidationError(_("Invalid vote."))
             return value

@@ -9,9 +9,9 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from commons.exceptions import BadRequest, Conflict, RetryLater
+from commons.exceptions import BadRequest, Conflict, Gone, RetryLater
 from commons.views import BaseViewSet
-from swissfy.posts.permissions import IsNotSuspended
+from swissfy.moderation.permissions import IsNotSuspended
 from swissfy.social.models import Member
 from swissfy.social.serializers import ProfileModelSerializer
 
@@ -54,7 +54,10 @@ class ChatViewSet(BaseViewSet):
         return self.protection(request)
 
     def pin_key(self):
-        return get_object_or_404(ChatKey.objects.of(self.request.user), kind=ChatKey.Kind.PIN)
+        key = get_object_or_404(ChatKey.objects.of(self.request.user), kind=ChatKey.Kind.PIN)
+        if key.is_expired_legacy:
+            raise Gone(_("This chat PIN is outdated. Please set up your chat protection again."))
+        return key
 
     @action(detail=False, methods=["post"], url_path="protection/unlock")
     def unlock(self, request):
@@ -64,10 +67,8 @@ class ChatViewSet(BaseViewSet):
         if key.unlock(serializer.validated_data["verifier"]):
             return Response(ChatKeyModelSerializer.sealed(key).data)
         if key.unlock_wait:
-            raise RetryLater(
-                _("Zu viele falsche Versuche. Versuche es später erneut."), key.unlock_wait
-            )
-        raise PermissionDenied(_("Falsche PIN."))
+            raise RetryLater(_("Too many wrong attempts. Please try again later."), key.unlock_wait)
+        raise PermissionDenied(_("Wrong PIN."))
 
     @action(detail=False, methods=["put"], url_path="protection/verifier")
     def verifier(self, request):
@@ -75,7 +76,7 @@ class ChatViewSet(BaseViewSet):
         serializer.is_valid(raise_exception=True)
         key = self.pin_key()
         if not key.needs_verifier:
-            raise Conflict(_("Die PIN ist bereits gesichert."))
+            raise Conflict(_("The PIN is already secured."))
         key.set_verifier(serializer.validated_data["verifier"])
         key.save(update_fields=["pin_verifier"])
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -84,7 +85,7 @@ class ChatViewSet(BaseViewSet):
     @transaction.atomic
     def add_device_key(self, request):
         if request.user.profile.chat_protection != Protection.DEVICE:
-            raise BadRequest(_("Gerät-Schlüssel gibt es nur im Modus „Nur auf diesem Gerät“."))
+            raise BadRequest(_("Device keys only exist in the “Only on this device” mode."))
         serializer = ChatKeyModelSerializer.device(data=request.data)
         serializer.is_valid(raise_exception=True)
         if "replaces" in serializer.validated_data:
@@ -179,13 +180,13 @@ class ConversationViewSet(BaseViewSet):
         serializer = MessageModelSerializer.write(data=request.data)
         serializer.is_valid(raise_exception=True)
         if not conversation.keys_match(serializer.validated_data):
-            raise Conflict(_("Die Schlüssel haben sich geändert."))
+            raise Conflict(_("The keys have changed."))
         lock_users(request.user, conversation.partner)
         if conversation.blocked_reason:
             raise PermissionDenied(conversation.blocked_reason)
         wait = Message.objects.slow_mode_wait(request.user, conversation.partner)
         if wait:
-            raise RetryLater(_("Bitte warte kurz."), wait)
+            raise RetryLater(_("Please wait a moment."), wait)
         conversation.send(serializer.validated_data)
         return Response(
             {"retry_after": settings.CHAT_SLOW_MODE_SECONDS}, status=status.HTTP_201_CREATED
@@ -197,9 +198,9 @@ class ConversationViewSet(BaseViewSet):
         conversation = self.get_conversation()
         lock_users(request.user, conversation.partner)
         if conversation.has_open_request:
-            raise Conflict(_("Es gibt bereits eine Chat-Anfrage."))
+            raise Conflict(_("There already is a chat request."))
         if not conversation.can_request:
-            raise PermissionDenied(_("Diese Person nimmt keine Chat-Anfragen an."))
+            raise PermissionDenied(_("This person does not accept chat requests."))
         ChatRequest.objects.between(request.user, conversation.partner).delete()
         chat_request = ChatRequest.objects.create(
             sender=request.user, recipient=conversation.partner

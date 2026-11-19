@@ -14,7 +14,9 @@ from .models import ChatKey, Message
 Protection = UserProfile.ChatProtection
 
 BASE64 = r"^[A-Za-z0-9+/]*={0,2}$"
+P256_SIGNATURE = r"^[A-Za-z0-9+/]{86}==$"
 P256_COORDINATE = r"^[A-Za-z0-9_-]{43}$"
+MESSAGE_VERSIONS = [1, 2]
 
 
 def base64_field(max_length, **kwargs):
@@ -22,7 +24,7 @@ def base64_field(max_length, **kwargs):
 
 
 class KeyBytesField(serializers.RegexField):
-    default_error_messages = {"invalid": _("Ungültiger Schlüssel.")}
+    default_error_messages = {"invalid": _("Invalid key.")}
 
     def __init__(self, length, **kwargs):
         self.length = length
@@ -49,6 +51,7 @@ class PublicKeySerializer(serializers.Serializer):
     ecdh = P256KeySerializer()
     kem = base64_field(2000)
     sign = P256KeySerializer()
+    endorsement = serializers.RegexField(P256_SIGNATURE, required=False)
 
 
 class ChatKeyModelSerializer(BaseModelSerializer):
@@ -57,7 +60,7 @@ class ChatKeyModelSerializer(BaseModelSerializer):
 
         class Meta(BaseModelSerializer.read.Meta):
             model = ChatKey
-            fields = ["id", "kind", "owner", "public_key"]
+            fields = ["id", "kind", "owner", "public_key", "created_at"]
 
     class pin(read):
         class Meta(BaseModelSerializer.read.Meta):
@@ -89,6 +92,7 @@ class ChatKeyModelSerializer(BaseModelSerializer):
 class ProtectionSerializer:
     class read(serializers.Serializer):
         mode = serializers.CharField(read_only=True)
+        retention_days = serializers.IntegerField(read_only=True)
         keys = ChatKeyModelSerializer.read(many=True, read_only=True)
         pin_key = ChatKeyModelSerializer.pin(read_only=True, allow_null=True)
 
@@ -100,13 +104,13 @@ class ProtectionSerializer:
             key = data.get("key")
             if data["mode"] == Protection.STANDARD:
                 if key:
-                    raise serializers.ValidationError(_("Standard braucht keinen Schlüssel."))
+                    raise serializers.ValidationError(_("Standard does not need a key."))
             elif not key:
-                raise serializers.ValidationError(_("Schlüssel fehlt."))
+                raise serializers.ValidationError(_("The key is missing."))
             elif data["mode"] == Protection.PIN and not all(
                 key.get(field) for field in ["wrapped_private_key", "salt", "iv", "pin_verifier"]
             ):
-                raise serializers.ValidationError(_("Der PIN-Schlüssel ist unvollständig."))
+                raise serializers.ValidationError(_("The PIN key is incomplete."))
             return data
 
 
@@ -132,6 +136,7 @@ class MessageModelSerializer(BaseModelSerializer):
                 "id",
                 "sender",
                 "created_at",
+                "version",
                 "ciphertext",
                 "iv",
                 "envelopes",
@@ -143,6 +148,7 @@ class MessageModelSerializer(BaseModelSerializer):
             ]
 
     class write(serializers.Serializer):
+        version = serializers.ChoiceField(MESSAGE_VERSIONS, default=1)
         ciphertext = base64_field(20000)
         iv = base64_field(32)
         envelopes = EnvelopeSerializer(many=True)
@@ -152,7 +158,7 @@ class MessageModelSerializer(BaseModelSerializer):
 
         def validate(self, data):
             if ("sender_key" in data) != ("signature" in data):
-                raise serializers.ValidationError(_("Signatur und Schlüssel gehören zusammen."))
+                raise serializers.ValidationError(_("Signature and key belong together."))
             return data
 
     class query(serializers.Serializer):

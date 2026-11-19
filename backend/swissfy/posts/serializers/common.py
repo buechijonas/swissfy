@@ -74,7 +74,7 @@ class UnavailableSerializer(UUIDModelSerializer.read):
         if obj.is_hidden:
             return self.blocked
         if Suspension.objects.running().filter(user=obj.author_id).exists():
-            return _("Der User wurde gesperrt und ist nicht sichtbar.")
+            return _("This user has been suspended and is not visible.")
         return self.hidden
 
 
@@ -89,10 +89,10 @@ class AudienceSerializerMixin:
         if data.get("visibility") == Post.Visibility.GLOBAL and not is_admin(
             self.context["request"].user
         ):
-            raise serializers.ValidationError({"visibility": _("Nur Admins können global posten.")})
+            raise serializers.ValidationError({"visibility": _("Only admins can post globally.")})
         if data.get("visibility") == Post.Visibility.GROUPS:
             if not data.get("groups"):
-                raise serializers.ValidationError({"groups": _("Wähle mindestens eine Gruppe.")})
+                raise serializers.ValidationError({"groups": _("Choose at least one group.")})
         else:
             data["groups"] = []
         return data
@@ -105,5 +105,5 @@ class OwnedNameSerializerMixin:
         if self.instance:
             owned = owned.exclude(pk=self.instance.pk)
         if owned.exists():
-            raise serializers.ValidationError(_("Dieser Name ist schon vergeben."))
+            raise serializers.ValidationError(_("This name is already taken."))
         return name

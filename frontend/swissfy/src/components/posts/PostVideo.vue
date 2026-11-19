@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="unfinished"
-    class="flex aspect-video items-center justify-center gap-2 bg-base-200 text-sm text-swissfy-muted"
+    class="text-swissfy-muted flex aspect-video items-center justify-center gap-2 bg-base-200 text-sm"
   >
     <AppIcon name="clapperboard-play" />
     {{ unfinishedText }}
@@ -62,8 +62,8 @@ import AppIcon from '@core/components/AppIcon.vue'
 import PostText from '@/components/posts/PostText.vue'
 import intersect from '@/directives/intersect.js'
 import playback from '@/directives/playback.js'
-import { videoAutoplay, videoLoop } from '@/lib/preferences.js'
 import { t } from '@/i18n.js'
+import { videoAutoplay, videoLoop } from '@/lib/preferences.js'
 
 const HIDE_CONTROLS_MS = 2500
 

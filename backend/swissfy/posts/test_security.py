@@ -458,8 +458,7 @@ class VideoUploadTests(SecurityTestCase):
 
     def playlist(self, target):
         return (
-            "#EXTM3U\n#EXT-X-TARGETDURATION:1\n"
-            f"{PADDING}#EXTINF:1.0,\n{target}\n#EXT-X-ENDLIST\n"
+            f"#EXTM3U\n#EXT-X-TARGETDURATION:1\n{PADDING}#EXTINF:1.0,\n{target}\n#EXT-X-ENDLIST\n"
         ).encode()
 
     def assert_rejected(self, response):

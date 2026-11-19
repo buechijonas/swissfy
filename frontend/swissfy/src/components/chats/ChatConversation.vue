@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto w-full max-w-150 flex flex-col flex-1 min-h-0">
+  <div class="mx-auto flex min-h-0 w-full max-w-150 flex-1 flex-col">
     <ChatPartnerCard
       v-if="phase !== 'failed' || partner"
       :partner="partner"
@@ -17,8 +17,8 @@
 
     <BaseCard
       v-if="phase === 'failed'"
-      class="p-6 mb-4"
-      :class="partner ? 'border-t-0' : 'sm:mt-4 max-sm:border-t-0'"
+      class="mb-4 p-6"
+      :class="partner ? 'border-t-0' : 'max-sm:border-t-0 sm:mt-4'"
     >
       <p class="text-app-muted">{{ error }}</p>
     </BaseCard>
@@ -38,12 +38,12 @@
         :retention-days="retentionDays"
         :verify="endToEnd"
       />
-      <p v-if="ready && !eventsStore.connected" class="text-app-muted text-xs text-center mt-2">
+      <p v-if="ready && !eventsStore.connected" class="mt-2 text-center text-xs text-app-muted">
         {{ $t('chat.disconnected') }}
       </p>
       <ErrorText :message="refreshError" class="mt-2 text-center" />
 
-      <div v-if="!ready" class="skeleton h-10 my-4"></div>
+      <div v-if="!ready" class="my-4 h-10 skeleton"></div>
       <ChatRequestActions
         v-else-if="requestStage"
         :username="username"
@@ -51,45 +51,42 @@
         @change="changeRequest"
         @fail="refresh"
       />
-      <ChatComposer
-        v-else
-        v-model="draft"
-        :blocked-reason="blockedReason"
-        :cooldown="cooldown"
-        :sending="sending"
-        @submit="send"
-      />
-      <ErrorText :message="sendError" class="-mt-2 mb-4" />
+      <ChatComposer v-else :blocked-reason="blockedReason" :deliver="deliver" />
     </template>
   </div>
 </template>
 
 <script>
-import { mapStores } from 'pinia'
-import { useIntervalFn } from '@vueuse/core'
 import find from 'lodash-es/find'
 import some from 'lodash-es/some'
 import unionBy from 'lodash-es/unionBy'
+import { mapStores } from 'pinia'
 import { toRaw } from 'vue'
+import { ApiError } from '@core/api/client.js'
 import BaseCard from '@core/components/BaseCard.vue'
 import ErrorText from '@core/components/ErrorText.vue'
+import chatsApi from '@/api/chats.js'
+import profilesApi from '@/api/profiles.js'
 import ChatComposer from '@/components/chats/ChatComposer.vue'
 import ChatMessageList from '@/components/chats/ChatMessageList.vue'
 import ChatPartnerCard from '@/components/chats/ChatPartnerCard.vue'
 import ChatPinUnlock from '@/components/chats/ChatPinUnlock.vue'
 import ChatRequestActions from '@/components/chats/ChatRequestActions.vue'
 import ChatSafetyNumber from '@/components/chats/ChatSafetyNumber.vue'
-import chatsApi from '@/api/chats.js'
-import profilesApi from '@/api/profiles.js'
+import { t } from '@/i18n.js'
 import { documentVisibility } from '@/lib/browser.js'
-import { decryptMessage, encryptMessage, safetyNumber, verifyMessage } from '@/lib/chatCrypto.js'
+import {
+  conversationOf,
+  decryptMessage,
+  encryptMessage,
+  isReplay,
+  safetyNumber,
+  verifyMessage,
+} from '@/lib/chatCrypto.js'
 import { localKeys, prepareChatKeys, trustedKeys, trustKeys, unknownKeys } from '@/lib/chatKeys.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useChatsStore } from '@/stores/chats.js'
 import { useEventsStore } from '@/stores/events.js'
-import { t } from '@/i18n.js'
-
-const COOLDOWN_STEP = 1000
 
 export default {
   name: 'ChatConversation',
@@ -123,12 +120,7 @@ export default {
       messages: [],
       chatRequest: null,
       canRequest: true,
-      refreshing: false,
       refreshError: null,
-      draft: '',
-      sending: false,
-      sendError: null,
-      cooldown: 0,
       ownMessages: 0,
     }
   },
@@ -162,6 +154,7 @@ export default {
       return request.incoming ? 'incoming' : 'outgoing'
     },
     blockedReason() {
+      if (this.endToEnd && this.keysChanged) return t('chat.confirmKeys')
       const request = this.chatRequest
       if (request?.status === 'declined' && !request.incoming) return t('chat.requestDeclined')
       if (!this.canRequest && (!request || this.declinedByMe)) return t('chat.noRequests')
@@ -177,11 +170,9 @@ export default {
     },
   },
   created() {
-    this.cooldownTimer = useIntervalFn(this.countDown, COOLDOWN_STEP, { immediate: false })
+    this.refreshing = null
+    this.refreshQueued = false
     this.load()
-  },
-  beforeUnmount() {
-    this.cooldownTimer.pause()
   },
   methods: {
     fail(message) {
@@ -230,24 +221,34 @@ export default {
       const userId = this.authStore.user.id
       const trusted = await trustedKeys(userId, this.username)
       if (!trusted) await trustKeys(userId, this.username, keys)
-      this.keysChanged = Boolean(trusted) && unknownKeys(trusted, keys, this.username).length > 0
+      const unknown = trusted ? await unknownKeys(trusted, keys, this.username) : []
+      this.keysChanged = unknown.length > 0
       this.verificationKeys = unionBy(trusted ?? [], keys, 'id')
     },
     async acceptKeys() {
       await trustKeys(this.authStore.user.id, this.username, toRaw(this.conversationKeys))
       this.keysChanged = false
     },
-    async refresh() {
-      if (this.refreshing) return
-      this.refreshing = true
+    refresh() {
+      if (this.refreshing) {
+        this.refreshQueued = true
+        return this.refreshing
+      }
+      this.refreshing = this.receiveUntilCurrent().finally(() => {
+        this.refreshing = null
+      })
+      return this.refreshing
+    },
+    async receiveUntilCurrent() {
+      this.refreshQueued = false
       try {
         await this.receive()
         this.refreshError = null
       } catch {
         this.refreshError = t('chat.refreshFailed')
-      } finally {
-        this.refreshing = false
+        return
       }
+      if (this.refreshQueued) await this.receiveUntilCurrent()
     },
     async receive() {
       const read = this.visible
@@ -262,12 +263,15 @@ export default {
       if (this.chatRequest?.status === 'accepted') {
         this.chatsStore.cacheMessages(this.username, this.messages)
       }
-      this.messages.push(...incoming)
+      for (const message of incoming) {
+        message.verified = message.verified && !isReplay(message, this.messages)
+        this.messages.push(message)
+      }
       if (some(incoming, 'isOwn')) this.ownMessages += 1
     },
     async decrypt(message) {
-      const { text, error } = await decryptMessage(message, this.keys)
-      const recipient = message.is_own ? this.username : this.authStore.user.username
+      const conversation = conversationOf(message, this.authStore.user.username, this.username)
+      const { text, error, sentAt, nonce } = await decryptMessage(message, this.keys, conversation)
       return {
         id: message.id,
         isOwn: message.is_own,
@@ -275,48 +279,33 @@ export default {
         createdAt: message.created_at,
         text,
         error,
-        verified: await verifyMessage(message, recipient, this.verificationKeys),
+        sentAt,
+        nonce,
+        verified: await verifyMessage(message, conversation, this.verificationKeys),
       }
     },
-    async postMessage(text) {
-      const signer = this.signer && { key: this.signer, recipient: this.username }
-      const payload = await encryptMessage(text, this.conversationKeys, this.serverKey, signer)
+    async sendMessage(text) {
+      const payload = await encryptMessage(text, this.conversationKeys, {
+        conversation: { sender: this.authStore.user.username, recipient: this.username },
+        withServerKey: this.serverKey,
+        signer: this.signer,
+      })
       return chatsApi.send(this.username, payload)
     },
-    async send() {
-      const text = this.draft.trim()
-      this.sending = true
-      this.sendError = null
-      try {
-        const data = await this.postMessage(text).catch(async (error) => {
-          if (error.status !== 409) throw error
-          await this.loadConversationKeys()
-          return this.postMessage(text)
-        })
-        this.startCooldown(data.retry_after)
-        this.draft = ''
-        await this.refresh()
-      } catch (error) {
-        if (error.data?.retry_after) this.startCooldown(error.data.retry_after)
-        if (error.status === 429) return
-        this.sendError = error.detail ?? t('chat.sendFailed')
+    async deliver(text) {
+      const data = await this.sendMessage(text).catch(async (error) => {
         if (error.status === 403) await this.refresh()
-      } finally {
-        this.sending = false
-      }
+        if (error.status !== 409) throw error
+        await this.loadConversationKeys()
+        if (this.blockedReason) throw new ApiError(409, { detail: this.blockedReason })
+        return this.sendMessage(text)
+      })
+      await this.refresh()
+      return data
     },
     changeRequest(request) {
       this.chatRequest = request
       if (!request) this.messages = []
-    },
-    startCooldown(seconds) {
-      if (!seconds) return
-      this.cooldown = seconds
-      this.cooldownTimer.resume()
-    },
-    countDown() {
-      this.cooldown -= 1
-      if (this.cooldown <= 0) this.cooldownTimer.pause()
     },
   },
 }

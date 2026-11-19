@@ -4,9 +4,9 @@
 </template>
 
 <script>
+import postsApi from '@/api/posts.js'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ReelFeed from '@/components/posts/ReelFeed.vue'
-import postsApi from '@/api/posts.js'
 import { t } from '@/i18n.js'
 
 export default {

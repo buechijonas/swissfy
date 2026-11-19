@@ -2,12 +2,11 @@ import { watch } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { LEGAL_PAGES, legalTitle } from '@core/legal/index.js'
 import { language } from '@core/lib/language.js'
-
+import { t } from '@/i18n.js'
 import ChangelogsView from '@/views/ChangelogsView.vue'
 import ChangelogView from '@/views/ChangelogView.vue'
-import SettingsView from '@/views/SettingsView.vue'
 import LegalView from '@/views/LegalView.vue'
-import { t } from '@/i18n.js'
+import SettingsView from '@/views/SettingsView.vue'
 
 function pageTitles() {
   return {

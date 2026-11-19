@@ -29,7 +29,7 @@ TIMEOUT = 10
 
 class LibraryUnavailable(APIException):
     status_code = 503
-    default_detail = _("Die Bibliothek ist gerade nicht erreichbar.")
+    default_detail = _("The library is currently unavailable.")
 
 
 def fetch(url, **params):
@@ -37,9 +37,9 @@ def fetch(url, **params):
         response = requests.get(url, params=params, timeout=TIMEOUT)
         response.raise_for_status()
         return response.json()
-    except (requests.RequestException, ValueError):
+    except (requests.RequestException, ValueError) as error:
         logger.warning("library request failed", exc_info=True)
-        raise LibraryUnavailable
+        raise LibraryUnavailable from error
 
 
 def imdb_suggestions(term):
@@ -88,7 +88,7 @@ def details(kind, id):
         for data in imdb_suggestions(id):
             if data.get("id") == id and data.get("qid") in IMDB_TYPES[kind]:
                 return imdb_item(data)
-    raise ValidationError({f"favorite_{kind}": _("Titel nicht gefunden.")})
+    raise ValidationError({f"favorite_{kind}": _("Title not found.")})
 
 
 def cover_urls(path):

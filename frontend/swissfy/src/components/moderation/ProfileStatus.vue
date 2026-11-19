@@ -1,7 +1,7 @@
 <template>
-  <BaseCard class="p-6 border-t-0">
+  <BaseCard class="border-t-0 p-6">
     <ErrorText v-if="error" :message="error" />
-    <div v-else-if="!events" class="skeleton h-16 w-full"></div>
+    <div v-else-if="!events" class="h-16 w-full skeleton"></div>
     <p v-else-if="!events.length">{{ $t('profileStatus.noWarnings') }}</p>
     <ol v-if="events?.length">
       <li
@@ -10,7 +10,7 @@
         class="group/event relative flex gap-4 pb-6 last:pb-0"
       >
         <span
-          class="group-last/event:hidden absolute left-1.5 top-[1.375rem] -bottom-0.5 w-0.5 -translate-x-1/2 bg-app-border"
+          class="absolute top-[1.375rem] -bottom-0.5 left-1.5 w-0.5 -translate-x-1/2 bg-app-border group-last/event:hidden"
         ></span>
         <span class="mt-1.5 size-3 shrink-0 rounded-full" :class="dotClass(event)"></span>
         <div class="flex min-w-0 flex-1 flex-col gap-0.5" :class="{ 'opacity-60': event.past }">
@@ -72,14 +72,14 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
 import profilesApi from '@/api/profiles.js'
-import { formatDate } from '@/lib/time.js'
 import { t } from '@/i18n.js'
+import { formatDate } from '@/lib/time.js'
 
 export default {
   name: 'ProfileStatus',

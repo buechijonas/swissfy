@@ -1,7 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 max-sm:pb-0 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
   >
     <div class="mx-auto w-full max-w-150 pt-4">
       <BaseTabs class="mb-4" :tabs="tabs" :active="status" />
@@ -34,7 +34,7 @@
       </BaseCard>
 
       <ErrorText :message="error" class="mt-4 text-center" />
-      <div v-if="loading" class="skeleton h-48 w-full mt-4"></div>
+      <div v-if="loading" class="mt-4 h-48 w-full skeleton"></div>
       <BaseButton v-else-if="next" class="mt-4" size="sm" block @click="load">
         <AppIcon name="down" />
         {{ $t('common.loadMore') }}
@@ -45,16 +45,16 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
 import AppIcon from '@core/components/AppIcon.vue'
-import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import moderationApi from '@/api/moderation.js'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseTabs from '@/components/common/BaseTabs.vue'
 import CommentItem from '@/components/posts/CommentItem.vue'
 import PostCard from '@/components/posts/PostCard.vue'
-import moderationApi from '@/api/moderation.js'
 import { t } from '@/i18n.js'
 
 export default {

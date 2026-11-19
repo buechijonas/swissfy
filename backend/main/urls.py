@@ -9,6 +9,7 @@ urlpatterns = [
     path("api/events/", views.events, name="events"),
     path("api/auth/", include("swissfy.accounts.urls")),
     path("api/social/", include("swissfy.social.urls")),
+    path("api/social/", include("swissfy.achievements.urls")),
     path("api/chats/", include("swissfy.chats.urls")),
     path("api/", include("swissfy.posts.urls")),
     path("api/", include("swissfy.moderation.urls")),

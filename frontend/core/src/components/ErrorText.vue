@@ -1,5 +1,5 @@
 <template>
-  <p v-if="message" class="text-error text-sm">{{ message }}</p>
+  <p v-if="message" class="text-sm text-error">{{ message }}</p>
 </template>
 
 <script>

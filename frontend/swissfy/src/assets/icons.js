@@ -16,13 +16,13 @@ export const romanceIcons = byName(
   import.meta.glob('./icons-romance/*.svg', { eager: true, import: 'default' }),
 )
 
-const FADED = ['heart', 'bookmark', 'unlock']
+const FADED = new Set(['heart', 'bookmark', 'unlock'])
 
 export function iconSource(name) {
   const y2kIcon = design.value === 'y2k' ? y2kIcons[name] : null
   if (y2kIcon) {
     return {
-      class: { 'opacity-50 grayscale': FADED.includes(name) },
+      class: { 'opacity-50 grayscale': FADED.has(name) },
       style: { backgroundImage: `url("${y2kIcon}")` },
     }
   }

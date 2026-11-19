@@ -1,14 +1,13 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import { useTitle } from '@vueuse/core'
-
-import { useAuthStore } from '@/stores/auth.js'
-import { canAccess } from '@/data/navigation.js'
-import { connectionTitle } from '@/data/connections.js'
-import { pageTitle } from '@/lib/title.js'
 import { watch } from 'vue'
+import { createRouter, createWebHistory } from 'vue-router'
 import { legalTitle } from '@core/legal/index.js'
 import { language } from '@core/lib/language.js'
+import { connectionTitle } from '@/data/connections.js'
+import { canAccess } from '@/data/navigation.js'
 import { t } from '@/i18n.js'
+import { pageTitle } from '@/lib/title.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

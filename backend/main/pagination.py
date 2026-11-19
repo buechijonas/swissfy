@@ -15,9 +15,9 @@ class NextPagePagination(PageNumberPagination):
         try:
             self.number = max(1, int(request.query_params.get(self.page_query_param, 1)))
         except ValueError:
-            raise NotFound(_("Ungültige Seite."))
+            raise NotFound(_("Invalid page.")) from None
         if self.number > MAX_PAGE:
-            raise NotFound(_("Ungültige Seite."))
+            raise NotFound(_("Invalid page.")) from None
         start = (self.number - 1) * self.page_size
         items = list(queryset[start : start + self.page_size + 1])
         self.has_next = len(items) > self.page_size

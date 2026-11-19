@@ -1,5 +1,5 @@
+import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
 import SelectMenu from '@core/components/SelectMenu.vue'
 
 const options = [
@@ -36,7 +36,7 @@ describe('SelectMenu', () => {
     expect(choices).toHaveLength(2)
     expect(choices[0].getAttribute('aria-selected')).toBe('true')
     choices[1].click()
-    await wrapper.vm.$nextTick()
+    await flushPromises()
     expect(wrapper.emitted('update:modelValue')).toEqual([['friends']])
     expect(listbox()).toBeNull()
   })
@@ -45,7 +45,7 @@ describe('SelectMenu', () => {
     const wrapper = mountMenu()
     await wrapper.find('button.select').trigger('click')
     listbox().querySelector('[role="option"]').click()
-    await wrapper.vm.$nextTick()
+    await flushPromises()
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 
@@ -53,7 +53,7 @@ describe('SelectMenu', () => {
     const wrapper = mountMenu()
     await wrapper.find('button.select').trigger('click')
     document.body.querySelector('.fixed.inset-0').click()
-    await wrapper.vm.$nextTick()
+    await flushPromises()
     expect(listbox()).toBeNull()
   })
 })

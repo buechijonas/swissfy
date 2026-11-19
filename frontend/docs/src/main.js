@@ -2,15 +2,14 @@ import '@fontsource/manrope/700.css'
 import './assets/main.css'
 import '@core/lib/appearance.js'
 
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-
-import App from './App.vue'
-import { i18n, i18nReady } from './i18n.js'
-import { iconSource } from './assets/icons.js'
-import router from './router'
-import { navigationItems } from './data/navigation.js'
+import { createApp } from 'vue'
 import packageJson from '../package.json'
+import App from './App.vue'
+import { iconSource } from './assets/icons.js'
+import { navigationItems } from './data/navigation.js'
+import { i18n, i18nReady } from './i18n.js'
+import router from './router'
 
 const app = createApp(App)
 

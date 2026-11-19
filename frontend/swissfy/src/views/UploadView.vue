@@ -1,41 +1,14 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-1 flex-col bg-base-100 pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-1 flex-col overflow-y-auto bg-base-100 px-6 pb-8 lg:max-h-none lg:overflow-y-visible"
   >
     <div class="flex w-full flex-1 flex-col pt-4">
       <template v-if="kind === 'story'">
-        <div
-          v-if="storyImage"
-          class="relative mx-auto aspect-9/16 h-96 max-w-full overflow-hidden rounded-box bg-black"
-        >
-          <img :src="storyImage.preview" alt="" class="size-full object-contain" />
-          <p
-            v-if="text.trim()"
-            class="absolute inset-x-0 bottom-0 whitespace-pre-line bg-black/50 px-4 py-3 text-center text-white"
-          >
-            {{ text }}
-          </p>
-          <BaseButton
-            variant="neutral"
-            shape="circle"
-            size="sm"
-            class="absolute top-2 right-2"
-            :title="$t('upload.removeImage')"
-            @click="clearStoryImage"
-          >
-            <AppIcon name="cross" :alt="$t('upload.removeImage')" />
-          </BaseButton>
-        </div>
-        <ImageDropzone
-          v-else
-          class="h-56"
-          :label="$t('upload.storyDrop')"
-          @select="setStoryImage"
-        />
+        <StoryImagePicker v-model="storyImage" :caption="text" />
         <textarea
           v-model="text"
-          class="textarea w-full h-20 resize-none mt-4"
+          class="textarea mt-4 h-20 w-full resize-none"
           :maxlength="maxLength"
           :placeholder="$t('upload.storyText')"
         ></textarea>
@@ -43,73 +16,11 @@
       </template>
 
       <template v-else>
-        <div v-if="video" class="relative">
-          <video
-            :src="video.preview"
-            class="max-h-80 w-full rounded-box bg-black object-contain"
-            controls
-            playsinline
-          ></video>
-          <BaseButton
-            variant="neutral"
-            shape="circle"
-            size="sm"
-            class="absolute top-2 right-2"
-            :title="$t('upload.removeVideo')"
-            @click="clearVideo"
-          >
-            <AppIcon name="cross" :alt="$t('upload.removeVideo')" />
-          </BaseButton>
-        </div>
-        <ImageDropzone
-          v-else-if="!images.length"
-          class="h-56"
-          accept="image/*,video/*,video/mp4,video/quicktime,video/x-matroska,.mov,.mp4,.mkv"
-          :label="$t('upload.postDrop')"
-          multiple
-          @select="addMedia"
-        />
-        <div v-else class="flex gap-2 overflow-x-auto">
-          <div
-            v-for="image in images"
-            :key="image.preview"
-            class="relative h-40 max-w-full shrink-0"
-            :style="{ aspectRatio: `${image.width} / ${image.height}` }"
-          >
-            <img
-              :src="image.preview"
-              alt=""
-              class="size-full object-cover rounded-box bg-base-200"
-            />
-            <BaseButton
-              variant="neutral"
-              shape="circle"
-              size="sm"
-              class="absolute top-2 right-2"
-              :title="$t('upload.removeImage')"
-              @click="removeImage(image)"
-            >
-              <AppIcon name="cross" :alt="$t('upload.removeImage')" />
-            </BaseButton>
-          </div>
-          <ImageDropzone
-            v-if="images.length < maxImages"
-            class="h-40 w-28 shrink-0"
-            :label="$t('upload.add')"
-            multiple
-            @select="addImages"
-          />
-        </div>
-        <p v-if="images.length > 1" class="text-xs text-app-muted mt-1">
-          {{ $t('upload.cropHint') }}
-        </p>
-        <p v-if="video" class="text-xs text-app-muted mt-1">
-          {{ $t('upload.videoHint') }}
-        </p>
+        <PostMediaPicker v-model:images="images" v-model:video="video" />
 
         <textarea
           v-model="text"
-          class="textarea w-full h-28 resize-none mt-4"
+          class="textarea mt-4 h-28 w-full resize-none"
           :maxlength="maxLength"
           :placeholder="$t('upload.postText')"
         ></textarea>
@@ -118,7 +29,7 @@
             <span
               v-for="hashtag in hashtags"
               :key="hashtag"
-              class="badge badge-sm badge-soft badge-primary"
+              class="badge badge-soft badge-sm badge-primary"
             >
               #{{ hashtag }}
             </span>
@@ -152,7 +63,7 @@
       </label>
       <p
         v-if="quota && kind === 'feed'"
-        class="text-sm mt-4"
+        class="mt-4 text-sm"
         :class="quota.remaining ? 'text-app-muted' : 'text-error'"
       >
         {{
@@ -168,7 +79,7 @@
           {{ $t('common.cancel') }}
         </BaseButton>
         <BaseButton variant="primary" :disabled="!canSubmit" @click="submit">
-          <span v-if="sending" class="loading loading-spinner loading-sm"></span>
+          <span v-if="sending" class="loading loading-sm loading-spinner"></span>
           <AppIcon v-else name="paper-plane-top" />
           {{ sending ? $t('upload.posting') : $t('upload.post') }}
         </BaseButton>
@@ -179,27 +90,24 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import without from 'lodash-es/without'
 import AppIcon from '@core/components/AppIcon.vue'
-import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@core/components/BaseButton.vue'
-import BaseFooter from '@/components/common/BaseFooter.vue'
-import ImageDropzone from '@/components/common/ImageDropzone.vue'
-import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
+import ErrorText from '@core/components/ErrorText.vue'
 import postsApi from '@/api/posts.js'
 import storiesApi from '@/api/stories.js'
-import { extractHashtags } from '@/lib/hashtags.js'
-import { compressImage, imageSize } from '@/lib/image.js'
-import { pageTitle } from '@/lib/title.js'
-import { MAX_VIDEO_DURATION, MAX_VIDEO_SIZE, videoDuration } from '@/lib/video.js'
-import { useGroupsStore } from '@/stores/posts.js'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+import PostMediaPicker from '@/components/posts/PostMediaPicker.vue'
+import StoryImagePicker from '@/components/posts/StoryImagePicker.vue'
+import VisibilityPicker from '@/components/posts/VisibilityPicker.vue'
 import { legalUrl } from '@/data/footer.js'
 import { t } from '@/i18n.js'
+import { extractHashtags } from '@/lib/hashtags.js'
+import { pageTitle } from '@/lib/title.js'
+import { useGroupsStore } from '@/stores/posts.js'
 
 const MAX_LENGTH = 500
 const MAX_STORY_LENGTH = 200
-const MAX_IMAGES = 10
 
 export default {
   name: 'UploadView',
@@ -208,7 +116,8 @@ export default {
     BaseBreadcrumbs,
     BaseButton,
     BaseFooter,
-    ImageDropzone,
+    PostMediaPicker,
+    StoryImagePicker,
     VisibilityPicker,
     ErrorText,
   },
@@ -224,7 +133,6 @@ export default {
       acceptedTerms: false,
       sending: false,
       error: null,
-      maxImages: MAX_IMAGES,
     }
   },
   computed: {
@@ -257,11 +165,6 @@ export default {
       .catch(() => {})
     if (this.kind === 'feed') this.loadQuota()
   },
-  beforeUnmount() {
-    this.clearImages()
-    this.clearVideo()
-    this.clearStoryImage()
-  },
   methods: {
     leave() {
       if (this.$router.options.history.state.back) {
@@ -270,73 +173,12 @@ export default {
         this.$router.replace(this.kind === 'story' ? '/profile' : '/')
       }
     },
-    async setStoryImage([file]) {
-      this.error = null
-      try {
-        const blob = await compressImage(file)
-        this.clearStoryImage()
-        this.storyImage = { blob, preview: URL.createObjectURL(blob) }
-      } catch {
-        this.error = t('upload.imageUnreadable')
-      }
-    },
-    clearStoryImage() {
-      if (this.storyImage) URL.revokeObjectURL(this.storyImage.preview)
-      this.storyImage = null
-    },
     async loadQuota() {
       try {
         this.quota = await postsApi.quota()
       } catch {
         this.quota = null
       }
-    },
-    addMedia(files) {
-      const video = files.find(
-        (file) => file.type.startsWith('video/') || /\.(mov|mp4|mkv)$/i.test(file.name),
-      )
-      return video ? this.setVideo(video) : this.addImages(files)
-    },
-    async setVideo(file) {
-      this.error = null
-      if (file.size > MAX_VIDEO_SIZE) {
-        this.error = t('upload.videoTooLarge')
-        return
-      }
-      const preview = URL.createObjectURL(file)
-      const duration = await videoDuration(preview).catch(() => 0)
-      if (duration > MAX_VIDEO_DURATION + 0.5) {
-        URL.revokeObjectURL(preview)
-        this.error = t('upload.videoTooLong', { seconds: MAX_VIDEO_DURATION })
-        return
-      }
-      this.video = { file, preview }
-    },
-    clearVideo() {
-      if (this.video) URL.revokeObjectURL(this.video.preview)
-      this.video = null
-    },
-    async addImages(files) {
-      this.error = null
-      const free = MAX_IMAGES - this.images.length
-      if (files.length > free) this.error = t('upload.tooManyImages', { count: MAX_IMAGES })
-      for (const file of files.slice(0, free)) {
-        try {
-          const blob = await compressImage(file)
-          const size = await imageSize(blob)
-          this.images.push({ blob, ...size, preview: URL.createObjectURL(blob) })
-        } catch {
-          this.error = t('upload.anImageUnreadable')
-        }
-      }
-    },
-    removeImage(image) {
-      URL.revokeObjectURL(image.preview)
-      this.images = without(this.images, image)
-    },
-    clearImages() {
-      for (const image of this.images) URL.revokeObjectURL(image.preview)
-      this.images = []
     },
     form() {
       const body = new FormData()

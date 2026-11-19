@@ -1,13 +1,13 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <div v-if="!authStore.ready" class="mb-10">
-        <div class="skeleton mb-2 h-10 w-full"></div>
-        <div class="skeleton my-5 h-5 w-24"></div>
-        <div class="skeleton h-24 w-full rounded-box"></div>
+        <div class="mb-2 h-10 w-full skeleton"></div>
+        <div class="my-5 h-5 w-24 skeleton"></div>
+        <div class="h-24 w-full skeleton rounded-box"></div>
       </div>
 
       <template v-else>
@@ -23,7 +23,7 @@
         </div>
 
         <div v-else-if="activeTab === 'groups'" class="mb-10">
-          <h3 class="text-xl my-4">{{ $t('settingsView.groups') }}</h3>
+          <h3 class="my-4 text-xl">{{ $t('settingsView.groups') }}</h3>
           <GroupManager />
         </div>
 
@@ -48,8 +48,8 @@ import PrivacySettings from '@/components/settings/PrivacySettings.vue'
 import ProfileAbout from '@/components/settings/ProfileAbout.vue'
 import ProfilePictures from '@/components/settings/ProfilePictures.vue'
 import WellbeingSettings from '@/components/settings/WellbeingSettings.vue'
-import { useAuthStore } from '@/stores/auth.js'
 import { t } from '@/i18n.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'SettingsView',
@@ -86,7 +86,7 @@ export default {
     },
     activeTab() {
       const tab = this.$route.query.tab
-      return this.tabs.some((t) => t.key === tab) ? tab : this.tabs[0].key
+      return this.tabs.some(({ key }) => key === tab) ? tab : this.tabs[0].key
     },
   },
 }

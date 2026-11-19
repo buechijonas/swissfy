@@ -10,16 +10,16 @@
             class="mt-1.5 size-3 shrink-0 rounded-full"
             :class="entry.date ? 'bg-primary' : 'bg-app-border'"
           ></span>
-          <span class="group-last/entry:hidden mt-1 w-0.5 flex-1 bg-app-border"></span>
+          <span class="mt-1 w-0.5 flex-1 bg-app-border group-last/entry:hidden"></span>
         </div>
-        <div class="flex-1 min-w-0 pb-8 group-last/entry:pb-0">
+        <div class="min-w-0 flex-1 pb-8 group-last/entry:pb-0">
           <time v-if="entry.date" :datetime="entry.date" class="font-semibold">
             {{ formatDate(entry.date) }}
           </time>
           <span v-else class="text-app-muted">{{ $t('albumTimeline.noDate') }}</span>
           <div class="mt-2 flex items-start gap-4">
             <PostTile :post="entry.post" class="w-28 shrink-0 overflow-hidden rounded-box" />
-            <p class="flex-1 min-w-0 break-words pt-1">{{ entry.title }}</p>
+            <p class="min-w-0 flex-1 pt-1 break-words">{{ entry.title }}</p>
             <BaseButton
               v-if="editable"
               variant="ghost"

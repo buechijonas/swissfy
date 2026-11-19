@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import ChatConversation from '@/components/chats/ChatConversation.vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import chatsApi from '@/api/chats.js'
 import profilesApi from '@/api/profiles.js'
-import { encryptMessage, verifyMessage } from '@/lib/chatCrypto.js'
+import ChatConversation from '@/components/chats/ChatConversation.vue'
+import { decryptMessage, encryptMessage, verifyMessage } from '@/lib/chatCrypto.js'
 import { localKeys, prepareChatKeys, trustedKeys, trustKeys } from '@/lib/chatKeys.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useEventsStore } from '@/stores/events.js'
@@ -21,9 +21,12 @@ vi.mock('@/lib/chatKeys.js', async (importOriginal) => ({
   trustKeys: vi.fn(),
   unlockWithPin: vi.fn(),
 }))
-vi.mock('@/lib/chatCrypto.js', () => ({
-  decryptMessage: vi.fn((message) => Promise.resolve({ text: message.text, error: null })),
+vi.mock('@/lib/chatCrypto.js', async (importOriginal) => ({
+  conversationOf: (await importOriginal()).conversationOf,
+  isReplay: (await importOriginal()).isReplay,
+  decryptMessage: vi.fn((encrypted) => Promise.resolve({ text: encrypted.text, error: null })),
   encryptMessage: vi.fn(),
+  isEndorsed: vi.fn(() => Promise.resolve(false)),
   safetyNumber: vi.fn(() => Promise.resolve(['12345', '67890'])),
   verifyMessage: vi.fn(() => Promise.resolve(true)),
 }))
@@ -36,7 +39,14 @@ function page(messages, chatRequest = { status: 'accepted', incoming: false }) {
 }
 
 function message(id, text) {
-  return { id, text, is_own: false, status: null, created_at: '2026-11-14T10:00:00Z' }
+  return {
+    id,
+    text,
+    sender: 'anna',
+    is_own: false,
+    status: null,
+    created_at: '2026-11-14T10:00:00Z',
+  }
 }
 
 async function mountConversation() {
@@ -75,6 +85,24 @@ describe('ChatConversation', () => {
     await flushPromises()
     expect(chatsApi.receive).toHaveBeenLastCalledWith('anna', true, 1)
     expect(wrapper.text()).toContain('Grüezi')
+  })
+
+  it('catches up on chat changes that arrive during a refresh', async () => {
+    const wrapper = await mountConversation()
+    const pending = Promise.withResolvers()
+    chatsApi.receive.mockReturnValueOnce(pending.promise)
+    useEventsStore().chat += 1
+    await flushPromises()
+    useEventsStore().chat += 1
+    await flushPromises()
+    expect(chatsApi.receive).toHaveBeenCalledTimes(2)
+
+    chatsApi.receive.mockResolvedValue(page([message(3, 'Spät')]))
+    pending.resolve(page([message(2, 'Grüezi')]))
+    await flushPromises()
+    expect(chatsApi.receive).toHaveBeenCalledTimes(3)
+    expect(chatsApi.receive).toHaveBeenLastCalledWith('anna', true, 2)
+    expect(wrapper.text()).toContain('Spät')
   })
 
   it('shows a failed refresh and clears it after the next one', async () => {
@@ -148,15 +176,53 @@ describe('ChatConversation', () => {
       expect(wrapper.text()).not.toContain('neue Schlüssel')
     })
 
+    it('blocks writing until new partner keys are confirmed', async () => {
+      trustedKeys.mockResolvedValue([OWN_KEY])
+      const wrapper = await mountConversation()
+      const composer = wrapper.find('textarea')
+      expect(composer.attributes('disabled')).toBeDefined()
+      expect(composer.attributes('placeholder')).toBe('Bestätige zuerst die neuen Schlüssel')
+
+      await wrapper.find('.btn-primary').trigger('click')
+      await flushPromises()
+      expect(wrapper.find('textarea').attributes('disabled')).toBeUndefined()
+    })
+
+    it('does not resend to keys that changed while sending', async () => {
+      trustedKeys.mockResolvedValue([OWN_KEY, ANNA_KEY])
+      encryptMessage.mockResolvedValue({})
+      chatsApi.send.mockRejectedValue({ status: 409 })
+      const wrapper = await mountConversation()
+      const newKey = { ...ANNA_KEY, id: 8 }
+      chatsApi.keys.mockResolvedValue({
+        keys: [OWN_KEY, newKey],
+        server_key: false,
+        retention_days: 14,
+      })
+      await expect(wrapper.vm.deliver('Hoi')).rejects.toMatchObject({
+        status: 409,
+        detail: 'Bestätige zuerst die neuen Schlüssel',
+      })
+      expect(chatsApi.send).toHaveBeenCalledTimes(1)
+    })
+
+    it('marks a replayed message as unverified', async () => {
+      const replayed = { text: 'alt', error: null, sentAt: Date.parse('2026-11-01'), nonce: 'bg==' }
+      decryptMessage.mockResolvedValueOnce(replayed)
+      const wrapper = await mountConversation()
+      expect(wrapper.text()).toContain('Nicht verifiziert')
+    })
+
     it('marks incoming messages without a valid signature', async () => {
       verifyMessage.mockResolvedValue(false)
       const wrapper = await mountConversation()
       expect(wrapper.text()).toContain('Nicht verifiziert')
     })
 
-    it('verifies incoming messages against the own username', async () => {
+    it('verifies incoming messages as sent from the partner to this user', async () => {
       await mountConversation()
-      expect(verifyMessage).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), 'jonas', [
+      const conversation = { sender: 'anna', recipient: 'jonas' }
+      expect(verifyMessage).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), conversation, [
         OWN_KEY,
         ANNA_KEY,
       ])
@@ -168,11 +234,11 @@ describe('ChatConversation', () => {
       encryptMessage.mockResolvedValue({})
       chatsApi.send.mockResolvedValue({ retry_after: 0 })
       const wrapper = await mountConversation()
-      wrapper.vm.draft = 'Hoi'
-      await wrapper.vm.send()
-      expect(encryptMessage).toHaveBeenCalledWith('Hoi', [OWN_KEY, ANNA_KEY], false, {
-        key: signingKey,
-        recipient: 'anna',
+      await wrapper.vm.deliver('Hoi')
+      expect(encryptMessage).toHaveBeenCalledWith('Hoi', [OWN_KEY, ANNA_KEY], {
+        conversation: { sender: 'jonas', recipient: 'anna' },
+        withServerKey: false,
+        signer: signingKey,
       })
     })
   })

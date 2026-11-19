@@ -5,6 +5,19 @@
     "browser": true
   },
   "categories": {
-    "correctness": "error"
-  }
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "rules": {
+    "unicorn/consistent-function-scoping": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/components/posts/PostMediaPicker.vue"],
+      "rules": {
+        "no-await-in-loop": "off"
+      }
+    }
+  ]
 }

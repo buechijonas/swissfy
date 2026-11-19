@@ -39,6 +39,7 @@ services:
       - "8001:8000"
 
     environment: &backend-environment
+      DJANGO_DEBUG: "true"
       DB_NAME: swissfy
       DB_USER: swissfy
       DB_PASSWORD: swissfy

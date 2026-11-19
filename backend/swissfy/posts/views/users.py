@@ -15,7 +15,7 @@ from ..models import Comment, Post, reported_comments
 from ..serializers import CommentModelSerializer, PostModelSerializer
 from .comments import post_summary
 from .pagination import NewestFirst
-from .posts import starting_from
+from .posts import by_media, starting_from
 
 User = get_user_model()
 
@@ -27,7 +27,7 @@ class UserPostViewSet(BaseViewSet, mixins.ListModelMixin):
     def get_queryset(self):
         user = self.request.user
         posts = Post.objects.apply_acl(user).filter(author__username=self.kwargs["username"])
-        posts = starting_from(posts.by_media(self.request.query_params), self.request.query_params)
+        posts = starting_from(by_media(posts, self.request.query_params), self.request.query_params)
         return posts.with_details(user)
 
     def comments(self, username):

@@ -5,10 +5,10 @@
     </template>
   </BaseBreadcrumbs>
   <div
-    class="flex flex-col pb-8 px-6 max-sm:pb-0 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 max-sm:pb-0 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
   >
     <div class="mx-auto w-full max-w-150 pt-4">
-      <div class="flex flex-wrap items-center gap-2 mb-4">
+      <div class="mb-4 flex flex-wrap items-center gap-2">
         <BaseButton
           v-for="filter in filters"
           :key="filter.value"
@@ -21,8 +21,8 @@
         </BaseButton>
       </div>
 
-      <div v-if="currentFolder" class="flex items-center gap-2 mb-4">
-        <h3 class="text-xl truncate">{{ currentFolder.name }}</h3>
+      <div v-if="currentFolder" class="mb-4 flex items-center gap-2">
+        <h3 class="truncate text-xl">{{ currentFolder.name }}</h3>
         <BaseButton size="sm" class="ml-auto" @click="openFolderDialog(currentFolder)">
           <AppIcon name="pencil" />
           {{ $t('saved.rename') }}
@@ -71,19 +71,19 @@
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import AddButton from '@/components/common/AddButton.vue'
 import AppIcon from '@core/components/AppIcon.vue'
-import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@core/components/BaseButton.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import postsApi from '@/api/posts.js'
+import AddButton from '@/components/common/AddButton.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import PostList from '@/components/posts/PostList.vue'
-import postsApi from '@/api/posts.js'
-import { useFoldersStore } from '@/stores/posts.js'
 import { t } from '@/i18n.js'
+import { useFoldersStore } from '@/stores/posts.js'
 
 export default {
   name: 'SavedView',

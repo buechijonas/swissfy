@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from commons.exceptions import BadRequest
 from commons.views import BaseViewSet, CreateModelMixin
 from main.parsers import JSONParser
+from swissfy.moderation.permissions import IsNotSuspended
 from swissfy.notifications.models import Notification
 
 from ..models import (
@@ -25,7 +26,7 @@ from ..models import (
     SavedFolder,
     SavedPost,
 )
-from ..permissions import HasPostQuota, IsAuthor, IsNotSuspended
+from ..permissions import HasPostQuota, IsAuthor
 from ..serializers import PostModelSerializer
 from .pagination import FeedOrder, NewestFirst, SavedOrder
 
@@ -38,6 +39,12 @@ def starting_from(posts, params):
     except ValueError:
         return posts
     return posts.filter(pk__lte=Subquery(Post.objects.filter(uuid=start).values("pk")))
+
+
+def by_media(posts, params):
+    query = PostModelSerializer.query(data=params)
+    query.is_valid(raise_exception=True)
+    return posts.by_media(**query.validated_data)
 
 
 class PostViewSet(
@@ -100,8 +107,9 @@ class PostViewSet(
 
     @action(detail=False)
     def saved(self, request):
-        folder = request.query_params.get("folder")
-        saves = SavedPost.objects.filter(user=request.user).in_folder(folder)
+        query = PostModelSerializer.saved_query(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        saves = SavedPost.objects.filter(user=request.user, **query.validated_data)
         posts = (
             Post.objects.apply_acl(request.user)
             .filter(pk__in=saves.values("post"))
@@ -135,7 +143,7 @@ class PostViewSet(
     def repost(self, request, uuid):
         post = self.get_object()
         if post.is_own:
-            raise BadRequest(_("Du kannst deine eigenen Feeds nicht reposten."))
+            raise BadRequest(_("You cannot repost your own feeds."))
         Repost.objects.get_or_create(user=request.user, post=post)
         return self.respond(post)
 

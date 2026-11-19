@@ -1,76 +1,87 @@
 <template>
   <footer
-    class="app-footer sticky bottom-0 mt-auto h-(--footer-height) pb-[env(safe-area-inset-bottom)] w-full shrink-0 border-t border-solid lg:hidden"
+    class="app-footer sticky bottom-0 mt-auto h-(--footer-height) w-full shrink-0 border-t border-solid pb-[env(safe-area-inset-bottom)] lg:hidden"
     :class="
-      dark ? 'app-footer-dark bg-black border-white/15 text-white' : 'bg-base-100 border-app-border'
+      dark ? 'app-footer-dark border-white/15 bg-black text-white' : 'border-app-border bg-base-100'
     "
   >
-    <nav
-      v-bounds="storeBar"
-      v-pointer-drag="{ grab, move: drag, release, cancel }"
-      class="app-footer-bar relative flex h-full items-center justify-evenly"
-      :class="{ 'is-dragging': dragging }"
-      @dragstart.prevent
+    <BubbleNavigation
+      v-slot="nav"
+      :active="$route.meta.activeNavigation"
+      :track-width="bar?.width"
+      :width-of="footerItems[0]?.key"
+      :can-select="canSelect"
+      @select="select"
     >
-      <span
-        v-if="bubble"
-        v-wobble="wobbles"
-        class="app-bubble"
-        :style="{ left: `${bubble.left}px`, width: `${bubble.width}px`, '--stretch': stretch }"
-      />
-      <component
-        :is="isLocked(item) ? 'span' : RouterLink"
-        v-for="item in footerItems"
-        :key="item.key"
-        v-bounds="(box) => storeBox(item.key, box)"
-        v-bind="isLocked(item) ? { 'aria-disabled': 'true' } : { to: item.to }"
-        class="relative flex h-full items-center px-4 border-y-2 border-t-transparent"
-        :class="[
-          $route.meta.activeNavigation === item.key ? 'border-b-current' : 'border-b-transparent',
-          { 'cursor-not-allowed text-app-muted': isLocked(item) },
-        ]"
+      <nav
+        v-bounds="storeBar"
+        v-pointer-drag="nav.handlers"
+        class="app-footer-bar relative flex h-full items-center justify-evenly"
+        :class="{ 'is-dragging': nav.dragging }"
+        @dragstart.prevent
       >
-        <UserAvatar
-          v-if="item.avatar && hasAvatar"
-          class="size-6"
-          :user="authStore.user"
-          :alt="item.label"
+        <span
+          v-if="nav.bubble"
+          v-wobble="nav.wobbles"
+          class="app-bubble"
+          :style="{
+            left: `${nav.bubble.left}px`,
+            width: `${nav.bubble.width}px`,
+            '--stretch': nav.stretch,
+          }"
         />
-        <AppIcon
-          v-else
-          :name="item.avatar ? 'user' : item.icon"
-          :alt="item.label"
-          class="size-6!"
-        />
-        <span v-if="item.badge?.()" class="badge badge-primary badge-xs absolute top-2 right-2">
-          {{ item.badge() }}
-        </span>
-      </component>
-    </nav>
+        <component
+          :is="isLocked(item) ? 'span' : RouterLink"
+          v-for="item in footerItems"
+          :key="item.key"
+          v-bounds="(box) => nav.storeBox(item.key, box)"
+          v-bind="isLocked(item) ? { 'aria-disabled': 'true' } : { to: item.to }"
+          class="relative flex h-full items-center border-y-2 border-t-transparent px-4"
+          :class="[
+            $route.meta.activeNavigation === item.key ? 'border-b-current' : 'border-b-transparent',
+            { 'cursor-not-allowed text-app-muted': isLocked(item) },
+          ]"
+        >
+          <UserAvatar
+            v-if="item.avatar && hasAvatar"
+            class="size-6"
+            :user="authStore.user"
+            :alt="item.label"
+          />
+          <AppIcon
+            v-else
+            :name="item.avatar ? 'user' : item.icon"
+            :alt="item.label"
+            class="size-6!"
+          />
+          <span v-if="item.badge?.()" class="absolute top-2 right-2 badge badge-xs badge-primary">
+            {{ item.badge() }}
+          </span>
+        </component>
+      </nav>
+    </BubbleNavigation>
   </footer>
 </template>
 
 <script>
-import { mapStores } from 'pinia'
-import { RouterLink } from 'vue-router'
 import filter from 'lodash-es/filter'
 import find from 'lodash-es/find'
-import head from 'lodash-es/head'
+import { mapStores } from 'pinia'
+import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/AppIcon.vue'
+import BubbleNavigation from '@/components/common/BubbleNavigation.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import { isListed, isLocked, navigationItems } from '@/data/navigation.js'
 import bounds from '@/directives/bounds.js'
 import pointerDrag from '@/directives/pointerDrag.js'
 import wobble from '@/directives/wobble.js'
 import { avatarSrc } from '@/lib/avatar.js'
-import bubbleNavigationMixin from '@/mixins/bubbleNavigationMixin.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'BaseFooter',
-  components: { RouterLink, AppIcon, UserAvatar },
+  components: { RouterLink, AppIcon, BubbleNavigation, UserAvatar },
   directives: { bounds, pointerDrag, wobble },
-  mixins: [bubbleNavigationMixin],
   props: {
     dark: { type: Boolean, default: false },
   },
@@ -88,12 +99,6 @@ export default {
     hasAvatar() {
       return Boolean(avatarSrc(this.authStore.user))
     },
-    activeKey() {
-      return this.$route.meta.activeNavigation
-    },
-    trackWidth() {
-      return this.bar.width
-    },
   },
   methods: {
     isLocked(item) {
@@ -104,9 +109,6 @@ export default {
     },
     itemOf(key) {
       return find(this.footerItems, { key })
-    },
-    dragWidth() {
-      return this.boxes[head(this.footerItems).key].width
     },
     canSelect(key) {
       const item = this.itemOf(key)
