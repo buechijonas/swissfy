@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import ChatConversation from '@/components/chats/ChatConversation.vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import chatsApi from '@/api/chats.js'
 import profilesApi from '@/api/profiles.js'
-import { encryptMessage, verifyMessage } from '@/lib/chatCrypto.js'
+import ChatConversation from '@/components/chats/ChatConversation.vue'
+import { decryptMessage, encryptMessage, verifyMessage } from '@/lib/chatCrypto.js'
 import { localKeys, prepareChatKeys, trustedKeys, trustKeys } from '@/lib/chatKeys.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useEventsStore } from '@/stores/events.js'
@@ -21,9 +21,12 @@ vi.mock('@/lib/chatKeys.js', async (importOriginal) => ({
   trustKeys: vi.fn(),
   unlockWithPin: vi.fn(),
 }))
-vi.mock('@/lib/chatCrypto.js', () => ({
-  decryptMessage: vi.fn((message) => Promise.resolve({ text: message.text, error: null })),
+vi.mock('@/lib/chatCrypto.js', async (importOriginal) => ({
+  conversationOf: (await importOriginal()).conversationOf,
+  isReplay: (await importOriginal()).isReplay,
+  decryptMessage: vi.fn((encrypted) => Promise.resolve({ text: encrypted.text, error: null })),
   encryptMessage: vi.fn(),
+  isEndorsed: vi.fn(() => Promise.resolve(false)),
   safetyNumber: vi.fn(() => Promise.resolve(['12345', '67890'])),
   verifyMessage: vi.fn(() => Promise.resolve(true)),
 }))
@@ -36,7 +39,14 @@ function page(messages, chatRequest = { status: 'accepted', incoming: false }) {
 }
 
 function message(id, text) {
-  return { id, text, is_own: false, status: null, created_at: '2026-11-14T10:00:00Z' }
+  return {
+    id,
+    text,
+    sender: 'anna',
+    is_own: false,
+    status: null,
+    created_at: '2026-11-14T10:00:00Z',
+  }
 }
 
 async function mountConversation() {
@@ -148,15 +158,23 @@ describe('ChatConversation', () => {
       expect(wrapper.text()).not.toContain('neue Schlüssel')
     })
 
+    it('marks a replayed message as unverified', async () => {
+      const replayed = { text: 'alt', error: null, sentAt: Date.parse('2026-11-01'), nonce: 'bg==' }
+      decryptMessage.mockResolvedValueOnce(replayed)
+      const wrapper = await mountConversation()
+      expect(wrapper.text()).toContain('Nicht verifiziert')
+    })
+
     it('marks incoming messages without a valid signature', async () => {
       verifyMessage.mockResolvedValue(false)
       const wrapper = await mountConversation()
       expect(wrapper.text()).toContain('Nicht verifiziert')
     })
 
-    it('verifies incoming messages against the own username', async () => {
+    it('verifies incoming messages as sent from the partner to this user', async () => {
       await mountConversation()
-      expect(verifyMessage).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), 'jonas', [
+      const conversation = { sender: 'anna', recipient: 'jonas' }
+      expect(verifyMessage).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), conversation, [
         OWN_KEY,
         ANNA_KEY,
       ])
@@ -168,11 +186,11 @@ describe('ChatConversation', () => {
       encryptMessage.mockResolvedValue({})
       chatsApi.send.mockResolvedValue({ retry_after: 0 })
       const wrapper = await mountConversation()
-      wrapper.vm.draft = 'Hoi'
-      await wrapper.vm.send()
-      expect(encryptMessage).toHaveBeenCalledWith('Hoi', [OWN_KEY, ANNA_KEY], false, {
-        key: signingKey,
-        recipient: 'anna',
+      await wrapper.vm.deliver('Hoi')
+      expect(encryptMessage).toHaveBeenCalledWith('Hoi', [OWN_KEY, ANNA_KEY], {
+        conversation: { sender: 'jonas', recipient: 'anna' },
+        withServerKey: false,
+        signer: signingKey,
       })
     })
   })

@@ -48,8 +48,8 @@ class ChatKeyQuerySet(BaseQuerySet):
 
 class ChatKey(BaseModel):
     class Kind(models.TextChoices):
-        DEVICE = "device", _("Gerät")
-        PIN = "pin", _("Chat-PIN")
+        DEVICE = "device", _("Device")
+        PIN = "pin", _("Chat PIN")
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chat_keys"
@@ -124,9 +124,9 @@ class ChatRequestQuerySet(BaseQuerySet):
 
 class ChatRequest(BaseModel):
     class Status(models.TextChoices):
-        PENDING = "pending", _("Offen")
-        ACCEPTED = "accepted", _("Angenommen")
-        DECLINED = "declined", _("Abgelehnt")
+        PENDING = "pending", _("Open")
+        ACCEPTED = "accepted", _("Accepted")
+        DECLINED = "declined", _("Declined")
 
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_chat_requests"
@@ -164,10 +164,10 @@ class ChatRequest(BaseModel):
         if self.is_accepted:
             return None
         if self.status == self.Status.DECLINED:
-            return _("Diese Chat-Anfrage wurde abgelehnt.")
+            return _("This chat request was declined.")
         if self.sender_id == sender.pk:
-            return _("Warte, bis deine Chat-Anfrage angenommen wurde.")
-        return _("Nimm die Chat-Anfrage zuerst an.")
+            return _("Wait until your chat request has been accepted.")
+        return _("Accept the chat request first.")
 
     def resolve(self, status):
         self.status = status
@@ -260,6 +260,7 @@ class Message(BaseModel):
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="received_messages"
     )
+    version = models.PositiveSmallIntegerField(default=1)
     ciphertext = models.TextField()
     iv = models.CharField(max_length=32)
     server_key = models.BinaryField(null=True)

@@ -1,5 +1,5 @@
 import base64
-from datetime import timedelta
+from datetime import datetime, timedelta
 from io import StringIO
 
 from django.contrib.auth import get_user_model
@@ -16,6 +16,7 @@ User = get_user_model()
 ECDH_KEY = {"kty": "EC", "crv": "P-256", "x": "x" * 43, "y": "y" * 43}
 SIGN_KEY = {"kty": "EC", "crv": "P-256", "x": "s" * 43, "y": "t" * 43}
 PUBLIC_KEY = {"ecdh": ECDH_KEY, "kem": "a2Vt", "sign": SIGN_KEY}
+ENDORSEMENT = base64.b64encode(bytes(64)).decode()
 PIN_VERIFIER = base64.b64encode(bytes(range(32, 64))).decode()
 MESSAGE_KEY = base64.b64encode(bytes(range(32))).decode()
 
@@ -108,7 +109,9 @@ class ChatTests(TestCase):
 
     def test_default_protection_is_standard(self):
         data = self.client.get("/api/chats/protection/").json()
-        self.assertEqual(data, {"mode": "standard", "keys": [], "pin_key": None})
+        self.assertEqual(
+            data, {"mode": "standard", "retention_days": 14, "keys": [], "pin_key": None}
+        )
 
     def test_switch_to_device(self):
         data = self.put_protection({"mode": "device", "key": {"public_key": PUBLIC_KEY}}).json()
@@ -154,6 +157,37 @@ class ChatTests(TestCase):
             self.client.post(url, payload, content_type="application/json").status_code, 201
         )
 
+    def test_rotated_device_key_replaces_the_old_one(self):
+        old = self.set_mode(self.jonas, "device")
+        endorsed = {**PUBLIC_KEY, "endorsement": ENDORSEMENT}
+        response = self.client.post(
+            "/api/chats/keys/",
+            {"public_key": endorsed, "replaces": old.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["public_key"]["endorsement"], ENDORSEMENT)
+        old.refresh_from_db()
+        self.assertFalse(old.active)
+        protection = self.client.get("/api/chats/protection/").json()
+        self.assertEqual([key["id"] for key in protection["keys"]], [response.json()["id"]])
+
+    def test_device_keys_tell_their_age(self):
+        key = self.set_mode(self.jonas, "device")
+        ChatKey.objects.filter(pk=key.pk).update(created_at=timezone.now() - timedelta(days=8))
+        protection = self.client.get("/api/chats/protection/").json()
+        created_at = datetime.fromisoformat(protection["keys"][0]["created_at"])
+        self.assertLess(created_at, timezone.now() - timedelta(days=7))
+
+    def test_endorsement_must_be_a_p256_signature(self):
+        self.set_mode(self.jonas, "device")
+        response = self.client.post(
+            "/api/chats/keys/",
+            {"public_key": {**PUBLIC_KEY, "endorsement": "a2Vt"}},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_conversation_keys(self):
         self.set_mode(self.anna, "device")
         self.set_mode(self.eve, "device")
@@ -182,6 +216,15 @@ class ChatTests(TestCase):
         self.send(payload)
         message = self.messages()[0]
         self.assertEqual((message["sender_key"], message["signature"]), (jonas_key.pk, "c2ln"))
+
+    def test_messages_keep_their_format_version(self):
+        self.send(self.payload())
+        self.send({**self.payload(), "version": 2})
+        self.assertEqual([message["version"] for message in self.messages()], [1, 2])
+
+    def test_unknown_format_version_is_rejected(self):
+        self.assertEqual(self.send({**self.payload(), "version": 3}).status_code, 400)
+        self.assertFalse(Message.objects.exists())
 
     def test_no_conversation_with_self(self):
         self.assertEqual(self.client.get("/api/chats/jonas/keys/").status_code, 404)

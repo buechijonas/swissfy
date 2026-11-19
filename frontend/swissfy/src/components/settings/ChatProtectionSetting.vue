@@ -1,22 +1,22 @@
 <template>
-  <BaseCard class="p-6 flex flex-col gap-4">
+  <BaseCard class="flex flex-col gap-4 p-6">
     <div
-      class="flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:justify-between"
+      class="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left"
     >
       <div class="min-w-0">
         <p>{{ $t('chatProtection.title') }}</p>
-        <p v-if="mode" class="text-app-muted text-sm mt-1">{{ chatProtectionHints[mode] }}</p>
+        <p v-if="mode" class="mt-1 text-sm text-app-muted">{{ chatProtectionHints[mode] }}</p>
       </div>
       <BaseSwitcher
         v-if="mode"
-        class="flex-wrap justify-center gap-2 shrink-0"
+        class="shrink-0 flex-wrap justify-center gap-2"
         size="sm"
         :options="chatProtectionOptions"
         :active="mode"
-        :disabled="busy"
+        :disabled="action.busy"
         @select="select($event)"
       />
-      <div v-else-if="!error" class="skeleton h-8 w-56"></div>
+      <div v-else-if="!action.error" class="h-8 w-56 skeleton"></div>
     </div>
     <form v-if="pinSetup" class="flex flex-col gap-2" @submit.prevent="save('pin', newPin)">
       <input
@@ -33,31 +33,31 @@
         class="input w-full"
         :placeholder="$t('chatProtection.repeatPin')"
       />
-      <p class="text-app-muted text-sm">
+      <p class="text-sm text-app-muted">
         {{ $t('chatProtection.warning') }}
       </p>
       <div class="flex justify-end gap-2">
-        <BaseButton size="sm" :disabled="busy" @click="pinSetup = false">
+        <BaseButton size="sm" :disabled="action.busy" @click="pinSetup = false">
           <AppIcon name="cross" />
           {{ $t('common.cancel') }}
         </BaseButton>
-        <BaseButton type="submit" size="sm" variant="primary" :disabled="!pinValid || busy">
+        <BaseButton type="submit" size="sm" variant="primary" :disabled="!pinValid || action.busy">
           <AppIcon name="lock" />
           {{ $t('chatProtection.setPin') }}
         </BaseButton>
       </div>
     </form>
-    <ErrorText :message="error" class="text-center" />
+    <ErrorText :message="action.error" class="text-center" />
   </BaseCard>
 </template>
 
 <script>
-import ErrorText from '@core/components/ErrorText.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import { mapStores } from 'pinia'
 import AppIcon from '@core/components/AppIcon.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
+import ErrorText from '@core/components/ErrorText.vue'
+import { useAsyncAction } from '@core/composables/asyncAction.js'
 import BaseSwitcher from '@/components/common/BaseSwitcher.vue'
 import { chatProtectionHints, chatProtectionOptions } from '@/data/settings.js'
 import { fetchProtection, setProtection } from '@/lib/chatKeys.js'
@@ -65,10 +65,10 @@ import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'ChatProtectionSetting',
-  mixins: [asyncActionMixin],
   components: { AppIcon, BaseButton, BaseCard, BaseSwitcher, ErrorText },
   data() {
     return {
+      action: useAsyncAction(),
       mode: null,
       pinSetup: false,
       newPin: '',
@@ -87,12 +87,12 @@ export default {
     try {
       this.mode = (await fetchProtection()).mode
     } catch (error) {
-      this.error = error.message
+      this.action.error = error.message
     }
   },
   methods: {
     select(mode) {
-      this.error = null
+      this.action.error = null
       if (mode === 'pin') {
         this.pinSetup = true
       } else if (mode !== this.mode) {
@@ -101,7 +101,7 @@ export default {
       }
     },
     async save(mode, pin) {
-      const state = await this.runAction(() => setProtection(this.authStore.user.id, mode, pin))
+      const state = await this.action.run(() => setProtection(this.authStore.user.id, mode, pin))
       if (!state) return
       this.mode = state.mode
       this.pinSetup = false

@@ -1,7 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div
-    class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-var(--mobile-chrome-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
+    class="flex max-h-[calc(100dvh-var(--mobile-chrome-height))] flex-col overflow-y-auto px-6 pb-8 lg:max-h-none lg:flex-1 lg:overflow-y-visible"
   >
     <div class="mx-auto w-full max-w-150 sm:pt-4">
       <BaseTabs class="mb-4" :tabs="tabs" :active="activeTab" />
@@ -17,7 +17,7 @@
       <BaseCard v-if="visibleConversations.length" tag="ul" class="divide-y divide-app-border">
         <li v-for="user in visibleConversations" :key="user.username" class="flex">
           <SwipeRow
-            class="flex-1 min-w-0"
+            class="min-w-0 flex-1"
             :icon="archiveIcon"
             :label="archiveLabel"
             @action="requestToggle(user)"
@@ -25,7 +25,7 @@
             <UserRow :user="user" :to="chatLink(user)">
               <template v-if="user.last_message" #subtitle>
                 <span
-                  class="flex items-center gap-1 min-w-0 text-sm"
+                  class="flex min-w-0 items-center gap-1 text-sm"
                   :class="user.unread ? 'font-bold text-base-content' : 'text-app-muted'"
                 >
                   <CipherText v-if="previews[user.username] === null" :length="8" />
@@ -37,7 +37,7 @@
                 </span>
               </template>
               <template v-else #subtitle>
-                <span class="text-app-muted text-sm truncate">
+                <span class="truncate text-sm text-app-muted">
                   {{ user.pending ? $t('chats.requestSent') : $t('chats.noMessages') }}
                 </span>
               </template>
@@ -46,14 +46,14 @@
                 class="text-xs"
                 :class="user.unread ? 'font-bold text-base-content' : 'text-app-muted'"
               >
-                {{ formatRelativeTime(user.last_message.created_at, now) }}
+                {{ formatRelativeTime(user.last_message.created_at, clock.now) }}
               </span>
             </UserRow>
           </SwipeRow>
           <BaseButton
             variant="ghost"
             shape="square"
-            class="hidden lg:inline-flex size-18 rounded-none border-0 border-l border-app-border"
+            class="hidden size-18 rounded-none border-0 border-l border-app-border lg:inline-flex"
             :title="archiveLabel"
             @click="requestToggle(user)"
           >
@@ -66,10 +66,10 @@
       </BaseCard>
       <div v-else class="flex flex-col gap-3">
         <div v-for="n in 3" :key="n" class="flex items-center gap-4 px-6 py-3">
-          <div class="skeleton size-12 rounded-full"></div>
+          <div class="size-12 skeleton rounded-full"></div>
           <div class="flex flex-col gap-2">
-            <div class="skeleton h-4 w-40"></div>
-            <div class="skeleton h-3 w-24"></div>
+            <div class="h-4 w-40 skeleton"></div>
+            <div class="h-3 w-24 skeleton"></div>
           </div>
         </div>
       </div>
@@ -88,30 +88,30 @@
 </template>
 
 <script>
-import clockMixin from '@/mixins/clockMixin.js'
-import { mapStores } from 'pinia'
 import filter from 'lodash-es/filter'
 import map from 'lodash-es/map'
+import { mapStores } from 'pinia'
 import AppIcon from '@core/components/AppIcon.vue'
-import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseButton from '@core/components/BaseButton.vue'
 import BaseCard from '@core/components/BaseCard.vue'
-import BaseFooter from '@/components/common/BaseFooter.vue'
 import ErrorText from '@core/components/ErrorText.vue'
+import chatsApi from '@/api/chats.js'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseTabs from '@/components/common/BaseTabs.vue'
 import CipherText from '@/components/common/CipherText.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
-import BaseTabs from '@/components/common/BaseTabs.vue'
 import MessageStatus from '@/components/common/MessageStatus.vue'
 import SwipeRow from '@/components/common/SwipeRow.vue'
 import UserRow from '@/components/common/UserRow.vue'
-import chatsApi from '@/api/chats.js'
-import { decryptMessage } from '@/lib/chatCrypto.js'
+import { useClock } from '@/composables/clock.js'
+import { t } from '@/i18n.js'
+import { conversationOf, decryptMessage } from '@/lib/chatCrypto.js'
 import { localKeys } from '@/lib/chatKeys.js'
 import { formatRelativeTime } from '@/lib/time.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useChatsStore } from '@/stores/chats.js'
 import { useEventsStore } from '@/stores/events.js'
-import { t } from '@/i18n.js'
 
 function chatTabs() {
   return [
@@ -122,7 +122,6 @@ function chatTabs() {
 
 export default {
   name: 'ChatsView',
-  mixins: [clockMixin],
   components: {
     AppIcon,
     BaseBreadcrumbs,
@@ -139,6 +138,7 @@ export default {
   },
   data() {
     return {
+      clock: useClock(),
       requests: [],
       conversations: null,
       previews: {},
@@ -206,17 +206,18 @@ export default {
         list
           .filter((user) => user.last_message)
           .map(async (user) => {
-            previews[user.username] = await this.preview(user.last_message)
+            previews[user.username] = await this.preview(user.last_message, user.username)
           }),
       )
       this.previews = previews
       this.conversations = list
       this.syncUnread()
-      this.now = Date.now()
+      this.clock.tick()
     },
-    async preview(message) {
+    async preview(message, partner) {
       if (!(message.id in this.decrypted)) {
-        this.decrypted[message.id] = (await decryptMessage(message, this.keys)).text
+        const conversation = conversationOf(message, this.authStore.user.username, partner)
+        this.decrypted[message.id] = (await decryptMessage(message, this.keys, conversation)).text
       }
       return this.decrypted[message.id]
     },

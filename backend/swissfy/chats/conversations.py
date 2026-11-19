@@ -1,5 +1,6 @@
 from functools import cached_property
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, F, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
@@ -26,6 +27,7 @@ def protection_state(user):
     keys = ChatKey.objects.of(user)
     return {
         "mode": user.profile.chat_protection,
+        "retention_days": settings.CHAT_RETENTION_DAYS,
         "keys": keys,
         "pin_key": keys.filter(kind=ChatKey.Kind.PIN).first(),
     }
@@ -77,7 +79,7 @@ class Conversation:
     @property
     def blocked_reason(self):
         if self.chat_request is None:
-            return _("Sende zuerst eine Chat-Anfrage.")
+            return _("Send a chat request first.")
         return self.chat_request.blocked_reason(self.user)
 
     @property
@@ -127,6 +129,7 @@ class Conversation:
         message = Message(
             sender=self.user,
             recipient=self.partner,
+            version=data["version"],
             ciphertext=data["ciphertext"],
             iv=data["iv"],
             sender_key_id=data.get("sender_key"),

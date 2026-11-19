@@ -1,11 +1,11 @@
 <template>
-  <BaseCard class="p-4 flex flex-col gap-3 border-t-0">
-    <p v-if="changed" class="flex items-start gap-2 text-warning text-sm">
+  <BaseCard class="flex flex-col gap-3 border-t-0 p-4">
+    <p v-if="changed" class="flex items-start gap-2 text-sm text-warning">
       <AppIcon name="shield-exclamation" size="sm" class="mt-0.5 shrink-0" />
       {{ $t('chat.keysChanged', { username }) }}
     </p>
-    <p class="text-app-muted text-sm">{{ $t('chat.safetyNumberHint') }}</p>
-    <p class="font-mono text-lg tracking-widest text-center">{{ groups.join(' ') }}</p>
+    <p class="text-sm text-app-muted">{{ $t('chat.safetyNumberHint') }}</p>
+    <p class="text-center font-mono text-lg tracking-widest">{{ groups.join(' ') }}</p>
     <div v-if="changed" class="flex justify-end">
       <BaseButton size="sm" variant="primary" @click="$emit('accept')">
         <AppIcon name="check" />
