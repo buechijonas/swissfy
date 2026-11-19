@@ -240,15 +240,15 @@ export default {
       return this.refreshing
     },
     async receiveUntilCurrent() {
+      this.refreshQueued = false
       try {
-        do {
-          this.refreshQueued = false
-          await this.receive()
-        } while (this.refreshQueued)
+        await this.receive()
         this.refreshError = null
       } catch {
         this.refreshError = t('chat.refreshFailed')
+        return
       }
+      if (this.refreshQueued) await this.receiveUntilCurrent()
     },
     async receive() {
       const read = this.visible
