@@ -117,13 +117,13 @@ class PostQuerySet(ModeratedQuerySet, AudienceQuerySet):
     def media(self):
         return self.exclude(thumbnail="").filter(video_status__in=["", Post.VideoStatus.READY])
 
-    def by_media(self, params):
+    def by_media(self, images=False, videos=False, media=False):
         posts = self
-        if params.get("images"):
+        if images:
             posts = posts.images()
-        if params.get("videos"):
+        if videos:
             posts = posts.videos()
-        if params.get("media"):
+        if media:
             posts = posts.media()
         return posts
 

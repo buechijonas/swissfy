@@ -41,6 +41,12 @@ def starting_from(posts, params):
     return posts.filter(pk__lte=Subquery(Post.objects.filter(uuid=start).values("pk")))
 
 
+def by_media(posts, params):
+    query = PostModelSerializer.query(data=params)
+    query.is_valid(raise_exception=True)
+    return posts.by_media(**query.validated_data)
+
+
 class PostViewSet(
     BaseViewSet,
     mixins.ListModelMixin,
@@ -101,8 +107,9 @@ class PostViewSet(
 
     @action(detail=False)
     def saved(self, request):
-        folder = request.query_params.get("folder")
-        saves = SavedPost.objects.filter(user=request.user).in_folder(folder)
+        query = PostModelSerializer.saved_query(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        saves = SavedPost.objects.filter(user=request.user, **query.validated_data)
         posts = (
             Post.objects.apply_acl(request.user)
             .filter(pk__in=saves.values("post"))

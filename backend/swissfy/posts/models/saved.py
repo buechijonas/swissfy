@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from commons.models import BaseModel, BaseQuerySet
+from commons.models import BaseModel
 
 from .audience import NAME_LENGTH
 
@@ -22,15 +22,6 @@ class SavedFolder(BaseModel):
         return f"{self.owner}: {self.name}"
 
 
-class SavedPostQuerySet(BaseQuerySet):
-    def in_folder(self, folder):
-        if not folder:
-            return self
-        if folder == "none":
-            return self.filter(folder=None)
-        return self.filter(folder=folder) if folder.isdigit() else self.none()
-
-
 class SavedPost(BaseModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="saved_posts"
@@ -40,8 +31,6 @@ class SavedPost(BaseModel):
         SavedFolder, on_delete=models.SET_NULL, null=True, blank=True, related_name="saved_posts"
     )
     created_at = models.DateTimeField(auto_now_add=True)
-
-    objects = SavedPostQuerySet.as_manager()
 
     class Meta:
         constraints = [

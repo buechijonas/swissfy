@@ -15,6 +15,13 @@ from .common import (
 )
 
 
+class UnfiledOrFolderField(serializers.IntegerField):
+    def to_internal_value(self, data):
+        if data == "none":
+            return None
+        return super().to_internal_value(data)
+
+
 class PostImageModelSerializer(BaseModelSerializer):
     class read(BaseModelSerializer.read):
         url = serializers.CharField(read_only=True)
@@ -108,6 +115,14 @@ class PostModelSerializer(UUIDModelSerializer):
 
         class Meta(UnavailableSerializer.Meta):
             model = Post
+
+    class query(serializers.Serializer):
+        images = serializers.BooleanField(default=False)
+        videos = serializers.BooleanField(default=False)
+        media = serializers.BooleanField(default=False)
+
+    class saved_query(serializers.Serializer):
+        folder = UnfiledOrFolderField(required=False)
 
     class audience(AudienceSerializerMixin, BaseModelSerializer.write):
         class Meta(BaseModelSerializer.write.Meta):
